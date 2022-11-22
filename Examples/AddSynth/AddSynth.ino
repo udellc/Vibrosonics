@@ -27,13 +27,15 @@ void setup()
   Serial.begin(115200);
 
   startMozzi(CONTROL_RATE);
-  asinc.setFreq(16); //Base shaker sub-harmonic freq.
+  asinc.setFreq(16); //16 Hz - Base shaker sub-harmonic freq.
   asin1.setFreq(30); //Set frequencies here. (Hardcoded for now)
   asin2.setFreq(40);
   asin3.setFreq(50);
 
   //sickGainz[0] = 0;
-  sickGainz[1] = 1; //Set amplitude here. (Hardcoded for now)
+  sickGainz[1] = 1; //Set amplitude here. The array index corresponds to the sin wave number. Use any value between 0-1 for amplitude. (Hardcoded for now)
+  sickGainz[2] = 1;
+  sickGainz[3] = 1;
   //Serial.println("endSetup");
 }
 
