@@ -6,12 +6,12 @@
 
 #define CONTROL_RATE 128
 
-Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA);
+Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave. This is the sum of all other waves and the wave that should be outputted.
 Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA);
 Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA);
 Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA);
 
-const int OscilCount = 4;
+const int OscilCount = 4; //The total number of waves. Modify this if more waves are added, or the program will segfault.
 
 int gainzDivisor;
 
@@ -27,13 +27,13 @@ void setup()
   Serial.begin(115200);
 
   startMozzi(CONTROL_RATE);
-	asinc.setFreq(16); //Base shaker sub-harmonic freq.
-  asin1.setFreq(30);
+  asinc.setFreq(16); //Base shaker sub-harmonic freq.
+  asin1.setFreq(30); //Set frequencies here. (Hardcoded for now)
   asin2.setFreq(40);
   asin3.setFreq(50);
 
   //sickGainz[0] = 0;
-  sickGainz[1] = 1;
+  sickGainz[1] = 1; //Set amplitude here. (Hardcoded for now)
   //Serial.println("endSetup");
 }
 
@@ -44,7 +44,7 @@ void loop()
 
 }
 
-void sickGainzTranslation(float gainz[])
+void sickGainzTranslation(float gainz[]) //Used to translate the 0-255 amplitude scale to a 0-1 float scale.
 {
   for(int i = 0; i < OscilCount; i++)
   {
@@ -86,7 +86,7 @@ void updateControl()
   sickGainz[1] = 0;
 }
 
-void gainzControl()
+void gainzControl() //Used for amplitude modulation so it does not exceed the 255 cap.
 {
   int totalGainz = 0;
   gainzDivisor = 0;
@@ -111,7 +111,7 @@ int updateAudio()
   currentCarrier = ((long)asinc.next() +
                     realGainz[1] * asin1.next() +
                     realGainz[2] * asin2.next() +
-                    realGainz[3] * asin3.next() );
+                    realGainz[3] * asin3.next() ); //Additive synthesis equation
 
   nextCarrier = currentCarrier >> gainzDivisor;
   //Serial.println("updateAudioEnd");
