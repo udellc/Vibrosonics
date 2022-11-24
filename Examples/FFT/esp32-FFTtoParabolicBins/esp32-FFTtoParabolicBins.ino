@@ -10,7 +10,6 @@ These values can be changed in order to evaluate the functions
 const uint16_t samples = 512;  //This value MUST ALWAYS be a power of 2
 const double samplingFrequency = 8192;
 
-const double 
 const double OUTLIER = 5000.0;
 /*
 These are the input and output vectors
@@ -55,12 +54,12 @@ void loop() {
   FFT.Compute(vReal, vImag, samples, FFT_FORWARD);                 /* Compute FFT */
   FFT.ComplexToMagnitude(vReal, vImag, samples);                   /* Compute magnitudes */
   //PrintVector(vReal, samples, SCL_FREQUENCY);
-  SplitSample(vReal, samples, 6);
+  SplitSample(vReal, samples, 12, 0.7);
   // double x = FFT.MajorPeak(vReal, samples, samplingFrequency);
   // Serial.print("major peak: ");
   // Serial.println(x);
-  ///while (1)
-  //  ; /* Run Once
+  // while (1)
+  //   ; /* Run Once
   delay(10); /* Repeat after delay */
 }
 
@@ -91,33 +90,31 @@ void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType) {
 }
 
 // Splits the samples into x even groups, works best when bufferSize and splitInto are a power of 2.
-void SplitSample(double *vData, uint16_t bufferSize, int splitInto) {
+void SplitSample(double *vData, uint16_t bufferSize, int splitInto, double curveValue) {
   double splitMeanArray[splitInto];
 
-  double sFreqBySamples = samplingFrequency * (1.0 / samples);
-
-  // bufferSize^(1 / splitInto) = exponent base
-  // b^splitInto = bufferSize
-  double b = pow(bufferSize, 1.0 / splitInto);  
+  int sFreqBySamples = samplingFrequency / samples;
+  double step = 1.0 / splitInto;
+  double parabolicCurve = 2 / curveValue;
 
   int topOfSample = 0;
   int lastJ = 0;
   for (int i = 0; i < splitInto; i++) {
-    int binSize = 1;
-    if (i > 0) {
-      binSize = round(pow(b, i + 1));
-    }
+    double xStep = (i + 1) * step;
+    // (x/splitInto)^(2/curveValue)
+    int binSize = round(bufferSize * pow(xStep, parabolicCurve));
     double amplitudeGroup[binSize - lastJ];
     int newJ = lastJ;
     // Serial.println(binSize - lastJ);
     for (int j = lastJ; j < binSize; j++) {
       // if amplitude is above certain threshold, set it to -1
       topOfSample = topOfSample + sFreqBySamples;
-      if (vData[j] > OUTLIER || (topOfSample <= 64 || topOfSample > 8100)) {
+      if (vData[j] > OUTLIER || (topOfSample < 64 || topOfSample > 8128)) {
         amplitudeGroup[j - lastJ] = -1;
       } else {
         amplitudeGroup[j - lastJ] = vData[j];
       }
+      // Debugging stuff
       // Serial.print(j);
       // Serial.print(" ");
       // Serial.print(vData[j]);
@@ -129,12 +126,12 @@ void SplitSample(double *vData, uint16_t bufferSize, int splitInto) {
     lastJ = newJ;
   }
 
-  double normalizedArray[splitInto];
+  //double normalizedArray[splitInto];
 
-  normalizeArray(splitMeanArray, normalizedArray, splitInto);
+  //normalizeArray(splitMeanArray, normalizedArray, splitInto);
 
-  //PrintNormalizedArray(splitMeanArray, splitInto, b);
-  PrintNormalizedArray(normalizedArray, splitInto, b);
+  PrintArray(splitMeanArray, splitInto, curveValue);
+  //PrintArray(normalizedArray, splitInto, curveValue);
 }
 
 // gets average of an array
@@ -214,18 +211,23 @@ double getArrayMax(double *array, int arraySize) {
 }
 
 
-// prints normalized amplitudes
-void PrintNormalizedArray(double *array, int arraySize, double base) {
-  Serial.println("\nPrinting normalized amplitudes:");
+// prints amplitudes
+void PrintArray(double *array, int arraySize, double curveValue) {
+  Serial.println("\nPrinting amplitudes:");
   int baseMultiplier = samplingFrequency / samples;
+
+  double step = 1.0 / arraySize;
+  double parabolicCurve = 2 / curveValue;
+
   for (int i = 0; i < arraySize; i++) {
+    double xStep = i * step;
     char buffer[64];
     // char normalizedAmplitude = char(array[i]);
     int rangeLow = 0;
     if (i > 0) {
-      rangeLow = round(pow(base, i)) * baseMultiplier;     
+      rangeLow = round(samplingFrequency * pow(xStep, parabolicCurve));     
     }
-    int rangeHigh = round(pow(base, i + 1)) * baseMultiplier;
+    int rangeHigh = round(samplingFrequency * pow(xStep + step, parabolicCurve));   
     sprintf(buffer, "%.3f for frequency range between %d and %d Hz\n", array[i], rangeLow, rangeHigh);
     Serial.print(buffer);
   }
