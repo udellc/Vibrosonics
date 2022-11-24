@@ -9,8 +9,6 @@ These values can be changed in order to evaluate the functions
 */
 const uint16_t samples = 512;  //This value MUST ALWAYS be a power of 2
 const double samplingFrequency = 8192;
-
-const double 
 const double OUTLIER = 5000.0;
 /*
 These are the input and output vectors
