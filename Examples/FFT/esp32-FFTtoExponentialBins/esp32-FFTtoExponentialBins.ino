@@ -8,7 +8,6 @@ arduinoFFT FFT = arduinoFFT(); /* Create FFT object */
 These values can be changed in order to evaluate the functions
 */
 const uint16_t samples = 512;  //This value MUST ALWAYS be a power of 2
-const double signalFrequency = 1000;
 const double samplingFrequency = 8192;
 
 
@@ -56,11 +55,11 @@ void loop() {
   FFT.Compute(vReal, vImag, samples, FFT_FORWARD);                 /* Compute FFT */
   FFT.ComplexToMagnitude(vReal, vImag, samples);                   /* Compute magnitudes */
   //PrintVector(vReal, samples, SCL_FREQUENCY);
-  SplitSample(vReal, samples, 12);
+  SplitSample(vReal, samples, 6);
   // double x = FFT.MajorPeak(vReal, samples, samplingFrequency);
   // Serial.print("major peak: ");
   // Serial.println(x);
-  //while (1)
+  ///while (1)
   //  ; /* Run Once
   delay(10); /* Repeat after delay */
 }
@@ -97,28 +96,36 @@ void SplitSample(double *vData, uint16_t bufferSize, int splitInto) {
 
   double sFreqBySamples = samplingFrequency * (1.0 / samples);
 
-  int topOfSample = 0;
-
   // bufferSize^(1 / splitInto) = exponent base
   // b^splitInto = bufferSize
   double b = pow(bufferSize, 1.0 / splitInto);  
 
+  int topOfSample = 0;
+  int lastJ = 0;
   for (int i = 0; i < splitInto; i++) {
-    int binSize = floor(pow(b, i + 1));
-    double amplitudeGroup[binSize];
-    int lastJ = 0;
+    int binSize = 1;
+    if (i > 0) {
+      binSize = round(pow(b, i + 1));
+    }
+    double amplitudeGroup[binSize - lastJ];
     int newJ = lastJ;
+    // Serial.println(binSize - lastJ);
     for (int j = lastJ; j < binSize; j++) {
       // if amplitude is above certain threshold, set it to -1
       topOfSample = topOfSample + sFreqBySamples;
-      if (vData[j] > OUTLIER || (topOfSample <= 80 && topOfSample > 8100)) {
-        amplitudeGroup[newJ] = -1;
+      if (vData[j] > OUTLIER || (topOfSample <= 64 || topOfSample > 8100)) {
+        amplitudeGroup[j - lastJ] = -1;
       } else {
-        amplitudeGroup[newJ] = vData[j];
+        amplitudeGroup[j - lastJ] = vData[j];
       }
+      // Serial.print(j);
+      // Serial.print(" ");
+      // Serial.print(vData[j]);
+      // Serial.print(" ");
+      // Serial.println(topOfSample);
       newJ += 1;
     }
-    splitMeanArray[i] = getArrayMean(amplitudeGroup, newJ - lastJ);
+    splitMeanArray[i] = getArrayMean(amplitudeGroup, binSize - lastJ);
     lastJ = newJ;
   }
 
@@ -126,10 +133,8 @@ void SplitSample(double *vData, uint16_t bufferSize, int splitInto) {
 
   normalizeArray(splitMeanArray, normalizedArray, splitInto);
 
-  int freqRange = samplingFrequency / splitInto;
-
-  //PrintNormalizedArray(splitMeanArray, splitInto);
-  PrintNormalizedArray(normalizedArray, splitInto);
+  //PrintNormalizedArray(splitMeanArray, splitInto, b);
+  PrintNormalizedArray(normalizedArray, splitInto, b);
 }
 
 // gets average of an array
@@ -210,20 +215,17 @@ double getArrayMax(double *array, int arraySize) {
 
 
 // prints normalized amplitudes
-void PrintNormalizedArray(double *array, int arraySize) {
+void PrintNormalizedArray(double *array, int arraySize, double base) {
   Serial.println("\nPrinting normalized amplitudes:");
-  double b = pow(samplingFrequency, 1.0 / arraySize);  
+  int baseMultiplier = samplingFrequency / samples;
   for (int i = 0; i < arraySize; i++) {
     char buffer[64];
     // char normalizedAmplitude = char(array[i]);
-    int rangeLow = floor(pow(b, i));
-    int rangeHigh = floor(pow(b, i + 1));
-    // Serial.print(array[i], 2);
-    // Serial.print(" for freq range between ");
-    // Serial.print(rangeLow);
-    // Serial.print("Hz and ");
-    // Serial.print(rangeHigh);
-    // Serial.println("Hz\n\n\n\n");
+    int rangeLow = 0;
+    if (i > 0) {
+      rangeLow = round(pow(base, i)) * baseMultiplier;     
+    }
+    int rangeHigh = round(pow(base, i + 1)) * baseMultiplier;
     sprintf(buffer, "%.3f for frequency range between %d and %d Hz\n", array[i], rangeLow, rangeHigh);
     Serial.print(buffer);
   }
