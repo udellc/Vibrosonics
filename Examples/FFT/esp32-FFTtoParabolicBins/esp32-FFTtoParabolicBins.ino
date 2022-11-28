@@ -54,9 +54,7 @@ void loop() {
   FFT.Compute(vReal, vImag, samples, FFT_FORWARD);                 /* Compute FFT */
   FFT.ComplexToMagnitude(vReal, vImag, samples);                   /* Compute magnitudes */
   //PrintVector(vReal, samples, SCL_FREQUENCY);
-  SplitSample(vReal, samples, 12, 0.7);
-  // double x = FFT.MajorPeak(vReal, samples, samplingFrequency);
-  // Serial.print("major peak: ");
+  SplitSample(vReal, samples, 8, 0.3);
   // Serial.println(x);
   // while (1)
   //   ; /* Run Once
@@ -89,20 +87,24 @@ void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType) {
   Serial.println();
 }
 
-// Splits the samples into x even groups, works best when bufferSize and splitInto are a power of 2.
+/* Splits the bufferSize into X groups, where X = splitInto
+    the curveValue determines the curve to follow when buffer is split
+    if curveValue = 1 : then buffer is split into X even groups
+    0 < curveValue < 1 : then buffer is split following a concave curve
+    1 < curveValue < infinity : then buffer is split following a convex curve */
 void SplitSample(double *vData, uint16_t bufferSize, int splitInto, double curveValue) {
   double splitMeanArray[splitInto];
 
   int sFreqBySamples = samplingFrequency / samples;
   double step = 1.0 / splitInto;
-  double parabolicCurve = 2 / curveValue;
+  double exponent = 1 / curveValue;
 
   int topOfSample = 0;
   int lastJ = 0;
   for (int i = 0; i < splitInto; i++) {
     double xStep = (i + 1) * step;
-    // (x/splitInto)^(2/curveValue)
-    int binSize = round(bufferSize * pow(xStep, parabolicCurve));
+    // (x/splitInto)^(1/curveValue)
+    int binSize = round(bufferSize * pow(xStep, exponent));
     double amplitudeGroup[binSize - lastJ];
     int newJ = lastJ;
     // Serial.println(binSize - lastJ);
@@ -150,10 +152,6 @@ double getArrayMean(double *array, int arraySize) {
   return (double)(arraySum / c);
 }
 
-// void splitIntoExponentialBins(double *array, double *destArray, int arraySize) {
-  
-// }
-
 // normalizes array and puts the normalized values in destArray
 void normalizeArray(double *array, double *destArray, int arraySize) {
   double min = getArrayMin(array, arraySize);
@@ -164,28 +162,6 @@ void normalizeArray(double *array, double *destArray, int arraySize) {
     double normalizedValue = (array[i]) * iv;
     destArray[i] = normalizedValue;
   }
-}
-
-// returns the minimum value in array
-double getArrayMin2(double *array, int arraySize) {
-  double min = OUTLIER;
-  for (int i = 0; i < arraySize; i++) {
-    if (array[i] < OUTLIER && array[i] > 0 && array[i] < min) {
-      min = array[i];
-    }
-  }
-  return min;
-}
-
-// returns the maximum value in array
-double getArrayMax2(double *array, int arraySize) {
-  double max = 0;
-  for (int i = 0; i < arraySize; i++) {
-    if (array[i] < OUTLIER && array[i] > max) {
-      max = array[i];
-    }
-  }
-  return max;
 }
 
 // returns the minimum value in array
@@ -211,13 +187,13 @@ double getArrayMax(double *array, int arraySize) {
 }
 
 
-// prints amplitudes
+// prints average amplitudes array
 void PrintArray(double *array, int arraySize, double curveValue) {
   Serial.println("\nPrinting amplitudes:");
   int baseMultiplier = samplingFrequency / samples;
 
   double step = 1.0 / arraySize;
-  double parabolicCurve = 2 / curveValue;
+  double parabolicCurve = 1 / curveValue;
 
   for (int i = 0; i < arraySize; i++) {
     double xStep = i * step;
