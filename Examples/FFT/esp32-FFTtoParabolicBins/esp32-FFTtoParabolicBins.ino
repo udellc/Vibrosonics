@@ -10,7 +10,7 @@ These values can be changed in order to evaluate the functions
 const uint16_t samples = 512;  //This value MUST ALWAYS be a power of 2
 const double samplingFrequency = 8192;
 
-const double OUTLIER = 5000.0;
+const double OUTLIER = 25000.0;
 /*
 These are the input and output vectors
 Input vectors receive computed results from FFT
@@ -18,8 +18,13 @@ Input vectors receive computed results from FFT
 double vReal[samples];
 double vImag[samples];
 
-double vRealNormalized[samples];
-
+/*
+These are used for splitting the amplitudes from FFT into bins,
+  The bins integer accounts for how many bins the samples are split into
+  The double curve accounts for the curve used when splitting the bins
+*/
+int bins = 5;
+double curve = 0.5;
 
 unsigned int sampling_period_us;
 unsigned long microseconds;
@@ -39,6 +44,21 @@ void setup() {
 
 void loop() {
 
+  // set number of bins and curve value
+  while (Serial.available()) {
+    char data = Serial.read();
+    if (data == 'x') {
+      Serial.println("Enter integer for number of bins:");
+      while (Serial.available() == 0) {}
+      bins = Serial.parseInt();
+      Serial.println("Enter double for curve value:");
+      while (Serial.available() ==0) {}
+      curve = Serial.parseFloat();      
+      Serial.println("New bins and curve value set.");
+    }
+    delay(1000);
+  }
+
   /*SAMPLING*/
   microseconds = micros();
   for (int i = 0; i < samples; i++) {
@@ -54,7 +74,11 @@ void loop() {
   FFT.Compute(vReal, vImag, samples, FFT_FORWARD);                 /* Compute FFT */
   FFT.ComplexToMagnitude(vReal, vImag, samples);                   /* Compute magnitudes */
   //PrintVector(vReal, samples, SCL_FREQUENCY);
-  SplitSample(vReal, samples, 8, 0.3);
+  int bins = 5;
+  double curve = 0.5;
+  double averageBinsArray[bins];
+  SplitSample(vReal, samples>>1, averageBinsArray, bins, curve);
+  PrintBinsArray(averageBinsArray, bins, curve);
   // Serial.println(x);
   // while (1)
   //   ; /* Run Once
@@ -90,14 +114,13 @@ void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType) {
 /* Splits the bufferSize into X groups, where X = splitInto
     the curveValue determines the curve to follow when buffer is split
     if curveValue = 1 : then buffer is split into X even groups
-    0 < curveValue < 1 : then buffer is split following a concave curve
-    1 < curveValue < infinity : then buffer is split following a convex curve */
-void SplitSample(double *vData, uint16_t bufferSize, int splitInto, double curveValue) {
-  double splitMeanArray[splitInto];
+    0 < curveValue < 1 : then buffer is split into X groups, following a concave curve
+    1 < curveValue < infinity : then buffer is split into X groups following a convex curve */
+void SplitSample(double *vData, uint16_t bufferSize, double *destArray, int splitInto, double curveValue) {
 
   int sFreqBySamples = samplingFrequency / samples;
   double step = 1.0 / splitInto;
-  double exponent = 1 / curveValue;
+  double exponent = 1.0 / curveValue;
 
   int topOfSample = 0;
   int lastJ = 0;
@@ -107,7 +130,6 @@ void SplitSample(double *vData, uint16_t bufferSize, int splitInto, double curve
     int binSize = round(bufferSize * pow(xStep, exponent));
     double amplitudeGroup[binSize - lastJ];
     int newJ = lastJ;
-    // Serial.println(binSize - lastJ);
     for (int j = lastJ; j < binSize; j++) {
       // if amplitude is above certain threshold, set it to -1
       topOfSample = topOfSample + sFreqBySamples;
@@ -124,16 +146,9 @@ void SplitSample(double *vData, uint16_t bufferSize, int splitInto, double curve
       // Serial.println(topOfSample);
       newJ += 1;
     }
-    splitMeanArray[i] = getArrayMean(amplitudeGroup, binSize - lastJ);
+    destArray[i] = getArrayMean(amplitudeGroup, binSize - lastJ);
     lastJ = newJ;
   }
-
-  //double normalizedArray[splitInto];
-
-  //normalizeArray(splitMeanArray, normalizedArray, splitInto);
-
-  PrintArray(splitMeanArray, splitInto, curveValue);
-  //PrintArray(normalizedArray, splitInto, curveValue);
 }
 
 // gets average of an array
@@ -188,7 +203,7 @@ double getArrayMax(double *array, int arraySize) {
 
 
 // prints average amplitudes array
-void PrintArray(double *array, int arraySize, double curveValue) {
+void PrintBinsArray(double *array, int arraySize, double curveValue) {
   Serial.println("\nPrinting amplitudes:");
   int baseMultiplier = samplingFrequency / samples;
 
@@ -198,7 +213,6 @@ void PrintArray(double *array, int arraySize, double curveValue) {
   for (int i = 0; i < arraySize; i++) {
     double xStep = i * step;
     char buffer[64];
-    // char normalizedAmplitude = char(array[i]);
     int rangeLow = 0;
     if (i > 0) {
       rangeLow = round(samplingFrequency * pow(xStep, parabolicCurve));     
