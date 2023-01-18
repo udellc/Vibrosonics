@@ -1,6 +1,9 @@
 #ifndef ESP32FFTTOPARABOLICBINS_H
 #define ESP32FFTTOPARABOLICBINS_H
 
+extern double avgAmps[8]; 
+extern double highestAmp;
+
 void FFTtoParaSetup();
 void FFTtoParaLoop();
 void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType);

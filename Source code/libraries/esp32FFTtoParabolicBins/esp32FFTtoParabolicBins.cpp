@@ -126,8 +126,11 @@ void SplitSample(double *vData, uint16_t bufferSize, int splitInto, double curve
       newJ += 1;
     }
     splitMeanArray[i] = getArrayMean(amplitudeGroup, binSize - lastJ);
+    avgAmps[i] = splitMeanArray[i];
     lastJ = newJ;
   }
+
+	highestAmp = getArrayMax(avgAmps, splitInto);
 
   //double normalizedArray[splitInto];
 
