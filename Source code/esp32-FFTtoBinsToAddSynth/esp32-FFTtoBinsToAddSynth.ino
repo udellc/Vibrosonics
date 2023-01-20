@@ -11,7 +11,7 @@
 /*/
 
 #define AUDIO_INPUT_PIN A2
-#define RUN_MAX_ARR_SIZE 64  // Array size for the running max of the last x maximum values
+#define RUN_MAX_ARR_SIZE 32  // Array size for the running max of the last x maximum values
 
 #define FREQ_AVG_WIN 6              // Number of FFT windows worth of frequency date to calculate, record, and average when finding the change in dominant frequency of the signal.
 #define AMP_AVG_TIME 0.25           // Amount of time to average the signal amplitude across to determine its average amplitude.
@@ -179,7 +179,7 @@ void loop() {
       curve = Serial.parseFloat();
       Serial.println("New bins and curve value set.");
     }
-    delay(1000);
+    delay(500);
   }
 
   /*SAMPLING*/
@@ -194,7 +194,7 @@ void loop() {
   }
 
   /*FFT*/
-  FFT.Windowing(vReal, FFT_WIN_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD); /* Weigh data */
+  FFT.Windowing(vReal, FFT_WIN_SIZE, FFT_WIN_TYP_FLT_TOP, FFT_FORWARD); /* Weigh data */
   FFT.Compute(vReal, vImag, FFT_WIN_SIZE, FFT_FORWARD);                 /* Compute FFT */
   FFT.ComplexToMagnitude(vReal, vImag, FFT_WIN_SIZE);                   /* Compute magnitudes */
 
@@ -204,9 +204,9 @@ void loop() {
   float normalizedAvgBinsArray[bins];
   normalizeArray(averageBinsArray, normalizedAvgBinsArray, bins);
   //PrintBinsArray(averageBinsArray, bins, curve);
-  PrintBinsArray(normalizedAvgBinsArray, bins, curve);
+  //PrintBinsArray(normalizedAvgBinsArray, bins, curve);
 
-  // Additive Synthesis
+  /* Additive Synthesis */
   Serial.print('\t');
   sickGainz[1] = normalizedAvgBinsArray[0];
   sickGainz[2] = normalizedAvgBinsArray[1];
@@ -217,7 +217,8 @@ void loop() {
   while (addSyntComplete == 0) {
     audioHook();
   }
-  Serial.printf("mVMin:%d\tmVMax:%d\tmV:%d\n", -10, 300, map(addSynthCarrier, -100000, 100000, 0, 255));
+  Serial.printf("Min:%d\tMax:%d\tCarrier:%d", 0, 255, map(addSynthCarrier, -255, 255, 0, 255));
+  Serial.println();
 
 
   /* for(int i = 0; i < RUN_MAX_ARR_SIZE; i++)  {
@@ -244,9 +245,20 @@ void loop() {
   Serial.print(", Delta:");
   Serial.print(freqDelta);
   Serial.println(); */
+
+  /* Loop */
+
   //while (1)
   //  ;
-  delay(10); /* Repeat after delay */
+  //delay(1); /* Repeat after delay */
+  // Loop after reading in character 'n' for debugging
+  /* char dataT = '0';
+  while (Serial.available() == 0) {
+    char dataT = Serial.read();
+    if (dataT == 'n') {
+      continue;
+    }
+  } */
 }
 
 /*/
@@ -277,18 +289,14 @@ void SplitSample(double *vData, uint16_t bufferSize, float *destArray, int split
     for (int j = lastJ; j < binSize; j++) {
       // if amplitude is above certain threshold, set it to -1
       topOfSample = topOfSample + sFreqBySamples;
-      if (vData[j] > OUTLIER || topOfSample < 50) {
+      if (vData[j] > OUTLIER) {
         amplitudeGroup[j - lastJ] = -1;
       } else {
         amplitudeGroup[j - lastJ] = vData[j];
       }
       //Debugging stuff
-      /*
-      Serial.print(j);
-      Serial.print(" ");
-      Serial.print(vData[j]);
-      Serial.print(" ");
-      Serial.println(topOfSample, 3); */
+      //Serial.printf("I: %d\tFreq: %.2f\tAmp: %.2f\t", j, topOfSample, vData[j]);
+      //Serial.println();
       newJ += 1;
     }
     destArray[i] = getArrayMean(amplitudeGroup, binSize - lastJ);
@@ -415,7 +423,6 @@ void sickGainzTranslation(float gainz[])  //Used to translate the 0-255 amplitud
   }
 }
 
-
 void updateControl() {
   //Serial.println("updateControlStart");
   sickGainzTranslation(sickGainz);
@@ -430,7 +437,7 @@ void updateControl() {
   // }
 
   //Serial.printf("currentCarrier: %ld | nextCarrier: %ld\n", currentCarrier, nextCarrier);
-  addSynthCarrier = currentCarrier;
+  addSynthCarrier = nextCarrier;
   addSyntComplete = 1;
   //Serial.println("updateControlend");
   sickGainz[0] = 0;
@@ -445,6 +452,8 @@ void gainzControl()  //Used for amplitude modulation so it does not exceed the 2
   for (int i = 0; i < OscilCount; i++) {
     totalGainz += realGainz[i];
   }
+
+  totalGainz *= 255;
 
   while (totalGainz > 255 && totalGainz != 0) {
     //Serial.println(totalGainz);
