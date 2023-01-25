@@ -8,15 +8,16 @@
 #define CONTROL_RATE 128
 
 Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave. This is the sum of all other waves and the wave that should be outputted.
-Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA); //20 - 29 hz
+/*Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA); //20 - 29 hz
 Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA); //30 - 39
 Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA); //40 - 49
 Oscil <2048, AUDIO_RATE> asin4(SIN2048_DATA); //50 - 59
 Oscil <2048, AUDIO_RATE> asin5(SIN2048_DATA); //60 - 69
-Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //70 - 80
+Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //70 - 80*/
 
+static int OscilCount = 8; //The total number of non-carrier waves. Modify this if more waves are added, or the program will segfault.
 
-const int OscilCount = 8; //The total number of waves. Modify this if more waves are added, or the program will segfault.
+Oscil<SIN2048_NUM_CELLS, AUDIO_RATE> asinArr[OscilCount];
 
 int gainzDivisor;
 
@@ -34,10 +35,24 @@ void setup()
   Serial.begin(115200);
   startMozzi(CONTROL_RATE);
 
+  for(int i = 0; i < OscilCount; i++)
+  {
+    asinArr[i] = Oscil<SIN2048_NUM_CELLS, AUDIO_RATE> (SIN2048_DATA);
+  }
+
   asinc.setFreq(16); //16 Hz - Base shaker sub-harmonic freq.
-  asin1.setFreq(30); //Set frequencies here. (Hardcoded for now)
-  asin2.setFreq(40);
-  asin3.setFreq(50);
+  //asin1.setFreq(30); //Set frequencies here. (Hardcoded for now)
+  //asin2.setFreq(40);
+  //asin3.setFreq(50);
+
+  int Freq;
+
+  for(int i = 0; i < OscilCount; i++)
+  {
+    Freq = 20 + (7.5 * i);
+    asinArr[i].setFreq(Freq);
+
+  }
 
   FFTtoParaSetup();
 }
@@ -50,7 +65,7 @@ void loop()
 void updateSickGainz(double gainz[])
 {
 	
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < OscilCount; i++)
 	{
 		if(highestAmp > 0)
 		{
@@ -122,7 +137,7 @@ void updateControl()
   }
 
   totalGainz = 255 * totalGainz;
-  
+
   while(totalGainz > 255 && totalGainz != 0)
   {
     totalGainz >>= 1;
@@ -133,12 +148,18 @@ void updateControl()
 int updateAudio()
 {
   //Serial.println("updateAudioStart");
-  currentCarrier = ((long)asinc.next() +
+  /*currentCarrier = ((long)asinc.next() +
                     realGainz[1] * asin1.next() +
                     realGainz[2] * asin2.next() +
-                    realGainz[3] * asin3.next() ); //Additive synthesis equation
+                    realGainz[3] * asin3.next() ); //Additive synthesis equation*/
+
+  currentCarrier = (long)asinc.next();
+
+  for(int i = 0; i < OscilCount; i++)
+  {
+      currentCarrier += realGainz[i] * asinArr[i].next();
+  }
 
   nextCarrier = currentCarrier >> gainzDivisor;
-  //Serial.println("updateAudioEnd");
 	return (int)nextCarrier;
 }
