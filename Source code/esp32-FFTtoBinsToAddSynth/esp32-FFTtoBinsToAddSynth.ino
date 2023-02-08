@@ -3,6 +3,7 @@
 #include <MozziGuts.h>
 #include <Oscil.h>
 #include <tables/sin2048_int8.h>
+#include <string>
 
 /*/
 ########################################################
@@ -12,9 +13,9 @@
 
 #define AUDIO_INPUT_PIN A2  // audio in pin
 #define RUN_MAX_ARR_SIZE 32  // Array size for the running max of the last x maximum values
-#define RAW_INPUT_ARR_SIZE 8 // Array size for the running raw audio input, for calculating standard deviation
+#define RAW_INPUT_ARR_SIZE 16 // Array size for the running raw audio input, for calculating standard deviation
 
-#define INPUT_STD_DEVIATION_THRESH 25.0 // The minimum standard deviation threshold of the running raw audio input samples required to shake basshaker
+#define INPUT_STD_DEVIATION_THRESH 20.0 // The minimum standard deviation threshold of the running raw audio input samples required to shake basshaker
 
 #define FREQ_AVG_WIN 6              // Number of FFT windows worth of frequency date to calculate, record, and average when finding the change in dominant frequency of the signal.
 #define AMP_AVG_TIME 0.25           // Amount of time to average the signal amplitude across to determine its average amplitude.
@@ -31,8 +32,6 @@
 ########################################################
 /*/
 
-arduinoFFT FFT = arduinoFFT(); /* Create FFT object */
-
 /*
 These values can be changed in order to evaluate the functions
 */
@@ -46,6 +45,7 @@ These are the input and output vectors
 */
 float vReal[FFT_WIN_SIZE];
 float vImag[FFT_WIN_SIZE];
+arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WIN_SIZE, SAMPLE_FREQ); // Object for performing FFT's
 
 /*/
 ########################################################
@@ -61,14 +61,16 @@ These are used for splitting the amplitudes from FFT into bins,
 */
 int bins = 5;
 float curve = 0.5;
-const float OUTLIER = 10000.0;
+const float OUTLIER = 25000.0;
 
 /* running max and raw input array
   - runningMax stores the current running max amplitude
   - runningMaxArr stores the last RUN_MAX_ARR_SIZE maximum amplitudes
   - rawInputArr stores the last RAW_INPUT_ARR_SIZE raw audio input for calculating standard deviation
 */
-float runningMax = -1;
+float runningMax = -1.0;
+float standardDevMax = 0.0;
+float inputStandardDeviationN = 0.0;
 float runningMaxArr[RUN_MAX_ARR_SIZE];
 float rawInputArr[RAW_INPUT_ARR_SIZE];
 
@@ -95,7 +97,7 @@ const int sampleBuffSize = ampAvgSampCount * (ampAvgSampCount > freqAvgSampCount
 float samples[sampleBuffSize];
 
 // The number of audio samples taken, used to synchronously implement Nanolux code with the current FFT implementation
-int sampleCount = 0;
+int sampleBuffCount = 0;
 
 /*/
 ########################################################
@@ -121,12 +123,12 @@ float freqDelta = 0;
 ########################################################
 /*/
 
-Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave. This is the sum of all other waves and the wave that should be outputted.
+Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave 20Hz. This is the sum of all other waves and the wave that should be outputted.
 Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA); //20Hz
 Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA); //30 - 39
 Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA); //40 - 49
 Oscil <2048, AUDIO_RATE> asin4(SIN2048_DATA); //50 - 59
-Oscil <2048, AUDIO_RATE> asin5(SIN2048_DATA); //60 - 69
+//Oscil <2048, AUDIO_RATE> asin5(SIN2048_DATA); //60 - 69 // These are added for later, when changing the number of bins
 //Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //
 //Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //
 //Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //
@@ -138,23 +140,29 @@ Oscil <2048, AUDIO_RATE> asin5(SIN2048_DATA); //60 - 69
 //Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //
 //Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //
 //Oscil <2048, AUDIO_RATE> asin6(SIN2048_DATA); //80Hz
-Oscil <2048, AUDIO_RATE> asind(SIN2048_DATA); //20-80Hz, full range for Nanolux code
+Oscil <2048, AUDIO_RATE> asind(SIN2048_DATA); //15-75Hz, full range for Nanolux code
 
-const int OscilCount = 7;  //The total number of waves. Modify this if more waves are added, or the program will segfault.
+const int OscilCount = 6;  //The total number of waves. Modify this if more waves are added, or the program will segfault.
 
-int gainzDivisor;
-
-float sickGainz[OscilCount] = { 0 };  //Set between 0 and 1.
-int realGainz[OscilCount] = { 0 };    //Holds translated float value to integer between 0 and 255 for actual gain settings.
+float amplitudeGains[OscilCount] = { 0.0 };  //Set between 0 and 1.
 
 long currentCarrier;
 long nextCarrier;
 
-// The values are used to implement additive synthesis along with FFT
-int addSynthCarrier;  // the current carrier wave, purely used for printing to Serial
+// nanolux domFreq
+int domFreq = 0;
 
-// 
-int addSyntComplete = 0;  // this variable changes to 1 when additive synthesis is complete for seamless operation
+// this variable changes to 1 when additive synthesis is complete for 'seamless' operation
+int addSyntComplete = 0;
+
+/*/
+########################################################
+  Other
+########################################################
+/*/
+
+int opmode = 0;
+
 
 /*/
 ########################################################
@@ -163,15 +171,19 @@ int addSyntComplete = 0;  // this variable changes to 1 when additive synthesis 
 /*/
 
 void setup() {
+  // set baud rate
   Serial.begin(115200);
-
+  
+  // setup pins
   pinMode(AUDIO_INPUT_PIN, INPUT);
   analogReadResolution(12);
 
+  // setup running max array
   for (int i = 0; i < RUN_MAX_ARR_SIZE; i++) {
     runningMaxArr[i] = -1;
   }
 
+  // setup raw input array
   for (int i = 0; i < RAW_INPUT_ARR_SIZE; i++) {
     rawInputArr[i] = -1;
   }
@@ -182,19 +194,11 @@ void setup() {
   asin1.setFreq(20);  //Set frequencies here. (Hardcoded for now)
   asin2.setFreq(30);
   asin3.setFreq(40);
-  asin4.setFreq(65);
-  asin5.setFreq(80);
-  asind.setFreq(50);  //Nanolux dominant frequency value changes when enough samples are taken
+  asin4.setFreq(50);
+  //asin5.setFreq(70);
+  asind.setFreq(0);  //Nanolux dominant frequency value changes when enough samples are taken
 
-
-  sickGainz[0] = 0;
-  sickGainz[1] = 0;  //Set amplitude here. The array index corresponds to the sin wave number. Use any value between 0-1 for amplitude. (Hardcoded for now)
-  sickGainz[2] = 0;
-  sickGainz[3] = 0;
-  sickGainz[4] = 0;
-  sickGainz[5] = 0;
-  sickGainz[6] = 0;
-  //Serial.println("endSetup");
+  amplitudeGains[5] = 0.0;
 
   while (!Serial)
     ;
@@ -207,6 +211,12 @@ void setup() {
 ########################################################
 /*/
 void loop() {
+
+  /* Output string */
+  char buffer[400];
+  memset(buffer, 0, sizeof(buffer));
+  strcat(buffer, "Amps: ");
+
   /* set number of bins and curve value */
   while (Serial.available()) {
     char data = Serial.read();
@@ -218,42 +228,69 @@ void loop() {
       while (Serial.available() == 1) {}
       curve = Serial.parseFloat();
       Serial.println("New bins and curve value set.");
+      Serial.printf("bins: %d\tcurve: %.2f\n", bins, curve);
     }
     delay(500);
   }
 
-  /*SAMPLING*/
+  /* SAMPLING */
   int sample;
+  int sampleMax = -1;
+  float inputStandardDeviation = 0.0;
   for (int i = 0; i < FFT_WIN_SIZE; i++) {
-    sample = analogRead(AUDIO_INPUT_PIN);
-    vReal[i], samples[sampleCount] = (float)sample;
-    sampleCount++;
-    vImag[i] = 0;
+    sample = analogRead(AUDIO_INPUT_PIN); // Read sample from input
+    if (sample > sampleMax) {
+       sampleMax = sample;
+     }
+    vReal[i] = (float)sample;             // For FFT to Bins code
+    samples[sampleBuffCount] = (float)sample; // For Nanolux implementation
+    sampleBuffCount++;
+    vImag[i] = 0;                         // set imaginary values to 0
     //Serial.printf("Min_mV:%d\tMax_mV:%d\tSample_mV:%d\n", 0, 255, sample); // print raw audio input
     while (micros() - microseconds < sampleDelayTime) {
       //empty loop
     }
   }
-  Serial.printf("Input:%d\n", map(sample, 0, 3500, 0, 255)); //
+  // Get the the standard deviation of the rawInputArr which contains the last RUN_INPUT_ARR_SIZE samples from each sampling session
+  inputStandardDeviation = getRunningStandardDeviation((float)sampleMax);
 
-  /*FFT*/
-  FFT.DCRemoval();
-  FFT.Windowing(vReal, FFT_WIN_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD); /* Weigh data */
-  FFT.Compute(vReal, vImag, FFT_WIN_SIZE, FFT_FORWARD);                 /* Compute FFT */
-  FFT.ComplexToMagnitude(vReal, vImag, FFT_WIN_SIZE);                   /* Compute magnitudes */
+  /* FFT */
+  FFT.DCRemoval();                                  // Remove DC component of signal
+  FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
+  FFT.Compute(FFT_FORWARD);                         // Compute FFT
+  FFT.ComplexToMagnitude();                         // Compute frequency magnitudes
 
-  /*FFT to Bins*/
+  /* FFT to Bins */
   float averageBinsArray[bins];
   SplitSample(vReal, FFT_WIN_SIZE >> 1, averageBinsArray, bins, curve);
   float normalizedAvgBinsArray[bins];
   normalizeArray(averageBinsArray, normalizedAvgBinsArray, bins);
-  //PrintBinsArray(averageBinsArray, bins, curve);
-  //PrintBinsArray(normalizedAvgBinsArray, bins, curve);
+  // form output string
+  formBinsArrayString(normalizedAvgBinsArray, bins, buffer, curve);
 
+  // get the maximum standard deviation
+  if (inputStandardDeviation > standardDevMax) {
+    standardDevMax = inputStandardDeviation;
+  }
+  // normalize standard deviation value
+  inputStandardDeviationN = inputStandardDeviation / standardDevMax;
+  float totalGainz = 0.0;
+  // mapping each average normalized bin from FFT analysis to a sine wave gain value for additive synthesis
+  for (int i = 0; i < bins; i++) {
+    // if the AUDIO_INPUT is relatively unchanged, the gain value is set to 0
+    if (inputStandardDeviation < INPUT_STD_DEVIATION_THRESH) {
+      amplitudeGains[i] = 0.0;
+      //amplitudeGains[5] = 0.0;
+    } else { // Otherwise the normalized average ampltitude is assigned to the gain value
+      float gainValue = normalizedAvgBinsArray[i] * inputStandardDeviationN; //pow(inputStandardDeviationN, 2);
+      amplitudeGains[i] = gainValue;
+      totalGainz += gainValue;
+    }
+  }
 
   /* Nanolux Code Implementation */
-  if (sampleCount == freqAvgSampCount) {
-    sampleCount = 0;
+  if (sampleBuffCount == freqAvgSampCount) {    // run nanolux freqDelta when the samples buffer is full
+    sampleBuffCount = 0;
     calculateFrequencyDelta();
 
     // Prints the current and previous dominant frequencies of the signal, and the difference between them, to the serial plotter.
@@ -265,68 +302,49 @@ void loop() {
     // Serial.print(freqDelta);
     // Serial.println();
 
-    //asind.setFreq((int)map(currentDomFreq, -5000, 5000, 20, 80));
+    // Map the dominant frequency to a basshaker frequency
+    if (currentDomFreq > 3000) {
+       domFreq = 75;
+    }
+    else {
+     domFreq = map(currentDomFreq, 0, 3000, 15, 75);    
+    }
+    asind.setFreq(domFreq); // set the mapped frequency to associated wave
   }
+  // set the amplitude for the wave, uses the rest of the available range (between 0.0 and 1.0)
+  float domFreqAmp = (1.0 - totalGainz) * pow(inputStandardDeviationN, 2);
+  amplitudeGains[5] = domFreqAmp;
+  
+  // form output string
+  char buffer2[32];
+  sprintf(buffer2, "NDF Gain: %.2f\t", domFreqAmp);
+  strcat(buffer, buffer2);
 
   /* Additive Synthesis */
-  //Serial.println("\nAdditive Synthesis:");
-  //sickGainz[0] = getArrayMean(normalizedAvgBinsArray, bins);
 
-  // Get the the standard deviation of the rawInputArr which contains the last RUN_INPUT_ARR_SIZE final samples from each sampling session
-  float inputStandardDeviation = getRunningStandardDeviation((float)sample);
-  Serial.print("Raw input standard deviation: ");
-  Serial.println(inputStandardDeviation);
-  // mapping each average normalized bin from FFT analysis to a sine wave gain value for additive synthesis
-  for (int i = 0; i < bins; i++) {
-    // if the AUDIO_INPUT is relatively unchanged, the gain value is set to 0
-    if (inputStandardDeviation < INPUT_STD_DEVIATION_THRESH) {
-      sickGainz[i + 1] = 0;
-    } else { // Otherwise the normalized average ampltitude is assigned to the gain value
-      sickGainz[i + 1] = normalizedAvgBinsArray[i];
-    }
-  }
   addSyntComplete = 0;
   // wait for additive synthesis to generate a carrier wave
   while (addSyntComplete == 0) {
     audioHook();
   }
+  
+  /* Serial Ouput */
   // print carrier wave, mapped to 0-255
-  Serial.printf("Min:%d\tMax:%d\tOutput:%d", 0, 255, map(addSynthCarrier, -128, 128, 0, 255));
-  Serial.println();
-
-
-// Print raw input array
-/*
-  Serial.println("Running input array:");
-  for(int i = 0; i < RAW_INPUT_ARR_SIZE; i++)  {
-    Serial.print(rawInputArr[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
-  */
-
-  // Print running max array
-  /*
-  Serial.println("Running Max Array:");
-  for(int i = 0; i < RUN_MAX_ARR_SIZE; i++)  {
-    Serial.print(runningMaxArr[i]);
-    Serial.print(' ');
-  }
-  Serial.print('\t');
-  Serial.print(runningMax);
-  Serial.println();
-  */
+  char buffer3[128];
+  sprintf(buffer3, "Plotter: Min:%d\tMax:%d\tOutput(0-255):%d\tInput(0-255):%d\tDomFreq(15-75Hz):%d\n", 0, 255, map((int)nextCarrier, -127, 127, 0, 255), map(sample, 0, 3500, 0, 255), domFreq);
+  strcat(buffer, buffer3);
+  Serial.print(buffer);
 
   // Loop after reading in character 'n' for debugging
-  
-  // char dataT = '0';
-  // while (Serial.available() == 0) {
-  //   char dataT = Serial.read();
-  //   if (dataT == 'n') {
-  //     continue;
-  //   }
-  // }
-  
+  /*
+  char dataT = '0';
+  while (Serial.available() == 0) {
+    char dataT = Serial.read();
+    if (dataT == 'n') {
+      continue;
+    }
+  }
+  */
 }
 
 /*/
@@ -383,30 +401,34 @@ void SplitSample(float *vData, uint16_t bufferSize, float *destArray, int splitI
 // gets average of an array
 float getArrayMean(float *array, int arraySize) {
   float arraySum = 0.0;
-  int c = 0;
+  int n = 0;      // the number of valid values
   for (int i = 0; i < arraySize; i++) {
     // if the value in array is valid, use it to calculate the mean
     if (array[i] >= 0) {
       arraySum += array[i];
-      c += 1;     // the count of valid values used
+      n += 1;     // increment count
     }
   }
-  if (c == 0) {   // if all values are invalid, return 0.0 as average
+  if (n == 0) {   // if all values are invalid, return 0.0 as average
     return 0.0;
   }
-  return (float)(arraySum / c); // otherwise return the average
+  return (float)(arraySum / n); // otherwise return the average
 }
 
 // normalizes array and puts the normalized values in destArray
 void normalizeArray(float *array, float *destArray, int arraySize) {
   float min = getArrayMin(array, arraySize);
   //float max = getArrayMax(array, arraySize);
-  float iv = 0;
+  float sum = 0;
+  for (int i = 0; i < arraySize; i++) {
+    sum += array[i];
+  }
+  float iv = 0;     // initialization vector
   if (runningMax > 0) {
-    iv = 1.0 / runningMax;
+    iv = 1.0 / sum;
   }
   for (int i = 0; i < arraySize; i++) {
-    float normalizedValue = (array[i]) * iv;
+    float normalizedValue = array[i] * iv;
     destArray[i] = normalizedValue;
   }
 }
@@ -494,33 +516,36 @@ float getRunningStandardDeviation(float lastSample) {
       break;
     }
   }
-  // get the standard deviation of the running raw input array
+  // get the standard deviation each time a new value is stored (changed to each time buffer is full for better performance)
   float standardDeviation = calculateStandardDeviation(rawInputArr, RAW_INPUT_ARR_SIZE);
+  //float standardDeviation = 0.0;
 
   // if iterator was at last location, make the first location in array empty
   if (i == RAW_INPUT_ARR_SIZE - 1) {
-    rawInputArr[0] = -1;
+    // get the standard deviation each time buffer is full
+    //standardDeviation = calculateStandardDeviation(rawInputArr, RAW_INPUT_ARR_SIZE);
+    rawInputArr[0] = -1;    // make first location in buffer empty
   } else {  // otherwise, make the next location empty
     rawInputArr[i + 1] = -1;
   }
   return standardDeviation;
 }
 
-// s = sqrt(sum((arr[i] - arr_mean)^2) / size)
+// calculate standard deviation : s = sqrt(sum((arr[i] - arr_mean)^2) / size)
 float calculateStandardDeviation(float *array, int arraySize) {
   float average = getArrayMean(array, arraySize);
   float variance = 0;
-  int c = 0;
+  int n = 0;    // the number of valid values
   for(int i = 0; i < arraySize; i++) {
     if (array[i] >= 0) {
       variance += pow(array[i] - average, 2);
-      c += 1;
+      n += 1;   // increment n
     }
   }
-  if (c == 0) {
+  if (n == 0) {
     return 0.0;
   }
-  return (float)sqrt(variance / c);
+  return (float)sqrt(variance / n);
 }
 
 // prints average amplitudes array
@@ -545,69 +570,56 @@ void PrintBinsArray(float *array, int arraySize, float curveValue) {
   }
 }
 
+// form bins array string
+void formBinsArrayString(float *array, int arraySize, char *destBuffer, float curveValue) {
+  int freqHigh = SAMPLE_FREQ / 2;
+  int baseMultiplier = freqHigh / FFT_WIN_SIZE;
+
+  float step = 1.0 / arraySize;
+  float parabolicCurve = 1 / curveValue;
+
+  for (int i = 0; i < arraySize; i++) {
+    float xStep = i * step;
+    char buffer[24];
+    memset(buffer, 0, sizeof(buffer));
+    int rangeLow = 0;
+    if (i > 0) {
+      rangeLow = round(freqHigh * pow(xStep, parabolicCurve));
+    }
+    int rangeHigh = round(freqHigh * pow(xStep + step, parabolicCurve));
+    sprintf(buffer, "%d - %dHz: %.2f\t", rangeLow, rangeHigh, array[i]);
+    strcat(destBuffer, buffer);
+  }
+}
+
 /*/
 ########################################################
     Additive Synthesis Functions
 ########################################################
 /*/
 
-void sickGainzTranslation(float gainz[])  //Used to translate the 0-255 amplitude scale to a 0-1 float scale.
-{
-  for (int i = 0; i < OscilCount; i++) {
-    if (gainz[i] > 1 || gainz[i] < 0) {
-      Serial.println("ERROR: Gain value out of bounds");
-    } else if (gainz[i] > 0) {
-      realGainz[i] = (int)(gainz[i] * 255);
-    } else {
-      realGainz[i] = 0;
-    }
-  }
-}
-
 void updateControl() {
   //Serial.println("updateControlStart");
-  sickGainzTranslation(sickGainz);
-  //Serial.println("after translation");
-  gainzControl();
-  //Serial.println("after control");
 
   //========================================== DEBUG BELOW
   // for(int i = 0; i < OscilCount; i++)
-  //{
-  //  Serial.printf("Gain %d: %f\n", i, sickGainz[i]);
+  // {
+  //   Serial.printf("Gain %d: %f\n", i, amplitudeGains[i]);
   // }
 
-  //Serial.printf("currentCarrier: %ld | nextCarrier: %ld\n", currentCarrier, nextCarrier);
-  addSynthCarrier = nextCarrier;
+  //Serial.printf("currentCarrier:%ld | nextCarrier:%ld\n", currentCarrier, nextCarrier);
   addSyntComplete = 1;
   //Serial.println("updateControlend");
 }
 
-void gainzControl()  //Used for amplitude modulation so it does not exceed the 255 cap.
-{
-  int totalGainz = 0;
-  gainzDivisor = 0;
-
-  for (int i = 0; i < OscilCount; i++) {
-    totalGainz += realGainz[i];
-  }
-
-  totalGainz *= 255;
-
-  while (totalGainz > 255 && totalGainz != 0) {
-    //Serial.println(totalGainz);
-    totalGainz >>= 1;
-    gainzDivisor++;
-  }
-}
-
 int updateAudio() {
-  //Serial.println("updateAudioStart");
-  currentCarrier = ((long)realGainz[0] * asinc.next() + realGainz[1] * asin1.next() + realGainz[2] * asin2.next() + realGainz[3] * asin3.next() + realGainz[4] * asin4.next() + realGainz[5] * asin5.next() + realGainz[6] * asind.next());  //Additive synthesis equation
+  currentCarrier = (long)(amplitudeGains[0] * asinc.next() + amplitudeGains[1] * asin1.next() + amplitudeGains[2] * asin2.next() + amplitudeGains[3] * asin3.next() + amplitudeGains[4] * asin4.next() + amplitudeGains[5] * asind.next());  //Additive synthesis equation
 
-
-  nextCarrier = currentCarrier >> gainzDivisor;
-  //Serial.println("updateAudioEnd");
+  // for(int i = 0; i < OscilCount; i++)
+  // {
+  //     currentCarrier += realGainz[i] * asinArr[i].next();
+  // }
+  nextCarrier = currentCarrier;
   return (int)nextCarrier;
 }
 
