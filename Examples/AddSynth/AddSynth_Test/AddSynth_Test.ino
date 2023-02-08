@@ -8,10 +8,10 @@ int waveCount = 0;
 
 Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave. This is the sum of all other waves and the wave that should be outputted.
 Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA); //20 - 29 hz
-Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA); //30 - 39
-Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA); //40 - 49
+// Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA); //30 - 39
+// Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA); //40 - 49
 
-const int OscilCount = 4;  //The total number of waves. Modify this if more waves are added, or the program will segfault.
+const int OscilCount = 2;  //The total number of waves. Modify this if more waves are added, or the program will segfault.
 
 int gainzDivisor;
 
@@ -29,14 +29,14 @@ void setup() {
 
   startMozzi(CONTROL_RATE);
   asinc.setFreq(16);  //16 Hz - Base shaker sub-harmonic freq.
-  asin1.setFreq(20);  //Set frequencies here. (Hardcoded for now)
-  asin2.setFreq(30);
-  asin3.setFreq(40);
+  asin1.setFreq(30);  //Set frequencies here. (Hardcoded for now)
+  // asin2.setFreq(60);
+  // asin3.setFreq(80);
 
   sickGainz[0] = 0;
   sickGainz[1] = 0;  //Set amplitude here. The array index corresponds to the sin wave number. Use any value between 0-1 for amplitude. (Hardcoded for now)
-  sickGainz[2] = 0;
-  sickGainz[3] = 0;
+  // sickGainz[2] = 0;
+  // sickGainz[3] = 0;
 
   while (!Serial)
     ;
@@ -51,7 +51,7 @@ void loop() {
   while (addSyntComplete == 0) {
     audioHook();
   }
-  Serial.printf("Min:%d\tMax:%d\tCarrier:%d", 0, 255, map(addSynthCarrier, -128, 128, 0, 255));
+  Serial.printf("Min:%d\tMax:%d\tCarrier:%d", 0, 255, addSynthCarrier);
   Serial.println();
 
   char dataT = '0';
@@ -59,43 +59,32 @@ void loop() {
     char dataT = Serial.read();
     if (dataT == 'n') {
       if (waveCount == 0) {
-        sickGainz[1] = 1;
+        //asinc.setFreq(16);
+        sickGainz[0] = 0.5;
         waveCount++;
         continue;
       }
       if (waveCount == 1) {
-        sickGainz[1] = 0;
-        sickGainz[2] = 1;
+        sickGainz[0] = 1.0;
         waveCount++;
         continue;
       }
       if (waveCount == 2) {
-        sickGainz[2] = 0;
-        sickGainz[3] = 1;
+        sickGainz[0] = 0;
+        sickGainz[1] = 0.5;
         waveCount++;
         continue;
       }
       if (waveCount == 3) {
-        sickGainz[1] = 1;
-        sickGainz[2] = 0;
-        sickGainz[3] = 0;
+        sickGainz[0] = 0.5;
+        sickGainz[1] = 1.0;
         waveCount++;
         continue;
       }
       if (waveCount == 4) {
-        sickGainz[2] = 1;
-        waveCount++;
-        continue;
-      }
-      if (waveCount == 5) {
-        sickGainz[3] = 1;
-        waveCount++;
-        continue;
-      }
-      if (waveCount == 6) {
+        sickGainz[0] = 0;
         sickGainz[1] = 0;
-        sickGainz[2] = 0;
-        sickGainz[3] = 0;
+        waveCount++;
         waveCount = 0;
         continue;
       }
@@ -103,12 +92,12 @@ void loop() {
   }
 }
 
-void sickGainzTranslation(float gainz[])  //Used to translate the 0-255 amplitude scale to a 0-1 float scale.
+void sickGainzTranslation(float *gainz)  //Used to translate the 0-255 amplitude scale to a 0-1 float scale.
 {
   for (int i = 0; i < OscilCount; i++) {
-    if (gainz[i] > 1 || gainz[i] < 0) {
+    if (gainz[i] > 1.0) {
       Serial.println("ERROR: Gain value out of bounds");
-    } else if (gainz[i] > 0) {
+    } else if (gainz[i] > 0.0) {
       realGainz[i] = (int)(gainz[i] * 255);
     } else {
       realGainz[i] = 0;
@@ -118,9 +107,9 @@ void sickGainzTranslation(float gainz[])  //Used to translate the 0-255 amplitud
 
 void updateControl() {
   //Serial.println("updateControlStart");
-  sickGainzTranslation(sickGainz);
+  //sickGainzTranslation(sickGainz);
   //Serial.println("after translation");
-  gainzControl();
+  //gainzControl();
   //Serial.println("after control");
 
   //========================================== DEBUG BELOW
@@ -156,8 +145,8 @@ void gainzControl()  //Used for amplitude modulation so it does not exceed the 2
 int updateAudio() {
   //Serial.println("updateAudioStart");
   //currentCarrier = ((long)asinc.next() + realGainz[1] * asin1.next() + realGainz[2] * asin2.next() + realGainz[3] * asin3.next() + realGainz[4] * asin4.next() + realGainz[5] * asin5.next()); //+ realGainz[6] * asind.next());  //Additive synthesis equation
-
-  currentCarrier = ((long)realGainz[0] * asinc.next() + realGainz[1] * asin1.next() + realGainz[2] * asin2.next() + realGainz[3] * asin3.next());
+  
+  currentCarrier = round(sickGainz[0] * asinc.next() + sickGainz[1] * asin1.next());
 
   //currentCarrier = ((long)asinc.next() + realGainz[6] * asind.next());  //Additive synthesis equation
 
