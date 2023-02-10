@@ -11,11 +11,12 @@
 ########################################################
 /*/
 
-#define AUDIO_INPUT_PIN A2  // audio in pin
-#define RUN_MAX_ARR_SIZE 32  // Array size for the running max of the last x maximum values
-#define RAW_INPUT_ARR_SIZE 16 // Array size for the running raw audio input, for calculating standard deviation
+#define AUDIO_INPUT_PIN A2          // audio in pin
 
-#define INPUT_STD_DEVIATION_THRESH 20.0 // The minimum standard deviation threshold of the running raw audio input samples required to shake basshaker
+#define RUN_MAX_ARR_SIZE 16         // Array size for the running max of the last x maximum values
+#define RAW_INPUT_ARR_SIZE 16       // Array size for the running raw audio input, for calculating standard deviation
+
+#define INPUT_STD_DEVIATION_THRESH 5.0 // The minimum standard deviation threshold of the running raw audio input samples required to shake basshaker
 
 #define FREQ_AVG_WIN 6              // Number of FFT windows worth of frequency date to calculate, record, and average when finding the change in dominant frequency of the signal.
 #define AMP_AVG_TIME 0.25           // Amount of time to average the signal amplitude across to determine its average amplitude.
@@ -45,6 +46,7 @@ These are the input and output vectors
 */
 float vReal[FFT_WIN_SIZE];
 float vImag[FFT_WIN_SIZE];
+
 arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WIN_SIZE, SAMPLE_FREQ); // Object for performing FFT's
 
 /*/
@@ -64,13 +66,12 @@ float curve = 0.5;
 const float OUTLIER = 25000.0;
 
 /* running max and raw input array
-  - runningMax stores the current running max amplitude
   - runningMaxArr stores the last RUN_MAX_ARR_SIZE maximum amplitudes
   - rawInputArr stores the last RAW_INPUT_ARR_SIZE raw audio input for calculating standard deviation
 */
-float runningMax = -1.0;
-float standardDevMax = 0.0;
+int sampleMax = 1;
 float inputStandardDeviationN = 0.0;
+float inputStandardDeviationMax = 0.0;
 float runningMaxArr[RUN_MAX_ARR_SIZE];
 float rawInputArr[RAW_INPUT_ARR_SIZE];
 
@@ -235,13 +236,15 @@ void loop() {
 
   /* SAMPLING */
   int sample;
-  int sampleMax = -1;
+  int sampleSum = 0;
   float inputStandardDeviation = 0.0;
   for (int i = 0; i < FFT_WIN_SIZE; i++) {
     sample = analogRead(AUDIO_INPUT_PIN); // Read sample from input
+    sampleSum += sample;
+    // store the maximum sample to account for various input voltages
     if (sample > sampleMax) {
        sampleMax = sample;
-     }
+    }
     vReal[i] = (float)sample;             // For FFT to Bins code
     samples[sampleBuffCount] = (float)sample; // For Nanolux implementation
     sampleBuffCount++;
@@ -251,8 +254,16 @@ void loop() {
       //empty loop
     }
   }
+  float sampleAvg = float(sampleSum /= FFT_WIN_SIZE);
   // Get the the standard deviation of the rawInputArr which contains the last RUN_INPUT_ARR_SIZE samples from each sampling session
-  inputStandardDeviation = getRunningStandardDeviation((float)sampleMax);
+  inputStandardDeviation = getRunningStandardDeviation(sampleAvg);
+  if (inputStandardDeviation > inputStandardDeviationMax && inputStandardDeviationMax + 100 > INPUT_STD_DEVIATION_THRESH) {
+    inputStandardDeviationMax = inputStandardDeviation;
+  } else {
+    inputStandardDeviationMax * 0.99;
+  }
+  // put standard deviation value in 0-1.0 range
+  inputStandardDeviationN = inputStandardDeviation / inputStandardDeviationMax;
 
   /* FFT */
   FFT.DCRemoval();                                  // Remove DC component of signal
@@ -268,13 +279,7 @@ void loop() {
   // form output string
   formBinsArrayString(normalizedAvgBinsArray, bins, buffer, curve);
 
-  // get the maximum standard deviation
-  if (inputStandardDeviation > standardDevMax) {
-    standardDevMax = inputStandardDeviation;
-  }
-  // normalize standard deviation value
-  inputStandardDeviationN = inputStandardDeviation / standardDevMax;
-  float totalGainz = 0.0;
+  float totalGains = 0.0;
   // mapping each average normalized bin from FFT analysis to a sine wave gain value for additive synthesis
   for (int i = 0; i < bins; i++) {
     // if the AUDIO_INPUT is relatively unchanged, the gain value is set to 0
@@ -282,9 +287,10 @@ void loop() {
       amplitudeGains[i] = 0.0;
       //amplitudeGains[5] = 0.0;
     } else { // Otherwise the normalized average ampltitude is assigned to the gain value
-      float gainValue = normalizedAvgBinsArray[i] * inputStandardDeviationN; //pow(inputStandardDeviationN, 2);
+      //normalizedAvgBinsArray[i] = normalizedAvgBinsArray[i] * 
+      float gainValue = normalizedAvgBinsArray[i]; // pow(inputStandardDeviationN, 1.25);
       amplitudeGains[i] = gainValue;
-      totalGainz += gainValue;
+      totalGains += gainValue;
     }
   }
 
@@ -312,12 +318,12 @@ void loop() {
     asind.setFreq(domFreq); // set the mapped frequency to associated wave
   }
   // set the amplitude for the wave, uses the rest of the available range (between 0.0 and 1.0)
-  float domFreqAmp = (1.0 - totalGainz) * pow(inputStandardDeviationN, 2);
-  amplitudeGains[5] = domFreqAmp;
+  float domFreqAmp = 0.25; //* pow(inputStandardDeviationN, 2);
+  //amplitudeGains[5] = domFreqAmp;
   
   // form output string
-  char buffer2[32];
-  sprintf(buffer2, "NDF Gain: %.2f\t", domFreqAmp);
+  char buffer2[40];
+  sprintf(buffer2, "NDF Gain: %.2f\tInputStdDev: %.2f\t", domFreqAmp, inputStandardDeviationN);
   strcat(buffer, buffer2);
 
   /* Additive Synthesis */
@@ -331,7 +337,7 @@ void loop() {
   /* Serial Ouput */
   // print carrier wave, mapped to 0-255
   char buffer3[128];
-  sprintf(buffer3, "Plotter: Min:%d\tMax:%d\tOutput(0-255):%d\tInput(0-255):%d\tDomFreq(15-75Hz):%d\n", 0, 255, map((int)nextCarrier, -127, 127, 0, 255), map(sample, 0, 3500, 0, 255), domFreq);
+  sprintf(buffer3, "Plotter: Min:%d\tMax:%d\tOutput(0-255):%d\tInput(0-255):%d\tDomFreq(15-75Hz):%d\n", 0, 255, map((int)nextCarrier, -127, 127, 0, 255), map(sample, 0, sampleMax, 0, 255), domFreq);
   strcat(buffer, buffer3);
   Serial.print(buffer);
 
@@ -360,9 +366,6 @@ void loop() {
     1 < curveValue < infinity : then buffer is split into X groups following a convex curve */
 void SplitSample(float *vData, uint16_t bufferSize, float *destArray, int splitInto, float curveValue) {
 
-  //runningMax = getRunningMaxWithArray(vData, bufferSize);
-  float runningMaxTemp = -1;
-
   float sFreqBySamples = SAMPLE_FREQ / 2 / bufferSize;  // determine what frequency each amplitude represents. NOTE: unsure if it is accurate
   // (x/splitInto)^(1/curveValue)
   float step = 1.0 / splitInto;                         // how often to step on the x-axis to determine bin value
@@ -383,9 +386,6 @@ void SplitSample(float *vData, uint16_t bufferSize, float *destArray, int splitI
         amplitudeGroup[j - lastJ] = -1;
       } else {
         amplitudeGroup[j - lastJ] = vData[j];
-        if (vData[j] > runningMaxTemp) {                // Get the max amplitude from FFT analysis
-          runningMaxTemp = vData[j];
-        }
       }
       // Debugging stuff
       // Serial.printf("I: %d\tFreq: %.2f\tAmp: %.2f\t", j, topOfSample, vData[j]);
@@ -395,7 +395,6 @@ void SplitSample(float *vData, uint16_t bufferSize, float *destArray, int splitI
     destArray[i] = getArrayMean(amplitudeGroup, binSize - lastJ);
     lastJ = newJ;
   }
-  runningMax = getRunningMax(runningMaxTemp);           // store the max amplitude into the running max array to calculate the running max of the signal
 }
 
 // gets average of an array
@@ -423,8 +422,9 @@ void normalizeArray(float *array, float *destArray, int arraySize) {
   for (int i = 0; i < arraySize; i++) {
     sum += array[i];
   }
+  sum = sum + sum * 0.25; // leave 0.25 for ndf
   float iv = 0;     // initialization vector
-  if (runningMax > 0) {
+  if (sum > 0) {
     iv = 1.0 / sum;
   }
   for (int i = 0; i < arraySize; i++) {
@@ -466,44 +466,15 @@ float getRunningMax(float lastSampleMax) {
       break;
     }
   }
-  // find the maximum in the running max array
   float max = getArrayMax(runningMaxArr, RUN_MAX_ARR_SIZE);
   // if iterator was at last location, make the first location in array empty
   if (i == RUN_MAX_ARR_SIZE - 1) {
+    // find the maximum in the running max array
     runningMaxArr[0] = -1;
   } else {  // otherwise, make the next location empty
     runningMaxArr[i + 1] = -1;
   }
   return max;
-}
-
-// get the running max of an array and store into running max array
-float getRunningMaxWithArray(float *array, int arraySize) {
-  // get the maximum in the current bin array of values
-  float binArrMax = -1;
-  for (int i = 0; i < arraySize; i++) {
-    if (array[i] < OUTLIER && array[i] > binArrMax) {
-      binArrMax = (float)array[i];
-    }
-  }
-  // look through the last RUN_MAX_ARR_SIZE number of maximums and return the max out of those values
-  int i = 0;
-  for (i; i < RUN_MAX_ARR_SIZE; i++) {
-    // if the runningMaxArr[i] is empty then store the bins array max
-    if (runningMaxArr[i] == -1) {
-      runningMaxArr[i] = binArrMax;
-      break;
-    }
-  }
-  // find the maximum in the running max array
-  float lastMax = getArrayMax(runningMaxArr, RUN_MAX_ARR_SIZE);
-  // if iterator was at last location, make the first location in array empty
-  if (i == RUN_MAX_ARR_SIZE - 1) {
-    runningMaxArr[0] = -1;
-  } else {  // otherwise, make the next location empty
-    runningMaxArr[i + 1] = -1;
-  }
-  return lastMax;
 }
 
 // Get the running standard deviation of the running raw input array
@@ -522,7 +493,6 @@ float getRunningStandardDeviation(float lastSample) {
 
   // if iterator was at last location, make the first location in array empty
   if (i == RAW_INPUT_ARR_SIZE - 1) {
-    // get the standard deviation each time buffer is full
     //standardDeviation = calculateStandardDeviation(rawInputArr, RAW_INPUT_ARR_SIZE);
     rawInputArr[0] = -1;    // make first location in buffer empty
   } else {  // otherwise, make the next location empty
@@ -613,13 +583,16 @@ void updateControl() {
 }
 
 int updateAudio() {
-  currentCarrier = (long)(amplitudeGains[0] * asinc.next() + amplitudeGains[1] * asin1.next() + amplitudeGains[2] * asin2.next() + amplitudeGains[3] * asin3.next() + amplitudeGains[4] * asin4.next() + amplitudeGains[5] * asind.next());  //Additive synthesis equation
+  currentCarrier = (long)(amplitudeGains[0] * asinc.next() + amplitudeGains[1] * asin1.next() + amplitudeGains[2] * asin2.next() + amplitudeGains[3] * asin3.next() + amplitudeGains[4] * asin4.next());  //Additive synthesis equation
 
+  //currentCarrier *= 0.75;
+
+  currentCarrier += (long)(amplitudeGains[5] * asind.next());
   // for(int i = 0; i < OscilCount; i++)
   // {
   //     currentCarrier += realGainz[i] * asinArr[i].next();
   // }
-  nextCarrier = currentCarrier;
+  nextCarrier = (int)(currentCarrier * inputStandardDeviationN);
   return (int)nextCarrier;
 }
 
