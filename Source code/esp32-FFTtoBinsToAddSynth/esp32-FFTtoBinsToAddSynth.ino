@@ -22,7 +22,7 @@
 #define FFT_WINDOW_SIZE int(pow(2, int(12 - (log(int(SAMPLES_PER_SEC)) / log(2)))))  // the FFT window size and number of audio samples for ideal performance, this MUST be a power of 2
                         // 2^(12 - log_base2(SAMPLES_PER_SEC)) = 64 for 64/s, 128 for 32/s, 256 for 16/s, 512 for 8/s
 
-#define FFT_FLOOR_THRESH 100       // floor threshold for FFT, may be later changed to use the minimum from FFT
+#define FFT_FLOOR_THRESH 500       // floor threshold for FFT, may be later changed to use the minimum from FFT
 
 #define CONTROL_RATE int(pow(2, int(5 + (log(int(SAMPLES_PER_SEC)) / log(2)))))     // Update control cycles per second for ideal performance, this MUST be a power of 2
                         // 2^(5 + log_base2(SAMPLES_PER_SEC)) = 2048 for 64/s, 1024 for 32/s, 512 for 16/s, 256 for 8/s
@@ -50,7 +50,11 @@ int numSamplesTaken = 0;
 float vReal[FFT_WIN_SIZE];          // vReal is used for input and receives computed results from FFT
 float vImag[FFT_WIN_SIZE];          // vImag is used to store imaginary values for computation
 
-const float OUTLIER = 100000.0;     // Outlier for unusually high amplitudes in FFT
+float vRealPrev[FFT_WIN_SIZE];
+float maxAmpChange = 0;
+int freqMaxAmpChange = 0;
+
+const float OUTLIER = 50000.0;     // Outlier for unusually high amplitudes in FFT
 
 arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WIN_SIZE, SAMPLE_FREQ); // Object for performing FFT's
 
@@ -70,6 +74,17 @@ const int SAMPLE_TIME = int(CONTROL_RATE / SAMPLES_PER_SEC);       // sampling a
 const int FADE_RATE = int(SAMPLE_TIME) >> 1 - 1;
 
 int fadeCounter = 0;
+
+/*/
+########################################################
+    Stuff relevant to calculate frequency peaks of an FFT spectrogram
+########################################################
+/*/
+int peakIndexes[FFT_WIN_SIZE >> 1];
+int peakAmplitudes[FFT_WIN_SIZE >> 1];
+
+int numPeaks = 5;
+int maxSumOfPeakAmps = 0;
 
 /*/
 ########################################################
@@ -102,13 +117,10 @@ int sampleMax = 0;              // running sample max
 int sampleRange = 0;            // current sample range
 int sampleRangeMin = 5000;      // running sample range min
 int sampleRangeMax = 0;         // running sample range max, min and max values are used for detecting audio input accurately
-int sampleRangeThreshold = 400;   // sample range threshold 
+int sampleRangeThreshold = 500;   // sample range threshold 
 
 int silenceTime = 0;                                  // the total time the microphone input was minimal each increment of silenceTime is equal to (1 second / CONTROLRATE)
-const int maxSilenceTime = 5 * int(CONTROL_RATE);     // the maximum time that the microphone can be mininal, used to silence the audio output after a certain time (5 seconds in this case)
-
-
-
+const int maxSilenceTime = 1 * int(CONTROL_RATE);     // the maximum time that the microphone can be mininal, used to silence the audio output after a certain time (5 seconds in this case)
 
 unsigned long microseconds;
 
@@ -183,12 +195,16 @@ void setup() {
     averageBinsArray[i] = 0;
   }
 
+  for (int i = 0; i < FFT_WIN_SIZE; i++) {
+    vRealPrev[i] = 0.0;
+  }
+
   // Additive Synthesis
-  asinc.setFreq(24);
-  asin1.setFreq(44);
-  asin2.setFreq(67);
-  asin3.setFreq(94);
-  asin4.setFreq(120);
+  asinc.setFreq(16);
+  asin1.setFreq(22);
+  asin2.setFreq(27);
+  asin3.setFreq(36);
+  asin4.setFreq(43);
   //aVibrato.setFreq(4.f);
   //asind.setFreq(0);  //Nanolux dominant frequency value changes when enough samples are taken
   startMozzi(CONTROL_RATE);
@@ -267,11 +283,21 @@ void updateControl() {
       /* Compute frequency magnitudes */
       FFT.ComplexToMagnitude();
  
+      /* Frequency of max amplitude change */
+      
       /* Breadslicer */
-      sumOfAvgAmps = breadslicer(vReal, FFT_WIN_SIZE >> 1, slices, curve);
+      //sumOfAvgAmps = breadslicer(vReal, FFT_WIN_SIZE >> 1, slices, curve);
+      findMajorPeaks();
+      // for (int i = 0; i < numPeaks; i++) {
+      //   Serial.printf("(%d, %d),", peakIndexes[i], peakAmplitudes[i]);
+      // }
+      //Serial.println();
+
+      //delay(500);
 
       /* mapping each average normalized bin from FFT analysis to a sine wave gain value for additive synthesis */
-      mapAmplitudes();
+      //mapAmplitudes();
+      mapFreqAmplitudes();
       // float totalGains = 0.0;
       //amplitudeGains[5] = domFreqAmp;
       
@@ -289,7 +315,7 @@ void updateControl() {
 
   /* Serial Ouput */
   // char buffer3[128];
-  // Serial.printf("Plotter: Min:%d\tMax:%d\tOutput(0-255):%03d\tInput(0-255):%03d\t\n", 0, 255, map(carrier, -127, 128, 0, 255), map(sampleAvgPrint, 0, sampleMax, 0, 255));
+   Serial.printf("Plotter: Min:%d\tMax:%d\tOutput(0-255):%03d\tInput(0-255):%03d\t\n", 0, 255, map(carrier, -127, 128, 0, 255), map(sampleAvgPrint, 0, sampleMax, 0, 255));
   // strcat(outputString, buffer3);
 
   // increment update_control calls counter
@@ -298,16 +324,38 @@ void updateControl() {
   //Serial.print(outputString);
 }
 
+void mapFreqAmplitudes() {
+  int sumOfPeakAmps = 0;
+  for (int i = 0; i < numPeaks; i++) {
+    if (peakAmplitudes[i] == -1) {
+      break;
+    }
+    sumOfPeakAmps += peakAmplitudes[i];
+  }
+  if (sumOfPeakAmps > maxSumOfPeakAmps) {
+    maxSumOfPeakAmps = sumOfPeakAmps;
+  }
+  for (int i = 0; i < numPeaks; i++) {
+    nextAmplitudeGains[i] = targetAmplitudeGains[i];
+    nextWaveFrequencies[i] = targetWaveFrequencies[i];
+    if (peakAmplitudes[i] == -1) {
+      targetAmplitudeGains[i] = 0;
+    } else {
+      targetAmplitudeGains[i] = map(peakAmplitudes[i], 0, maxSumOfPeakAmps, 0, 255);
+      int targetFrequency = peakIndexes[i] * sFreqBySamples;
+      targetWaveFrequencies[i] = map(targetFrequency, 0, sFreqBy2, 16, 200);
+    }
+    if (FADE_RATE > 1) {
+      waveFreqStep[i] = float((nextWaveFrequencies[i] - waveFrequencies[i]) / FADE_RATE);
+      ampGainStep[i] = float((nextAmplitudeGains[i] - amplitudeGains[i]) / FADE_RATE);
+    } else {
+      waveFreqStep[i] = float(nextWaveFrequencies[i] - waveFrequencies[i]);
+      ampGainStep[i] = float(nextAmplitudeGains[i] - amplitudeGains[i]);
+    }
+  }
+}
+
 void mapAmplitudes() {
-  // int maxAmpI = 0;
-  // int maxTAmp = 0;
-  // int totalAmps = 0;
-  // for (int i = 0; i < slices; i++) {
-  //   if (targetAmplitudeGains[i] > maxAmpI) {
-  //     maxAmpI = i;
-  //     totalAmps += targetAmplitudeGains[i];
-  //   }
-  // }
   for (int i = 0; i < slices; i++) {
     if (sampleRange < sampleRangeThreshold) {
       silenceTime += 1;
@@ -325,21 +373,6 @@ void mapAmplitudes() {
       int gainValue = map(averageBinsArray[i], 0, sumOfAvgAmps, 0, 255);
       //totalGains += gainValue;
       targetAmplitudeGains[i] = gainValue;
-      // if (i == maxAmpI) {
-      //   if (gainValue < 145) {
-      //     maxTAmp = targetAmplitudeGains[i];
-      //     targetAmplitudeGains[i] = round(gainValue * 1.75);
-      //   }
-      //   else {
-      //     targetAmplitudeGains[i] = gainValue;
-      //   }
-      // } else {
-      //   if (maxTAmp < 145) {
-      //     targetAmplitudeGains[i] = round(gainValue * 0.57);
-      //   } else {
-      //     targetAmplitudeGains[i] = gainValue;
-      //   }
-      // }
     }
     // calculate the value to alter the amplitude per each update cycle
     if (FADE_RATE > 1) {
@@ -490,6 +523,91 @@ int breadslicer(float *data, uint16_t bufferSize, int sliceInto, float curveValu
     lastJ = newJ;
   }
   return avgAmpsSum;
+}
+
+/* find all the major peaks in the fft spectrogram, based on the threshold and how many peaks to find */
+void findMajorPeaks() {
+  int majorPeaksCounter = 0;
+  int arraySize = FFT_WIN_SIZE >> 1;
+  int peakReached = 0;
+  // traverse through spectrogram and find all peaks (above FFT_FLOOR_THRESH)
+  for (int i = 1; i < arraySize; i++) { 
+    // skip the iteration if the fft amp is an unsually high value to exclude them from calculations (usually occurs on the lowest and highest frequencies)
+    if (vReal[i - 1] > OUTLIER) {
+      continue;
+    }
+    // get the change between the next and last index
+    float change = vReal[i] - vReal[i - 1];
+    // if change is positive, consider that the peak hasn't been reached yet
+    if (change > 0.0) {
+      peakReached = 0;
+    // otherwise if change is 0 or negative, consider this the peak
+    } else {
+      // waiting for next positive change, to start looking for peak
+      if (peakReached == 0) {
+        // if the amplitude is higher then a certain threshold, consider a peak has been reached
+        if(vReal[i - 1] > FFT_FLOOR_THRESH) {
+          // print all considered peaks so far
+          // Serial.printf("(%d,%d),", i - 1, int(round(vReal[i - 1])));
+          peakReached = 1;
+
+          /* array buffering based on the number peak frequencies being returned */
+          // if the array is not 'full', iterate peak counter and store peak into array (about 20 lines down)
+          if (majorPeaksCounter < numPeaks) {
+            majorPeaksCounter++;
+          } else {              // otherwise, if array is 'full',
+            // set the lowest peak index to the last value in the array
+            int lowestPeakIndex = majorPeaksCounter - 1;
+            // find the lowest amplitude in the buffer array
+            for (int j = 0; j < numPeaks - 1; j++) {
+              if (peakAmplitudes[j] < vReal[i - 1]) {
+                lowestPeakIndex = j;
+              }
+            }
+            // if the lowest peak is the lastPeak then check if the last lowest peak was lower
+            if (lowestPeakIndex == majorPeaksCounter - 1) {
+              if (peakAmplitudes[lowestPeakIndex] < vReal[i - 1]) {
+                peakAmplitudes[lowestPeakIndex] = vReal[i - 1];
+                peakIndexes[lowestPeakIndex] = i - 1;
+              }
+              continue;
+            }
+            // based on the lowest amplitude index, scoot the array to the right to remove the lowest peak, and store the highest peak
+            for (int j = lowestPeakIndex; j < numPeaks - 1; j++) {
+              peakAmplitudes[j] = peakAmplitudes[j + 1];
+              peakIndexes[j] = peakIndexes[j + 1];
+            }
+          }
+          peakIndexes[majorPeaksCounter - 1] = i - 1;
+          peakAmplitudes[majorPeaksCounter - 1] = int(round(vReal[i - 1]));
+        }
+      }
+    }
+  }
+  // set the remaining peaks to -1, to exclude them from further processing
+  for (int j = majorPeaksCounter; j < numPeaks; j++) {
+    peakAmplitudes[j] = -1;
+    peakIndexes[j] = -1;
+  }
+  // Serial.println();
+}
+
+
+// frequency of max amplitude change
+void frequencyMaxAmplitudeDelta() {
+  int arrSize = int(FFT_WIN_SIZE) >> 1;
+  maxAmpChange = 0;
+  int maxAmpChangeI = 0; 
+  for (int i = 0; i < arrSize; i++) {
+    int currAmpChange = abs(vReal[i] - vRealPrev[i]);
+    if (currAmpChange > maxAmpChange) {
+      maxAmpChange = currAmpChange;
+      maxAmpChangeI = i;
+    }
+    vRealPrev[i] = vReal[i];
+  }
+  
+  freqMaxAmpChange = int(round((maxAmpChangeI + 1) * sFreqBySamples));
 }
 
 // form slices array string
