@@ -16,13 +16,13 @@
 
 #define AUDIO_INPUT_PIN A2          // audio in pin (will use both A2 and A3 in the future for a stereo input)
 
-#define SAMPLES_PER_SEC 32           // The number of sampling/analysis cycles per second, this MUST be a power of 2
+#define SAMPLES_PER_SEC 16           // The number of sampling/analysis cycles per second, this MUST be a power of 2
 
 #define FFT_SAMPLING_FREQ 8192     // The sampling frequency, ideally should be a power of 2
 #define FFT_WINDOW_SIZE int(pow(2, int(12 - (log(int(SAMPLES_PER_SEC)) / log(2)))))  // the FFT window size and number of audio samples for ideal performance, this MUST be a power of 2
                         // 2^(12 - log_base2(SAMPLES_PER_SEC)) = 64 for 64/s, 128 for 32/s, 256 for 16/s, 512 for 8/s
 
-#define FFT_FLOOR_THRESH 500       // floor threshold for FFT, may be later changed to use the minimum from FFT
+#define FFT_FLOOR_THRESH 1000       // floor threshold for FFT, may be later changed to use the minimum from FFT
 
 #define CONTROL_RATE int(pow(2, int(5 + (log(int(SAMPLES_PER_SEC)) / log(2)))))     // Update control cycles per second for ideal performance, this MUST be a power of 2
                         // 2^(5 + log_base2(SAMPLES_PER_SEC)) = 2048 for 64/s, 1024 for 32/s, 512 for 16/s, 256 for 8/s
@@ -54,7 +54,7 @@ float vRealPrev[FFT_WIN_SIZE];
 float maxAmpChange = 0;
 int freqMaxAmpChange = 0;
 
-const float OUTLIER = 50000.0;     // Outlier for unusually high amplitudes in FFT
+const float OUTLIER = 30000.0;     // Outlier for unusually high amplitudes in FFT
 
 arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WIN_SIZE, SAMPLE_FREQ); // Object for performing FFT's
 
@@ -298,8 +298,6 @@ void updateControl() {
       /* mapping each average normalized bin from FFT analysis to a sine wave gain value for additive synthesis */
       //mapAmplitudes();
       mapFreqAmplitudes();
-      // float totalGains = 0.0;
-      //amplitudeGains[5] = domFreqAmp;
       
       // increment sample count and reset next process
       audioSampleCount++;
@@ -315,7 +313,7 @@ void updateControl() {
 
   /* Serial Ouput */
   // char buffer3[128];
-   Serial.printf("Plotter: Min:%d\tMax:%d\tOutput(0-255):%03d\tInput(0-255):%03d\t\n", 0, 255, map(carrier, -127, 128, 0, 255), map(sampleAvgPrint, 0, sampleMax, 0, 255));
+  // Serial.printf("Plotter: Min:%d\tMax:%d\tOutput(0-255):%03d\tInput(0-255):%03d\t\n", 0, 255, map(carrier, -127, 128, 0, 255), map(sampleAvgPrint, 0, sampleMax, 0, 255));
   // strcat(outputString, buffer3);
 
   // increment update_control calls counter
@@ -338,12 +336,12 @@ void mapFreqAmplitudes() {
   for (int i = 0; i < numPeaks; i++) {
     nextAmplitudeGains[i] = targetAmplitudeGains[i];
     nextWaveFrequencies[i] = targetWaveFrequencies[i];
-    if (peakAmplitudes[i] == -1) {
+    if (peakAmplitudes[i] == -1 || sumOfPeakAmps < 10000) {
       targetAmplitudeGains[i] = 0;
     } else {
-      targetAmplitudeGains[i] = map(peakAmplitudes[i], 0, maxSumOfPeakAmps, 0, 255);
-      int targetFrequency = peakIndexes[i] * sFreqBySamples;
-      targetWaveFrequencies[i] = map(targetFrequency, 0, sFreqBy2, 16, 200);
+      targetAmplitudeGains[i] = map(peakAmplitudes[i], 0, sumOfPeakAmps, 1, 255);
+      int targetFrequency = (peakIndexes[i] + 1) * sFreqBySamples;
+      targetWaveFrequencies[i] = map(targetFrequency, 0, sFreqBy2, 20, 200);
     }
     if (FADE_RATE > 1) {
       waveFreqStep[i] = float((nextWaveFrequencies[i] - waveFrequencies[i]) / FADE_RATE);
