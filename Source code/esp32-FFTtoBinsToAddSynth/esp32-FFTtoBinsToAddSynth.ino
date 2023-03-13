@@ -88,6 +88,8 @@ int numPeaks = 8;
 int sumOfPeakAmps = 0;
 int maxSumOfPeakAmps = 0;
 
+int FFT_AMP_SUM_THRESH = numPeaks * 3000;
+
 /*/
 ########################################################
     Stuff relevant to breadslicer function
@@ -337,7 +339,7 @@ void mapFreqAmplitudes() {
   for (int i = 0; i <= numPeaks; i++) {
     nextAmplitudeGains[i] = targetAmplitudeGains[i];
     nextWaveFrequencies[i] = targetWaveFrequencies[i];
-    if (peakAmplitudes[i] == -1 || sumOfPeakAmps < 25000) {
+    if (peakAmplitudes[i] == -1 || sumOfPeakAmps < FFT_AMP_SUM_THRESH) {
       targetAmplitudeGains[i] = 0;
     } else {
       targetAmplitudeGains[i] = map(peakAmplitudes[i], 0, sumOfPeakAmps, 1, 255);
