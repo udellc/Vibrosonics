@@ -24,7 +24,7 @@
 
 #define FFT_FLOOR_THRESH 1000       // floor threshold for FFT, may be later changed to use the minimum from FFT
 
-#define CONTROL_RATE int(pow(2, int(4 + (log(int(SAMPLES_PER_SEC)) / log(2)))))     // Update control cycles per second for ideal performance, this MUST be a power of 2
+#define CONTROL_RATE int(pow(2, int(5 + (log(int(SAMPLES_PER_SEC)) / log(2)))))     // Update control cycles per second for ideal performance, this MUST be a power of 2
                         // 2^(5 + log_base2(SAMPLES_PER_SEC)) = 2048 for 64/s, 1024 for 32/s, 512 for 16/s, 256 for 8/s
 
 #define OSCIL_COUNT 16              // The total number of waves to synthesize
@@ -52,7 +52,6 @@ float vImag[FFT_WIN_SIZE];          // vImag is used to store imaginary values f
 
 float vRealPrev[FFT_WIN_SIZE];
 float maxAmpChange = 0;
-float maxAmpChangeAmp = 0;
 int freqMaxAmpChange = 0;
 
 const float OUTLIER = 30000.0;     // Outlier for unusually high amplitudes in FFT
@@ -84,8 +83,7 @@ int fadeCounter = 0;
 int peakIndexes[FFT_WIN_SIZE >> 1];
 int peakAmplitudes[FFT_WIN_SIZE >> 1];
 
-int numPeaks = 8;
-int sumOfPeakAmps = 0;
+int numPeaks = 5;
 int maxSumOfPeakAmps = 0;
 
 /*/
@@ -135,15 +133,14 @@ unsigned long microseconds;
 EventDelay kChangeBinsDelay;
 const unsigned int gainChangeMsec = 1000;
 
-// Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave 20Hz. This is the sum of all other waves and the wave that should be outputted.
-// Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA); //20Hz
-// Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA); //30 - 39
-// Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA); //40 - 49
-// Oscil <2048, AUDIO_RATE> asin4(SIN2048_DATA); //50 - 59
+//Oscil <2048, AUDIO_RATE> asin[OSCILCOUNT];
+Oscil <2048, AUDIO_RATE> asinc(SIN2048_DATA); //asinc is the carrier wave 20Hz. This is the sum of all other waves and the wave that should be outputted.
+Oscil <2048, AUDIO_RATE> asin1(SIN2048_DATA); //20Hz
+Oscil <2048, AUDIO_RATE> asin2(SIN2048_DATA); //30 - 39
+Oscil <2048, AUDIO_RATE> asin3(SIN2048_DATA); //40 - 49
+Oscil <2048, AUDIO_RATE> asin4(SIN2048_DATA); //50 - 59
 //Oscil <2048, AUDIO_RATE> asin5(SIN2048_DATA); //60 - 69 // These are added for later, when changing the number of slices
 //Oscil <2048, AUDIO_RATE> aVibrato(COS2048_DATA);
-
-Oscil <2048, AUDIO_RATE> aSin[OSCIL_COUNT];
 
 
 float amplitudeGains[OSCIL_COUNT];     // the amplitudes used for synthesis
@@ -184,11 +181,12 @@ char outputString[500];
 void setup() {
   // set baud rate
   Serial.begin(115200);
+  
+  // setup audio input pin
+  pinMode(AUDIO_INPUT_PIN, INPUT);
 
-  // setup reference tables for aSin[] oscillator array
-  for(int i = 0; i < OSCIL_COUNT; i++)
-  {
-    aSin[i].setTable(SIN2048_DATA);
+  // set array values to 0
+  for (int i = 0; i < OSCIL_COUNT; i++) {
     amplitudeGains[i] = 0.0;
     targetAmplitudeGains[i] = 0;
     ampGainStep[i] = 0.0;
@@ -197,14 +195,17 @@ void setup() {
     waveFreqStep[i] = 0.0;
     averageBinsArray[i] = 0;
   }
-  
-  // setup audio input pin
-  pinMode(AUDIO_INPUT_PIN, INPUT);
 
   for (int i = 0; i < FFT_WIN_SIZE; i++) {
     vRealPrev[i] = 0.0;
   }
+
   // Additive Synthesis
+  asinc.setFreq(16);
+  asin1.setFreq(22);
+  asin2.setFreq(27);
+  asin3.setFreq(36);
+  asin4.setFreq(43);
   //aVibrato.setFreq(4.f);
   //asind.setFreq(0);  //Nanolux dominant frequency value changes when enough samples are taken
   startMozzi(CONTROL_RATE);
@@ -288,12 +289,10 @@ void updateControl() {
       /* Breadslicer */
       //sumOfAvgAmps = breadslicer(vReal, FFT_WIN_SIZE >> 1, slices, curve);
       findMajorPeaks();
-
-      frequencyMaxAmplitudeDelta();
       // for (int i = 0; i < numPeaks; i++) {
       //   Serial.printf("(%d, %d),", peakIndexes[i], peakAmplitudes[i]);
       // }
-      // Serial.println();
+      //Serial.println();
 
       //delay(500);
 
@@ -320,12 +319,13 @@ void updateControl() {
 
   // increment update_control calls counter
   updateCount++;
+
   //Serial.print(outputString);
 }
 
 void mapFreqAmplitudes() {
-  sumOfPeakAmps = 0;
-  for (int i = 0; i <= numPeaks; i++) {
+  int sumOfPeakAmps = 0;
+  for (int i = 0; i < numPeaks; i++) {
     if (peakAmplitudes[i] == -1) {
       break;
     }
@@ -334,10 +334,10 @@ void mapFreqAmplitudes() {
   if (sumOfPeakAmps > maxSumOfPeakAmps) {
     maxSumOfPeakAmps = sumOfPeakAmps;
   }
-  for (int i = 0; i <= numPeaks; i++) {
+  for (int i = 0; i < numPeaks; i++) {
     nextAmplitudeGains[i] = targetAmplitudeGains[i];
     nextWaveFrequencies[i] = targetWaveFrequencies[i];
-    if (peakAmplitudes[i] == -1 || sumOfPeakAmps < 25000) {
+    if (peakAmplitudes[i] == -1 || sumOfPeakAmps < 10000) {
       targetAmplitudeGains[i] = 0;
     } else {
       targetAmplitudeGains[i] = map(peakAmplitudes[i], 0, sumOfPeakAmps, 1, 255);
@@ -386,7 +386,7 @@ void mapAmplitudes() {
 }
 
 void crossfadeAmpsFreqs() {
-  for(int i = 0; i <= numPeaks; i++) {
+  for(int i = 0; i < slices; i++) {
     // smoothen the transition between each amplitude, checking for difference to avoid additonal smoothing
     if (abs(nextAmplitudeGains[i] - int(round(amplitudeGains[i]))) > 1) {
       amplitudeGains[i] += ampGainStep[i];
@@ -400,7 +400,14 @@ void crossfadeAmpsFreqs() {
       waveFrequencies[i] = nextWaveFrequencies[i];
     }
 
-    aSin[i].setFreq(int(waveFrequencies[i]));
+    switch(i) {
+      case 0: asinc.setFreq(int(waveFrequencies[0])); break;
+      case 1: asin1.setFreq(int(waveFrequencies[1])); break;
+      case 2: asin2.setFreq(int(waveFrequencies[2])); break;
+      case 3: asin3.setFreq(int(waveFrequencies[3])); break;
+      case 4: asin4.setFreq(int(waveFrequencies[4])); break;
+      default: break;
+    }
   }
   //toggleWaveStep = 1 - toggleWaveStep;
   fadeCounter++;
@@ -408,13 +415,12 @@ void crossfadeAmpsFreqs() {
 
 AudioOutput_t updateAudio() {
   //Q15n16 vibrato = (Q15n16) aVibrato.next();
-  int longCarrier = 0;
-
-  for(int i = 0; i < numPeaks; i++)
-  {
-    longCarrier += int(amplitudeGains[i]) * aSin[i].next();
-  }
-  carrier = int8_t(longCarrier >> 8);
+  carrier =  
+    int8_t(int(amplitudeGains[0]) * asinc.next() + 
+    int(amplitudeGains[1]) * asin1.next() + 
+    int(amplitudeGains[2]) * asin2.next() + 
+    int(amplitudeGains[3]) * asin3.next() + 
+    int(amplitudeGains[4]) * asin4.next() >> 8);
 
   return carrier;
 }
@@ -592,19 +598,15 @@ void frequencyMaxAmplitudeDelta() {
   maxAmpChange = 0;
   int maxAmpChangeI = 0; 
   for (int i = 0; i < arrSize; i++) {
-    if (vReal[i] < OUTLIER) {
-      int currAmpChange = abs(vReal[i] - vRealPrev[i]);
-      if (currAmpChange > maxAmpChange) {
-        maxAmpChange = currAmpChange;
-        maxAmpChangeI = i;
-      }
+    int currAmpChange = abs(vReal[i] - vRealPrev[i]);
+    if (currAmpChange > maxAmpChange) {
+      maxAmpChange = currAmpChange;
+      maxAmpChangeI = i;
     }
     vRealPrev[i] = vReal[i];
   }
-  peakAmplitudes[numPeaks] = map(vReal[maxAmpChangeI], 0, sumOfPeakAmps, 0, 255);
   
   freqMaxAmpChange = int(round((maxAmpChangeI + 1) * sFreqBySamples));
-  targetWaveFrequencies[numPeaks] = map(freqMaxAmpChange, 0, int(sFreqBy2), 16, 200);
 }
 
 // form slices array string
@@ -658,205 +660,3 @@ int recordSample(int sampleCount) {
   }
   return 0;
 }
-
-/*/
-########################################################
-    Formant Estimation 
-########################################################
-/*/
-//Downsample x times, and then compare peaks in each window, if there are matching peaks, throw a positive for a formant
-
-static int downsampleCount = 5;  //How many times to downsample. More generally gives higher precision, but requires more processing power. Refers to number of harmonics being considered.
-//int downsampleFactor = 2; //Factor to downsample by. Setting to 2 means we're picking every other data point when downsampling.
-static int lpcOrder = 10;
-
-int maleFormantTable[6];
-
-
-float thisWindow[FFT_WIN_SIZE / 2];
-
-void crudeFindFormants()
-{
-  maleFormantTable[0] = 2160; // i
-  maleFormantTable[2] = 1865; // y
-  maleFormantTable[3] = 1920; // e
-  maleFormantTable[3] = 760; // a
-  maleFormantTable[4] = 280; // o
-  maleFormantTable[5] = 340; // u
-
-  int maxAmpOne = 0;
-  int maxAmpTwo = 0;
-  int strongFreqOne = 0;
-  int strongFreqTwo = 0;
-  //Potentially add a 3rd to account for fundemental freq.
-
-  for(int i = 0; i < FFT_WIN_SIZE / 2; i++)
-  {
-    Serial.printf("%d\n", vReal[i]);
-    if(vReal[i] > 100)
-    {
-      if(vReal[i] > maxAmpOne)
-      {
-        maxAmpOne = vReal[i];
-        strongFreqOne = i;
-        continue;
-      }
-      else if(vReal[i] > strongFreqTwo)
-      {
-        maxAmpTwo = vReal[i];
-        strongFreqTwo = i;
-      }
-    }
-    
-  }
-
-  for(int i = 0; i < 6; i++)
-  {
-      if(abs(strongFreqOne - strongFreqTwo) > i - i * 0.08 && abs(strongFreqOne - strongFreqTwo) < maleFormantTable[i] + 30)
-      {
-        //Serial.printf("Formant Found! 1-%d | 2-%d | Difference - %d\n");
-      }
-      else
-      {
-        //Serial.printf("Formant not Found 1-%d | 2-%d | Difference - %d\n");
-      }
-  }
-
-
-}
-
-void findFormants()
-{
-  for(int i = 0; i < FFT_WIN_SIZE / 2; i++)
-  {
-    thisWindow[i] = vReal[i];
-  }
-
-  for(int i = 0; i < downsampleCount; i++)
-  {
-
-  }
-}
-
-void autoCorrelation()
-{
-  for(int i = 0; i < lpcOrder; i++)
-  {
-    for(int k = 0; k < FFT_WIN_SIZE / 2; k++)
-    {
-
-    }
-  }
-
-}
-
-/* Old HPS below
-
-
-int formantBins[5];
-
-void formantHPS(int sampleWindowNumber)
-{
-  float hpsArray[FFT_WIN_SIZE / 2] = { 0 };
-  int arraySizes[downsampleCount] = { 0 };
-  float downsamples[downsampleCount][FFT_WIN_SIZE / 2] = { 0 };
-  float formantFrequencies[FFT_WIN_SIZE / 4] = { 0 };
-
- /* for(int i = 0; i < downsampleCount; i++)
-  {
-    for(int k = 0; k < FFT_WIN_SIZE / 2; k++)
-    {
-      downsamples[i][k] = -1;
-    }
-  }
-
-  //Downsample the magnitude spectrum a [downsampleCount] number of times times
-  arraySizes[0] = doDownsample(downsamples[0], freqs[sampleWindowNumber], downsampleFactor);
-
-  for(int i = 1; i < downsampleCount; i++)
-  {
-    arraySizes[i] = doDownsample(downsamples[i], downsamples[i-1], downsampleFactor);
-  }
-
-  //Find the product of all spectra arrays
-  for(int i = 0; i < FFT_WIN_SIZE / 2; i++)
-    {
-      hpsArray[i] = freqs[sampleWindowNumber][i];
-    }
-  for(int i = 0; i < downsampleCount; i++)
-  { 
-    for(int k = 0; k < FFT_WIN_SIZE / 2; k++)
-    {
-      hpsArray[k] *= downsamples[i][k % arraySizes[i]];
-    }
-  }
-
-  //Find peaks (formants) and categorize them into bins
-  identifyPeaks(hpsArray, formantFrequencies);
-  formantBinSort(formantBins, formantFrequencies);
-
-  //Return the formants found in each frequency bin, and then do something to affect the output elsewhere
-  //doStuffToOutput();
-}
-
-int doDownsample(float *downsampler, float *downsamplee, int DSfactor)
-{
-  int k = 0;
-
-  for(int i = 0; i < FFT_WIN_SIZE / 2; i+= DSfactor)
-  {
-    downsampler[k] = downsamplee[i];
-    k++;
-  }
-
-  return k;
-}
-
-void identifyPeaks(float *hpsArray, float *formantFrequencies)
-{
-  int k = 0;
-
-  for(int i = 1; i < FFT_WIN_SIZE / 2; i++)
-  {
-    if(hpsArray[i] > hpsArray[i-1] && hpsArray[i] > hpsArray[i+1]) //May need to make this more sophisticated
-    {
-        formantFrequencies[k] = hpsArray[i];
-        k++;
-    }
-  }
-}
-
-void formantBinSort(int *formantBins, float *formantFrequencies)
-{
-  //Do we need to account for all of the formants or just return a positive for each bin that has one?
-
-  for (int i = 0; i < FFT_WIN_SIZE / 4; i++) //Can probably be made more efficient
-  {
-    if(formantFrequencies[i] > 0)
-    {
-      if(formantFrequencies[i] > averageBinsArray[0])
-      {
-         for(int k = 1; i < bins - 1; i++)
-        {
-          if(formantFrequencies[i] > averageBinsArray[i] && formantFrequencies[i] < averageBinsArray[i+1])
-          {
-            formantBins[i] = 1; //Setting a positive flag
-          }
-        }
-        if(formantFrequencies[i] > averageBinsArray[bins-1])
-        {
-           formantBins[bins-1] = 1;
-        }
-      }
-      else
-      {
-        formantBins[0] = 1;
-      }
-    }
-  }
-}
-*/
-/*
-if in 50 - 90 hz range, amplitude > number, detect kick bass?
-if in 50 - 90 hz range, amplitude > number, if repeated pattern, detect kick bass?
-*/
