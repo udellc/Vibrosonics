@@ -554,15 +554,12 @@ int breadslicer(float *data, int sliceInto, float curveValue) {
     // store the prev target gains
     // if there is at least one amplitude in the group, map it's frequency, otherwise frequency for that slice is unchanged
     if (ampGroupCount > 0) {
-      if (maxSliceAmpFreq < 150) {
-        targetWaveFrequencies[i] = maxSliceAmpFreq * 0.5;
-      }
-      else if (maxSliceAmpFreq < 300) {
-        targetWaveFrequencies[i] = maxSliceAmpFreq * 0.5;
+      if (maxSliceAmpFreq < 160) {
+        targetWaveFrequencies[i] = maxSliceAmpFreq * 0.4;
       } else {
         float normalizedFreq = float(maxSliceAmpFreq) / sFreqBy2;
-        normalizedFreq = pow(normalizedFreq, 1.0);
-        int targetFreq = int(round(normalizedFreq * 120) + 60);
+        normalizedFreq = pow(normalizedFreq, 0.8);
+        int targetFreq = int(round(normalizedFreq * 160) + 16);
         //int targetFreq = map(maxSliceAmpFreq, 0, int(sFreqBy2), 20, 200);
         targetWaveFrequencies[i] = targetFreq;
       }
@@ -581,7 +578,7 @@ int breadslicer(float *data, int sliceInto, float curveValue) {
     // }
     lastJ = newJ;
   }
-  amplitudeToRange = float(250.0 / curMaxAvg);
+  amplitudeToRange = float(255.0 / curMaxAvg);
   return ampsSum;
 }
 
