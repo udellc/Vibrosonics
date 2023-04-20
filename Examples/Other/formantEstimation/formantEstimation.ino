@@ -770,6 +770,14 @@ int formantIndex[FORMANT_ARRAY_SIZE]; //Size depends on how many potential forma
 
 void hpsAnalysis()
 {
+  
+  maleFormantTable[0] = 2160; // i
+  maleFormantTable[2] = 1865; // y
+  maleFormantTable[3] = 1920; // e
+  maleFormantTable[3] = 760; // a
+  maleFormantTable[4] = 280; // o
+  maleFormantTable[5] = 340; // u
+  
   int fundFreqIndex = 0;
   //Serial.println("inHPS!");
   for(int i = 0; i < FFT_WIN_SIZE / 2; i++)
