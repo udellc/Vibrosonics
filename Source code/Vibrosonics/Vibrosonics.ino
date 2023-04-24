@@ -10,10 +10,6 @@
   WILL ADD MORE INFORMATION SOON...
 
 ########################################################
-
-  
-
-########################################################
 /*/
 
 #include <arduinoFFT.h>
@@ -95,8 +91,8 @@ const int UPDATE_TIME = 1000000 / CONTROL_RATE;                                 
 
 int nextProcess = 0;                                                              // The next signal aquisition/processing phase to be completed in updateControl
 const int numSamplesPerProcess = floor(UPDATE_TIME / sampleDelayTime);            // The Number of samples to take per update
-int numProcessForSampling = ceil(FFT_WIN_SIZE / numSamplesPerProcess);            // the total number of processes to sample, calculated in setup
-int numTotalProcesses = numProcessForSampling + 2;                                // adding 2 more processes for FFT windowing function and other processing
+const int numProcessForSampling = ceil(FFT_WIN_SIZE / numSamplesPerProcess);            // the total number of processes to sample, calculated in setup
+const int numTotalProcesses = numProcessForSampling + 2;                                // adding 2 more processes for FFT windowing function and other processing
 
 volatile unsigned long sampleT;               // stores the time since program started using mozziMicros() rather than micros()
 
@@ -104,15 +100,15 @@ const int SAMPLE_TIME = int(CONTROL_RATE / SAMPLES_PER_SEC);  // sampling and pr
 const int FADE_RATE = SAMPLE_TIME;                            // the number of cycles for fading
 const float FADE_STEPX = float(2.0 / (FADE_RATE - 1));        // the x position of the smoothing curve
 
-float FADE_CONST[FADE_RATE];
-
-int fadeCounter = 0;
+float FADE_CONST[FADE_RATE];  // Array storing amplitude smoothing constants from 0.0 to 1.0
+int fadeCounter = 0;          // counter used to smoothen transition between amplitudes
 
 /*/
 ########################################################
     Stuff relevant to calculate frequency peaks of an FFT spectrogram
 ########################################################
 /*/
+
 int peakIndexes[FFT_WIN_SIZE_BY2];
 int peakAmplitudes[FFT_WIN_SIZE_BY2];
 
@@ -169,6 +165,9 @@ int opmode = 0;
 ########################################################
 /*/
 
+/*
+  setup() acts as a run once function, do any one time calculations or array initialization here
+*/
 void setup() {
   // set baud rate
   Serial.begin(115200);
@@ -198,7 +197,7 @@ void setup() {
     peakAmplitudes[i] = -1;
   }
 
-  delay(1000);
+  delay(1000);  // wait for one second, not needed but helps prevent weird Serial output
 
   Serial.printf("FFT ANALYSIS PER SECOND: %d\tFFT WINDOW SIZE: %d\tFFT SAMPLING FREQUENCY: %d\tMOZZI CONTROL RATE: %d\tAUDIO RATE: %d\n", SAMPLES_PER_SEC, FFT_WIN_SIZE, FFT_SAMPLING_FREQ, CONTROL_RATE, AUDIO_RATE);
   Serial.println();
@@ -216,6 +215,9 @@ void setup() {
 ########################################################
 /*/
 
+/*
+  audioHook() should be the only function running in loop(), all processor heavy operations should be done in updateControl(), and audio synthesis in updateAudio()
+*/
 void loop() {
   audioHook();
 }
@@ -226,66 +228,67 @@ void loop() {
 ########################################################
 /*/
 
+/*
+  updateControl() is called every @CONTROL_RATE times per second, meaning that all functions that are called here have to be completed within a 
+  certain period of time that can be calculated by @UPDATE_TIME
+*/
 void updateControl() {
-  /* reset update counter */
+  // called every updateControl tick, to smoothen transtion between amplitudes and change the sine wave frequencies that are used for synthesis
+  smoothenTransition();
+  // reset update counter and audio sampling sessions counter
   if (updateCount >= CONTROL_RATE) {
     updateCount = 0;
     audioSamplingSessionsCount = 0;
   }
-  //Serial.println(updateCount);
-
-  int sampleTime = SAMPLE_TIME * audioSamplingSessionsCount;  // get the next available sample time
-  // if it is time for next audio sample and analysis, begin the audio sampling phase, by setting next process to 0
+  // get the next available sample time in updateCount
+  int sampleTime = SAMPLE_TIME * audioSamplingSessionsCount;
+  // if it is time for next audio sample and analysis, begin the audio sampling phase, by setting next process 0 and reset fade counter
   if ((updateCount == 0 || updateCount == sampleTime - 1) && updateCount != CONTROL_RATE - 1) {
     nextProcess = 0;
     fadeCounter = 0;
   }
-
-  /* audio sampling phase */
+  // audio sampling phase
   if (nextProcess < numProcessForSampling) {
     recordSample(numSamplesPerProcess);
   }
-  /* FFT phase*/
+  // FFT phase A, seperated into two phases so that all functions are ran within UPDATE_TIME
   else if (nextProcess == numTotalProcesses - 2) {
     FFT.DCRemoval();  // Remove DC component of signal
     FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
   }
-  /* FFT cont. and signal processing phase*/
+  /* FFT phase B and signal processing phase */
   else if (nextProcess == numTotalProcesses - 1) {
     FFT.Compute(FFT_FORWARD);   // Compute FFT
     FFT.ComplexToMagnitude();   // Compute frequency magnitudes
 
-    // Breadslicer
+    // Use the breadslicer function to process FFT output
     breadslicer(vRealL, slices);
-
     // Frequency of max amplitude change
     //frequencyMaxAmplitudeDelta();
-
     // Major peaks of an FFT spectrogram
     //findMajorPeaks();
 
-    // mapping each average normalized bin from FFT analysis to a sine wave amplitude for additive synthesis
+    // mapping amplitudes and frequencies generated by FFT processing to a sine wave frequency and amplitude for additive synthesis
     mapFreqAmplitudes();
   }
-  crossfadeAmpsFreqs();
   // increment updateControl calls and nextProcess counters
   nextProcess++;
   updateCount++;
 }
 
+/*
+  updateAudio() is called @AUDIO_RATE times per second, the code in here needs to be very basic or audio glitches will occur
+*/
 AudioOutput_t updateAudio() {
-  int longCarrierLeft = 0;
-  //int longCarrierRight = 0;
+  int longCarrierLeft = 0;    // stores the carrier wave for the left channel
+  //int longCarrierRight = 0; // stores the carrier wave for the right channel
 
   for (int i = 0; i < totalNumWaves; i++) {
+    // summing sine waves into a "long" carrier wave
     longCarrierLeft += amplitudeGains[i] * aSinL[i].next();
     //longCarrierRight += amplitudeGains[i] * aSinR[i].next();
-    // if (amplitudeGains[i] != 0) {
-    //   longCarrierLeft += amplitudeGains[i] * aSinL[i].next();
-    // }
   }
-  //carrierRight = int8_t(longCarrierRight >> 8);
-
+  // bit shift down to appropriate range (0-255)
   return MonoOutput::from8Bit(int8_t(longCarrierLeft >> 8));
   //return StereoOutput::from8Bit(int8_t(longCarrierLeft >> 8), int8_t(longCarrierRight >> 8));
 }
@@ -347,11 +350,6 @@ void breadslicer(float *data, int sliceInto) {
 
     // store the array location pre-inner loop
     int newJ = lastJ;
-
-    // amplitude weighting based on how many amplitudes are in each slice. (FFT_WIN_SIZE_BY2 - 1), since we are excluding the first location in the array
-    float weight = float((FFT_WIN_SIZE_BY2 - 1) - (sliceSize - lastJ)) / (FFT_WIN_SIZE_BY2 - 1);
-    //float weight = float(sliceSize - lastJ) / (FFT_WIN_SIZE_BY2 - 1);
-    //Serial.println(weight);
 
     int ampSliceSum = 0;     // the sum of the current slice
     int ampSliceCount = 0;   // the number of amplitudes in the current slice
@@ -573,9 +571,8 @@ void mapFreqAmplitudes() {
   // just generated by FFT to the amplitudes and frequencies of sine waves that will be synthesized
   for (int i = 0; i < totalNumWaves; i++) {
     // kind of like a circular buffer to smoothen transition between amplitudes to reduce audio glitches,
-    // results in a delay between input and output of about ((1/SAMPLES_PER_SEC) * 2) seconds
+    // results in a delay between input and output of about (1/SAMPLES_PER_SEC) seconds
     prevAmplitudeGains[i] = nextAmplitudeGains[i];
-
     int gainValue = 0;    // the gain values to assign to the next wave being synthesized
     int frequency = 0;    // the frequency to assign to the next wave being synthesized
     // if iterator is on one of the next available waves (waves with 0 gain), map its amplitude, otherwise gain value is 0
@@ -614,9 +611,9 @@ void mapFreqAmplitudes() {
 }
 
 /*
-  Crossfading between amplitudes to reduce audio glitches, using precalculated values
+  Linear smoothing between amplitudes to reduce audio glitches, using precalculated values
 */
-void crossfadeAmpsFreqs() {
+void smoothenTransition() {
   for (int i = 0; i < totalNumWaves; i++) {
     //amplitudeGains[i] = round(prevAmplitudeGains[i] + FADE_CONST[fadeCounter] * ampGainStep[i]);
     // smoothen the transition between each amplitude, checking for difference to avoid additonal smoothing
@@ -629,183 +626,3 @@ void crossfadeAmpsFreqs() {
   // increment fade counter
   fadeCounter++;
 }
-
-/*/
-########################################################
-    Formant Estimation 
-########################################################
-/*/
-//Downsample x times, and then compare peaks in each window, if there are matching peaks, throw a positive for a formant
-/*
-static int downsampleCount = 5;  //How many times to downsample. More generally gives higher precision, but requires more processing power. Refers to number of harmonics being considered.
-//int downsampleFactor = 2; //Factor to downsample by. Setting to 2 means we're picking every other data point when downsampling.
-static int lpcOrder = 10;
-
-int maleFormantTable[6];
-
-
-float thisWindow[FFT_WIN_SIZE / 2];
-
-void crudeFindFormants() {
-  maleFormantTable[0] = 2160;  // i
-  maleFormantTable[2] = 1865;  // y
-  maleFormantTable[3] = 1920;  // e
-  maleFormantTable[3] = 760;   // a
-  maleFormantTable[4] = 280;   // o
-  maleFormantTable[5] = 340;   // u
-
-  int maxAmpOne = 0;
-  int maxAmpTwo = 0;
-  int strongFreqOne = 0;
-  int strongFreqTwo = 0;
-  //Potentially add a 3rd to account for fundemental freq.
-
-  for (int i = 0; i < FFT_WIN_SIZE / 2; i++) {
-    Serial.printf("%d\n", vReal[i]);
-    if (vReal[i] > 100) {
-      if (vReal[i] > maxAmpOne) {
-        maxAmpOne = vReal[i];
-        strongFreqOne = i;
-        continue;
-      } else if (vReal[i] > strongFreqTwo) {
-        maxAmpTwo = vReal[i];
-        strongFreqTwo = i;
-      }
-    }
-  }
-
-  for (int i = 0; i < 6; i++) {
-    if (abs(strongFreqOne - strongFreqTwo) > i - i * 0.08 && abs(strongFreqOne - strongFreqTwo) < maleFormantTable[i] + 30) {
-      //Serial.printf("Formant Found! 1-%d | 2-%d | Difference - %d\n");
-    } else {
-      //Serial.printf("Formant not Found 1-%d | 2-%d | Difference - %d\n");
-    }
-  }
-}
-
-void findFormants() {
-  for (int i = 0; i < FFT_WIN_SIZE / 2; i++) {
-    thisWindow[i] = vReal[i];
-  }
-
-  for (int i = 0; i < downsampleCount; i++) {
-  }
-}
-
-void autoCorrelation() {
-  for (int i = 0; i < lpcOrder; i++) {
-    for (int k = 0; k < FFT_WIN_SIZE / 2; k++) {
-    }
-  }
-}
-
-/* Old HPS below
-
-
-int formantBins[5];
-
-void formantHPS(int sampleWindowNumber)
-{
-  float hpsArray[FFT_WIN_SIZE / 2] = { 0 };
-  int arraySizes[downsampleCount] = { 0 };
-  float downsamples[downsampleCount][FFT_WIN_SIZE / 2] = { 0 };
-  float formantFrequencies[FFT_WIN_SIZE / 4] = { 0 };
-
- /* for(int i = 0; i < downsampleCount; i++)
-  {
-    for(int k = 0; k < FFT_WIN_SIZE / 2; k++)
-    {
-      downsamples[i][k] = -1;
-    }
-  }
-
-  //Downsample the magnitude spectrum a [downsampleCount] number of times times
-  arraySizes[0] = doDownsample(downsamples[0], freqs[sampleWindowNumber], downsampleFactor);
-
-  for(int i = 1; i < downsampleCount; i++)
-  {
-    arraySizes[i] = doDownsample(downsamples[i], downsamples[i-1], downsampleFactor);
-  }
-
-  //Find the product of all spectra arrays
-  for(int i = 0; i < FFT_WIN_SIZE / 2; i++)
-    {
-      hpsArray[i] = freqs[sampleWindowNumber][i];
-    }
-  for(int i = 0; i < downsampleCount; i++)
-  { 
-    for(int k = 0; k < FFT_WIN_SIZE / 2; k++)
-    {
-      hpsArray[k] *= downsamples[i][k % arraySizes[i]];
-    }
-  }
-
-  //Find peaks (formants) and categorize them into bins
-  identifyPeaks(hpsArray, formantFrequencies);
-  formantBinSort(formantBins, formantFrequencies);
-
-  //Return the formants found in each frequency bin, and then do something to affect the output elsewhere
-  //doStuffToOutput();
-}
-
-int doDownsample(float *downsampler, float *downsamplee, int DSfactor)
-{
-  int k = 0;
-
-  for(int i = 0; i < FFT_WIN_SIZE / 2; i+= DSfactor)
-  {
-    downsampler[k] = downsamplee[i];
-    k++;
-  }
-
-  return k;
-}
-
-void identifyPeaks(float *hpsArray, float *formantFrequencies)
-{
-  int k = 0;
-
-  for(int i = 1; i < FFT_WIN_SIZE / 2; i++)
-  {
-    if(hpsArray[i] > hpsArray[i-1] && hpsArray[i] > hpsArray[i+1]) //May need to make this more sophisticated
-    {
-        formantFrequencies[k] = hpsArray[i];
-        k++;
-    }
-  }
-}
-
-void formantBinSort(int *formantBins, float *formantFrequencies)
-{
-  //Do we need to account for all of the formants or just return a positive for each bin that has one?
-
-  for (int i = 0; i < FFT_WIN_SIZE / 4; i++) //Can probably be made more efficient
-  {
-    if(formantFrequencies[i] > 0)
-    {
-      if(formantFrequencies[i] > averageAmplitudeOfSlice[0])
-      {
-         for(int k = 1; i < bins - 1; i++)
-        {
-          if(formantFrequencies[i] > averageAmplitudeOfSlice[i] && formantFrequencies[i] < averageAmplitudeOfSlice[i+1])
-          {
-            formantBins[i] = 1; //Setting a positive flag
-          }
-        }
-        if(formantFrequencies[i] > averageAmplitudeOfSlice[bins-1])
-        {
-           formantBins[bins-1] = 1;
-        }
-      }
-      else
-      {
-        formantBins[0] = 1;
-      }
-    }
-  }
-}
-*/
-/*
-if in 50 - 90 hz range, amplitude > number, detect kick bass?
-if in 50 - 90 hz range, amplitude > number, if repeated pattern, detect kick bass?
-*/
