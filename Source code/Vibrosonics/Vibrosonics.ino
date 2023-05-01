@@ -1,4 +1,4 @@
-/**@file esp-32-FFTtoBinsToAddSynth.ino */
+/**@file Vibrosonics.ino */
 /*/
 ########################################################
   READ ME FIRST! This code uses the arduinoFFT library and the Mozzi library. Before running this code, you have to replace all instances of
