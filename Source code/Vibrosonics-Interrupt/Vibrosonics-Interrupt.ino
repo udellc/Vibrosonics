@@ -2,57 +2,65 @@
 #include <Arduino.h>
 #include <math.h>
 
+/*/
+########################################################
+  Directives
+########################################################
+/*/
+
 #define AUDIO_INPUT_PIN A2
 #define AUDIO_OUTPUT_PIN A0
 
-#define FFT_WINDOW_SIZE 512      
-#define SAMPLING_FREQ 8192   // The audio sampling and audio output rate
+#define FFT_WINDOW_SIZE 256   // Number of FFT windows, this value must be a power of 2
+#define SAMPLING_FREQ 8192    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 10kHz, but
+                              // bringing this down to just a tad lower, leaves more room for FFT and other signal processing functions to be done
 
 #define FFT_FLOOR_THRESH 500  // amplitude flooring threshold for FFT, to reduce noise
 #define FFT_OUTLIER 30000     // Outlier for unusually high amplitudes in FFT
 
+#define BREADSLICER_NUM_SLICES 5 // The number of slices the breadslicer does
 #define BREADSLICER_CURVE_EXPONENT 3.0  // The exponent for the used for the breadslicer curve
 #define BREADSLICER_CURVE_OFFSET 0.59  // The curve offset for the breadslicer to follow when slicing the amplitude array
-#define DEFAULT_BREADSLICER_MAX_AVG_BIN 2000 // The minimum max that is used for scaling the amplitudes to the 0-255 range, and helps represent the volume
+#define BREADSLICER_MAX_AVG_BIN 2000 // The minimum max that is used for scaling the amplitudes to the 0-255 range, and helps represent the volume
 
-#define AUDIO_OUTPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE * 1.5)
+#define SINE_WAVE_TABLE_SIZE 40  // How many frequencies to pre-generate (i.e from 1 to SIN_WAVE_TABLE_SIZE). This is used to speed up calculations performed by generateAudioForWindow()
+
+#define AUDIO_INPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE)
+#define AUDIO_OUTPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE * 3)
+
+/*/
+########################################################
+  FFT
+########################################################
+/*/
 
 const int sampleDelayTime = int(1000000 / SAMPLING_FREQ); // the time per sample 
-const int totalDelayTime = sampleDelayTime * FFT_WINDOW_SIZE;
 
-// FFT_SIZE_BY_2 is FFT_WINDOW_SIZE / 2. We are sampling at double the frequency we are trying to detect, therefore only half of the vReal array is used for analysis post FFT
-const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
-
-const float SAMPLING_FREQ_BY2 = SAMPLING_FREQ / 2.0;  // the frequency we are sampling at divided by 2, since we need to sample twice the frequency we are trying to detect
-const float frequencyResolution = float(SAMPLING_FREQ_BY2 / FFT_WINDOW_SIZE_BY2);  // the frequency resolution of FFT with the current window size
-
-volatile int audioInputBuffer[FFT_WINDOW_SIZE];
-volatile int audioInputBufferCount = 0;
-
-volatile int audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
-volatile int audioOutputBufferCount = 0;
-int generateAudioCounter = 0;
-int alterCosWaves = 0;
- 
 float vReal[FFT_WINDOW_SIZE];  // vRealL is used for input from the left channel and receives computed results from FFT
 float vImag[FFT_WINDOW_SIZE];  // vImagL is used to store imaginary values for computation
-
-float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculated by FFT of the left channel
-
-float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing functions will use for the left channel
 
 arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WINDOW_SIZE, SAMPLING_FREQ);  // Object for performing FFT's
 
 /*/
 ########################################################
-    Stuff relevant to FFT signal processing
+  Stuff relevant to FFT signal processing
 ########################################################
 /*/
 
-const int slices = 5;
-const int totalNumWaves = slices << 1;  // we are synthesizing twice the number of frequencies we are finding, toggling between the two sets, changing the frequency when the amplitudes of one of the sets are 0
+const int SAMPLING_FREQ_BY2 = SAMPLING_FREQ / 2.0;  // the highest theoretical frequency that we can detect, since we need to sample twice the frequency we are trying to detect
 
-float amplitudeToRange = (4095.0/DEFAULT_BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below DEFAULT_BREADSLICER_MAX_AVG_BIN to give a sense of the volume
+// FFT_SIZE_BY_2 is FFT_WINDOW_SIZE / 2. We are sampling at double the frequency we are trying to detect, therefore only half of the vReal array is used for analysis post FFT
+const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
+
+const int frequencyResolution = SAMPLING_FREQ / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
+
+float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculated by FFT of the left channel, for averaging windows
+
+float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing functions will use for the left channel
+
+const int slices = BREADSLICER_NUM_SLICES;
+
+float amplitudeToRange = (4095.0/BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
 
 int breadslicerSliceLocations[slices];
 float breadslicerSliceWeights[slices] = {0.6, 2.0, 2.5, 2.0, 2.0};
@@ -60,17 +68,60 @@ float breadslicerSliceWeights[slices] = {0.6, 2.0, 2.5, 2.0, 2.0};
 int averageAmplitudeOfSlice[slices];          // the array used to store the average amplitudes calculated by the breadslicer
 int peakFrequencyOfSlice[slices];             // the array containing the peak frequency of the slice
 
-int prevAmplitudeGains[slices];    // the previous amplitudes generated by FFT
-int nextAmplitudeGains[slices];    // the target amplitudes
+volatile int numFFTCount = 0;
+
+/*/
+########################################################
+  Variables used for generating an audio output
+########################################################
+/*/
+
+
+const int FFT_WINDOW_SIZE_X2 = FFT_WINDOW_SIZE * 2;
+
+float resolution = float(2.0 * PI / FFT_WINDOW_SIZE_X2);
+
+int generateAudioCounter = 0;
+
+int toggleOffsetWave = 0;
+
+float cos_wave[FFT_WINDOW_SIZE_X2];
+
+// sine wave table for storing pre-generated values of sine waves from 1 to 200Hz (integer)
+int sin_wave_table[SINE_WAVE_TABLE_SIZE][FFT_WINDOW_SIZE_X2];
+
+/*/
+########################################################
+  Variables used for interrupt and function to call when interrupt is triggered
+########################################################
+/*/
+
+volatile int audioInputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
+volatile int audioInputBufferCount = 0;
+volatile int audioInputBufferFull = 0;
+
+volatile int audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
+volatile int audioOutputBufferCount = 0;
 
 hw_timer_t *My_timer = NULL;
 
 void IRAM_ATTR onTimer(){
-  //analogWrite(AUDIO_OUTPUT_PIN, audioOutputBuffer[audioOutputBufferCount]);
-  //audioOutputBufferCount++;
+  analogWrite(AUDIO_OUTPUT_PIN, audioOutputBuffer[audioOutputBufferCount]);
+  if (numFFTCount > 2) {
+    audioOutputBufferCount = (audioOutputBufferCount + 1) % AUDIO_OUTPUT_BUFFER_SIZE;
+  }
   audioInputBuffer[audioInputBufferCount] = analogRead(AUDIO_INPUT_PIN);
-  audioInputBufferCount++;
+  audioInputBufferCount = (audioInputBufferCount + 1) % AUDIO_INPUT_BUFFER_SIZE;
+  if (audioInputBufferCount == 0) {
+    audioInputBufferFull = 1;
+  }
 }
+
+/*/
+########################################################
+  Setup
+########################################################
+/*/
 
 void setup() {
   // set baud rate
@@ -81,11 +132,12 @@ void setup() {
   Serial.println("Ready");
   delay(1000);
 
+  calculateCosWave();
+  calculateSinWaveTable();
+
   calculateBreadslicerLocations();
   // setup reference tables for aSin[] oscillator array
   for (int i = 0; i < slices; i++) {
-    prevAmplitudeGains[i] = 0;
-    nextAmplitudeGains[i] = 0;
     averageAmplitudeOfSlice[i] = 0;
     peakFrequencyOfSlice[i] = int(map(breadslicerSliceLocations[(i % 5)], 1, FFT_WINDOW_SIZE_BY2, frequencyResolution, SAMPLING_FREQ_BY2));    
   }
@@ -107,19 +159,19 @@ void setup() {
   pinMode(AUDIO_OUTPUT_PIN, OUTPUT);
 
   // get average analog read time over 10,0000 continuous samples
-  unsigned long time = micros();
-  for (int i = 0; i < 10000; i++) {
-    analogRead(AUDIO_INPUT_PIN);
-  }
-  time = micros() - time;
-  Serial.printf("Average analogRead() time: %d\n", int(round(time / 10000.0)));
+  // unsigned long time = micros();
+  // for (int i = 0; i < 10000; i++) {
+  //   analogRead(AUDIO_INPUT_PIN);
+  // }
+  // time = micros() - time;
+  // Serial.printf("Average analogRead() time: %d\n", int(round(time / 10000.0)));
   // get average analog write time over 10,000 continous samples
-  time = micros();
-  for (int i = 0; i < 10000; i++) {
-    analogWrite(AUDIO_OUTPUT_PIN, 0);
-  }
-  time = micros() - time;
-  Serial.printf("Average analogWrite() time: %d\n", int(round(time / 10000.0)));
+  // time = micros();
+  // for (int i = 0; i < 10000; i++) {
+  //   analogWrite(AUDIO_OUTPUT_PIN, 0);
+  // }
+  // time = micros() - time;
+  // Serial.printf("Average analogWrite() time: %d\n", int(round(time / 10000.0)));
 
   // setup interrupt for audio sampling
   My_timer = timerBegin(0, 80, true);
@@ -128,29 +180,43 @@ void setup() {
   timerAlarmEnable(My_timer); //Just Enable
 }
 
+/*/
+########################################################
+  Loop
+########################################################
+/*/
+
 void loop() {
-  if (audioOutputBufferCount >= AUDIO_OUTPUT_BUFFER_SIZE) {
-    audioOutputBufferCount = 0;
-  }
-  if (audioInputBufferCount >= FFT_WINDOW_SIZE) {
-    audioInputBufferCount = 0;
+  audioInputBufferFull = 1;
+  if (audioInputBufferFull) {
+    unsigned long time = micros();
+    if (numFFTCount < 3) {
+      numFFTCount++;
+    }
     // store previously computed FFT results in vRealPrev array, and copy values from audioInputBuffer to vReal array
     setupFFT();
+    
     FFT.DCRemoval();
     FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
     FFT.Compute(FFT_FORWARD);// Compute FFT
-    FFT.ComplexToMagnitude();                                                  // Compute frequency magnitudes
+    FFT.ComplexToMagnitude();                      // Compute frequency magnitudes
+
     // Average the previous and next vReal arrays for a smoother spectrogram
     averageFFTWindows();
 
     breadslicer(FFTData);
-    // for (int i = 0; i < slices; i++) {
-    //   Serial.printf("(Freq: %04d, Amp: %05d)\t", peakFrequencyOfSlice[i], averageAmplitudeOfSlice[i]);
-    // }
-    // Serial.println();
-    //generateAudioForWindow();
+ 
+    generateAudioForWindow();
+    //audioInputBufferFull = 0;
+    Serial.println(micros() - time);
   }
 }
+
+/*/
+########################################################
+  Functions related to FFT analysis
+########################################################
+/*/
 
 /*
   setup arrays for FFT analysis
@@ -185,7 +251,7 @@ void calculateBreadslicerLocations() {
   float step = 1.0 / slices;       // how often to step on the x-axis to determine bin value
   // calculate array locations for the breadslicer
   Serial.println("Calculating array slice locations for breadslicer...");
-  Serial.printf("\tUsing curve: x ^ (1 / ((x ^ %0.3f) + %0.3f)), where X is from 0.0 to 1.0\n", BREADSLICER_CURVE_EXPONENT, BREADSLICER_CURVE_OFFSET);
+  //Serial.printf("\tUsing curve: x ^ (1 / ((x ^ %0.3f) + %0.3f)), where X is from 0.0 to 1.0\n", BREADSLICER_CURVE_EXPONENT, BREADSLICER_CURVE_OFFSET);
   // stores the previous slices frequency, only used for printing
   int lastSliceFrequency = 0;
   for (int i = 0; i < slices; i++) {
@@ -201,7 +267,7 @@ void calculateBreadslicerLocations() {
     // store location in array that is used by the breadslicer function
     breadslicerSliceLocations[i] = sliceLocation;
     // print the slice locations and it's associated frequency
-    Serial.printf("\t\tsliceLocation %d, Range %dHz to %dHz\n", sliceLocation, lastSliceFrequency, sliceFrequency);
+    //Serial.printf("\t\tsliceLocation %d, Range %dHz to %dHz\n", sliceLocation, lastSliceFrequency, sliceFrequency);
     // store the previous slices frequency
     lastSliceFrequency = sliceFrequency;
   }
@@ -213,8 +279,8 @@ void calculateBreadslicerLocations() {
   For example, 0-200Hz is where bass is common, 200-1200Hz is where voice and instruments are common, 1000-5000Hz higher notes and tones as well as percussion
 */
 void breadslicer(float *data) {
-  // The maximum amplitude of the array. Set to DEFAULT_BREADSLICER_MAX_AVG_BIN to scale all amplitudes to the 0-255 range and to represent volume
-  int curMaxAvg = DEFAULT_BREADSLICER_MAX_AVG_BIN;
+  // The maximum amplitude of the array. Set to BREADSLICER_MAX_AVG_BIN to scale all amplitudes to the 0-255 range and to represent volume
+  int curMaxAvg = BREADSLICER_MAX_AVG_BIN;
 
   float topOfSample = 0;  // The frequency of the current amplitude in the amplitudes array
 
@@ -286,29 +352,52 @@ void breadslicer(float *data) {
   // put all amplitudes within the 0-255 range, with this "K" value, done in mapFreqAmplitudes()
   amplitudeToRange = float(4095.0 / (curMaxAvg * slices));
 }
-void generateAudioForWindow() {
-  int iLocation = 0;
-  int iLocationMax = FFT_WINDOW_SIZE;
-  float resolution = float(2.0 * PI / FFT_WINDOW_SIZE);
+
+/*/
+########################################################
+  Functions related to generating values for the circular audio output buffer
+########################################################
+/*/
+
+void calculateCosWave() {
+  for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
+    // calculate values for cosine function that is used to transition between frequencies (0.5 * (1 - cos((2PI / T) * x)), where T = FFT_WINDOW_SIZE_X2
+    cos_wave[i] = 0.5 * (1.0 - cos(float(resolution * i)));
+  }
+}
+
+void calculateSinWaveTable() {
+  for (int i = 0; i < SINE_WAVE_TABLE_SIZE; i++) {
+    for (int j = 0; j < AUDIO_OUTPUT_BUFFER_SIZE; j++) {
+      // calculate values for frequency of (i + 1) within the time domain of "resolution"
+      sin_wave_table[i][j] = round(4096.0 * sin(resolution * (i + 1) * j));
+    }
+  }
+}
+
+void generateAudioForWindow() {  
+  int offset = 0;
+  if (toggleOffsetWave) {
+      offset = FFT_WINDOW_SIZE;
+  }
   
-  for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-    if (generateAudioCounter >= AUDIO_OUTPUT_BUFFER_SIZE) {
-      generateAudioCounter = 0;
-      setAddBuffer = 1 - setAddBuffer;
+  for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
+    generateAudioCounter = (generateAudioCounter + AUDIO_OUTPUT_BUFFER_SIZE) % AUDIO_OUTPUT_BUFFER_SIZE;
+    long int sumOfSines = 0;
+    for (int j = 0; j < slices; j++) {
+      //sumOfSines += float(averageAmplitudeOfSlice[j] * sin(float(resolution * peakFrequencyOfSlice[j] * (i + offset))));
+      // sumOfSines += float(averageAmplitudeOfSlice[j] * sin_wave_table[peakFrequencyOfSlice[j]][i + offset];
+      sumOfSines += averageAmplitudeOfSlice[j] * sin_wave_table[j][(i + offset) % FFT_WINDOW_SIZE_X2];
     }
-    float aCos = 0.5 * (1 - cos(float(resolution * i)));
-    // float sumOfSines = 0.0;
-    // for (int j = 0; j < slices; j++) {
-    //   sumOfSines += averageAmplitudeOfSlice[j] * sin(float(2.0 * PI * peakFrequencyOfSlice[j] * generateAudioCounter));
-    // }
-    if (setAddBuffer == 0) {
-      audioOutputBuffer[generateAudioCounter] = aCos;;
-    } else {
-      audioOutputBuffer[generateAudioCounter] += aCos;
-    }
+    audioOutputBuffer[generateAudioCounter] += int(round(cos_wave[i] * sumOfSines)) >> 12;
     generateAudioCounter++;
   }
-  generateAudioCounter -= FFT_WINDOW_SIZE_BY2;
+  int lastAudioCounter = generateAudioCounter;
+  for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
+      audioOutputBuffer[(lastAudioCounter + i) % AUDIO_OUTPUT_BUFFER_SIZE] = 0.0;
+  }
+  generateAudioCounter -= FFT_WINDOW_SIZE;
+  toggleOffsetWave = 1 - toggleOffsetWave;
 }
 
 /*
@@ -327,11 +416,8 @@ const int AUDIO_OUTPUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
 float audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
 
 int generateAudioCounter = 0;
-int setAddBuffer = 0;
-int bufferLocation = 1;
 int audioOutputBufferIdx = 0;
 
-int fftCount = 0;
 int toggleOffsetWave = 0;
 
 void generateAudioForWindow() {

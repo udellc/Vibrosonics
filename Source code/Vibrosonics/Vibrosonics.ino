@@ -168,8 +168,6 @@ int amplitudeGains[OSCIL_COUNT];        // the amplitudes used for audio synthes
 int aSinLFrequencies[OSCIL_COUNT];      // the frequencies used for audio synthesis
 int prevAmplitudeGains[OSCIL_COUNT];    // the previous amplitudes, used for smoothing transition
 int nextAmplitudeGains[OSCIL_COUNT];    // the next amplitudes
-// int prevFrequencies[OSCIL_COUNT];    // the previous amplitudes, used for smoothing transition
-// int nextFrequencies[OSCIL_COUNT];    // the next amplitudes
 float ampGainStep[OSCIL_COUNT];         // the difference between amplitudes transitions
 
 int toggleFreqChangeWaves = 0;  // toggle frequency transtions between next available waves and the previous waves, to change the frequencies of the next available waves (ones that are at 0 amplitude)
