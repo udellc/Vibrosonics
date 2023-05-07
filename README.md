@@ -1,4 +1,4 @@
-# Vibrosonics
-Welcome to Vibrosonics!
+# Vibrosonics Doxygen Output Branch
 
-Detailed documentation is under works.
+
+Contains Doxygen html output files used to construct the github pages website for function and variable documentation
