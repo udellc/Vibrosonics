@@ -9,7 +9,7 @@
 /*/
 
 #define AUDIO_INPUT_PIN A2
-#define AUDIO_OUTPUT_PIN A0
+#define AUDIO_OUTPUT_PIN A1
 
 #define FFT_WINDOW_SIZE 256   // Number of FFT windows, this value must be a power of 2
 #define SAMPLING_FREQ 8192    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 10kHz, but
@@ -23,7 +23,7 @@
 #define BREADSLICER_CURVE_OFFSET 0.59  // The curve offset for the breadslicer to follow when slicing the amplitude array
 #define BREADSLICER_MAX_AVG_BIN 2000 // The minimum max that is used for scaling the amplitudes to the 0-255 range, and helps represent the volume
 
-#define SINE_WAVE_TABLE_SIZE 40  // How many frequencies to pre-generate (i.e from 1 to SIN_WAVE_TABLE_SIZE). This is used to speed up calculations performed by generateAudioForWindow()
+#define SIN_WAVE_TABLE_SIZE 200  // How many frequencies to pre-generate (i.e from 1 to SIN_WAVE_TABLE_SIZE Hz). This is used to speed up calculations performed by generateAudioForWindow()
 
 #define AUDIO_INPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE)
 #define AUDIO_OUTPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE * 3)
@@ -60,7 +60,7 @@ float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing f
 
 const int slices = BREADSLICER_NUM_SLICES;
 
-float amplitudeToRange = (4095.0/BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
+float amplitudeToRange = (125.0/BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
 
 int breadslicerSliceLocations[slices];
 float breadslicerSliceWeights[slices] = {0.6, 2.0, 2.5, 2.0, 2.0};
@@ -76,19 +76,28 @@ volatile int numFFTCount = 0;
 ########################################################
 /*/
 
-
 const int FFT_WINDOW_SIZE_X2 = FFT_WINDOW_SIZE * 2;
 
-float resolution = float(2.0 * PI / FFT_WINDOW_SIZE_X2);
+const float resolution = float(2.0 * PI / FFT_WINDOW_SIZE_X2);
 
 int generateAudioCounter = 0;
 
-int toggleOffsetWave = 0;
+int toggleWaveOffset = 0;
 
 float cos_wave[FFT_WINDOW_SIZE_X2];
 
-// sine wave table for storing pre-generated values of sine waves from 1 to 200Hz (integer)
-int sin_wave_table[SINE_WAVE_TABLE_SIZE][FFT_WINDOW_SIZE_X2];
+// sine wave table for storing pre-generated values of sine waves from 1 to SIN_WAVE_TABLE_SIZE (integer)
+// float sin_wave_table[SINE_WAVE_TABLE_SIZE][(SAMPLING_FREQUENCY / frequency)]
+float* sin_wave_table[SIN_WAVE_TABLE_SIZE];
+
+// stores the location in the sin_wave_table
+int sin_wave_table_idx = 0;
+
+// stores the length of period of the sine waves round(SAMPLING_FREQUENCY / frequency), using floats would be more precise. but complicates the audio synthesis
+int sin_wave_table_frequency_period[SIN_WAVE_TABLE_SIZE];
+
+int sinWaveAmplitude[BREADSLICER_NUM_SLICES];
+int sinWaveFrequency[BREADSLICER_NUM_SLICES];
 
 /*/
 ########################################################
@@ -96,7 +105,7 @@ int sin_wave_table[SINE_WAVE_TABLE_SIZE][FFT_WINDOW_SIZE_X2];
 ########################################################
 /*/
 
-volatile int audioInputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
+volatile int audioInputBuffer[AUDIO_INPUT_BUFFER_SIZE];
 volatile int audioInputBufferCount = 0;
 volatile int audioInputBufferFull = 0;
 
@@ -106,14 +115,22 @@ volatile int audioOutputBufferCount = 0;
 hw_timer_t *My_timer = NULL;
 
 void IRAM_ATTR onTimer(){
-  analogWrite(AUDIO_OUTPUT_PIN, audioOutputBuffer[audioOutputBufferCount]);
-  if (numFFTCount > 2) {
-    audioOutputBufferCount = (audioOutputBufferCount + 1) % AUDIO_OUTPUT_BUFFER_SIZE;
+  analogWrite(AUDIO_OUTPUT_PIN, audioOutputBufferCount);
+  if (numFFTCount > 1) {
+    audioOutputBufferCount++;
   }
+  if (audioOutputBufferCount == AUDIO_OUTPUT_BUFFER_SIZE) {
+    audioOutputBufferCount = 0;
+  }
+
   audioInputBuffer[audioInputBufferCount] = analogRead(AUDIO_INPUT_PIN);
-  audioInputBufferCount = (audioInputBufferCount + 1) % AUDIO_INPUT_BUFFER_SIZE;
-  if (audioInputBufferCount == 0) {
+  audioInputBufferCount++;
+  if (audioInputBufferCount == AUDIO_INPUT_BUFFER_SIZE) {
+    if (numFFTCount < 1) {
+      numFFTCount++;
+    }
     audioInputBufferFull = 1;
+    audioInputBufferCount = 0;
   }
 }
 
@@ -134,12 +151,16 @@ void setup() {
 
   calculateCosWave();
   calculateSinWaveTable();
+  Serial.print("b");
+
 
   calculateBreadslicerLocations();
   // setup reference tables for aSin[] oscillator array
   for (int i = 0; i < slices; i++) {
+    sinWaveAmplitude[i] = 0;
+    sinWaveFrequency[i] = 0;
     averageAmplitudeOfSlice[i] = 0;
-    peakFrequencyOfSlice[i] = int(map(breadslicerSliceLocations[(i % 5)], 1, FFT_WINDOW_SIZE_BY2, frequencyResolution, SAMPLING_FREQ_BY2));    
+    peakFrequencyOfSlice[i] = int(map(breadslicerSliceLocations[(i % 5)], 1, FFT_WINDOW_SIZE_BY2, frequencyResolution, SAMPLING_FREQ_BY2));
   }
   for (int i = 0; i < AUDIO_OUTPUT_BUFFER_SIZE; i++) {
     audioOutputBuffer[i] = 0;
@@ -155,8 +176,8 @@ void setup() {
   }
 
   // setup pins
-  pinMode(AUDIO_INPUT_PIN, INPUT);
   pinMode(AUDIO_OUTPUT_PIN, OUTPUT);
+  pinMode(AUDIO_INPUT_PIN, INPUT);
 
   // get average analog read time over 10,0000 continuous samples
   // unsigned long time = micros();
@@ -187,12 +208,8 @@ void setup() {
 /*/
 
 void loop() {
-  audioInputBufferFull = 1;
   if (audioInputBufferFull) {
-    unsigned long time = micros();
-    if (numFFTCount < 3) {
-      numFFTCount++;
-    }
+    //unsigned long time = micros();
     // store previously computed FFT results in vRealPrev array, and copy values from audioInputBuffer to vReal array
     setupFFT();
     
@@ -205,10 +222,12 @@ void loop() {
     averageFFTWindows();
 
     breadslicer(FFTData);
+
+    mapAmplitudeFrequency();
  
     generateAudioForWindow();
-    //audioInputBufferFull = 0;
-    Serial.println(micros() - time);
+    audioInputBufferFull = 0;
+    //Serial.println(micros() - time);
   }
 }
 
@@ -294,7 +313,7 @@ void breadslicer(float *data) {
     // store the array location pre-inner loop
     int newJ = lastJ;
 
-    int ampSliceSum = 0;     // the sum of the current slice
+    long ampSliceSum = 0;     // the sum of the current slice
     int ampSliceCount = 0;   // the number of amplitudes in the current slice
     // these values are used to determine the "peak" of the current slice
     int maxSliceAmp = 0;
@@ -338,7 +357,7 @@ void breadslicer(float *data) {
     } else {
       averageAmplitudeOfSlice[i] = round(ampSliceSum);
     }
-    // if there is at least one amplitude that is above threshold in the group, map it's frequency, otherwise frequency for that slice is unchanged
+    // if there is at least one amplitude that is above threshold in the group, store it's peak frequency, otherwise frequency for that slice is unchanged
     if (ampsAboveThresh > 0) {
       peakFrequencyOfSlice[i] = maxSliceAmpFreq;
     }
@@ -350,7 +369,19 @@ void breadslicer(float *data) {
     lastJ = newJ;
   }
   // put all amplitudes within the 0-255 range, with this "K" value, done in mapFreqAmplitudes()
-  amplitudeToRange = float(4095.0 / (curMaxAvg * slices));
+  amplitudeToRange = float(125.0 / curMaxAvg / slices);
+}
+
+void mapAmplitudeFrequency() {
+  for (int i = 0; i < BREADSLICER_NUM_SLICES; i++) {
+    sinWaveAmplitude[i] = averageAmplitudeOfSlice[i] * amplitudeToRange;
+    if (peakFrequencyOfSlice[i] < 250) {
+      sinWaveFrequency[i] = round(peakFrequencyOfSlice[i] * 0.7);
+    } else {
+      sinWaveFrequency[i] = map(peakFrequencyOfSlice[i], 250, int(SAMPLING_FREQ_BY2), 10, 199);
+    }
+  }
+
 }
 
 /*/
@@ -365,39 +396,57 @@ void calculateCosWave() {
     cos_wave[i] = 0.5 * (1.0 - cos(float(resolution * i)));
   }
 }
-
 void calculateSinWaveTable() {
-  for (int i = 0; i < SINE_WAVE_TABLE_SIZE; i++) {
-    for (int j = 0; j < AUDIO_OUTPUT_BUFFER_SIZE; j++) {
-      // calculate values for frequency of (i + 1) within the time domain of "resolution"
-      sin_wave_table[i][j] = round(4096.0 * sin(resolution * (i + 1) * j));
+  float sin_wave_resolution = float(2.0 * PI / SAMPLING_FREQ);
+
+  for (int i = 0; i < SIN_WAVE_TABLE_SIZE; i++) {
+    // calculate the length of the period of the sine wave with frequency (i + 1) within the time domain of SAMPLING_FREQ
+    int frequency = i + 1;
+    float sin_wave_period_length = float(SAMPLING_FREQ / frequency);
+    // rounding length of the period for wave table calculation
+    int sin_wave_steps_period = round(sin_wave_period_length);
+    // calculating how much to step on the x-axis for the sin_wave_table 
+    float sin_wave_step_x = float(sin_wave_period_length / (sin_wave_steps_period - 1));
+    // store the period length for further use
+    sin_wave_table_frequency_period[i] = sin_wave_steps_period;
+    // allocate memory for buffer
+    sin_wave_table[i] = new float[sin_wave_steps_period];
+    // calculate values associated to the fruequency and store in sin_wave_table
+    for (int j = 0; j < sin_wave_table_frequency_period[i]; j++) {
+      // calculate values for frequency of (i + 1) within the time domain of SAMPLING_FREQ
+      sin_wave_table[i][j] = sin(float(sin_wave_resolution * frequency * float(j * sin_wave_step_x)));
+      if (frequency == 200) {
+        Serial.println(sin_wave_table[i][j]);
+      }
     }
   }
 }
 
 void generateAudioForWindow() {  
   int offset = 0;
-  if (toggleOffsetWave) {
-      offset = FFT_WINDOW_SIZE;
+  if (toggleWaveOffset) {
+    offset = FFT_WINDOW_SIZE;
   }
-  
   for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
     generateAudioCounter = (generateAudioCounter + AUDIO_OUTPUT_BUFFER_SIZE) % AUDIO_OUTPUT_BUFFER_SIZE;
-    long int sumOfSines = 0;
+    float sumOfSines = 0;
     for (int j = 0; j < slices; j++) {
       //sumOfSines += float(averageAmplitudeOfSlice[j] * sin(float(resolution * peakFrequencyOfSlice[j] * (i + offset))));
       // sumOfSines += float(averageAmplitudeOfSlice[j] * sin_wave_table[peakFrequencyOfSlice[j]][i + offset];
-      sumOfSines += averageAmplitudeOfSlice[j] * sin_wave_table[j][(i + offset) % FFT_WINDOW_SIZE_X2];
+      int sin_wave_table_position = (sin_wave_table_idx - offset + sin_wave_table_frequency_period[j]) % sin_wave_table_frequency_period[j];
+
+      sumOfSines += float(sinWaveAmplitude[j] * sin_wave_table[sinWaveFrequency[j]][sin_wave_table_position]);
     }
-    audioOutputBuffer[generateAudioCounter] += int(round(cos_wave[i] * sumOfSines)) >> 12;
+    audioOutputBuffer[generateAudioCounter] += int(round(cos_wave[i] * sumOfSines));
+    sin_wave_table_idx = (sin_wave_table_idx + 1) % int(SAMPLING_FREQ);
     generateAudioCounter++;
   }
   int lastAudioCounter = generateAudioCounter;
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-      audioOutputBuffer[(lastAudioCounter + i) % AUDIO_OUTPUT_BUFFER_SIZE] = 0.0;
+      audioOutputBuffer[(lastAudioCounter + i) % AUDIO_OUTPUT_BUFFER_SIZE] = 0;
   }
   generateAudioCounter -= FFT_WINDOW_SIZE;
-  toggleOffsetWave = 1 - toggleOffsetWave;
+  toggleWaveOffset = 1 - toggleWaveOffset;
 }
 
 /*
