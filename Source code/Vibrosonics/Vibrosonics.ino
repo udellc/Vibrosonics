@@ -707,5 +707,10 @@ void smoothenTransition() {
     aSinL[i].setFreq(int(aSinLFrequencies[i]));
   }
   // increment fade counter
+<<<<<<< HEAD
   fadeCounter = (fadeCounter + 1) % FADE_RATE;
 }
+=======
+  fadeCounter_1++;
+}
+>>>>>>> 0d7b984c1e093169408d0ec3ae76dc3099c46dfb
