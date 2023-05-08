@@ -38,6 +38,7 @@
 #include <MozziGuts.h>
 #include <Oscil.h>
 #include <tables/sin2048_int8.h>
+#include <EventDelay.h>
 
 /*/
 ########################################################
@@ -50,18 +51,18 @@
 
 #define SAMPLES_PER_SEC 32  // The number of sampling/analysis cycles per second, this MUST be a power of 2
 
-#define FFT_SAMPLING_FREQ 8192 // The sampling frequency, ideally should be a power of 2
+#define FFT_SAMPLING_FREQ 10000 // The sampling frequency, ideally should be a power of 2
 #define FFT_WINDOW_SIZE int(pow(2, 12 - log(SAMPLES_PER_SEC) / log(2))) // the FFT window size and number of audio samples for ideal performance, this MUST be a power of 2 \
                                                                         // 2^(12 - log_base2(SAMPLES_PER_SEC)) = 64 for 64/s, 128 for 32/s, 256 for 16/s, 512 for 8/s
 
 #define CONTROL_RATE int(pow(2, 5 + log(SAMPLES_PER_SEC) / log(2))) // Update control cycles per second for ideal performance, this MUST be a power of 2
                                                                     // 2^(5 + log_base2(SAMPLES_PER_SEC)) = 2048 for 64/s, 1024 for 32/s, 512 for 16/s, 256 for 8/s
 
-#define DEFAULT_NUM_WAVES 5            // The number of waves to synthesize, and how many slices the breadslicer function does
-#define OSCIL_COUNT int(DEFAULT_NUM_WAVES) << 1  // The total number of waves to synthesize, DEFAULT_NUM_WAVES * 2
+#define DEFAULT_NUM_WAVES 6            // The number of waves to synthesize, and how many slices the breadslicer function does
+#define OSCIL_COUNT int(int(DEFAULT_NUM_WAVES) << 1)  // The total number of waves to synthesize, DEFAULT_NUM_WAVES * 2
 
-#define BREADSLICER_CURVE_EXPONENT 3.0  // The exponent for the used for the breadslicer curve
-#define BREADSLICER_CURVE_OFFSET 0.59  // The curve offset for the breadslicer to follow when slicing the amplitude array
+#define BREADSLICER_CURVE_EXPONENT 3.3  // The exponent for the used for the breadslicer curve
+#define BREADSLICER_CURVE_OFFSET 0.55 // The curve offset for the breadslicer to follow when slicing the amplitude array
 
 #define BREADSLICER_MAX_AVG_BIN 2000 // The minimum max that is used for scaling the amplitudes to the 0-255 range, and helps represent the volume
 #define FFT_FLOOR_THRESH 300                // amplitude flooring threshold for FFT, to help reduce input noise
@@ -90,9 +91,6 @@ int numSamplesTaken = 0;    // stores the number of audio samples taken, used as
 
 float vRealL[FFT_WIN_SIZE];  // vRealL is used for input from the left channel and receives computed results from FFT
 float vImagL[FFT_WIN_SIZE];  // vImagL is used to store imaginary values for computation
-float vRealR[FFT_WIN_SIZE];  // vRealR is used for input from the right channel and receives computed results from FFT
-float vImagR[FFT_WIN_SIZE];  // vImagR is used to store imaginary values for computation
-
 
 float vRealPrev[FFT_WIN_SIZE_BY2];
 float maxAmpChange = 0;
@@ -115,15 +113,14 @@ const int numSamplesPerProcess = floor(UPDATE_TIME / sampleDelayTime) - 1;      
 const int numProcessForSampling = ceil(FFT_WIN_SIZE / float(numSamplesPerProcess));            // the total number of processes to sample, calculated in setup
 const int numTotalProcesses = numProcessForSampling + 2;                                // adding 2 more processes for FFT windowing function and other processing
 
-volatile unsigned long sampleT;               // stores the time since program started using mozziMicros() rather than micros()
+unsigned long sampleT;               // stores the time since program started using mozziMicros() rather than micros()
 
 const int SAMPLE_TIME = int(CONTROL_RATE / SAMPLES_PER_SEC);  // sampling and processing time in updateControl
 const int FADE_RATE = SAMPLE_TIME;                            // the number of cycles for fading
 const float FADE_STEPX = float(2.0 / (FADE_RATE - 1));        // the x position of the smoothing curve
 
 float FADE_CONST[FADE_RATE];  // Array storing amplitude smoothing constants from 0.0 to 1.0
-int fadeCounter_1 = 0;          // counter used to smoothen transition between amplitudes
-int fadeCounter_2 = 0;          // counter used to smoothen transition between amplitudes
+int fadeCounter = 0;          // counter used to smoothen transition between amplitudes
 
 /*/
 ########################################################
@@ -146,14 +143,15 @@ int sumOfPeakAmps = 0;
 const int slices = numWaves;  // accounts for how many slices the samples are split into
 const int totalNumWaves = int(DEFAULT_NUM_WAVES) << 1;  // we are synthesizing twice the number of frequencies we are finding, toggling between the two sets, changing the frequency when the amplitudes of one of the sets are 0
 
-float amplitudeToRange = 255.0/(BREADSLICER_MAX_AVG_BIN * totalNumWaves);   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
+float amplitudeToRange = 254.0 / BREADSLICER_MAX_AVG_BIN / numWaves;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
 
 int breadslicerSliceLocations[DEFAULT_NUM_WAVES];  // array storing pre-calculated array locations for slicing the FFT amplitudes array (vReal)
-//float breadslicerSliceWeights[DEFAULT_NUM_WAVES] = {1.0, 1.5, 1.0, 2.0, 2.0}; // weights associated to the average amplitudes of slices
-float breadslicerSliceWeights[DEFAULT_NUM_WAVES] = {1.0, 1.5, 2.0, 1.5, 2.0}; // weights associated to the average amplitudes of slices
+const int breadslicerSliceLocationsStatic[DEFAULT_NUM_WAVES] = {4, 8, 15, 25, 50, 64};
+float breadslicerSliceWeights[DEFAULT_NUM_WAVES]; // weights associated to the average amplitudes of slices
+const float breadslicerSliceWeightsStatic[DEFAULT_NUM_WAVES] = {1.0, 0.6, 0.5, 3.0, 6.0, 8.0}; // weights associated to the average amplitudes of slices
 
-int averageAmplitudeOfSlice[OSCIL_COUNT];          // the array used to store the average amplitudes calculated by the breadslicer
-int peakFrequencyOfSlice[OSCIL_COUNT];              // the array containing the peak frequency of the slice
+long averageAmplitudeOfSlice[DEFAULT_NUM_WAVES];          // the array used to store the average amplitudes calculated by the breadslicer
+int peakFrequencyOfSlice[DEFAULT_NUM_WAVES];              // the array containing the peak frequency of the slice
 
 /*/
 ########################################################
@@ -162,26 +160,22 @@ int peakFrequencyOfSlice[OSCIL_COUNT];              // the array containing the 
 /*/
 
 Oscil<2048, AUDIO_RATE> aSinL[OSCIL_COUNT];
+int aSinLFrequencies[OSCIL_COUNT];      // the frequencies used for audio synthesis
 //Oscil<2048, AUDIO_RATE> aSinR[OSCIL_COUNT];
 
 int amplitudeGains[OSCIL_COUNT];        // the amplitudes used for audio synthesis
-int aSinLFrequencies[OSCIL_COUNT];      // the frequencies used for audio synthesis
 int prevAmplitudeGains[OSCIL_COUNT];    // the previous amplitudes, used for smoothing transition
 int nextAmplitudeGains[OSCIL_COUNT];    // the next amplitudes
 float ampGainStep[OSCIL_COUNT];         // the difference between amplitudes transitions
+
+int prevWaveFrequencies[OSCIL_COUNT];
+int nextWaveFrequencies[OSCIL_COUNT];
+float freqStep[OSCIL_COUNT];
 
 int toggleFreqChangeWaves = 0;  // toggle frequency transtions between next available waves and the previous waves, to change the frequencies of the next available waves (ones that are at 0 amplitude)
 
 int updateCount = 0;       // updateControl() cycle counter
 int audioSamplingSessionsCount = 0;  // counter for the sample and processing phases complete in a full CONTROL_RATE cycle, reset when updateCount is 0
-
-/*/
-########################################################
-  Other
-########################################################
-/*/
-
-int opmode = 0;
 
 /*/
 ########################################################
@@ -197,21 +191,24 @@ void setup() {
   Serial.begin(115200);
   // wait for Serial to set up
   while (!Serial)
-    ;
+    ; 
   Serial.println("Ready");
-
+  delay(1000);  // wait for one second, not needed but helps prevent weird Serial output
+  //Serial.println(breadslicerSliceLocationsStatic);
   // setup reference tables for aSin[] oscillator array and initialize arrays
-  for (int i = 0; i < OSCIL_COUNT; i++) {
+  for (int i = 0; i < int(OSCIL_COUNT); i++) {
     averageAmplitudeOfSlice[i] = 0;
     aSinL[i].setTable(SIN2048_DATA);
-    aSinLFrequencies[i] = int(map(breadslicerSliceLocations[(i % 5)], 1, FFT_WIN_SIZE_BY2, frequencyResolution, samplingFreqBy2));
-    //aSinR[i].setTable(SIN2048_DATA);
+    aSinLFrequencies[i] = int(map(breadslicerSliceLocationsStatic[(i % numWaves)], 1, FFT_WIN_SIZE_BY2, 10, 160));
     amplitudeGains[i] = 0;
     prevAmplitudeGains[i] = 0;
     nextAmplitudeGains[i] = 0;
+    prevWaveFrequencies[i] = aSinLFrequencies[i];
+    nextWaveFrequencies[i] = aSinLFrequencies[i];
     ampGainStep[i] = 0.0;
+    freqStep[i] = 0.0;
   }
-  for (int i = 0; i < FFT_WIN_SIZE_BY2; i++) {
+  for (int i = 0; i < int(FFT_WIN_SIZE_BY2); i++) {
     vRealPrev[i] = 0.0;
     peakAmplitudes[i] = -1;
   }
@@ -220,16 +217,17 @@ void setup() {
   pinMode(AUDIO_INPUT_PIN_LEFT, INPUT);
   pinMode(AUDIO_INPUT_PIN_RIGHT, INPUT);
 
-  delay(1000);  // wait for one second, not needed but helps prevent weird Serial output
-
   Serial.printf("FFT ANALYSIS PER SECOND: %d\tFFT WINDOW SIZE: %d\tFFT SAMPLING FREQUENCY: %d\tMOZZI CONTROL RATE: %d\tAUDIO RATE: %d\n", SAMPLES_PER_SEC, FFT_WIN_SIZE, FFT_SAMPLING_FREQ, CONTROL_RATE, AUDIO_RATE);
   Serial.println();
   // precalculate linear amplitude smoothing values and breadslicer slice locations to save processing power
   calculateFadeFunction();
-  calculateBreadslicerLocations();
+  //calculateBreadslicerLocations();
+  saveBreadslicerLocations();
+  saveBreadslicerWeights();
   
   // Additive Synthesis
   startMozzi(CONTROL_RATE);
+  changeFrequencies();
 }
 
 /*/
@@ -256,8 +254,6 @@ void loop() {
   certain period of time that can be calculated by @UPDATE_TIME
 */
 void updateControl() {
-  // called every updateControl tick, to smoothen transtion between amplitudes and change the sine wave frequencies that are used for synthesis
-  smoothenTransition();
   // reset update counter and audio sampling sessions counter
   if (updateCount >= CONTROL_RATE) {
     updateCount = 0;
@@ -266,16 +262,10 @@ void updateControl() {
   // get the next available sample time in updateCount
   int sampleTime = SAMPLE_TIME * audioSamplingSessionsCount;
   // if it is time for next audio sample and analysis, begin the audio sampling phase, by setting next process 0 and reset fade counter
-  if ((updateCount == 0 || updateCount == sampleTime - 1) && updateCount != CONTROL_RATE - 1) {
-    changeFrequencies();
-    nextProcess = 0;
-    fadeCounter_1 = 0;
-    fadeCounter_2 = 0;
-  }
+  if ((updateCount == 0 || updateCount == sampleTime - 1) && updateCount != CONTROL_RATE - 1) { nextProcess = 0; }
+
   // audio sampling phase
-  if (nextProcess < numProcessForSampling) {
-    recordSample();
-  }
+  if (nextProcess < numProcessForSampling) { recordSample(); }
   // FFT phase A, seperated into two phases so that all functions are ran within UPDATE_TIME
   else if (nextProcess == numTotalProcesses - 2) {
     FFT.DCRemoval();  // Remove DC component of signal
@@ -287,15 +277,17 @@ void updateControl() {
     FFT.ComplexToMagnitude();   // Compute frequency magnitudes
 
     // Use the breadslicer function to process FFT output
-    breadslicer(vRealL, slices);
+    breadslicer(vRealL);
     // Frequency of max amplitude change
     //frequencyMaxAmplitudeDelta();
     // Major peaks of an FFT spectrogram
     //findMajorPeaks();
 
     // mapping amplitudes and frequencies generated by FFT processing to a sine wave frequency and amplitude for additive synthesis
-    mapFreqAmplitudes();
+    mapFreqAmplitudes2();
   }
+  // called every updateControl tick, to smoothen transtion between amplitudes and change the sine wave frequencies that are used for synthesis
+  smoothenTransition();
   // increment updateControl calls and nextProcess counters
   nextProcess++;
   updateCount++;
@@ -305,12 +297,12 @@ void updateControl() {
   updateAudio() is called @AUDIO_RATE times per second, the code in here needs to be very basic or audio glitches will occur
 */
 AudioOutput_t updateAudio() {
-  int longCarrierLeft = 0;    // stores the carrier wave for the left channel
+  long longCarrierLeft = 0;    // stores the carrier wave for the left channel
   //int longCarrierRight = 0; // stores the carrier wave for the right channel
 
   for (int i = 0; i < numWaves; i++) {
     // summing sine waves into a "long" carrier wave
-    longCarrierLeft += amplitudeGains[i] * aSinL[i].next() + amplitudeGains[i + numWaves] * aSinL[i + numWaves].next();
+    longCarrierLeft += amplitudeGains[i] * aSinL[i].next();
     //longCarrierRight += amplitudeGains[i] * aSinR[i].next();
   }
   // bit shift down to appropriate range (0-255)
@@ -323,6 +315,25 @@ AudioOutput_t updateAudio() {
     Functions related to FFT and FFT analysis
 ########################################################
 /*/
+
+void saveBreadslicerLocations() {
+  int lastSliceFrequency = 0;
+  for (int i = 0; i < slices; i++) {
+    // store location in array that is used by the breadslicer function
+    int sliceLocation = breadslicerSliceLocationsStatic[i];
+    breadslicerSliceLocations[i] = sliceLocation;
+    int sliceFrequency = sliceLocation * frequencyResolution;
+    Serial.printf("\t\tsliceLocation %d, Range %dHz to %dHz\n", sliceLocation, lastSliceFrequency, sliceFrequency);
+    lastSliceFrequency = sliceFrequency;
+  }
+  Serial.println();
+}
+
+void saveBreadslicerWeights() {
+  for (int i = 0; i < slices; i++) {
+    breadslicerSliceWeights[i] = breadslicerSliceWeightsStatic[i];
+  }
+}
 
 /*
   Used to pre-calculate the array locations for the breadslicer to reduce processor load during loop
@@ -337,7 +348,8 @@ void calculateBreadslicerLocations() {
   int lastSliceFrequency = 0;
   for (int i = 0; i < slices; i++) {
     float xStep = (i + 1) * step;        // x-axis step (0.0 - 1.0)
-    float exponent = 1.0 / (pow(xStep, BREADSLICER_CURVE_EXPONENT) + BREADSLICER_CURVE_OFFSET);  // exponent of the curve
+    //float exponent = 1.0 / (pow(xStep, BREADSLICER_CURVE_EXPONENT) + BREADSLICER_CURVE_OFFSET);  // exponent of the curve
+    float exponent = 1.0 / 0.5;
     // calculate slice location in array based on the curve to follow for slicing.
     int sliceLocation = round(FFT_WIN_SIZE_BY2 * pow(xStep, exponent));
     int sliceFrequency = round(sliceLocation * frequencyResolution);      // Calculates the slices frequency range
@@ -359,31 +371,28 @@ void calculateBreadslicerLocations() {
   Splits the amplitude data (vReal array) into X bands based on somewhat of a parabolic/logarithmic curve, where X is sliceInto. This is done to detect features of sound which are commonly found at certain frequency ranges.
   For example, 0-200Hz is where bass is common, 200-1200Hz is where voice and instruments are common, 1000-5000Hz higher notes and tones as well as harmonics 
 */
-void breadslicer(float *data, int sliceInto) {
+void breadslicer(float *data) {
   // The maximum amplitude of the array. Set to BREADSLICER_MAX_AVG_BIN to scale all amplitudes
   // to the 0-255 range and to represent volume
-  int curMaxAvg = BREADSLICER_MAX_AVG_BIN;
+  long curMaxAvg = BREADSLICER_MAX_AVG_BIN;
 
   float topOfSample = frequencyResolution;  // The frequency of the current amplitude in the amplitudes array
 
   // lastJ is the last amplitude taken from *data. It is set to 1 to skip the first amplitude at 0Hz
   int lastJ = 1;
   // Calculate the size of each bin and amplitudes per bin
-  for (int i = 0; i < sliceInto; i++) {
+  for (int i = 0; i < slices; i++) {
     // use pre-calculated array locations for amplitude array slicing
     int sliceSize = breadslicerSliceLocations[i];
 
     // store the array location pre-inner loop
     int newJ = lastJ;
 
-    int ampSliceSum = 0;     // the sum of the current slice
+    long ampSliceSum = 0;     // the sum of the current slice
     int ampSliceCount = 0;   // the number of amplitudes in the current slice
     // these values are used to determine the "peak" of the current slice
     int maxSliceAmp = 0;
     int maxSliceAmpFreq = 0;
-    // the averageCount, counts how many amplitudes are above the FFT_FLOOR_THRESH, the averageFreq contains the average frequency of these amplitudes
-    int ampsAboveThresh = 0;
-    int averageFreq = 0;
 
     // inner loop, finds the average energy of the slice and "peak" frequency
     for (int j = lastJ; j < sliceSize; j++) {
@@ -392,12 +401,8 @@ void breadslicer(float *data, int sliceInto) {
       int amp = round(data[j]);
       // if amplitude is above certain threshold and below outlier value, then exclude from signal processing
       if (amp > FFT_FLOOR_THRESH && amp < OUTLIER) {
-        // floor the current amplitude, considered 0 otherwise since its excluded
-        //amp -= FFT_FLOOR_THRESH;
         // add to the slice sum, and average frequency, increment amps above threshold counter
         ampSliceSum += amp;
-        averageFreq += topOfSample;
-        ampsAboveThresh += 1;
         // the peak amplitude of the current slice, this is not exactly the "peak" of the spectogram since slicing the array can cut off peaks. But it is good enough for now.
         if (amp > maxSliceAmp) {
           maxSliceAmp = amp;
@@ -413,16 +418,16 @@ void breadslicer(float *data, int sliceInto) {
       // Serial.printf("I: %d\tFreq: %.2f\tAmp: %.2f\t", j, topOfSample, data[j]);
       // Serial.println();
     }
-    //averageAmplitudeOfSlice[i] = ampSliceSum * weight;
+    //ampSliceSum *= frequencyResolution;
     //if the current slice contains at least two amplitudes, then assign the average, otherwise assign the sum of the slice
     if (ampSliceCount > 1) {
-      averageAmplitudeOfSlice[i] = int(round(ampSliceSum / ampSliceCount) * breadslicerSliceWeights[i]);
-      averageFreq = int(round(averageFreq / ampsAboveThresh));
+      averageAmplitudeOfSlice[i] = int(round(ampSliceSum / ampSliceCount));
     } else {
-      averageAmplitudeOfSlice[i] = round(ampSliceSum * breadslicerSliceWeights[i]);
+      averageAmplitudeOfSlice[i] = round(ampSliceSum);
     }
+    averageAmplitudeOfSlice[i] = round(averageAmplitudeOfSlice[i] * breadslicerSliceWeights[i]);
     // if there is at least one amplitude that is above threshold in the group, map it's frequency, otherwise frequency for that slice is unchanged
-    if (ampsAboveThresh > 0) {
+    if (ampSliceCount > 0) {
       peakFrequencyOfSlice[i] = maxSliceAmpFreq;
     }
     // ensure that averages aren't higher than the max set average value, and if it is higher, then the max average is replaced by that value, for this iteration
@@ -433,7 +438,7 @@ void breadslicer(float *data, int sliceInto) {
     lastJ = newJ;
   }
   // put all amplitudes within the 0-255 range, with this "K" value, done in mapFreqAmplitudes()
-  amplitudeToRange = float(255.0 / (curMaxAvg * totalNumWaves));
+  amplitudeToRange = float(254.0 / curMaxAvg / numWaves);
 }
 
 /* 
@@ -531,13 +536,10 @@ void frequencyMaxAmplitudeDelta(float *data, float *prevData) {
 */
 void recordSample() {
   for (int i = 0; i < numSamplesPerProcess; i++) {
-    sampleT = micros();                                  // store the current time in microseconds
+    sampleT = micros();
     int sampleL = mozziAnalogRead(AUDIO_INPUT_PIN_LEFT);    // Read sample from left input
-    //int sampleR = mozziAnalogRead(AUDIO_INPUT_PIN_RIGHT);   // Read sample from right input
     vRealL[numSamplesTaken] = float(sampleL);       // store left channel sample in left vReal array
     vImagL[numSamplesTaken] = 0.0;                  // set imaginary values to 0.0
-    //vRealR[numSamplesTaken] = float(sampleR);       // store right channel sampling in right vReal array
-    //vImagR[numSamplesTaken] = 0.0;                  // set imaginary values to 0.0
     numSamplesTaken++;                              // increment sample counter
     // break out of loop if buffer is full, reset sample counter and increment the total number of sampling sessions
     if (numSamplesTaken == FFT_WIN_SIZE) {
@@ -547,7 +549,7 @@ void recordSample() {
     }
     if (i == numSamplesPerProcess - 1) { break; }
     // wait until sampleDelayTime has passed, to sample at the sampling frequency. Without this the DCRemoval() function will not work.
-    while (micros() - sampleT < sampleDelayTime) {}
+    while (micros() - sampleT < sampleDelayTime);
   }
 }
 
@@ -573,6 +575,8 @@ void calculateFadeFunction() {
   }
   Serial.println();
 }
+
+
 /* 
   Maps the amplitudes and frequencies just generated by FFT to the next amplitudes to be synthesized, which is done to gradually increase/decrease
   the real amplitudes to the next amplitudes with linear smoothing (can be changed to curve smoothing). 
@@ -584,8 +588,10 @@ void mapFreqAmplitudes2() {
     // kind of like a circular buffer to smoothen transition between amplitudes to reduce audio glitches,
     // results in a delay between input and output of about (1/SAMPLES_PER_SEC) seconds
     prevAmplitudeGains[i] = nextAmplitudeGains[i];
+    prevWaveFrequencies[i] = nextWaveFrequencies[i];
     int gainValue = 0;    // the gain values to assign to the next wave being synthesized
     int frequency = 0;    // the frequency to assign to the next wave being synthesized
+    // if iterator is on one of the next available waves (waves with 0 gain), map its amplitude, otherwise gain value is 0
     // use the breadslicer output for mapping the amplitudes and frequencies
     gainValue = averageAmplitudeOfSlice[i];
     // only map the gain and frequency if the gain value of the current slice is above 0 meaning no meaningful energy was detected in that slice
@@ -594,26 +600,28 @@ void mapFreqAmplitudes2() {
       // multiply the gain value by a "K" value to put it into the 0-255 range, this value alters based on the max average amplitude but doesn't go below a certain point
       gainValue = round(gainValue * amplitudeToRange);
       // slightly shrink down the bassy frequencys
-      if (frequency < 260) {
+      if (frequency < 234) {
         frequency = round(frequency * 0.4);
       // shrink the rest of the peak frequencies by mapping them to them to a range
       } else {
         // normalize the frequency to a value between 0.0 and 1.0
-        float normalizedFreq = (frequency - 260.0) / (samplingFreqBy2 - 260.0);
+        float normalizedFreq = (frequency - 234.0) / (samplingFreqBy2 - 234.0);
         // this is done to do a logarithmic mapping rather than linear
-        normalizedFreq = pow(normalizedFreq, 0.7);
-        frequency = int(round(normalizedFreq * 140) + 40);
+        normalizedFreq = pow(normalizedFreq, 0.6);
+        frequency = int(round(normalizedFreq * 130) + 30);
       }
-      // assign new frequency to an ossilator, no need to smoothen this since the gain value for this ossilator is 0
-      aSinLFrequencies[i] = frequency;
     }
-    // assign the gain value to the nextAmplitudeGains[i], the next waves to be synthesized
     nextAmplitudeGains[i] = gainValue;
+    nextWaveFrequencies[i] = frequency;
+    // assign the gain value to the nextAmplitudeGains[i], the next waves to be synthesized
     // calculate the value to alter the amplitude per each update cycle
     ampGainStep[i] = float(nextAmplitudeGains[i] - prevAmplitudeGains[i]);
+    freqStep[i] = float(nextWaveFrequencies[i] - prevWaveFrequencies[i]);
     // Serial.printf("(%d, %d, %03d, %03d)\t", i, i - aLocation, gainValue, frequency);
   }
+  // Serial.println();
 }
+
 
 /* 
   Maps the amplitudes and frequencies just generated by FFT to the next amplitudes to be synthesized, which is done to gradually increase/decrease
@@ -647,22 +655,22 @@ void mapFreqAmplitudes() {
         // multiply the gain value by a "K" value to put it into the 0-255 range, this value alters based on the max average amplitude but doesn't go below a certain point
         gainValue = round(gainValue * amplitudeToRange);
         // slightly shrink down the bassy frequencys
-        if (frequency < 260) {
-          frequency = round(frequency * 0.4);
+        if (frequency < 240) {
+          frequency = round(frequency * 0.3);
         // shrink the rest of the peak frequencies by mapping them to them to a range
         } else {
           // normalize the frequency to a value between 0.0 and 1.0
-          float normalizedFreq = (frequency - 260.0) / (samplingFreqBy2 - 260.0);
+          float normalizedFreq = (frequency - 240.0) / (samplingFreqBy2 - 240.0);
           // this is done to do a logarithmic mapping rather than linear
-          normalizedFreq = pow(normalizedFreq, 0.7);
-          frequency = int(round(normalizedFreq * 140) + 40);
+          normalizedFreq = pow(normalizedFreq, 0.6);
+          frequency = int(round(normalizedFreq * 110) + 50);
         }
         // assign new frequency to an ossilator, no need to smoothen this since the gain value for this ossilator is 0
         aSinLFrequencies[i] = frequency;
       }
-      // assign the gain value to the nextAmplitudeGains[i], the next waves to be synthesized
       nextAmplitudeGains[i] = gainValue;
     }
+    // assign the gain value to the nextAmplitudeGains[i], the next waves to be synthesized
     // calculate the value to alter the amplitude per each update cycle
     ampGainStep[i] = float(nextAmplitudeGains[i] - prevAmplitudeGains[i]);
     // Serial.printf("(%d, %d, %03d, %03d)\t", i, i - aLocation, gainValue, frequency);
@@ -676,8 +684,9 @@ void mapFreqAmplitudes() {
   changes the frequencies of the set of waves with an amplitude of 0
 */
 void changeFrequencies() {
-  for (int i = 0; i < totalNumWaves; i++) {
+  for (int i = 0; i < numWaves; i++) {
     aSinL[i].setFreq(aSinLFrequencies[i]);
+    aSinL[i + numWaves].setFreq(aSinLFrequencies[i + numWaves]);
   }
 }
 
@@ -685,17 +694,23 @@ void changeFrequencies() {
   Linear smoothing between amplitudes to reduce audio glitches, using precalculated values
 */
 void smoothenTransition() {
-  if (fadeCounter_1 >= FADE_RATE) { fadeCounter_1 = 0; }
-  if (fadeCounter_2 >= FADE_RATE) { fadeCounter_2 = 0; }
-  for (int i = 0; i < totalNumWaves; i++) {
-    //amplitudeGains[i] = round(prevAmplitudeGains[i] + FADE_CONST[fadeCounter] * ampGainStep[i]);
+  for (int i = 0; i < numWaves; i++) {
+    // amplitudeGains[i] = round(prevAmplitudeGains[i] + FADE_CONST[fadeCounter] * ampGainStep[i]);
+    // amplitudeGains[i + numWaves] = round(prevAmplitudeGains[i + numWaves] + FADE_CONST[fadeCounter] * ampGainStep[i + numWaves]);
     // smoothen the transition between each amplitude, checking for difference to avoid additonal smoothing
-    if (abs(nextAmplitudeGains[i] - int(round(amplitudeGains[i]))) > 2) {  
+    if (abs(nextAmplitudeGains[i] - int(round(amplitudeGains[i]))) > 3) {  
       amplitudeGains[i] = round(prevAmplitudeGains[i] + float(FADE_CONST[fadeCounter] * ampGainStep[i]));
     } else {
       amplitudeGains[i] = nextAmplitudeGains[i];
     }
+    aSinLFrequencies[i] = round(prevWaveFrequencies[i] + float(FADE_CONST[fadeCounter] * freqStep[i]));
+    aSinL[i].setFreq(int(aSinLFrequencies[i]));
   }
   // increment fade counter
+<<<<<<< HEAD
+  fadeCounter = (fadeCounter + 1) % FADE_RATE;
+}
+=======
   fadeCounter_1++;
 }
+>>>>>>> 0d7b984c1e093169408d0ec3ae76dc3099c46dfb
