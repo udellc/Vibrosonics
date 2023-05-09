@@ -61,6 +61,8 @@
 #define DEFAULT_NUM_WAVES 6            // The number of waves to synthesize, and how many slices the breadslicer function does
 #define OSCIL_COUNT int(int(DEFAULT_NUM_WAVES) << 1)  // The total number of waves to synthesize, DEFAULT_NUM_WAVES * 2
 
+#define BREADSLICER_USE_CURVE 0    // Set to 1 to use breadslicer curve for slicing, or 0 to set custom breadslicer values 
+
 #define BREADSLICER_CURVE_EXPONENT 3.3  // The exponent for the used for the breadslicer curve
 #define BREADSLICER_CURVE_OFFSET 0.55 // The curve offset for the breadslicer to follow when slicing the amplitude array
 
@@ -143,12 +145,13 @@ int sumOfPeakAmps = 0;
 const int slices = numWaves;  // accounts for how many slices the samples are split into
 const int totalNumWaves = int(DEFAULT_NUM_WAVES) << 1;  // we are synthesizing twice the number of frequencies we are finding, toggling between the two sets, changing the frequency when the amplitudes of one of the sets are 0
 
-float amplitudeToRange = 254.0 / BREADSLICER_MAX_AVG_BIN / numWaves;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
+float amplitudeToRange = (254.0 / BREADSLICER_MAX_AVG_BIN) / numWaves;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but BREADSLICER_MAX_AVG_BIN doesn't go lower than it's set value, and numWaves doesn't go above it's set value, to give a better sense of the volume
 
-int breadslicerSliceLocations[DEFAULT_NUM_WAVES];  // array storing pre-calculated array locations for slicing the FFT amplitudes array (vReal)
-const int breadslicerSliceLocationsStatic[DEFAULT_NUM_WAVES] = {4, 8, 15, 25, 50, 64};
-float breadslicerSliceWeights[DEFAULT_NUM_WAVES]; // weights associated to the average amplitudes of slices
-const float breadslicerSliceWeightsStatic[DEFAULT_NUM_WAVES] = {1.0, 0.6, 0.5, 3.0, 6.0, 8.0}; // weights associated to the average amplitudes of slices
+// if BREADSLICER_USE_CURVE == True then use breadslicerSliceLocations for slicing the FFT amplitudes array, otherwise use breadslicerSliceLocationsStatic
+const int breadslicerSliceLocationsStatic[DEFAULT_NUM_WAVES] {4, 8, 15, 25, 50, 64};  // array storing pre-defined slice locations in array for slicing the FFT amplitudes array (vReal)
+int breadslicerSliceLocations[DEFAULT_NUM_WAVES];                               // array for storing values caluclated for slicing the FFT amplitudes array
+float breadslicerSliceWeights[DEFAULT_NUM_WAVES] {1.0, 0.6, 0.5, 3.0, 6.0, 8.0}; // weights associated to the average amplitudes of slices
+//const float breadslicerSliceWeightsStatic[DEFAULT_NUM_WAVES] {1.0, 0.6, 0.5, 3.0, 6.0, 8.0}; // weights associated to the average amplitudes of slices
 
 long averageAmplitudeOfSlice[DEFAULT_NUM_WAVES];          // the array used to store the average amplitudes calculated by the breadslicer
 int peakFrequencyOfSlice[DEFAULT_NUM_WAVES];              // the array containing the peak frequency of the slice
@@ -194,12 +197,12 @@ void setup() {
     ; 
   Serial.println("Ready");
   delay(1000);  // wait for one second, not needed but helps prevent weird Serial output
-  //Serial.println(breadslicerSliceLocationsStatic);
+  //Serial.println(breadslicerSliceLocations);
   // setup reference tables for aSin[] oscillator array and initialize arrays
   for (int i = 0; i < int(OSCIL_COUNT); i++) {
     averageAmplitudeOfSlice[i] = 0;
     aSinL[i].setTable(SIN2048_DATA);
-    aSinLFrequencies[i] = int(map(breadslicerSliceLocationsStatic[(i % numWaves)], 1, FFT_WIN_SIZE_BY2, 10, 160));
+    aSinLFrequencies[i] = int(map(breadslicerSliceLocations[(i % numWaves)], 1, FFT_WIN_SIZE_BY2, 10, 160));
     amplitudeGains[i] = 0;
     prevAmplitudeGains[i] = 0;
     nextAmplitudeGains[i] = 0;
@@ -222,8 +225,10 @@ void setup() {
   // precalculate linear amplitude smoothing values and breadslicer slice locations to save processing power
   calculateFadeFunction();
   //calculateBreadslicerLocations();
-  saveBreadslicerLocations();
-  saveBreadslicerWeights();
+
+  if (BREADSLICER_USE_CURVE) {
+    saveBreadslicerLocations();
+  }
   
   // Additive Synthesis
   startMozzi(CONTROL_RATE);
@@ -329,12 +334,6 @@ void saveBreadslicerLocations() {
   Serial.println();
 }
 
-void saveBreadslicerWeights() {
-  for (int i = 0; i < slices; i++) {
-    breadslicerSliceWeights[i] = breadslicerSliceWeightsStatic[i];
-  }
-}
-
 /*
   Used to pre-calculate the array locations for the breadslicer to reduce processor load during loop
 */
@@ -378,6 +377,8 @@ void breadslicer(float *data) {
 
   float topOfSample = frequencyResolution;  // The frequency of the current amplitude in the amplitudes array
 
+  int numWavesAboveThresh = 0;
+
   // lastJ is the last amplitude taken from *data. It is set to 1 to skip the first amplitude at 0Hz
   int lastJ = 1;
   // Calculate the size of each bin and amplitudes per bin
@@ -418,6 +419,12 @@ void breadslicer(float *data) {
       // Serial.printf("I: %d\tFreq: %.2f\tAmp: %.2f\t", j, topOfSample, data[j]);
       // Serial.println();
     }
+
+    // if there is at least one amplitude that is above threshold in the group, map it's peak frequency, otherwise frequency for that slice is unchanged
+    if (ampSliceCount > 0) {
+      peakFrequencyOfSlice[i] = maxSliceAmpFreq;
+      numWavesAboveThresh++;
+    }
     //ampSliceSum *= frequencyResolution;
     //if the current slice contains at least two amplitudes, then assign the average, otherwise assign the sum of the slice
     if (ampSliceCount > 1) {
@@ -426,10 +433,7 @@ void breadslicer(float *data) {
       averageAmplitudeOfSlice[i] = round(ampSliceSum);
     }
     averageAmplitudeOfSlice[i] = round(averageAmplitudeOfSlice[i] * breadslicerSliceWeights[i]);
-    // if there is at least one amplitude that is above threshold in the group, map it's frequency, otherwise frequency for that slice is unchanged
-    if (ampSliceCount > 0) {
-      peakFrequencyOfSlice[i] = maxSliceAmpFreq;
-    }
+
     // ensure that averages aren't higher than the max set average value, and if it is higher, then the max average is replaced by that value, for this iteration
     if (averageAmplitudeOfSlice[i] > curMaxAvg) {
         curMaxAvg = averageAmplitudeOfSlice[i];
@@ -438,7 +442,7 @@ void breadslicer(float *data) {
     lastJ = newJ;
   }
   // put all amplitudes within the 0-255 range, with this "K" value, done in mapFreqAmplitudes()
-  amplitudeToRange = float(254.0 / curMaxAvg / numWaves);
+  amplitudeToRange = float((254.0 / curMaxAvg) / numWavesAboveThresh);
 }
 
 /* 
@@ -707,10 +711,5 @@ void smoothenTransition() {
     aSinL[i].setFreq(int(aSinLFrequencies[i]));
   }
   // increment fade counter
-<<<<<<< HEAD
   fadeCounter = (fadeCounter + 1) % FADE_RATE;
 }
-=======
-  fadeCounter_1++;
-}
->>>>>>> 0d7b984c1e093169408d0ec3ae76dc3099c46dfb
