@@ -63,7 +63,7 @@ const int slices = BREADSLICER_NUM_SLICES;
 float amplitudeToRange = (125.0/BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
 
 int breadslicerSliceLocations[slices];
-float breadslicerSliceWeights[slices] = {1.0, 2.0, 2.5, 2.0, 2.0};
+float breadslicerSliceWeights[slices] = {1.0, 1.0, 1.0, 1.0, 1.0};
 
 int averageAmplitudeOfSlice[slices];          // the array used to store the average amplitudes calculated by the breadslicer
 int peakFrequencyOfSlice[slices];             // the array containing the peak frequency of the slice
