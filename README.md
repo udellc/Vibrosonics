@@ -1,7 +1,7 @@
 # Vibrosonics
 Welcome to Vibrosonics!
 
-Detailed documentation can be viewed under the [wiki](https://github.com/udellc/Vibrosonics/wiki)
+Detailed documentation can be viewed under the [wiki](https://github.com/udellc/Vibrosonics/wiki).
 
 Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable
 
