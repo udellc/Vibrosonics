@@ -3,7 +3,7 @@ Welcome to Vibrosonics!
 
 Detailed documentation is under works.
 
-Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TS-25 puck bass-transducer, 3.5mm audio jack cable
+Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable
 
 Library dependencies:
   For Vibrosonics-Mozzi: Arduino, ArduinoFFT, Mozzi.
