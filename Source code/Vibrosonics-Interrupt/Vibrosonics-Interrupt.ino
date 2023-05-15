@@ -1,5 +1,6 @@
 #include <arduinoFFT.h>
 #include <Arduino.h>
+//#include <dac_oneshot.h>
 #include <math.h>
 
 /*/
@@ -18,6 +19,8 @@
 #define FFT_FLOOR_THRESH 500  // amplitude flooring threshold for FFT, to reduce noise
 #define FFT_OUTLIER 30000     // Outlier for unusually high amplitudes in FFT
 
+#define BASS_FREQ 250       // frequencies up to this frequency are considered bass
+
 #define BREADSLICER_NUM_SLICES 5 // The number of slices the breadslicer does
 #define BREADSLICER_CURVE_EXPONENT 3.0  // The exponent for the used for the breadslicer curve
 #define BREADSLICER_CURVE_OFFSET 0.59  // The curve offset for the breadslicer to follow when slicing the amplitude array
@@ -26,7 +29,7 @@
 #define SIN_WAVE_TABLE_SIZE 200  // How many frequencies to pre-generate (i.e from 1 to SIN_WAVE_TABLE_SIZE Hz). This is used to speed up calculations performed by generateAudioForWindow()
 
 #define AUDIO_INPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE)
-#define AUDIO_OUTPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE * 3)
+#define AUDIO_OUTPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE) * 3
 
 /*/
 ########################################################
@@ -60,10 +63,11 @@ float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing f
 
 const int slices = BREADSLICER_NUM_SLICES;
 
-float amplitudeToRange = (125.0/BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
+float amplitudeToRange = (128.0/BREADSLICER_MAX_AVG_BIN) / slices;   // the "K" value used to put the average amplitudes calculated by breadslicer into the 0-255 range. This value alters but doesn't go below BREADSLICER_MAX_AVG_BIN to give a sense of the volume
 
+const int breadslicerSliceLocationsStatic[slices] {250, 500, 1200, 2800, 5000};
 int breadslicerSliceLocations[slices];
-float breadslicerSliceWeights[slices] = {1.0, 1.0, 1.0, 1.0, 1.0};
+float breadslicerSliceWeights[slices] {1.0, 1.0, 1.0, 1.0, 1.0};
 
 int averageAmplitudeOfSlice[slices];          // the array used to store the average amplitudes calculated by the breadslicer
 int peakFrequencyOfSlice[slices];             // the array containing the peak frequency of the slice
@@ -106,31 +110,31 @@ int sinWaveFrequency[BREADSLICER_NUM_SLICES];
 /*/
 
 volatile int audioInputBuffer[AUDIO_INPUT_BUFFER_SIZE];
-volatile int audioInputBufferCount = 0;
+volatile int audioInputBufferIdx = 0;
 volatile int audioInputBufferFull = 0;
 
-volatile int audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
-volatile int audioOutputBufferCount = 0;
+volatile uint8_t audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
+volatile int audioOutputBufferIdx = 0;
 
 hw_timer_t *My_timer = NULL;
 
 void IRAM_ATTR onTimer(){
-  analogWrite(AUDIO_OUTPUT_PIN, audioOutputBufferCount);
+  //dac_oneshot_output_voltage(AUDIO_OUTPUT_PIN, uint8_t(audioOutputBuffer[audioOutputBufferIdx]));
   if (numFFTCount > 1) {
-    audioOutputBufferCount++;
+    audioOutputBufferIdx++;
   }
-  if (audioOutputBufferCount == AUDIO_OUTPUT_BUFFER_SIZE) {
-    audioOutputBufferCount = 0;
+  if (audioOutputBufferIdx == AUDIO_OUTPUT_BUFFER_SIZE) {
+    audioOutputBufferIdx = 0;
   }
 
-  audioInputBuffer[audioInputBufferCount] = analogRead(AUDIO_INPUT_PIN);
-  audioInputBufferCount++;
-  if (audioInputBufferCount == AUDIO_INPUT_BUFFER_SIZE) {
+  audioInputBuffer[audioInputBufferIdx] = analogRead(AUDIO_INPUT_PIN);
+  audioInputBufferIdx++;
+  if (audioInputBufferIdx == AUDIO_INPUT_BUFFER_SIZE) {
     if (numFFTCount < 1) {
       numFFTCount++;
     }
     audioInputBufferFull = 1;
-    audioInputBufferCount = 0;
+    audioInputBufferIdx = 0;
   }
 }
 
@@ -151,8 +155,6 @@ void setup() {
 
   calculateCosWave();
   calculateSinWaveTable();
-  Serial.print("b");
-
 
   calculateBreadslicerLocations();
   // setup reference tables for aSin[] oscillator array
@@ -226,6 +228,9 @@ void loop() {
     mapAmplitudeFrequency();
  
     generateAudioForWindow();
+    for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
+      audioOutputBuffer[i + audioOutputBufferIdx] = audioOutputBuffer[i + audioOutputBufferIdx];
+    }
     audioInputBufferFull = 0;
     //Serial.println(micros() - time);
   }
@@ -369,16 +374,16 @@ void breadslicer(float *data) {
     lastJ = newJ;
   }
   // put all amplitudes within the 0-255 range, with this "K" value, done in mapFreqAmplitudes()
-  amplitudeToRange = float(125.0 / curMaxAvg / slices);
+  amplitudeToRange = float(128.0 / curMaxAvg / slices);
 }
 
 void mapAmplitudeFrequency() {
   for (int i = 0; i < BREADSLICER_NUM_SLICES; i++) {
     sinWaveAmplitude[i] = averageAmplitudeOfSlice[i] * amplitudeToRange;
-    if (peakFrequencyOfSlice[i] < 250) {
-      sinWaveFrequency[i] = round(peakFrequencyOfSlice[i] * 0.7);
+    if (peakFrequencyOfSlice[i] < BASS_FREQ) {
+      sinWaveFrequency[i] = round(peakFrequencyOfSlice[i] * 0.26);
     } else {
-      sinWaveFrequency[i] = map(peakFrequencyOfSlice[i], 250, int(SAMPLING_FREQ_BY2), 10, 199);
+      sinWaveFrequency[i] = map(peakFrequencyOfSlice[i], int(BASS_FREQ), int(SAMPLING_FREQ_BY2), 10, 199);
     }
   }
 
@@ -435,7 +440,7 @@ void generateAudioForWindow() {
       // sumOfSines += float(averageAmplitudeOfSlice[j] * sin_wave_table[peakFrequencyOfSlice[j]][i + offset];
       int sin_wave_table_position = (sin_wave_table_idx - offset + sin_wave_table_frequency_period[j]) % sin_wave_table_frequency_period[j];
 
-      sumOfSines += float(sinWaveAmplitude[j] * sin_wave_table[sinWaveFrequency[j]][sin_wave_table_position]);
+      sumOfSines += float(sinWaveAmplitude[j] * sin_wave_table[sinWaveFrequency[j] - 1][sin_wave_table_position]);
     }
     audioOutputBuffer[generateAudioCounter] += int(round(cos_wave[i] * sumOfSines));
     sin_wave_table_idx = (sin_wave_table_idx + 1) % int(SAMPLING_FREQ);
@@ -448,75 +453,3 @@ void generateAudioForWindow() {
   generateAudioCounter -= FFT_WINDOW_SIZE;
   toggleWaveOffset = 1 - toggleWaveOffset;
 }
-
-/*
-// Online C++ compiler to run C++ program online
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-using namespace std;
-
-const float PI = 3.14159;
-const int FFT_WINDOW_SIZE = 32;
-const int FFT_WINDOW_SIZE_BY2 = FFT_WINDOW_SIZE * 0.5;
-const int FFT_WINDOW_SIZE_X2 = FFT_WINDOW_SIZE * 2;
-const int AUDIO_OUTPUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
-
-float audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
-
-int generateAudioCounter = 0;
-int audioOutputBufferIdx = 0;
-
-int toggleOffsetWave = 0;
-
-void generateAudioForWindow() {
-  float resolution = float(2.0 * PI / FFT_WINDOW_SIZE_X2);
-  
-  int offset = 0;
-  if (toggleOffsetWave) {
-      offset = FFT_WINDOW_SIZE;
-  }
-  
-  
-  for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
-    generateAudioCounter = (generateAudioCounter + AUDIO_OUTPUT_BUFFER_SIZE) % AUDIO_OUTPUT_BUFFER_SIZE;
-    float aCos = 0.5 * (1.0 - cos(float(resolution * i)));
-    //cout << generateAudioCounter << '\t' << aCos << endl;
-    float sumOfSines = sin(float(resolution * (i + offset)));
-    //cout << i << "\t" << float(aCos * sumOfSines) << endl;
-    // for (int j = 0; j < slices; j++) {
-    //   sumOfSines += averageAmplitudeOfSlice[j] * sin(float(2.0 * PI * peakFrequencyOfSlice[j] * generateAudioCounter));
-    // }
-    audioOutputBuffer[generateAudioCounter] += float(aCos * sumOfSines);
-    generateAudioCounter++;
-  }
-  int lastAudioCounter = generateAudioCounter;
-  for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-      audioOutputBuffer[(lastAudioCounter + i) % AUDIO_OUTPUT_BUFFER_SIZE] = 0.0;
-  }
-  generateAudioCounter -= FFT_WINDOW_SIZE;
-  toggleOffsetWave = 1 - toggleOffsetWave;
-}
-
-int main() {
-    // Write C++ code here
-    for (int k = 0; k < 10; k++) {
-        int lastAudioLoc = audioOutputBufferIdx;
-        for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-            audioOutputBufferIdx = (audioOutputBufferIdx + 1) % AUDIO_OUTPUT_BUFFER_SIZE;
-            
-        }
-        fftCount++;
-        generateAudioForWindow();
-        int idxCout = (audioOutputBufferIdx - 1 >= 0) ? audioOutputBufferIdx - 1 : AUDIO_OUTPUT_BUFFER_SIZE - 1;
-        cout << "FFTNUM: " << fftCount << "\tAUDIO_BUFFER " << lastAudioLoc << '-' << idxCout << endl;
-        for (int j = lastAudioLoc; j <= idxCout; j++) {
-        //for (int j = 0; j < AUDIO_OUTPUT_BUFFER_SIZE; j++) {
-            cout << j << '\t' << setprecision(2) << audioOutputBuffer[j] << endl;
-        }
-    }
-    
-
-    return 0;
-}
-*/
