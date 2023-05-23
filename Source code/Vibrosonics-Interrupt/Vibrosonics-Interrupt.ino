@@ -215,22 +215,31 @@ void loop() {
     // store previously computed FFT results in vRealPrev array, and copy values from audioInputBuffer to vReal array
     setupFFT();
     
-    FFT.DCRemoval();
+    FFT.DCRemoval();                                  // DC Removal to reduce noise
     FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
-    FFT.Compute(FFT_FORWARD);// Compute FFT
-    FFT.ComplexToMagnitude();                      // Compute frequency magnitudes
+    FFT.Compute(FFT_FORWARD);                         // Compute FFT
+    FFT.ComplexToMagnitude();                         // Compute frequency magnitudes
 
     // Average the previous and next vReal arrays for a smoother spectrogram
     averageFFTWindows();
 
+    // use the breadslicer to split the spectogram into bands
     breadslicer(FFTData);
 
+    // map the amplitudes and frequencies calculated by the signal processing functions
     mapAmplitudeFrequency();
- 
+
+    // generate audio for the next audio window
     generateAudioForWindow();
+
+    // debugging for audio output buffer
     for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-      audioOutputBuffer[i + audioOutputBufferIdx] = audioOutputBuffer[i + audioOutputBufferIdx];
+      Serial.print(i + audioOutputBufferIdx);
+      Serial.print("\t");
+      Serial.println(audioOutputBuffer[i + audioOutputBufferIdx]);
     }
+
+    // reset the audio input buffer
     audioInputBufferFull = 0;
     //Serial.println(micros() - time);
   }
