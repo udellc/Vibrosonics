@@ -127,8 +127,8 @@ const int UPDATE_TIME = 1000000 / CONTROL_RATE;                                 
 
 int nextProcess = 0;                                                              // The next signal aquisition/processing phase to be completed in updateControl
 const int numSamplesPerProcess = floor(UPDATE_TIME / sampleDelayTime);            // The Number of samples to take per update
-const int numProcessForSampling = ceil(FFT_WIN_SIZE / float(numSamplesPerProcess));            // the total number of processes to sample, calculated in setup
-const int numTotalProcesses = numProcessForSampling + 3;                                // adding 2 more processes for FFT windowing function and other processing
+const int numProcessForSampling = ceil(FFT_WIN_SIZE / float(numSamplesPerProcess));     // the total number of processes to sample, calculated in setup
+const int numTotalProcesses = numProcessForSampling + 3;                                // adding 3 more processes for FFT windowing function and other processing
 
 unsigned long sampleT;               // stores the time since program started using mozziMicros() rather than micros()
 
