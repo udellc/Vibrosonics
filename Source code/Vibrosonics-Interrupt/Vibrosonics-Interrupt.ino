@@ -181,21 +181,6 @@ void setup() {
   pinMode(AUDIO_OUTPUT_PIN, OUTPUT);
   pinMode(AUDIO_INPUT_PIN, INPUT);
 
-  // get average analog read time over 10,0000 continuous samples
-  // unsigned long time = micros();
-  // for (int i = 0; i < 10000; i++) {
-  //   analogRead(AUDIO_INPUT_PIN);
-  // }
-  // time = micros() - time;
-  // Serial.printf("Average analogRead() time: %d\n", int(round(time / 10000.0)));
-  // get average analog write time over 10,000 continous samples
-  // time = micros();
-  // for (int i = 0; i < 10000; i++) {
-  //   analogWrite(AUDIO_OUTPUT_PIN, 0);
-  // }
-  // time = micros() - time;
-  // Serial.printf("Average analogWrite() time: %d\n", int(round(time / 10000.0)));
-
   // setup interrupt for audio sampling
   My_timer = timerBegin(0, 80, true);
   timerAttachInterrupt(My_timer, &onTimer, true);
