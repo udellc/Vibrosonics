@@ -12,7 +12,7 @@ Library dependencies:
   
  - NOTE: In ArduinoFFT library, all instances of 'double' must be converted to 'float' in source code files. This is done for a performance boost. Soon the library with the changes described will be pushed onto this repository for 'plug and play' operation.
 
- - On versions: There is no immediately apparent reason as to why the most recent versions (as of writing) of ArduinoFFT (v1.6) and Mozzi (v1.1.0) wouldn't work given what they change, but they just haven't been tested since their release. Some light experimentation with the newest versions to see if they work the same is optional.
+ - On versions: There is no immediately apparent reason as to why the most recent versions (as of writing) of ArduinoFFT (v1.6) and Mozzi (v1.1.0) wouldn't work given what they change from the prior versions, but they just haven't been tested since their release. Some light experimentation with the newest versions to see if they work the same is optional.
 
 ## What is it?
 
