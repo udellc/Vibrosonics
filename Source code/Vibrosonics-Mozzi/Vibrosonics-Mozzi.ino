@@ -77,8 +77,7 @@ const float BREADSLICER_CURVE_OFFSET = 0.55;   // The curve offset for the bread
 
 // if BREADSLICER_USE_CURVE == True then use breadslicerSliceLocations for slicing the FFT amplitudes array, otherwise use breadslicerSliceLocationsStatic
 const int breadslicerSliceLocationsStatic[DEFAULT_NUM_WAVES] {250, 500, 900, 1600, 2400, 3600, 4400, 5000}; // array storing pre-defined slice locations in array for slicing the FFT amplitudes array (vReal)
-const float breadslicerSliceWeights[DEFAULT_NUM_WAVES] {1.2, 2.0, 1.5, 2.0, 1.0, 1.0, 3.0, 5.0}; // weights associated to the average amplitudes of slices
-
+const float breadslicerSliceWeights[DEFAULT_NUM_WAVES]  
 // constants used for freqMaxAmplitudeDelta()
 const int FREQ_MAX_AMP_DELTA_MIN = 200;   // The threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
 const float FREQ_MAX_AMP_DELTA_K = 0.2;   // The K-value used to weight amplitudes that are not the amplitude of most change, the lower the value, the more extreme the affect
@@ -93,8 +92,8 @@ const int BASS_FREQ = 250;                // frequencies below this are consider
 const float BASS_FREQ_SCALAR = 0.3;      // By how much to shrink frequencies low than BASS_FREQ
 
 const int SYNTH_MIN_FREQ = 16;            // The mininum frequency to use for synthesizing frequencies above BASS_FREQ
-const int SYNTH_MAX_FREQ = 140;           // The maximum frequency to use for synthesizing frequencies above BASS_FREQ
-const float MAP_FREQ_EXPONENT = 0.9;      // The exponent to use when mapping the frequencies (1.0 is linear, 0.0 - 0.99 is "exponential", over 1.0 is "logarithmic")
+const int SYNTH_MAX_FREQ = 150;           // The maximum frequency to use for synthesizing frequencies above BASS_FREQ
+const float MAP_FREQ_EXPONENT = 0.8;      // The exponent to use when mapping the frequencies (1.0 is linear, 0.0 - 0.99 is "exponential", over 1.0 is "logarithmic")
 
 /*
 ########################################################
