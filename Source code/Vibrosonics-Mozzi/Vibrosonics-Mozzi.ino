@@ -76,13 +76,13 @@ const float BREADSLICER_CURVE_EXPONENT = 3.3;  // The exponent for the used for 
 const float BREADSLICER_CURVE_OFFSET = 0.55;   // The curve offset for the breadslicer to follow when slicing the amplitude array
 
 // constants used for freqMaxAmplitudeDelta()
-const int FREQ_MAX_AMP_DELTA_MIN = 200;   // The threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
-const float FREQ_MAX_AMP_DELTA_K = 0.35;   // The K-value used to weight amplitudes that are not the amplitude of most change, the lower the value, the more extreme the affect
+const int FREQ_MAX_AMP_DELTA_MIN = 100;   // The threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
+const float FREQ_MAX_AMP_DELTA_K = 0.1;   // The K-value used to weight amplitudes that are not the amplitude of most change, the lower the value, the more extreme the affect
 
 // mostly for noise, sensitivity and volume control
-const int FFT_FLOOR_THRESH = 300;         // amplitude flooring threshold for FFT, to help reduce input noise
-const int BREADSLICER_MAX_AVG_BIN = 3000; // The minimum max that is used for scaling the amplitudes to the 0-255 range, and helps represent the volume
-const int MIN_WAVES_TO_SYNTH = 2;         // helps to represent volume of the incoming, the minimum number of waves to synthesize will be this value + 1
+const int FFT_FLOOR_THRESH = 500;         // amplitude flooring threshold for FFT, to help reduce input noise
+const int BREADSLICER_MAX_AVG_BIN = 2000; // The minimum max that is used for scaling the amplitudes to the 0-255 range, and helps represent the volume
+const int MIN_WAVES_TO_SYNTH = 1;         // helps to represent volume of the incoming, the minimum number of waves to synthesize will be this value + 1
 
 // These values define the min and max frequencies to use for synthesis
 const int BASS_FREQ = 250;                // frequencies below this are considered to be bass
