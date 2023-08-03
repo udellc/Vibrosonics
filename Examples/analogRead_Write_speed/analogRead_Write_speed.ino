@@ -3,8 +3,10 @@
 */
 
 #include <Arduino.h>
+#include <driver/dac.h>
+#include <driver/adc.h>
 
-#define INPUT_PIN A2
+#define INPUT_PIN ADC1_CHANNEL_6
 #define OUTPUT_PIN A0
 
 void setup() {
@@ -19,7 +21,7 @@ void setup() {
   // get average analog read time over 10,0000 continuous samples
   unsigned long time = micros();
   for (int i = 0; i < 10000; i++) {
-    analogRead(INPUT_PIN);
+    analogRead(A2);
   }
   time = micros() - time;
   Serial.printf("Average analogRead() time(microseconds): %d\n", int(round(time / 10000.0)));
