@@ -1,9 +1,10 @@
-#include <arduinoFFT.h>
+#include <arduinoFFTFloat.h>
 #include <Arduino.h>
 //#include <dac_oneshot.h>
 #include <driver/dac.h>
 #include <driver/adc.h>
 #include <math.h>
+#include <tuple>
 
 /*/
 ########################################################
@@ -19,7 +20,7 @@
 #define SAMPLING_FREQ 8192    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 10kHz, but
                               // bringing this down to just a tad lower, leaves more room for FFT and other signal processing functions to be done
 
-#define FFT_FLOOR_THRESH 500  // amplitude flooring threshold for FFT, to reduce noise
+#define FFT_FLOOR_THRESH 1500  // amplitude flooring threshold for FFT, to reduce noise
 #define FFT_OUTLIER 30000     // Outlier for unusually high amplitudes in FFT
 
 #define BASS_FREQ 250       // frequencies up to this frequency are considered bass
@@ -84,6 +85,9 @@ int majorPeakAmplitude = 0;
 float majorPeakAmp = 0.0;
 
 int majorPeakFrequency = 0;
+
+int majorPeaksFreq[FFT_WINDOW_SIZE_BY2 >> 1];
+int majorPeaksAmplitude[FFT_WINDOW_SIZE_BY2 >> 1];
 
 /*/
 ########################################################
@@ -181,10 +185,14 @@ void setup() {
       audioInputBuffer[i] = 0;
       vReal[i] = 0.0;
       vImag[i] = 0.0;
-      if (i < FFT_WINDOW_SIZE_BY2) {
-        vRealPrev[i] = 0.0;
-        FFTData[i] = 0.0;
-      }
+    }
+    if (i < FFT_WINDOW_SIZE_BY2) {
+      vRealPrev[i] = 0.0;
+      FFTData[i] = 0.0;
+    }
+    if (i < FFT_WINDOW_SIZE_BY2 >> 1) {
+      majorPeaksFreq[i] = 0;
+      majorPeaksAmplitude[i] = 0;
     }
   }
   // generate random seed with noise from floating pin
@@ -223,20 +231,9 @@ void setup() {
 ########################################################
 /*/
 
-int spam = 1;
-
 void loop() {
-  if (millis() >= 60000) {
-    if (spam) {
-      spam = 0;
-      Serial.print("volatile buffer idx: ");
-      Serial.println(volatileBufferLocation);
-      Serial.print("audio buffer idx: ");
-      Serial.println(audioBufferLocation);
-    }
-  }
   if (audioInputBufferFull == 1) {
-    //timerAlarmDisable(My_timer);
+    timerAlarmDisable(My_timer);
 
     //unsigned long time = micros();
     // store previously computed FFT results in vRealPrev array, and copy values from audioInputBuffer to vReal array
@@ -251,6 +248,20 @@ void loop() {
 
     // Average the previous and next vReal arrays for a smoother spectrogram
     averageFFTWindows();
+
+    for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
+      Serial.printf("%d, %d, %.2f\n", 0, 30000, FFTData[i]);
+    }
+
+    findMajorPeaks(FFTData);
+
+
+    // for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
+    //   if (majorPeaksAmplitude[i] > 0) {
+    //     Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], majorPeaksAmplitude[i]);
+    //   } else { break; }
+    // }
+    // Serial.println();
 
     int majorPeakF = getRunningAverage(findMajorPeak(FFTData), runningAverageArray, RUNNING_AVG_ARR_SIZE);
     
@@ -288,7 +299,7 @@ void loop() {
     //     break;
     //   }
     // }
-    // timerAlarmEnable(My_timer);
+    timerAlarmEnable(My_timer);
   }
 }
 
@@ -352,22 +363,28 @@ void calculateBreadslicerLocations() {
   Serial.println("\n");
 }
 
-// int* findMajorPeaks(float* data) {
-//   float maxAmp = 0;
-//   int idxOfMaxAmp = 0;
-//   // iterate through data to find maximum peak
-//   for (int f = 1; f < FFT_WINDOW_SIZE_BY2; f++) {
-//     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
-//     if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
-//       // compare with previous max amplitude at peak
-//       if (data[f] > maxAmp) {
-//         maxAmp = data[f];
-//         idxOfMaxAmp = f;
-//       }
-//     }
-//   }
-//   Serial.println(maxAmp);
-// }
+void findMajorPeaks(float* data) {
+  for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
+    majorPeaksAmplitude[i] = 0;
+    majorPeaksFreq[i] = 0;
+  }
+  int peaksFound = 0;
+  // iterate through data to find peaks
+  for (int f = 1; f < FFT_WINDOW_SIZE_BY2; f++) {
+    if (data[f] > float(FFT_FLOOR_THRESH)) {
+      // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
+      if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
+        // summing around the index of peak to get a better representation of the energy associated with the peak
+        majorPeaksAmplitude[peaksFound] = round((data[f - 1] + data[f] + data[f + 1]) * (1.0 / frequencyResolution));
+        // return interpolated frequency
+        majorPeaksFreq[peaksFound] = interpolateAroundPeak(data, f);
+
+        peaksFound += 1;
+      }
+    }
+  }
+  //Serial.print(peaksFound);
+}
 
 int getRunningAverage(int data, int *outputArray, int arraySize) {
   int arraySum = 0;
@@ -384,6 +401,19 @@ int getRunningAverage(int data, int *outputArray, int arraySize) {
   outputArray[replaceIdx] = -1;
 
   return round(arraySum / arraySize);
+}
+
+int interpolateAroundPeak(float *data, int indexOfPeak) {
+  float prePeak = data[indexOfPeak - 1];
+  float atPeak = data[indexOfPeak];
+  float postPeak = data[indexOfPeak + 1];
+  // summing around the index of maximum amplitude to normalize magnitudeOfChange
+  float peakSum = prePeak + atPeak + postPeak;
+  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
+  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / peakSum;
+  
+  // return interpolated frequency
+  return round(float((indexOfPeak + magnitudeOfChange) * frequencyResolution));
 }
 
 /* my version of the FFT MajorPeak function, uses the same approach to determine the maximum amplitude, but a bit of a different approach to interpolation
@@ -403,15 +433,9 @@ int findMajorPeak(float *data) {
       }
     }
   }
-  // summing around the index of maximum amplitude to normalize magnitudeOfChange
-  float peakSum = data[idxOfMaxAmp - 1] + data[idxOfMaxAmp] + data[idxOfMaxAmp + 1];
-  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
-  float magnitudeOfChange = ((data[idxOfMaxAmp] + data[idxOfMaxAmp + 1]) - (data[idxOfMaxAmp] + data[idxOfMaxAmp - 1])) / peakSum;
-
-  majorPeakAmplitude = round((data[idxOfMaxAmp - 1] + maxAmp + data[idxOfMaxAmp + 1]) * (1.0 / frequencyResolution));
-  
+  majorPeakAmplitude = round((data[idxOfMaxAmp - 1] + data[idxOfMaxAmp] + data[idxOfMaxAmp + 1]) * (1.0 / frequencyResolution));
   // return interpolated frequency
-  return round(float((idxOfMaxAmp + magnitudeOfChange) * frequencyResolution));
+  return interpolateAroundPeak(data, idxOfMaxAmp);
 }
 
 /*
@@ -530,7 +554,6 @@ void generateAudioForWindow() {
 
   int sin_frequency = majorPeakFrequency;
 
-  int sin_wave_position = 0;
 
   //long sin_wave_offset = pow(random(1, int(SAMPLING_FREQ)), 2);
   //sin_wave_idx = 0;
@@ -541,9 +564,9 @@ void generateAudioForWindow() {
     // variable store the value of the sum of sine waves at this particular moment
     float sumOfSines = 0.0;
     // sum together the sine waves
-    //long sin_wave_freq_idx = long(sin_wave_idx * sin_frequency);
-    sin_wave_position = (sin_wave_position + sin_frequency) % int(SAMPLING_FREQ);
-    //sin_wave_idx = (sin_wave_idx + 1) % int(SAMPLING_FREQ);
+    long sin_wave_freq_idx = long(sin_wave_idx * sin_frequency);
+    int sin_wave_position = sin_wave_freq_idx % int(SAMPLING_FREQ);
+    sin_wave_idx = (sin_wave_idx + 1) % int(SAMPLING_FREQ);
 
     sumOfSines = majorPeakAmp * sin_wave[sin_wave_position];
 
@@ -597,7 +620,7 @@ void outputSampleTest() {
 
 void recordSample() {
   audioInputBuffer[audioInputBufferIdx++] = adc1_get_raw(ADC1_CHANNEL_6);
-  if (audioInputBufferIdx == (AUDIO_INPUT_BUFFER_SIZE - 1)) {
+  if (audioInputBufferIdx == AUDIO_INPUT_BUFFER_SIZE) {
     if (numFFTCount < 2) { numFFTCount++; }
     audioInputBufferFull = 1;
     audioInputBufferIdx = 0;
