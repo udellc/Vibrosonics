@@ -1,6 +1,5 @@
-#include <arduinoFFT.h>
+#include <arduinoFFTFloat.h>
 #include <Arduino.h>
-//#include <dac_oneshot.h>
 #include <driver/dac.h>
 #include <driver/adc.h>
 #include <math.h>
@@ -13,13 +12,13 @@
 
 #define AUDIO_INPUT_PIN A2
 #define AUDIO_OUTPUT_PIN A0
-#define AUDIO_OUTPUT_PIN2 A1
 
-#define FFT_WINDOW_SIZE 512   // Number of FFT windows, this value must be a power of 2
-#define SAMPLING_FREQ 8192    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 10kHz, but
-                              // bringing this down to just a tad lower, leaves more room for FFT and other signal processing functions to be done
+#define FFT_WINDOW_SIZE 256   // Number of FFT windows, this value must be a power of 2
+#define SAMPLING_FREQ 12000    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 16kHz, but
+                              // bringing this down to just a tad lower, leaves more room for FFT and other signal processing functions to be done as well
+                              // synthesis
 
-#define FFT_FLOOR_THRESH 500  // amplitude flooring threshold for FFT, to reduce noise
+#define FFT_FLOOR_THRESH 1000  // amplitude flooring threshold for FFT, to reduce noise
 #define FFT_OUTLIER 30000     // Outlier for unusually high amplitudes in FFT
 
 #define BASS_FREQ 250       // frequencies up to this frequency are considered bass
@@ -62,6 +61,8 @@ const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
 const int frequencyResolution = float(SAMPLING_FREQ) / float(FFT_WINDOW_SIZE);  // the frequency resolution of FFT with the current window size
 
+const float frequencyWidth = float(FFT_WINDOW_SIZE) / float(SAMPLING_FREQ);
+
 float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculated by FFT, for averaging windows
 
 float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing functions will use
@@ -84,6 +85,9 @@ int majorPeakAmplitude = 0;
 float majorPeakAmp = 0.0;
 
 int majorPeakFrequency = 0;
+
+int majorPeaksFreq[FFT_WINDOW_SIZE_BY2 >> 1];
+int majorPeaksAmplitude[FFT_WINDOW_SIZE_BY2 >> 1];
 
 /*/
 ########################################################
@@ -120,15 +124,11 @@ volatile int audioInputBufferFull = 0;
 volatile int audioOutputBufferVolatile[FFT_WINDOW_SIZE_X2];
 volatile int audioOutputBufferIdx = 0;
 
-volatile unsigned long volatileBufferLocation = 0;
-
-unsigned long audioBufferLocation = 0;
-
 // scratchpad array used for synthesis
 float audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
 // stores the current index of the scratch pad audio output buffer
 int generateAudioIdx = 0;
-// used for copying final synthesized values from scratchpad audio output buffer  to volatile audio output buffer
+// used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
 int rollingAudioOutputBufferIdx = 0;
 
 // used to delay the audio output buffer by 2 FFT sampling periods so that audio can be generated on time, this results in a delay between input and output of 2 * FFT_WINDOW_SIZE / SAMPLING_FREQ
@@ -158,11 +158,7 @@ void setup() {
   Serial.println("Ready");
 
   calculateCosWave();
-  Serial.println("CosWave generated");
-  //calculateSinWaveTable();
   calculateSinWave();
-  Serial.println("SinWave generated");
-
 
   calculateBreadslicerLocations();
   // setup reference tables for aSin[] oscillator array
@@ -181,10 +177,14 @@ void setup() {
       audioInputBuffer[i] = 0;
       vReal[i] = 0.0;
       vImag[i] = 0.0;
-      if (i < FFT_WINDOW_SIZE_BY2) {
-        vRealPrev[i] = 0.0;
-        FFTData[i] = 0.0;
-      }
+    }
+    if (i < FFT_WINDOW_SIZE_BY2) {
+      vRealPrev[i] = 0.0;
+      FFTData[i] = 0.0;
+    }
+    if (i < FFT_WINDOW_SIZE_BY2 >> 1) {
+      majorPeaksFreq[i] = 0;
+      majorPeaksAmplitude[i] = 0;
     }
   }
   // generate random seed with noise from floating pin
@@ -192,7 +192,6 @@ void setup() {
   // setup pins
   pinMode(AUDIO_OUTPUT_PIN, OUTPUT);
   pinMode(AUDIO_INPUT_PIN, INPUT);
-  //pinMode(AUDIO_OUTPUT_PIN2, OUTPUT);
 
   //randomSeed(analogRead(AUDIO_INPUT_PIN));
 
@@ -223,18 +222,7 @@ void setup() {
 ########################################################
 /*/
 
-int spam = 1;
-
 void loop() {
-  if (millis() >= 60000) {
-    if (spam) {
-      spam = 0;
-      Serial.print("volatile buffer idx: ");
-      Serial.println(volatileBufferLocation);
-      Serial.print("audio buffer idx: ");
-      Serial.println(audioBufferLocation);
-    }
-  }
   if (audioInputBufferFull == 1) {
     //timerAlarmDisable(My_timer);
 
@@ -252,16 +240,49 @@ void loop() {
     // Average the previous and next vReal arrays for a smoother spectrogram
     averageFFTWindows();
 
-    int majorPeakF = getRunningAverage(findMajorPeak(FFTData), runningAverageArray, RUNNING_AVG_ARR_SIZE);
-    
-    if (majorPeakF >= SIN_WAVE_TABLE_SIZE) {
-      majorPeakF = map(majorPeakF, 0, SAMPLING_FREQ_BY2, 30, SIN_WAVE_TABLE_SIZE);
-    }
+    // for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
+    //   Serial.printf("%d, %.2f\n", i, FFTData[i]);
+    // }
 
-    if (majorPeakAmplitude > 250) {
-      majorPeakAmp = float(map(majorPeakAmplitude, 100, majorPeakAmplitude > 500 ? (majorPeakAmplitude + 100) : 1000, 0, 127));
-      majorPeakFrequency = majorPeakF;
-    } else { majorPeakAmp = 0.0; }
+    int totalPeaksFound = findMajorPeaks(FFTData, 4);
+
+    int numAmplitudes = 0;
+    int maxAmp = majorPeaksAmplitude[0];
+    int maxAmpIdx = 0;
+    int totalEnergy = majorPeaksAmplitude[0];
+    for (int i = 1; i < totalPeaksFound; i++) {
+      int amplitude = majorPeaksAmplitude[i];
+      if (amplitude > maxAmp) {
+        maxAmp = amplitude;
+        maxAmpIdx = i;
+      }
+      totalEnergy += amplitude;
+      //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], amplitude);
+    }
+    //Serial.println();
+    float divideBy = 1.0 / float(totalEnergy > 5000 ? (totalEnergy) : 5000);
+
+    // normalizing and multiplying to ensure that the sum of amplitudes is less than or equal to 255
+    for (int i = 0; i < totalPeaksFound; i++) {
+      int amplitude = majorPeaksAmplitude[i];
+      majorPeaksAmplitude[i] = amplitude * divideBy * 127.0;
+      // if (majorPeaksFreq[i] > 160) {
+      //   majorPeaksFreq[i] = map(majorPeaksFreq[i], 160, int(SAMPLING_FREQ_BY2), 40, 250);
+      // }
+      //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], majorPeaksAmplitude[i]);
+    }
+    //Serial.println();
+
+    // int majorPeakF = getRunningAverage(findMajorPeak(FFTData), runningAverageArray, RUNNING_AVG_ARR_SIZE);
+    
+    // if (majorPeakF >= SIN_WAVE_TABLE_SIZE) {
+    //   majorPeakF = map(majorPeakF, 0, SAMPLING_FREQ_BY2, 30, SIN_WAVE_TABLE_SIZE);
+    // }
+
+    // if (majorPeakAmplitude > 250) {
+    //   majorPeakAmp = float(map(majorPeakAmplitude, 100, majorPeakAmplitude > 500 ? (majorPeakAmplitude + 100) : 1000, 0, 127));
+    //   majorPeakFrequency = majorPeakF;
+    // } else { majorPeakAmp = 0.0; }
     //Serial.printf("%03d, %03d\n", majorPeakFrequency, majorPeakAmplitude);
 
     // use the breadslicer to split the spectogram into bands
@@ -271,7 +292,7 @@ void loop() {
     //mapAmplitudeFrequency();
 
     // generate audio for the next audio window
-    generateAudioForWindow();
+    generateAudioForWindow(totalPeaksFound);
 
     // int curr_pos = (rollingAudioOutputBufferIdx - int(FFT_WINDOW_SIZE) + int(FFT_WINDOW_SIZE_X2)) % int(FFT_WINDOW_SIZE_X2);
     // for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
@@ -288,7 +309,7 @@ void loop() {
     //     break;
     //   }
     // }
-    // timerAlarmEnable(My_timer);
+    //timerAlarmEnable(My_timer);
   }
 }
 
@@ -317,7 +338,8 @@ void setupFFT() {
 */
 void averageFFTWindows () {
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i ++) {
-    FFTData[i] = (vRealPrev[i] + vReal[i]) * 0.5;
+    //FFTData[i] = (vRealPrev[i] + vReal[i]) * 0.5;
+    FFTData[i] = vReal[i];
   }
 }
 
@@ -352,22 +374,45 @@ void calculateBreadslicerLocations() {
   Serial.println("\n");
 }
 
-// int* findMajorPeaks(float* data) {
-//   float maxAmp = 0;
-//   int idxOfMaxAmp = 0;
-//   // iterate through data to find maximum peak
-//   for (int f = 1; f < FFT_WINDOW_SIZE_BY2; f++) {
-//     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
-//     if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
-//       // compare with previous max amplitude at peak
-//       if (data[f] > maxAmp) {
-//         maxAmp = data[f];
-//         idxOfMaxAmp = f;
-//       }
-//     }
-//   }
-//   Serial.println(maxAmp);
-// }
+int findMajorPeaks(float* data, int maxNumPeaks) {
+  for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
+    majorPeaksAmplitude[i] = 0;
+    majorPeaksFreq[i] = 0;
+  }
+  int peaksFound = 0;
+  // iterate through data to find peaks
+  for (int f = 1; f < FFT_WINDOW_SIZE_BY2 - 1; f++) {
+    if (data[f] > float(FFT_FLOOR_THRESH)) {
+      // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
+      if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
+        // summing around the index of peak to get a better representation of the energy associated with the peak
+        majorPeaksAmplitude[peaksFound] = round((data[f - 1] + data[f] + data[f + 1]) * frequencyWidth);
+        // return interpolated frequency
+        majorPeaksFreq[peaksFound] = interpolateAroundPeak(data, f);
+
+        peaksFound += 1;
+      }
+    }
+  }
+
+  int numPeaksToRemove = peaksFound - maxNumPeaks;
+  if (numPeaksToRemove > 0) {
+    for (int j = 0; j < numPeaksToRemove; j++) {
+      int minimumPeak = majorPeaksAmplitude[0];
+      int minimumPeakIdx = 0;
+      for (int i = 1; i < peaksFound; i++) {
+        int thisPeakAmplitude = majorPeaksAmplitude[i];
+        if ((thisPeakAmplitude > 0) && (minimumPeak > thisPeakAmplitude)) {
+          minimumPeak = thisPeakAmplitude;
+          minimumPeakIdx = i;
+        }
+      }
+      majorPeaksAmplitude[minimumPeakIdx] = 0;
+    }
+  }
+  return peaksFound;
+  //Serial.print(peaksFound);
+}
 
 int getRunningAverage(int data, int *outputArray, int arraySize) {
   int arraySum = 0;
@@ -384,6 +429,19 @@ int getRunningAverage(int data, int *outputArray, int arraySize) {
   outputArray[replaceIdx] = -1;
 
   return round(arraySum / arraySize);
+}
+
+int interpolateAroundPeak(float *data, int indexOfPeak) {
+  float prePeak = data[indexOfPeak - 1];
+  float atPeak = data[indexOfPeak];
+  float postPeak = data[indexOfPeak + 1];
+  // summing around the index of maximum amplitude to normalize magnitudeOfChange
+  float peakSum = prePeak + atPeak + postPeak;
+  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
+  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / peakSum;
+  
+  // return interpolated frequency
+  return round(float((indexOfPeak + magnitudeOfChange) * frequencyResolution));
 }
 
 /* my version of the FFT MajorPeak function, uses the same approach to determine the maximum amplitude, but a bit of a different approach to interpolation
@@ -403,15 +461,9 @@ int findMajorPeak(float *data) {
       }
     }
   }
-  // summing around the index of maximum amplitude to normalize magnitudeOfChange
-  float peakSum = data[idxOfMaxAmp - 1] + data[idxOfMaxAmp] + data[idxOfMaxAmp + 1];
-  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
-  float magnitudeOfChange = ((data[idxOfMaxAmp] + data[idxOfMaxAmp + 1]) - (data[idxOfMaxAmp] + data[idxOfMaxAmp - 1])) / peakSum;
-
-  majorPeakAmplitude = round((data[idxOfMaxAmp - 1] + maxAmp + data[idxOfMaxAmp + 1]) * (1.0 / frequencyResolution));
-  
+  majorPeakAmplitude = round((data[idxOfMaxAmp - 1] + data[idxOfMaxAmp] + data[idxOfMaxAmp + 1]) * (1.0 / frequencyResolution));
   // return interpolated frequency
-  return round(float((idxOfMaxAmp + magnitudeOfChange) * frequencyResolution));
+  return interpolateAroundPeak(data, idxOfMaxAmp);
 }
 
 /*
@@ -526,64 +578,64 @@ void calculateSinWave() {
   }
 }
 
-void generateAudioForWindow() {
-
-  int sin_frequency = majorPeakFrequency;
-
-  int sin_wave_position = 0;
-
-  //long sin_wave_offset = pow(random(1, int(SAMPLING_FREQ)), 2);
-  //sin_wave_idx = 0;
+void generateAudioForWindow(int numSineWaves) {
   for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
-    //Serial.println(generateAudioIdx);
-    // Serial.printf("%d, %d, %d\n", i, generateAudioIdx, sin_wave_idx);
-    //delay(1);
     // variable store the value of the sum of sine waves at this particular moment
     float sumOfSines = 0.0;
     // sum together the sine waves
-    //long sin_wave_freq_idx = long(sin_wave_idx * sin_frequency);
-    sin_wave_position = (sin_wave_position + sin_frequency) % int(SAMPLING_FREQ);
-    //sin_wave_idx = (sin_wave_idx + 1) % int(SAMPLING_FREQ);
-
-    sumOfSines = majorPeakAmp * sin_wave[sin_wave_position];
-
+    for (int s = 0; s < numSineWaves; s++) {
+      // calculate the sine wave index of the sine wave corresponding to the frequency, offsetting by 'random' polynomial to reduce sharp transitions
+      if (majorPeaksAmplitude[s] > 0) {
+        long sin_wave_freq_idx = long(sin_wave_idx) * majorPeaksFreq[s];
+        int sin_wave_position = sin_wave_freq_idx % int(SAMPLING_FREQ);
+        sumOfSines += majorPeaksAmplitude[s] * sin_wave[sin_wave_position];
+      }
+    }
     // multiply cos wave and sum of sines at this moment in time
     float synthesized_value = cos_wave[i] * sumOfSines;
-    //float synthesized_value = cos_wave[i];
-    // add to the existing values in scratch pad audio outputer buffer
+    // add to the existing values in scratch pad audio output buffer
     audioOutputBuffer[generateAudioIdx] += synthesized_value;
 
     // copy final, synthesized values to volatile audio output buffer
     if (i < FFT_WINDOW_SIZE) {
-      audioOutputBufferVolatile[rollingAudioOutputBufferIdx] = round(audioOutputBuffer[generateAudioIdx] + 128.0);
-      rollingAudioOutputBufferIdx = (rollingAudioOutputBufferIdx + 1) % int(FFT_WINDOW_SIZE_X2);
-      audioBufferLocation++;
+      audioOutputBufferVolatile[rollingAudioOutputBufferIdx++] = round(audioOutputBuffer[generateAudioIdx] + 128.0);
+      if (rollingAudioOutputBufferIdx == FFT_WINDOW_SIZE_X2) { rollingAudioOutputBufferIdx = 0; }
     }
-    // increment generate audio index and sine wave table index
-    generateAudioIdx = (generateAudioIdx + 1) % int(AUDIO_OUTPUT_BUFFER_SIZE);
+    // increment generate audio index
+    generateAudioIdx += 1;
+    if (generateAudioIdx == AUDIO_OUTPUT_BUFFER_SIZE) { generateAudioIdx = 0; }
+    // increment sine wave index
+    sin_wave_idx += 1;
+    if (sin_wave_idx == SAMPLING_FREQ) { sin_wave_idx = 0; }
   }
+
   // reset the next window to synthesize new signal
+  int generateAudioIdxCpy = generateAudioIdx;
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-    audioOutputBuffer[((generateAudioIdx + i) % int(AUDIO_OUTPUT_BUFFER_SIZE))] = 0.0;
+    audioOutputBuffer[generateAudioIdxCpy++] = 0.0;
+    if (generateAudioIdxCpy == AUDIO_OUTPUT_BUFFER_SIZE) { generateAudioIdxCpy = 0; }
   }
 
-  // determine the next position in the scratch pad audio output buffer and counter phasing cosine wave
+  // determine the next position in the scratch pad audio output buffer to counter phase cosine wave
   generateAudioIdx = ((generateAudioIdx - int(FFT_WINDOW_SIZE)) + int(AUDIO_OUTPUT_BUFFER_SIZE)) % int(AUDIO_OUTPUT_BUFFER_SIZE);
-  //sin_wave_idx = ((sin_wave_idx - FFT_WINDOW_SIZE) + int(SAMPLING_FREQ) % int(SAMPLING_FREQ));
-  //Serial.print("\n----------------------------------\n");
+  sin_wave_idx = ((sin_wave_idx - FFT_WINDOW_SIZE) + int(SAMPLING_FREQ)) % int(SAMPLING_FREQ);
 }
-
-//volatile bool isHigh = false;
 
 void outputSample() {
   if (numFFTCount > 1) {
-    dacWrite(AUDIO_OUTPUT_PIN, audioOutputBufferVolatile[audioOutputBufferIdx]);
-    // if (isHigh)
-    // { dacWrite(AUDIO_OUTPUT_PIN2, 255); }
-    // else { dacWrite(AUDIO_OUTPUT_PIN2, 0);}
-    // isHigh = !isHigh;
-    audioOutputBufferIdx = (audioOutputBufferIdx + 1) % FFT_WINDOW_SIZE_X2;
-    volatileBufferLocation++;
+    dacWrite(AUDIO_OUTPUT_PIN, audioOutputBufferVolatile[audioOutputBufferIdx++]);
+    if (audioOutputBufferIdx == FFT_WINDOW_SIZE_X2) {
+      audioOutputBufferIdx = 0;
+    }
+  }
+}
+
+void recordSample() {
+  audioInputBuffer[audioInputBufferIdx++] = adc1_get_raw(ADC1_CHANNEL_6);
+  if (audioInputBufferIdx == AUDIO_INPUT_BUFFER_SIZE) {
+    if (numFFTCount < 2) { numFFTCount++; }
+    audioInputBufferFull = 1;
+    audioInputBufferIdx = 0;
   }
 }
 
@@ -593,14 +645,5 @@ void outputSampleTest() {
   dacWrite(AUDIO_OUTPUT_PIN, write_sample);
   // audioOutputBufferIdx = (audioOutputBufferIdx + 1) % sin_wave_table_frequency_period[majorPeakFrequency];
   audioOutputBufferIdx = (audioOutputBufferIdx + 1) % int(SAMPLING_FREQ);
-}
-
-void recordSample() {
-  audioInputBuffer[audioInputBufferIdx++] = adc1_get_raw(ADC1_CHANNEL_6);
-  if (audioInputBufferIdx == (AUDIO_INPUT_BUFFER_SIZE - 1)) {
-    if (numFFTCount < 2) { numFFTCount++; }
-    audioInputBufferFull = 1;
-    audioInputBufferIdx = 0;
-  }
 }
 
