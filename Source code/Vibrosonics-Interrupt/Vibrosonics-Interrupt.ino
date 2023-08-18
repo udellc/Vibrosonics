@@ -14,11 +14,11 @@
 #define AUDIO_OUTPUT_PIN A0
 
 #define FFT_WINDOW_SIZE 256   // Number of FFT windows, this value must be a power of 2
-#define SAMPLING_FREQ 10000    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 16kHz, but
+#define SAMPLING_FREQ 12000    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 16kHz, but
                               // bringing this down to just a tad lower, leaves more room for FFT and other signal processing functions to be done as well
                               // synthesis
 
-#define FFT_FLOOR_THRESH 2000  // amplitude flooring threshold for FFT, to reduce noise
+#define FFT_FLOOR_THRESH 1000  // amplitude flooring threshold for FFT, to reduce noise
 #define FFT_OUTLIER 30000     // Outlier for unusually high amplitudes in FFT
 
 #define BASS_FREQ 250       // frequencies up to this frequency are considered bass
@@ -60,6 +60,8 @@ const int SAMPLING_FREQ_BY2 = SAMPLING_FREQ / 2.0;  // the highest theoretical f
 const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
 const int frequencyResolution = float(SAMPLING_FREQ) / float(FFT_WINDOW_SIZE);  // the frequency resolution of FFT with the current window size
+
+const float frequencyWidth = float(FFT_WINDOW_SIZE) / float(SAMPLING_FREQ);
 
 float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculated by FFT, for averaging windows
 
@@ -239,39 +241,35 @@ void loop() {
     averageFFTWindows();
 
     // for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
-    //   Serial.printf("%d, %d, %.2f\n", 0, 30000, FFTData[i]);
+    //   Serial.printf("%d, %.2f\n", i, FFTData[i]);
     // }
 
-    findMajorPeaks(FFTData, 16);
+    int totalPeaksFound = findMajorPeaks(FFTData, 4);
 
     int numAmplitudes = 0;
-    int totalEnergy = 0;
-    for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
+    int maxAmp = majorPeaksAmplitude[0];
+    int maxAmpIdx = 0;
+    int totalEnergy = majorPeaksAmplitude[0];
+    for (int i = 1; i < totalPeaksFound; i++) {
       int amplitude = majorPeaksAmplitude[i];
-      if (amplitude > 0) {
-        totalEnergy += amplitude;
-        
-        numAmplitudes += 1;
-        //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], amplitude);
-      } else { break; }
+      if (amplitude > maxAmp) {
+        maxAmp = amplitude;
+        maxAmpIdx = i;
+      }
+      totalEnergy += amplitude;
+      //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], amplitude);
     }
     //Serial.println();
-    // int divideBy;
-    // if (totalEnergy > 5000) {
-    //   divideBy = totalEnergy;
-    // }
-    int divideBy = totalEnergy > 5000 ? (totalEnergy + 500) : 5000;
+    float divideBy = 1.0 / float(totalEnergy > 5000 ? (totalEnergy) : 5000);
 
     // normalizing and multiplying to ensure that the sum of amplitudes is less than or equal to 255
-    for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
+    for (int i = 0; i < totalPeaksFound; i++) {
       int amplitude = majorPeaksAmplitude[i];
-      if (amplitude > 0) {
-        majorPeaksAmplitude[i] = float(amplitude) / divideBy * 255.0;
-        // if (majorPeaksFreq[i] > 80) {
-        //   majorPeaksFreq[i] = map(majorPeaksFreq[i], 80, int(SAMPLING_FREQ_BY2), 60, 250);
-        // }
-        //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], majorPeaksAmplitude[i]);
-      } else { break; }
+      majorPeaksAmplitude[i] = amplitude * divideBy * 127.0;
+      // if (majorPeaksFreq[i] > 160) {
+      //   majorPeaksFreq[i] = map(majorPeaksFreq[i], 160, int(SAMPLING_FREQ_BY2), 40, 250);
+      // }
+      //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], majorPeaksAmplitude[i]);
     }
     //Serial.println();
 
@@ -294,7 +292,7 @@ void loop() {
     //mapAmplitudeFrequency();
 
     // generate audio for the next audio window
-    generateAudioForWindow(numAmplitudes);
+    generateAudioForWindow(totalPeaksFound);
 
     // int curr_pos = (rollingAudioOutputBufferIdx - int(FFT_WINDOW_SIZE) + int(FFT_WINDOW_SIZE_X2)) % int(FFT_WINDOW_SIZE_X2);
     // for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
@@ -376,7 +374,7 @@ void calculateBreadslicerLocations() {
   Serial.println("\n");
 }
 
-void findMajorPeaks(float* data, int maxNumPeaks) {
+int findMajorPeaks(float* data, int maxNumPeaks) {
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
     majorPeaksAmplitude[i] = 0;
     majorPeaksFreq[i] = 0;
@@ -388,7 +386,7 @@ void findMajorPeaks(float* data, int maxNumPeaks) {
       // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
       if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
         // summing around the index of peak to get a better representation of the energy associated with the peak
-        majorPeaksAmplitude[peaksFound] = round((data[f - 1] + data[f] + data[f + 1]) * (1.0 / frequencyResolution));
+        majorPeaksAmplitude[peaksFound] = round((data[f - 1] + data[f] + data[f + 1]) * frequencyWidth);
         // return interpolated frequency
         majorPeaksFreq[peaksFound] = interpolateAroundPeak(data, f);
 
@@ -404,14 +402,15 @@ void findMajorPeaks(float* data, int maxNumPeaks) {
       int minimumPeakIdx = 0;
       for (int i = 1; i < peaksFound; i++) {
         int thisPeakAmplitude = majorPeaksAmplitude[i];
-        if ((thisPeakAmplitude > 0) && (thisPeakAmplitude < minimumPeak)) {
+        if ((thisPeakAmplitude > 0) && (minimumPeak > thisPeakAmplitude)) {
           minimumPeak = thisPeakAmplitude;
-          minimumPeakIdx = 0;
+          minimumPeakIdx = i;
         }
       }
       majorPeaksAmplitude[minimumPeakIdx] = 0;
     }
   }
+  return peaksFound;
   //Serial.print(peaksFound);
 }
 
@@ -584,7 +583,7 @@ void generateAudioForWindow(int numSineWaves) {
     // variable store the value of the sum of sine waves at this particular moment
     float sumOfSines = 0.0;
     // sum together the sine waves
-    for (int s = 0; s < numSineWaves + 1; s++) {
+    for (int s = 0; s < numSineWaves; s++) {
       // calculate the sine wave index of the sine wave corresponding to the frequency, offsetting by 'random' polynomial to reduce sharp transitions
       if (majorPeaksAmplitude[s] > 0) {
         long sin_wave_freq_idx = long(sin_wave_idx) * majorPeaksFreq[s];
@@ -619,7 +618,7 @@ void generateAudioForWindow(int numSineWaves) {
 
   // determine the next position in the scratch pad audio output buffer to counter phase cosine wave
   generateAudioIdx = ((generateAudioIdx - int(FFT_WINDOW_SIZE)) + int(AUDIO_OUTPUT_BUFFER_SIZE)) % int(AUDIO_OUTPUT_BUFFER_SIZE);
-  //sin_wave_idx = ((sin_wave_idx - FFT_WINDOW_SIZE) + int(SAMPLING_FREQ)) % int(SAMPLING_FREQ);
+  sin_wave_idx = ((sin_wave_idx - FFT_WINDOW_SIZE) + int(SAMPLING_FREQ)) % int(SAMPLING_FREQ);
 }
 
 void outputSample() {
