@@ -5,12 +5,10 @@ Detailed documentation can be viewed under the [wiki](https://github.com/udellc/
 
 Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable
 
-Library dependencies:
- - For Vibrosonics-Mozzi: Arduino, ArduinoFFT, Mozzi.
+Library dependencies (dependencies are contained under "Source code/dependencies", copy the contents of this folder to your local arduino libraries folder):
+ - For Vibrosonics-Mozzi: ArduinoFFT_FLOAT, Mozzi
   
- - For Vibrosonics-Interrupt: Arduino, ArduinoFFT 
-  
- - NOTE: In ArduinoFFT library, all instances of 'double' must be converted to 'float' in source code files. This is done for a performance boost. Soon the library with the changes described will be pushed onto this repository for 'plug and play' operation.
+ - For Vibrosonics-Interrupt: ArduinoFFT_FLOAT
 
 ## What is it?
 

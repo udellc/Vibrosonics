@@ -3,12 +3,6 @@
 /*/
 ########################################################
 
-  READ ME FIRST!
-    This code uses the arduinoFFT library and the Mozzi library. Before running this code, you have to ensure that all instances of "double" are replaced 
-    with "float" in the arduinoFFT .cpp and .h sourcecode files. Using floating points instead of doubles is more suitable for the ESP32, and helps boost performance.
-    
-    The sourcecode is located in your libraries folder, usually under: "C:\Users\(YOUR NAME)\Documents\Arduino\libraries\arduinoFFT\src"
-
   DETAILS REGARDING THE CODE:
 
     This code uses the Mozzi library for audio synthesis, and it needs to have control over when certain processes are done, to consitently call
@@ -40,7 +34,7 @@
 /*/
 
 
-#include <arduinoFFT.h>
+#include <arduinoFFTFloat.h>
 #include <Arduino.h>
 #include <MozziGuts.h>
 #include <Oscil.h>
