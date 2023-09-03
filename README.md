@@ -5,14 +5,12 @@ Detailed documentation can be viewed under the [wiki](https://github.com/udellc/
 
 Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable
 
-Library dependencies:
- - For Vibrosonics-Mozzi: Arduino, ArduinoFFT [v1.5.6](https://github.com/kosme/arduinoFFT/releases/tag/v.1.5.6), Mozzi [v1.0.3rc6](https://github.com/sensorium/Mozzi/releases/tag/v1.0.3rc6)
+Library dependencies (dependencies are contained under "Source code/dependencies", copy the contents of this folder to your local arduino libraries folder):
+ - For Vibrosonics-Mozzi: arduinoFFT_FLOAT (copy of arduinoFFT [v1.6.1] with doubles converted to floats), Mozzi [v.1.1.0] (https://github.com/sensorium/Mozzi/tree/1.1.0)
   
- - For Vibrosonics-Interrupt: Arduino, ArduinoFFT [v1.5.6](https://github.com/kosme/arduinoFFT/releases/tag/v.1.5.6)
-  
- - NOTE: In ArduinoFFT library, all instances of 'double' must be converted to 'float' in source code files. This is done for a performance boost. Soon the library with the changes described will be pushed onto this repository for 'plug and play' operation.
+ - For Vibrosonics-Interrupt: arduinoFFT_FLOAT (copy of arduinoFFT [v1.6.1] with doubles converted to floats)
 
- - On versions: There is no apparent reason to believe that the most recent versions (as of writing) of ArduinoFFT (v1.6) and Mozzi (v1.1.0) wouldn't work given what they change from the prior versions, but they just haven't been tested since their release. Some light experimentation with the newest versions to see if they work the same is optional.
+ - On versions: There is no apparent reason to believe that the most recent versions (as of writing) of ArduinoFFT (v1.6.1+) and Mozzi (v1.1.0+) wouldn't work given what they change from the prior versions, but they just haven't been tested since their release. Some light experimentation with the newest versions to see if they work the same is optional.
 
 ## What is it?
 
