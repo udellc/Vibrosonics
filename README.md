@@ -24,5 +24,5 @@ Currently, the market for similar devices is highly limited and undeveloped. Thi
 
 ## Special thanks to:
  - Dr. Chet Udell (Project leader and manager)
- - Vincent Vaughn (Advised software development)
+ - Vincent Vaughn (Advised software and hardware development)
  - Alex Synytsia (Participated in hardware development for the project during the 2022-2023 years)
