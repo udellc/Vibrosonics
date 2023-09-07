@@ -66,8 +66,8 @@
 
 // These values are used for FFT signal processing functions such as breadslicer
 #define BREADSLICER_USE_CURVE 0         // Set to 1 to use breadslicer curve for slicing, or 0 to set custom breadslicer values defined in @breadslicerSliceLocationsStatic*
-const float BREADSLICER_CURVE_EXPONENT = 3.3;  // The exponent for the used for the breadslicer curve
-const float BREADSLICER_CURVE_OFFSET = 0.55;   // The curve offset for the breadslicer to follow when slicing the amplitude array
+const float BREADSLICER_CURVE_EXPONENT = 3.3;  // The exponent for the breadslicer curve
+const float BREADSLICER_CURVE_OFFSET = 0.55;   // The curve offset for  breadslicer to follow when slicing the amplitude array
 
 // constants used for freqMaxAmplitudeDelta()
 const int FREQ_MAX_AMP_DELTA_MIN = 100;   // The threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
