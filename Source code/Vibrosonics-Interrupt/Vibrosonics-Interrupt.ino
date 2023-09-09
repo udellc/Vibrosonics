@@ -60,6 +60,13 @@ float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculat
 
 float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing functions will use
 
+float FFTDataPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous data used for analysis to find frequency of max amplitude change between consecutive windows
+const int FREQ_MAX_AMP_DELTA_MIN = 500;   // the threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
+const float FREQ_MAX_AMP_DELTA_K = 2.0;   // multiplier for amplitude of most change
+int maxAmpChangeDetected = 0;
+int maxAmpChange = 0;
+int maxAmpChangeIdx = 0;
+
 const int freqsToAverage = ceil(float(BASS_FREQ) / frequencyResolution);
 int averageWindowCount = 0;
 float FFTWindows[int(AVG_WINDOW)][freqsToAverage];
@@ -156,6 +163,7 @@ void setup() {
     if (i < FFT_WINDOW_SIZE_BY2) {
       vRealPrev[i] = 0.0;
       FFTData[i] = 0.0;
+      FFTDataPrev[i] = 0.0;
     }
     if (i < FFT_WINDOW_SIZE_BY2 >> 1) {
       majorPeaksFreq[i] = 0;
@@ -166,8 +174,6 @@ void setup() {
   // setup pins
   pinMode(AUDIO_OUTPUT_PIN, OUTPUT);
   pinMode(AUDIO_INPUT_PIN, INPUT);
-
-  //randomSeed(analogRead(AUDIO_INPUT_PIN));
 
   Serial.println("Setup complete");
 
@@ -182,11 +188,11 @@ void setup() {
   //   }
   // }
 
-  // setup interrupt for audio sampling
-  My_timer = timerBegin(0, 80, true);
-  timerAttachInterrupt(My_timer, &onTimer, true);
-  timerAlarmWrite(My_timer, sampleDelayTime, true);
-  timerAlarmEnable(My_timer); //Just Enable
+  // setup timer interrupt for audio sampling
+  My_timer = timerBegin(0, 80, true);                 // set clock prescaler 80MHz / 80 = 1MHz
+  timerAttachInterrupt(My_timer, &onTimer, true);     // attach interrupt function
+  timerAlarmWrite(My_timer, sampleDelayTime, true);   // trigger interrupt every @sampleDelayTime microseconds
+  timerAlarmEnable(My_timer);     //Just Enable
   timerStart(My_timer);
 }
 
@@ -204,6 +210,7 @@ void loop() {
     // store previously computed FFT results in vRealPrev array, and copy values from audioInputBuffer to vReal array
     setupFFT();
 
+    // reset flag
     audioInputBufferFull = 0;
     
     FFT.DCRemoval();                                  // DC Removal to reduce noise
@@ -218,48 +225,65 @@ void loop() {
     //   Serial.printf("%d, %.2f\n", i, FFTData[i]);
     // }
 
-    int totalPeaksFound = findMajorPeaks(FFTData, 8);
+    frequencyMaxAmplitudeDelta(FFTData, FFTDataPrev, FFT_WINDOW_SIZE_BY2);
+
+    // if (maxAmpChangeDetected) {
+    //   Serial.printf("mi %d mx %d f %d\n", 0, SAMPLING_FREQ_BY2, int(round(maxAmpChangeIdx * frequencyResolution)), maxAmpChange);
+    // }
+
+    int totalPeaksFound = findMajorPeaks(FFTData, 4);
 
     int maxAmp = 0;
     int maxAmpIdx = 0;
     int totalEnergy = 0;
+    // iterate through peaks found by the major peaks function
     for (int i = 0; i < totalPeaksFound; i++) {
       int amplitude = majorPeaksAmplitude[i];
+      // find max amplitude
       if (amplitude > maxAmp) {
         maxAmp = amplitude;
         maxAmpIdx = i;
       }
+      // if frequencyOfMaxAmplitudeChange() found a amplitude change above threshold and it exists within a range of a major peak, then weigh this amplitude
+      if (maxAmpChangeDetected && ((majorPeaksFreq[i] > (maxAmpChangeIdx - 1) * frequencyResolution) && (majorPeaksFreq[i] < (maxAmpChangeIdx + 1) * frequencyResolution))) {
+        amplitude = int(amplitude * 15.0);
+        majorPeaksAmplitude[i] = amplitude;
+
+      }
+      // sum the energy of these peaks
       totalEnergy += amplitude;
+
       //Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], amplitude);
     }
-    float maxAmpEnergy = maxAmp / float(totalEnergy);
-
-    int singleFrequency = maxAmpEnergy > 0.9 ? 1 : 0;
+    // weight of the max amplitude
+    float maxAmpWeight = maxAmp / float(totalEnergy);
+    // if the weight of max amplitude is larger than a certain threshold, assume that a single frequency is being detected to decrease noise in the output
+    int singleFrequency = maxAmpWeight > 0.9 ? 1 : 0;
     //Serial.println();
-    float divideBy = 1.0 / float(totalEnergy > 6000 ? (totalEnergy) : 6000);
+    // value to map amplitudes between 0.0 and 1.0 range, the minTotalEnergy will be used to divide unless totalEnergy exceeds this value
+    float divideBy = 1.0 / float(totalEnergy > 3000 ? (totalEnergy) : 3000);
 
     // normalizing and multiplying to ensure that the sum of amplitudes is less than or equal to 255
     for (int i = 0; i < totalPeaksFound; i++) {
       int amplitude = majorPeaksAmplitude[i];
-      int normalizedAmp = round(amplitude * divideBy * 127.0);
+      // map amplitude between 0 and 127
+      int mappedAmplitude = round(amplitude * divideBy * 127.0);
+      // if assuming single frequency is detected based on the weight of the amplitude,
       if (singleFrequency) {
-        majorPeaksAmplitude[i] = i == maxAmpIdx ? normalizedAmp : 0;
+        // assign other amplitudes to 0 to reduce noise
+        majorPeaksAmplitude[i] = i == maxAmpIdx ? mappedAmplitude : 0;
       } else {
-        majorPeaksAmplitude[i] = normalizedAmp;
+        // otherwise assign normalized amplitudes
+        majorPeaksAmplitude[i] = mappedAmplitude;
       }
 
-      // int peakFreq = majorPeaksFreq[i];
-      // if (amplitude > 0) { 
-      //   if (peakFreq > 1000) { peakFreq = peakFreq * 0.04; }
-      //   else if (peakFreq > 200) { peakFreq = peakFreq * 0.2; }
-      //   else if (peakFreq > 80) { peakFreq = peakFreq; }
-      //   else { 
-      //     peakFreq = getRunningAverage(peakFreq, runningAverageArray, RUNNING_AVG_ARR_SIZE); 
-          
-      //     // Serial.println(peakFreq);
-      //   }
-      //   majorPeaksFreq[i] = peakFreq;
-      // }
+      // interpolate around the peak and convert from index to frequency
+      int frequency = interpolateAroundPeak(FFTData, majorPeaksFreq[i]);
+
+      if (frequency < BASS_FREQ) { majorPeaksFreq[i] = frequency; }
+      //else if (frequency < 1100) { majorPeaksFreq[i] = round(frequency * 0.125) + 30; }
+      else { majorPeaksFreq[i] = round(frequency * 0.03) + 30; }
+
       // if (majorPeaksAmplitude[i] > 0) {
       //   Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], majorPeaksAmplitude[i]);
       // }
@@ -270,7 +294,7 @@ void loop() {
     //mapAmplitudeFrequency();
 
     // generate audio for the next audio window
-    generateAudioForWindow(totalPeaksFound);
+    generateAudioForWindow(majorPeaksFreq, majorPeaksAmplitude, totalPeaksFound);
 
     //timerAlarmEnable(My_timer);
   }
@@ -321,8 +345,28 @@ void averageFFTWindows () {
 }
 
 
+void frequencyMaxAmplitudeDelta(float *data, float *prevData, int arraySize) {
+  // restore global varialbes
+  maxAmpChangeDetected = 0;
+  maxAmpChange = 0;
+  // iterate through data* and prevData* to find the amplitude with most change
+  for (int i = 0; i < arraySize; i++) {
+    // store the change of between this amplitude and previous amplitude
+    int currAmpChange = abs(int(data[i]) - int(prevData[i]));
+    // find the most dominant amplitude change and store in maxAmpChangeIdx, store the magnitude of the change in maxAmpChange
+    if (currAmpChange > maxAmpChange && currAmpChange > FREQ_MAX_AMP_DELTA_MIN) {
+      maxAmpChangeDetected = 1;
+      maxAmpChange = currAmpChange;
+      maxAmpChangeIdx = i;
+    }
+    // assign data to previous data
+    prevData[i] = data[i];
+  }
+}
+
 
 int findMajorPeaks(float* data, int maxNumPeaks) {
+  // restore output arrays
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
     majorPeaksAmplitude[i] = 0;
     majorPeaksFreq[i] = 0;
@@ -343,15 +387,15 @@ int findMajorPeaks(float* data, int maxNumPeaks) {
         int peakSum = round((data[f - 1] + data[f] + data[f + 1]) * frequencyWidth);
         majorPeaksAmplitude[peaksFound] = peakSum;
         // return interpolated frequency
-        majorPeaksFreq[peaksFound] = interpolateAroundPeak(data, f);
+        majorPeaksFreq[peaksFound] = f;
 
         peaksFound += 1;
       }
     }
   }
 
+  // if needed, remove a certain number of the minumum peaks to contain output to @maxNumberOfPeaks
   int numPeaksToRemove = peaksFound - maxNumPeaks;
-  // remove @numPeaksToRemove minimum peaks
   for (int j = 0; j < numPeaksToRemove; j++) {
     // store minimum as the maximum peak
     int minimumPeak = maxPeak;
@@ -448,17 +492,17 @@ void calculateSinWave() {
   }
 }
 
-void generateAudioForWindow(int numSineWaves) {
+void generateAudioForWindow(int *sin_waves_freq, int *sin_wave_amp, int num_sin_waves) {
   for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
     // variable store the value of the sum of sine waves at this particular moment
     float sumOfSines = 0.0;
     // sum together the sine waves
-    for (int s = 0; s < numSineWaves; s++) {
+    for (int s = 0; s < num_sin_waves; s++) {
       // calculate the sine wave index of the sine wave corresponding to the frequency, offsetting by 'random' polynomial to reduce sharp transitions
-      if (majorPeaksAmplitude[s] > 0) {
-        long sin_wave_freq_idx = long(sin_wave_idx) * majorPeaksFreq[s];
+      if (sin_wave_amp[s] > 0) {
+        long sin_wave_freq_idx = long(sin_wave_idx) * sin_waves_freq[s];
         int sin_wave_position = sin_wave_freq_idx % int(SAMPLING_FREQ);
-        sumOfSines += majorPeaksAmplitude[s] * sin_wave[sin_wave_position];
+        sumOfSines += sin_wave_amp[s] * sin_wave[sin_wave_position];
       }
     }
     // multiply cos wave and sum of sines at this moment in time

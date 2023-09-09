@@ -66,8 +66,8 @@
 
 // These values are used for FFT signal processing functions such as breadslicer
 #define BREADSLICER_USE_CURVE 0         // Set to 1 to use breadslicer curve for slicing, or 0 to set custom breadslicer values defined in @breadslicerSliceLocationsStatic*
-const float BREADSLICER_CURVE_EXPONENT = 3.3;  // The exponent for the used for the breadslicer curve
-const float BREADSLICER_CURVE_OFFSET = 0.55;   // The curve offset for the breadslicer to follow when slicing the amplitude array
+const float BREADSLICER_CURVE_EXPONENT = 3.3;  // The exponent for the breadslicer curve
+const float BREADSLICER_CURVE_OFFSET = 0.55;   // The curve offset for  breadslicer to follow when slicing the amplitude array
 
 // if BREADSLICER_USE_CURVE == True then use breadslicerSliceLocations for slicing the FFT amplitudes array, otherwise use breadslicerSliceLocationsStatic
 const int breadslicerSliceLocationsStatic[DEFAULT_NUM_WAVES] {250, 500, 900, 1600, 2400, 3600, 4400, 5000}; // array storing pre-defined slice locations in array for slicing the FFT amplitudes array (vReal)
