@@ -14,19 +14,22 @@
 #define AUDIO_OUTPUT_PIN A0
 
 #define FFT_WINDOW_SIZE 256   // Number of FFT windows, this value must be a power of 2
-#define SAMPLING_FREQ 12000    // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just above 16kHz, but
+#define SAMPLING_FREQ 12000   // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just under 24kHz, but
                               // bringing this down to just a tad lower, leaves more room for FFT and other signal processing functions to be done as well
                               // synthesis
 
-#define FFT_FLOOR_THRESH 1000  // amplitude flooring threshold for FFT, to reduce noise
+#define FFT_MEAN_FLOOR_K 4.0  // multiplier for the mean of FFT vReal array that is used for noise reduction
 
-#define AVG_WINDOW 8        // number of windows to average for more consistent frequencies in the low frequency ranges
-#define BASS_FREQ 120       // frequencies up to this frequency are considered bass
+#define AVG_WINDOW 4        // number of windows to average for more consistent amplitudes in the low frequency ranges
 
-#define RUNNING_AVG_ARR_SIZE 20
+#define FREQ_MAX_AMP_DELTA_MIN 100   // the threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
+#define FREQ_MAX_AMP_DELTA_K 2.0   // multiplier for amplitude of most change
 
-#define AUDIO_INPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE)
-#define AUDIO_OUTPUT_BUFFER_SIZE int(FFT_WINDOW_SIZE) * 3
+#define SUB_BASS 60  // frequencies up to here are averaged by @AVG_WINDOW windows
+#define BASS 200       // frequencies up to this frequency are considered bass
+#define LOW_TONES 500   //..
+#define MID_TONES 2000   //..
+#define HIGH_TONES 4000   //..
 
 /*/
 ########################################################
@@ -61,17 +64,10 @@ float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculat
 float FFTData[FFT_WINDOW_SIZE_BY2];   // stores the data the signal processing functions will use
 
 float FFTDataPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous data used for analysis to find frequency of max amplitude change between consecutive windows
-const int FREQ_MAX_AMP_DELTA_MIN = 500;   // the threshold for a change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function, basically the sensitivity
-const float FREQ_MAX_AMP_DELTA_K = 2.0;   // multiplier for amplitude of most change
-int maxAmpChangeDetected = 0;
-int maxAmpChange = 0;
-int maxAmpChangeIdx = 0;
 
-const int freqsToAverage = ceil(float(BASS_FREQ) / frequencyResolution);
+const int freqsToAverage = ceil(float(SUB_BASS) / frequencyResolution);
 int averageWindowCount = 0;
 float FFTWindows[int(AVG_WINDOW)][freqsToAverage];
-
-int runningAverageArray[RUNNING_AVG_ARR_SIZE];
 
 int majorPeakAmplitude = 0;
 
@@ -88,6 +84,8 @@ int majorPeaksAmplitude[FFT_WINDOW_SIZE_BY2 >> 1];
 ########################################################
 /*/
 
+const int AUDIO_INPUT_BUFFER_SIZE = int(FFT_WINDOW_SIZE);
+const int AUDIO_OUTPUT_BUFFER_SIZE = int(FFT_WINDOW_SIZE) * 3;
 const int FFT_WINDOW_SIZE_X2 = FFT_WINDOW_SIZE * 2;
 
 // a cosine wave for modulating sine waves
@@ -98,6 +96,13 @@ float sin_wave[SAMPLING_FREQ];
 
 // stores the position of sin_wave
 int sin_wave_idx = 0;
+
+// scratchpad array used for signal synthesis
+float audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
+// stores the current index of the scratch pad audio output buffer
+int generateAudioIdx = 0;
+// used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
+int rollingAudioOutputBufferIdx = 0;
 
 /*/
 ########################################################
@@ -113,13 +118,6 @@ volatile int audioInputBufferFull = 0;
 // rolling buffer for outputting synthesized signal
 volatile int audioOutputBufferVolatile[FFT_WINDOW_SIZE_X2];
 volatile int audioOutputBufferIdx = 0;
-
-// scratchpad array used for synthesis
-float audioOutputBuffer[AUDIO_OUTPUT_BUFFER_SIZE];
-// stores the current index of the scratch pad audio output buffer
-int generateAudioIdx = 0;
-// used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
-int rollingAudioOutputBufferIdx = 0;
 
 // used to delay the audio output buffer by 2 FFT sampling periods so that audio can be generated on time, this results in a delay between input and output of 2 * FFT_WINDOW_SIZE / SAMPLING_FREQ
 volatile int numFFTCount = 0;
@@ -218,6 +216,14 @@ void loop() {
     FFT.Compute(FFT_FORWARD);                         // Compute FFT
     FFT.ComplexToMagnitude();                         // Compute frequency magnitudes
 
+    // Noise flooring based on average amplitude of FFT
+    float FFTMean = getMean(vReal, FFT_WINDOW_SIZE_BY2);
+    for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
+      if (vReal[i] < FFTMean * float(FFT_MEAN_FLOOR_K)) { 
+        vReal[i] = 0.0;
+      }
+    }
+
     // Average the previous and next vReal arrays for a smoother spectrogram
     averageFFTWindows();
 
@@ -225,7 +231,7 @@ void loop() {
     //   Serial.printf("%d, %.2f\n", i, FFTData[i]);
     // }
 
-    frequencyMaxAmplitudeDelta(FFTData, FFTDataPrev, FFT_WINDOW_SIZE_BY2);
+    int maxAmpChangeIdx = frequencyMaxAmplitudeDelta(FFTData, FFTDataPrev, FFT_WINDOW_SIZE_BY2);
 
     // if (maxAmpChangeDetected) {
     //   Serial.printf("mi %d mx %d f %d\n", 0, SAMPLING_FREQ_BY2, int(round(maxAmpChangeIdx * frequencyResolution)), maxAmpChange);
@@ -245,10 +251,9 @@ void loop() {
         maxAmpIdx = i;
       }
       // if frequencyOfMaxAmplitudeChange() found a amplitude change above threshold and it exists within a range of a major peak, then weigh this amplitude
-      if (maxAmpChangeDetected && ((majorPeaksFreq[i] > (maxAmpChangeIdx - 1) * frequencyResolution) && (majorPeaksFreq[i] < (maxAmpChangeIdx + 1) * frequencyResolution))) {
-        amplitude = int(amplitude * 15.0);
+      if (maxAmpChangeIdx >= 0 && (majorPeaksFreq[i] == maxAmpChangeIdx)) {
+        amplitude = int(amplitude * float(FREQ_MAX_AMP_DELTA_K));
         majorPeaksAmplitude[i] = amplitude;
-
       }
       // sum the energy of these peaks
       totalEnergy += amplitude;
@@ -279,10 +284,13 @@ void loop() {
 
       // interpolate around the peak and convert from index to frequency
       int frequency = interpolateAroundPeak(FFTData, majorPeaksFreq[i]);
+      //majorPeaksFreq[i] = frequency;
 
-      if (frequency < BASS_FREQ) { majorPeaksFreq[i] = frequency; }
-      //else if (frequency < 1100) { majorPeaksFreq[i] = round(frequency * 0.125) + 30; }
-      else { majorPeaksFreq[i] = round(frequency * 0.03) + 30; }
+      if (frequency <= BASS) { majorPeaksFreq[i] = frequency; }
+      else if (frequency <= LOW_TONES) { majorPeaksFreq[i] = pow(round(frequency * 0.25), 1.07); }
+      else if (frequency <= MID_TONES) { majorPeaksFreq[i] = pow(round(frequency * 0.125), 0.96); }
+      //else (frequency <= HIGH_TONES) { majorPeaksFreq[i] = pow(round(frequency * 0.0625), 0.93); }
+      else { majorPeaksFreq[i] = pow(round(frequency * 0.0625), 0.93); }
 
       // if (majorPeaksAmplitude[i] > 0) {
       //   Serial.printf("(F: %04d, A: %04d) ", majorPeaksFreq[i], majorPeaksAmplitude[i]);
@@ -322,6 +330,14 @@ void setupFFT() {
   }
 }
 
+float getMean(float *data, int size) {
+  float sum = 0.0;
+  for (int i = 0; i < size; i++) {
+    sum += data[i];
+  }
+  return sum > 0.0 ? sum / size : 0;
+}
+
 /*
   Average the previous and next FFT windows to reduce noise and produce a cleaner spectrogram for signal processing
 */
@@ -337,31 +353,31 @@ void averageFFTWindows () {
       FFTData[i] = amplitudeSum / float(AVG_WINDOW);
       //Serial.printf("idx: %d, vReal: %.2f, data: %.2f\n", i, vReal[i], FFTData[i]);
     } else {
-      FFTData[i] = (vRealPrev[i] + vReal[i]) * 0.5;
-      //FFTData[i] = vReal[i];
+      //FFTData[i] = (vRealPrev[i] + vReal[i]) * 0.5;
+      FFTData[i] = vReal[i];
     }
   }
   averageWindowCount = (averageWindowCount + 1) % int(AVG_WINDOW);
 }
 
 
-void frequencyMaxAmplitudeDelta(float *data, float *prevData, int arraySize) {
+int frequencyMaxAmplitudeDelta(float *data, float *prevData, int arraySize) {
   // restore global varialbes
-  maxAmpChangeDetected = 0;
-  maxAmpChange = 0;
+  int maxAmpChange = 0;
+  int maxAmpChangeIdx = -1;
   // iterate through data* and prevData* to find the amplitude with most change
-  for (int i = 0; i < arraySize; i++) {
+  for (int i = 1; i < arraySize; i++) {
     // store the change of between this amplitude and previous amplitude
     int currAmpChange = abs(int(data[i]) - int(prevData[i]));
     // find the most dominant amplitude change and store in maxAmpChangeIdx, store the magnitude of the change in maxAmpChange
     if (currAmpChange > maxAmpChange && currAmpChange > FREQ_MAX_AMP_DELTA_MIN) {
-      maxAmpChangeDetected = 1;
       maxAmpChange = currAmpChange;
       maxAmpChangeIdx = i;
     }
     // assign data to previous data
     prevData[i] = data[i];
   }
+  return maxAmpChangeIdx;
 }
 
 
@@ -376,21 +392,19 @@ int findMajorPeaks(float* data, int maxNumPeaks) {
   int maxPeakIdx = 0;
   // iterate through data to find peaks
   for (int f = 1; f < FFT_WINDOW_SIZE_BY2 - 1; f++) {
-    if (data[f] > float(FFT_FLOOR_THRESH)) {
-      // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
-      if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
-        if (data[f] > maxPeak) {
-          maxPeak = data[f];
-          maxPeakIdx = f;
-        }
-        // summing around the index of peak to get a better representation of the energy associated with the peak
-        int peakSum = round((data[f - 1] + data[f] + data[f + 1]) * frequencyWidth);
-        majorPeaksAmplitude[peaksFound] = peakSum;
-        // return interpolated frequency
-        majorPeaksFreq[peaksFound] = f;
-
-        peaksFound += 1;
+    // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
+    if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
+      if (data[f] > maxPeak) {
+        maxPeak = data[f];
+        maxPeakIdx = f;
       }
+      // summing around the index of peak to get a better representation of the energy associated with the peak
+      int peakSum = round((data[f - 1] + data[f] + data[f + 1]) * frequencyWidth);
+      majorPeaksAmplitude[peaksFound] = peakSum;
+      // return interpolated frequency
+      majorPeaksFreq[peaksFound] = f;
+
+      peaksFound += 1;
     }
   }
 
@@ -505,7 +519,7 @@ void generateAudioForWindow(int *sin_waves_freq, int *sin_wave_amp, int num_sin_
         sumOfSines += sin_wave_amp[s] * sin_wave[sin_wave_position];
       }
     }
-    // multiply cos wave and sum of sines at this moment in time
+    // modulate sum of sines by cos wave at this moment in time
     float synthesized_value = cos_wave[i] * sumOfSines;
     // add to the existing values in scratch pad audio output buffer
     audioOutputBuffer[generateAudioIdx] += synthesized_value;
@@ -552,13 +566,5 @@ void recordSample() {
     audioInputBufferFull = 1;
     audioInputBufferIdx = 0;
   }
-}
-
-void outputSampleTest() {
-  int sin_wave_pos = (audioOutputBufferIdx * majorPeakFrequency) % int(SAMPLING_FREQ);
-  int write_sample = round(127.0 * sin_wave[sin_wave_pos] + 128.0);
-  dacWrite(AUDIO_OUTPUT_PIN, write_sample);
-  // audioOutputBufferIdx = (audioOutputBufferIdx + 1) % sin_wave_table_frequency_period[majorPeakFrequency];
-  audioOutputBufferIdx = (audioOutputBufferIdx + 1) % int(SAMPLING_FREQ);
 }
 
