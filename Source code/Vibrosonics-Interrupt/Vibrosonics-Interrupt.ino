@@ -10,7 +10,7 @@
 ########################################################
 /*/
 
-#define AUDIO_INPUT_PIN A2
+#define AUDIO_INPUT_PIN ADC1_CHANNEL_6 // corresponds to A2 ADC
 #define AUDIO_OUTPUT_PIN A0
 
 #define FFT_WINDOW_SIZE 256   // Number of FFT windows, this value must be a power of 2
@@ -52,7 +52,7 @@ const int sampleDelayTime = int(1000000 / SAMPLING_FREQ); // the time per sample
 float vReal[FFT_WINDOW_SIZE];  // vReal is used for input at SAMPLING_FREQ and receives computed results from FFT
 float vImag[FFT_WINDOW_SIZE];  // used to store imaginary values for computation
 
-float vReal_B[FFT_WINDOW_SIZE];  // used for input at half SAMPLING_FREQ to reduce aliasing at lower frequencies
+float vReal_B[FFT_WINDOW_SIZE];  // used for input at (SAMPLING_FREQ / FFT_B_SAMPLING_DIV) to reduce aliasing at lower frequencies
 float vImag_B[FFT_WINDOW_SIZE];  // used to store imaginary values for computation
 
 int FFT_B_IDX = 0;
@@ -74,11 +74,11 @@ const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
 const float frequencyResolution = float(SAMPLING_FREQ) / float(FFT_WINDOW_SIZE);  // the frequency resolution of FFT with the current window size
 
-const float frequencyWidth = float(FFT_WINDOW_SIZE) / float(SAMPLING_FREQ);
+const float frequencyWidth = 1.0 / frequencyResolution;
 
 const float frequencyResolution_B = (float(SAMPLING_FREQ) / FFT_B_SAMPLING_DIV) / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
 
-const float frequencyWidth_B = float(FFT_WINDOW_SIZE) / (float(SAMPLING_FREQ) / FFT_B_SAMPLING_DIV);
+const float frequencyWidth_B = 1.0 / frequencyResolution_B;
 
 float vRealPrev[FFT_WINDOW_SIZE_BY2]; // stores the previous amplitudes calculated by FFT, for averaging windows
 
@@ -113,10 +113,10 @@ const int AUDIO_INPUT_BUFFER_SIZE = int(FFT_WINDOW_SIZE);
 const int AUDIO_OUTPUT_BUFFER_SIZE = int(FFT_WINDOW_SIZE) * 3;
 const int FFT_WINDOW_SIZE_X2 = FFT_WINDOW_SIZE * 2;
 
-// a cosine wave for modulating sine waves
+// a cosine wave for windowing sine waves
 float cos_wave[FFT_WINDOW_SIZE_X2];
 
-// sine wave for storing pre-generated values of a sine wave at SAMPLING_FREQ sample rate
+// sine wave storing pre-generated values of a sine wave at SAMPLING_FREQ sample rate
 float sin_wave[SAMPLING_FREQ];
 
 // stores the position of sin_wave
@@ -149,6 +149,7 @@ volatile int numFFTCount = 0;
 
 hw_timer_t *My_timer = NULL;
 
+// the procedure that is ran each time interrupt is triggered
 void IRAM_ATTR onTimer(){
   outputSample();
   recordSample();
@@ -280,30 +281,6 @@ void loop() {
     // Average the previous and next vReal arrays for a smoother spectrogram
     averageFFTWindows();
 
-    // Serial.print("fft = [");
-    // for (int i = 0; i < FFT_WINDOW_SIZE_BY2 - 1; i++) {
-    //   Serial.print(int(FFTData[i]));
-    //   Serial.print(",");
-    // }
-    // Serial.print(int(FFTData[FFT_WINDOW_SIZE_BY2 - 1]));
-    // Serial.println("]");
-
-    // for (int f = 0; f < FFT_WINDOW_SIZE_BY2; f++) {
-    //   FFTData[f] = FFTData[f] * c_weightingFilter(f * frequencyResolution);
-    // }
-
-    // for (int f = 0; f < FFT_WINDOW_SIZE_BY2; f++) {
-    //   FFTData[f] = FFTData[f] * c_weightingFilter(f * frequencyResolution);
-    // }
-
-    // Serial.print("fft_w = [");
-    // for (int i = 0; i < FFT_WINDOW_SIZE_BY2 - 1; i++) {
-    //   Serial.print(int(FFTData[i]));
-    //   Serial.print(",");
-    // }
-    // Serial.print(int(FFTData[FFT_WINDOW_SIZE_BY2 - 1]));
-    // Serial.println("]");
-
     // Noise flooring based on average amplitude of FFT
     float FFTMean_N = getMean(FFTData, FFT_WINDOW_SIZE_BY2);
     for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
@@ -322,7 +299,7 @@ void loop() {
     //   Serial.printf("mi %d mx %d f %d\n", 0, SAMPLING_FREQ_BY2, int(round(maxAmpChangeIdx * frequencyResolution)), maxAmpChange);
     // }
 
-    int totalPeaksFound = findMajorPeaks(FFTData, 8);
+    int totalPeaksFound = findMajorPeaks(FFTData, FFT_WINDOW_SIZE_BY2, majorPeaksFreq, majorPeaksAmplitude, 8);
 
     int maxAmp = 0;
     int maxAmpIdx = 0;
@@ -506,17 +483,17 @@ int frequencyMaxAmplitudeDelta(float *data, float *prevData, int arraySize) {
 }
 
 
-int findMajorPeaks(float* data, int maxNumPeaks) {
+int findMajorPeaks(float* data, int size, int maxNumPeaks, int* f_output, int* a_output) {
   // restore output arrays
-  for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
-    majorPeaksAmplitude[i] = 0;
-    majorPeaksFreq[i] = 0;
+  for (int i = 0; i < size >> 1; i++) {
+    a_output[i] = 0;
+    f_output[i] = 0;
   }
   int peaksFound = 0;
   int maxPeak = 0;
   int maxPeakIdx = 0;
   // iterate through data to find peaks
-  for (int f = 1; f < FFT_WINDOW_SIZE_BY2 - 1; f++) {
+  for (int f = 1; f < size - 1; f++) {
     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
     if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
       if (data[f] > maxPeak) {
@@ -525,9 +502,9 @@ int findMajorPeaks(float* data, int maxNumPeaks) {
       }
       // summing around the index of peak to get a better representation of the energy associated with the peak
       int peakSum = round((data[f - 1] + data[f] + data[f + 1]));
-      majorPeaksAmplitude[peaksFound] = peakSum;
+      a_output[peaksFound] = peakSum;
       // return interpolated frequency
-      majorPeaksFreq[peaksFound] = f;
+      f_output[peaksFound] = f;
 
       peaksFound += 1;
     }
@@ -541,47 +518,15 @@ int findMajorPeaks(float* data, int maxNumPeaks) {
     int minimumPeakIdx = maxPeakIdx;
     // find the minimum peak and replace with zero
     for (int i = 1; i < peaksFound; i++) {
-      int thisPeakAmplitude = majorPeaksAmplitude[i];
+      int thisPeakAmplitude = a_output[i];
       if (thisPeakAmplitude > 0 && thisPeakAmplitude < minimumPeak) {
         minimumPeak = thisPeakAmplitude;
         minimumPeakIdx = i;
       }
     }
-    majorPeaksAmplitude[minimumPeakIdx] = 0;
+    a_output[minimumPeakIdx] = 0;
   }
   return peaksFound;
-}
-
-
-
-int getRunningAverage(int data, int *outputArray, int arraySize) {
-  int arraySum = 0;
-  int replaceIdx = 0;
-  for (int i = 0; i < arraySize; i++) {
-    if (outputArray[i] == -1) {
-      arraySum += data;
-      outputArray[i] = data;
-      replaceIdx = (i + 1) % arraySize;
-    } else {
-      arraySum += outputArray[i];
-    }
-  }
-  outputArray[replaceIdx] = -1;
-
-  return round(arraySum / arraySize);
-}
-
-int interpolateAroundPeak(float *data, int indexOfPeak, float resolution) {
-  float prePeak = data[indexOfPeak - 1];
-  float atPeak = data[indexOfPeak];
-  float postPeak = data[indexOfPeak + 1];
-  // summing around the index of maximum amplitude to normalize magnitudeOfChange
-  float peakSum = prePeak + atPeak + postPeak;
-  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
-  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / peakSum;
-  
-  // return interpolated frequency
-  return int((float(indexOfPeak) + magnitudeOfChange) * resolution);
 }
 
 /* my version of the FFT MajorPeak function, uses the same approach to determine the maximum amplitude, but a bit of a different approach to interpolation
@@ -606,6 +551,20 @@ int findMajorPeak(float *data, int size, float resolution) {
   return idxOfMaxAmp > 0 ? interpolateAroundPeak(data, idxOfMaxAmp, resolution) : 0;
 }
 
+int interpolateAroundPeak(float *data, int indexOfPeak, float resolution) {
+  float prePeak = data[indexOfPeak - 1];
+  float atPeak = data[indexOfPeak];
+  float postPeak = data[indexOfPeak + 1];
+  // summing around the index of maximum amplitude to normalize magnitudeOfChange
+  float peakSum = prePeak + atPeak + postPeak;
+  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
+  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / peakSum;
+  
+  // return interpolated frequency
+  return int((float(indexOfPeak) + magnitudeOfChange) * resolution);
+}
+
+
 void mapAmplitudeFrequency() {
 }
 
@@ -615,17 +574,17 @@ void mapAmplitudeFrequency() {
 ########################################################
 /*/
 
+// calculate values for cosine function that is used to transition between frequencies (0.5 * (1 - cos((2PI / T) * x)), where T = FFT_WINDOW_SIZE_X2
 void calculateCosWave() {
   float resolution = float(2.0 * PI / FFT_WINDOW_SIZE_X2);
-  // calculate values for cosine function that is used to transition between frequencies (0.5 * (1 - cos((2PI / T) * x)), where T = FFT_WINDOW_SIZE_X2
   for (int i = 0; i < FFT_WINDOW_SIZE_X2; i++) {
     cos_wave[i] = 0.5 * (1.0 - cos(float(resolution * i)));
   }
 }
 
+// calculate values for 1Hz sine wave at SAMPLING_FREQ sample rate
 void calculateSinWave() {
   float resolution = float(2.0 * PI / SAMPLING_FREQ);
-  // calculate values for 1Hz sine wave at SAMPLING_FREQ sample rate
   for (int x = 0; x < SAMPLING_FREQ; x++) {
     sin_wave[x] = sin(float(resolution * x));
   }
@@ -675,7 +634,9 @@ void generateAudioForWindow(int *sin_waves_freq, int *sin_wave_amp, int num_sin_
   sin_wave_idx = ((sin_wave_idx - FFT_WINDOW_SIZE) + int(SAMPLING_FREQ)) % int(SAMPLING_FREQ);
 }
 
+// outputs a sample from the volatile output buffer
 void outputSample() {
+  // output is delayed by 2 FFT analysis
   if (numFFTCount > 1) {
     dacWrite(AUDIO_OUTPUT_PIN, audioOutputBufferVolatile[audioOutputBufferIdx++]);
     if (audioOutputBufferIdx == FFT_WINDOW_SIZE_X2) {
@@ -684,8 +645,9 @@ void outputSample() {
   }
 }
 
+// records a sample and stores into volatile input buffer
 void recordSample() {
-  audioInputBuffer[audioInputBufferIdx++] = adc1_get_raw(ADC1_CHANNEL_6);
+  audioInputBuffer[audioInputBufferIdx++] = adc1_get_raw(AUDIO_INPUT_PIN);
   if (audioInputBufferIdx == AUDIO_INPUT_BUFFER_SIZE) {
     if (numFFTCount < 2) { numFFTCount++; }
     audioInputBufferFull = 1;
