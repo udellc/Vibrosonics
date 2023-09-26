@@ -24,7 +24,7 @@
 
 #define MIRROR_MODE 0         // when enabled, frequencies and amplitudes calculated by FFT are directly mapped without any scaling or weighting to represent the "raw" signal
 
-#define MAX_NUM_PEAKS 8       // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
+#define MAX_NUM_PEAKS 4       // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
 
 #define FREQ_MAX_AMP_DELTA_MIN 10    // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
 #define FREQ_MAX_AMP_DELTA_MAX 100  // the max threshold of change in amplitude
@@ -39,10 +39,10 @@
 // weights for various frequency ranges
 #define SUB_BASS_K 5.0
 #define BASS_K 1.0
-#define LOW_TONES_K 1.0
-#define MID_TONES_K 0.5
-#define HIGH_TONES_K 1.0
-#define VIBRANCE_K 5.0
+#define LOW_TONES_K 0.5
+#define MID_TONES_K 2.0
+#define HIGH_TONES_K 3.0
+#define VIBRANCE_K 1.0
 
 /*/
 ########################################################
@@ -232,16 +232,8 @@ void loop() {
     FFT.Compute(FFT_FORWARD);                         // Compute FFT
     FFT.ComplexToMagnitude();                         // Compute frequency magnitudes
 
-    // copy values calculated by FFT to FFTData and average amplitudes in the sub bass range to reduce aliasing
-    averageFFTWindows();
-    
-    // noise flooring
-    noiseFloor();
-
-    // fft processing
-    processData();
-
-    int numSinWaves = assignSinWaves();
+    // fft data processing, returns num sine waves to synthesize
+    int numSinWaves = processData();
 
     // generate audio for the next audio window
     generateAudioForWindow(sin_wave_frequency, sin_wave_amplitude, numSinWaves);
@@ -258,86 +250,30 @@ void loop() {
 ########################################################
 /*/
 
-void processData() {
+int processData() {
+  // copy values calculated by FFT to FFTData and average amplitudes in the sub bass range to reduce aliasing
+  averageFFTWindows();
+  
+  // noise flooring
+  noiseFloor();
+  
   // returns the index of the amplitude of most change within set threshold between consecutive FFT windows
-  int maxAmpChangeIdx = frequencyMaxAmplitudeDelta(FFTData, FFTDataPrev, FFT_WINDOW_SIZE_BY2);
+  int maxAmpDeltaIdx = frequencyMaxAmplitudeDelta(FFTData, FFTDataPrev, FFT_WINDOW_SIZE_BY2);
 
+  // finds at most @MAX_NUM_PEAKS peaks in FFTData* and returns the total number peaks found for iterating through output arrays
+  // majorPeaksFreq* and majorPeaksAmplitude*
   int totalPeaksFound = findMajorPeaks(FFTData, MAX_NUM_PEAKS);
 
-  int maxAmp = 0;
+  int numSineWaves = assignSinWaves();
+
+  // iterate through peaks, find the maximum peak
   int maxAmpIdx = 0;
   int totalEnergy = 0;
-  // iterate through peaks found by the major peaks function
-  for (int i = 0; i < totalPeaksFound; i++) {
-    // weighting using equal loudness curve to better represent human audio perception
-    //float amp_weighting = a_weightingFilter(frequency);
-    int amplitude = majorPeaksAmplitude[i];
-    //int amplitude = round(majorPeaksAmplitude[i] * amp_weighting);
-    // interpolate around the peak and convert from index to frequency
-    int frequency = interpolateAroundPeak(FFTData, majorPeaksFreq[i], frequencyResolution);
-    // find max amplitude
-    if (amplitude > maxAmp) {
-      maxAmp = amplitude;
-      maxAmpIdx = i;
-    }
+  scaleAmplitudeFrequency(maxAmpIdx, totalEnergy, maxAmpDeltaIdx, totalPeaksFound);
 
-    // if mirror mode is enabled then skip frequency scaling and amplitude weighing to represent the raw input signal
-    if (!MIRROR_MODE) {
-      // if frequencyOfMaxAmplitudeChange() found a amplitude change above threshold and it exists within a range of a major peak, then weigh this amplitude
-      if (maxAmpChangeIdx >= 0 && (majorPeaksFreq[i] == maxAmpChangeIdx)) {
-        amplitude = int(amplitude * float(FREQ_MAX_AMP_DELTA_K));
-      }
-      // map frequencies and weigh amplitudes, frequencies associated with sub bass and bass stay the same
-      // other frequencies are scaled
-      if (frequency <= SUB_BASS) {
-        //frequency = frequency; 
-        amplitude *= float(SUB_BASS_K);
-      } else if (frequency <= BASS) {
-        //frequency = frequency; 
-        amplitude *= float(BASS_K);
-      } else if (frequency <= LOW_TONES) {
-        frequency = pow(round(frequency * 0.25), 1.05);
-        amplitude *= float(LOW_TONES_K);
-      } else if (frequency <= MID_TONES) {
-        frequency = pow(round(frequency * 0.125), 0.96);
-        amplitude *= float(MID_TONES_K);
-      } else if (frequency <= HIGH_TONES) { 
-        frequency = pow(round(frequency * 0.0625), 0.96);
-        amplitude *= float(HIGH_TONES_K);
-      } else { 
-        frequency = pow(round(frequency * 0.03125), 1.04); 
-        amplitude *= float(VIBRANCE_K);
-      }
-    }
-    // reassign frequencies and amplitudes
-    majorPeaksAmplitude[i] = amplitude;
-    majorPeaksFreq[i] = frequency;
-    // sum the energy associated with the amplitudes
-    totalEnergy += amplitude;
-  }
-  // weight of the max amplitude relative to other amplitudes
-  float maxAmpWeight = maxAmp / float(totalEnergy > 0 ? totalEnergy : 1);
-  // if the weight of max amplitude is larger than a certain threshold, assume that a single frequency is being detected to decrease noise in the output
-  int singleFrequency = maxAmpWeight > 0.9 ? 1 : 0;
-  // value to map amplitudes between 0.0 and 1.0 range, the FFT_MAX_SUM will be used to divide unless totalEnergy exceeds this value
-  float divideBy = 1.0 / float(totalEnergy > FFT_MAX_SUM ? totalEnergy : FFT_MAX_SUM);
+  mapAmplitudes(maxAmpIdx, totalEnergy, numSineWaves);
 
-  // normalizing and multiplying to ensure that the sum of amplitudes is less than or equal to 127
-  for (int i = 0; i < totalPeaksFound; i++) {
-    int amplitude = majorPeaksAmplitude[i];
-    if (amplitude > 0) {
-      // map amplitude between 0 and 127
-      int mappedAmplitude = floor(amplitude * divideBy * 127.0);
-      // if assuming single frequency is detected based on the weight of the amplitude,
-      if (singleFrequency) {
-        // assign other amplitudes to 0 to reduce noise
-        majorPeaksAmplitude[i] = i == maxAmpIdx ? mappedAmplitude : 0;
-      } else {
-        // otherwise assign normalized amplitudes
-        majorPeaksAmplitude[i] = mappedAmplitude;
-      }
-    }
-  }
+  return numSineWaves;
 }
 
 // stores the frequencies and amplitudes found by processData() into separate arrays, and returns the number of sin waves to synthesize
@@ -358,6 +294,90 @@ int assignSinWaves() {
     if (c == MAX_NUM_PEAKS) { break; }
   }
   return c;
+}
+
+void scaleAmplitudeFrequency(int &maxAmpIdx, int &fftEnergy, int &maxAmpDeltaIdx, int &numAmps) {
+  int maxAmp = 0;
+  // iterate through peaks found by the major peaks function
+  for (int i = 0; i < numAmps; i++) {
+    // weighting using equal loudness curve to better represent human audio perception
+    //float amp_weighting = a_weightingFilter(frequency);
+    //int amplitude = round(majorPeaksAmplitude[i] * amp_weighting);
+    int amplitude = sin_wave_amplitude[i];
+    // interpolate around the peak and convert from index to frequency
+    int frequency = interpolateAroundPeak(FFTData, sin_wave_frequency[i], frequencyResolution);
+    // find max amplitude
+    if (amplitude > maxAmp) {
+      maxAmp = amplitude;
+      maxAmpIdx = i;
+    }
+
+    // if mirror mode is enabled then skip frequency scaling and amplitude weighting to represent the raw input signal
+    if (!MIRROR_MODE) {
+      // if frequencyOfMaxAmplitudeChange() found a amplitude change above threshold and it exists within a range of a major peak, then weigh this amplitude
+      if (maxAmpDeltaIdx >= 0 && (majorPeaksFreq[i] == maxAmpDeltaIdx)) {
+        amplitude = round(amplitude * float(FREQ_MAX_AMP_DELTA_K));
+      }
+      // map frequencies and weigh amplitudes, frequencies associated with sub bass and bass stay the same other frequencies are scaled
+      amplitudeFrequencyWeighting(frequency, amplitude);
+    }
+    // reassign frequencies and amplitudes
+    sin_wave_amplitude[i] = amplitude;
+    sin_wave_frequency[i] = frequency;
+    // sum the energy associated with the amplitudes
+    fftEnergy += amplitude;
+  }
+}
+
+void amplitudeFrequencyWeighting(int &freq, int &amp) {
+  if (freq <= SUB_BASS) {
+    //frequency = frequency; 
+    amp *= float(SUB_BASS_K);
+  } if (freq <= BASS) {
+    //frequency = frequency; 
+    amp *= float(BASS_K);
+  } if (freq <= LOW_TONES) {
+    // frequency = pow(round(frequency * 0.25), 1.05);
+    freq = round(freq * 0.25);
+    amp *= float(LOW_TONES_K);
+  } else if (freq <= MID_TONES) {
+    // frequency = pow(round(frequency * 0.125), 0.96);
+    freq = round(freq * 0.125);
+    amp *= float(MID_TONES_K);
+  } else if (freq <= HIGH_TONES) { 
+    //frequency = pow(round(frequency * 0.0625), 0.96);
+    freq = round(freq * 0.0625);
+    amp *= float(HIGH_TONES_K);
+  } else { 
+    //frequency = pow(round(frequency * 0.03125), 1.04);
+    freq = round(freq * 0.03125);
+    amp *= float(VIBRANCE_K);
+  }
+}
+
+void mapAmplitudes(int &maxAmpIdx, int &totalEnergy, int &numWaves) {
+  // weight of the max amplitude relative to other amplitudes
+  float maxAmpWeight = sin_wave_amplitude[maxAmpIdx] / float(totalEnergy > 0 ? totalEnergy : 1);
+  // if the weight of max amplitude is larger than a certain threshold, assume that a single frequency is being detected to decrease noise in the output
+  int singleFrequency = maxAmpWeight > 0.9 ? 1 : 0;
+  // value to map amplitudes between 0.0 and 1.0 range, the FFT_MAX_SUM will be used to divide unless totalEnergy exceeds this value
+  float divideBy = 1.0 / float(totalEnergy > FFT_MAX_SUM ? totalEnergy : FFT_MAX_SUM);
+
+  // normalizing and multiplying to ensure that the sum of amplitudes is less than or equal to 127
+  for (int i = 0; i < numWaves; i++) {
+    int amplitude = sin_wave_amplitude[i];
+    if (amplitude == 0) { continue; }
+    // map amplitude between 0 and 127
+    int mappedAmplitude = floor(amplitude * divideBy * 127.0);
+    // if assuming single frequency is detected based on the weight of the amplitude,
+    if (singleFrequency) {
+      // assign other amplitudes to 0 to reduce noise
+      sin_wave_amplitude[i] = i == maxAmpIdx ? mappedAmplitude : 0;
+    } else {
+      // otherwise assign normalized amplitudes
+      sin_wave_amplitude[i] = mappedAmplitude;
+    }
+  }
 }
 
 /*
@@ -568,6 +588,7 @@ void generateAudioForWindow(int *sin_waves_freq, int *sin_wave_amp, int num_sin_
     if (generateAudioIdxCpy == AUDIO_OUTPUT_BUFFER_SIZE) { generateAudioIdxCpy = 0; }
   }
   // determine the next position in the scratch pad audio output buffer to counter phase cosine wave
+  //generateAudioIdx = generateAudioIdx == AUDIO_OUTPUT_BUFFER_SIZE ? 
   generateAudioIdx = int(generateAudioIdx - FFT_WINDOW_SIZE + AUDIO_OUTPUT_BUFFER_SIZE) % int(AUDIO_OUTPUT_BUFFER_SIZE);
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
 }
