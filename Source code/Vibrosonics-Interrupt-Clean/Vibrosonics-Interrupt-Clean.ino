@@ -72,7 +72,7 @@ const float freqRes = float(SAMPLING_FREQ) / FFT_WINDOW_SIZE;  // the frequency 
 
 const float freqWidth = 1.0 / freqRes; // the width of an FFT bin
 
-float FFTWindow[FFT_WINDOW_SIZE_BY2];   // stores the data from the current fft window
+float freqs[FFT_WINDOW_SIZE_BY2];   // stores the data from the current fft window
 
 int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1]; // stores the peaks computed by FFT
 float FFTPeaksAmp[FFT_WINDOW_SIZE_BY2 >> 1];
@@ -124,9 +124,6 @@ volatile int AUD_IN_BUFFER_IDX = 0;
 // rolling buffer for outputting synthesized signal
 volatile int AUD_OUT_BUFFER[AUD_OUT_BUFFER_SIZE];
 volatile int AUD_OUT_BUFFER_IDX = 0;
-
-// used to delay the audio output buffer by 2 FFT sampling periods so that audio can be generated on time, this results in a delay between input and output of 2 * FFT_WINDOW_SIZE / SAMPLING_FREQ
-volatile int NUM_WINDOWS_REC = 0;
 
 hw_timer_t *SAMPLING_TIMER = NULL;
 
@@ -217,21 +214,21 @@ int processData() {
   setupFFT();
   
   // restores AUD_IN and AUD_OUT buffer positions
-  RESET_AUD_IN_OUT_BUFFERS();
+  RESET_AUD_IN_OUT_IDX();
 
   FFT.DCRemoval();                                  // DC Removal to reduce noise
   FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
   FFT.Compute(FFT_FORWARD);                         // Compute FFT
   FFT.ComplexToMagnitude();                         // Compute frequency magnitudes
 
-  // copy values calculated by FFT to FFTWindow and FFTWindows
-  storeFFTWindow();
+  // copy values calculated by FFT to freqs
+  storeFreqs();
   
   // noise flooring based on mean of data and a threshold
-  noiseFloor(FFTWindow, 20.0);
+  noiseFloor(freqs, 20.0);
 
   // finds peaks in data, stores index of peak in FFTPeaks and Amplitude of peak in FFTPeaksAmp
-  findMajorPeaks(FFTWindow);
+  findMajorPeaks(freqs);
   
   // assigns data found by findMajorPeaks to sine waves
   int numSineWaves = assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
@@ -240,7 +237,7 @@ int processData() {
   int totalEnergy = 0;
   for (int i = 0; i < numSineWaves; i++) {
     totalEnergy += sin_wave_amplitude[i];
-    sin_wave_frequency[i] = interpolateAroundPeak(FFTWindow, sin_wave_frequency[i]);
+    sin_wave_frequency[i] = interpolateAroundPeak(freqs, sin_wave_frequency[i]);
   }
 
   // maps the amplitudes so that their total sum is no more or equal to 127
@@ -305,10 +302,10 @@ void setupFFT() {
   }
 }
 
-// store the current window into FFTWindow and FFTWindows for averaging windows to reduce noise and produce a cleaner spectrogram for signal processing
-void storeFFTWindow () {
+// store the current window into freqs and freqss for averaging windows to reduce noise and produce a cleaner spectrogram for signal processing
+void storeFreqs () {
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
-    FFTWindow[i] = vReal[i] * freqWidth;
+    freqs[i] = vReal[i] * freqWidth;
   }
 }
 
@@ -457,9 +454,7 @@ bool AUD_IN_BUFFER_FULL() {
 }
 
 // restores AUD_IN_BUFFER_IDX and AUD_OUT_BUFFER_IDX, and increments NUM_WINDOWS_REC to allow values to be properly synthesized for AUD_OUT_BUFFER
-void RESET_AUD_IN_OUT_BUFFERS() {
-  // increment NUM_WINDOWS_REC to delay audio output buffer by 2 windows
-  if (NUM_WINDOWS_REC < 2) { NUM_WINDOWS_REC += 1; }
+void RESET_AUD_IN_OUT_IDX() {
   // reset volatile audio input buffer position
   AUD_IN_BUFFER_IDX = 0;
   // reset volatile audio output buffer position, if needed
@@ -469,8 +464,6 @@ void RESET_AUD_IN_OUT_BUFFERS() {
 
 // outputs a sample from the volatile output buffer to DAC
 void OUTPUT_SAMPLE() {
-  // delay audio output by 2 windows
-  if (NUM_WINDOWS_REC < 2) { return; }
   dacWrite(AUDIO_OUT_PIN, AUD_OUT_BUFFER[AUD_OUT_BUFFER_IDX++]);
 }
 
