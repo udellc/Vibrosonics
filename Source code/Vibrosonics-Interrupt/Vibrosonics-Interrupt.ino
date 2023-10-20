@@ -22,44 +22,53 @@
 ########################################################
 /*/
 
-  // audio sampling stuff
-#define AUDIO_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
-#define AUDIO_OUT_PIN A0
+// audio sampling stuff
+#define AUD_IN_PIN ADC1_CHANNEL_6  // corresponds to ADC on A2
+#define AUD_OUT_PIN A0
 
-#define FFT_WINDOW_SIZE 256   // size of a recording window, this value MUST be a power of 2
-#define SAMPLING_FREQ 10000   // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just under 24kHz, but
-                              // bringing this down leaves more processing time for FFT, signal processing functions, and synthesis
+#define FFT_WINDOW_SIZE 256  // size of a recording window, this value MUST be a power of 2
+#define SAMPLING_FREQ 10000  // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just under 24kHz, but \
+                             // bringing this down leaves more processing time for FFT, signal processing functions, and synthesis
 
-#define FFT_MAX_AMP 300    // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
-#define FFT_MAX_SUM 3000    // the maximum sum of FFT bins, this value is used when using breadslicer DET_MODE
+#define FFT_NOISE_THRESH 25
 
-#define FFT_AVG_WINDOW 8  // number of FFT windows to average using circular buffer
+#define FFT_MAX_AMP 300   // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
+#define FFT_MAX_SUM 3000  // the maximum sum of FFT bins, this value is used when using breadslicer DET_MODE
 
-  // FFT data processing settings
-#define DET_MODE 'b'  // 'p' = majorPeaks, 'b' = breadslicer
-#define DET_DATA 'c'  // data to use by detection algorithm selected by DET_MODE, 'a' = rawFreqsAvg, 'c' = freqs
-#define SCALING_MODE 'a'  // various frequency scaling modes 'a' through 'd', 'm' - mirror mode
-                          // (Note: For true mirror mode, FREQ_MAX_AMP_DELTA must be 0, DET_MODE must be 'p' and DET_DATA must be 'c'!)
+#define FFT_WINDOW_COUNT 8  // number of FFT windows to average using circular buffer
 
-  // frequency of min and max amplitude change settings
+// FFT data processing settings
+#define DET_MODE 'p'      // 'p' = majorPeaks, 'b' = breadslicer
+#define DET_DATA 'c'      // data to use by detection algorithm selected by DET_MODE, 'a' = rawFreqsAvg, 'c' = freqs
+#define SCALING_MODE 'c'  // various frequency scaling modes 'a' through 'd', 'm' - mirror mode \
+                          // (Note: For true mirror mode, FREQ_MAX_AMP_DELTA must be 0, DET_MODE must be 'p' and DET_DATA must be 'c'!) \
+                          //   'a' - directly maps passed frequency to values stored in freqBandsMapK, and weights amplitude based on values stored in freqBandsK \
+                          //   'b' - maps passed frequencies to values between freqBandsMapK[i - 1] and freqBandsMapK[i] where i is the frequency band associated with the passed frequency. Amplitude weighting is based on the values stored in freqBandsK. \
+                          //   'c' - maps the full frequency spectrum (1Hz to (SAMPLING_FREQ / 2) Hz) to range between 20 and 120 Hz. \
+                          //   'd' - frequency and amplitude get scaled based on custom values. \
+                          //   'm' - mirror mode, nothing happens to frequencies and amplitudes
+
+// frequency of min and max amplitude change settings
 #define FREQ_MAX_AMP_DELTA 1  // use frequency of max amplitude change function to weigh amplitude of most change
 
-#define FREQ_MAX_AMP_DELTA_MIN 20   // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
-#define FREQ_MAX_AMP_DELTA_MAX 150  // the max threshold of change in amplitude
-#define FREQ_MAX_AMP_DELTA_K 8.0    // weight for amplitude of most change
+#define FREQ_MAX_AMP_DELTA_MIN 20     // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
+#define FREQ_MAX_AMP_DELTA_MAX 200    // the max threshold of change in amplitude
+#define FREQ_MAX_AMP_DELTA_START 100  // the minimum frequency to look for max amplitude change
+#define FREQ_MAX_AMP_DELTA_END 4000   // the maximum frequency to look for max amplitude change
+#define FREQ_MAX_AMP_DELTA_K 16.0      // weight for amplitude of most change
 
-  // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
-#define MAX_NUM_PEAKS 16
+// the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
+#define MAX_NUM_PEAKS 8
 
-  // number of frequency bands, used for breadslicer() as well as mapping frequencies
-#define NUM_FREQ_BANDS 5 // this must be equal to how many frequency bands the FFT spectrogram is being split into for the breadslicer and frequency mapping
+// number of frequency bands, used for breadslicer() as well as mapping frequencies
+#define NUM_FREQ_BANDS 5  // this must be equal to how many frequency bands the FFT spectrogram is being split into for the breadslicer and frequency mapping
 
 const int freqBands[NUM_FREQ_BANDS] = { 60, 200, 500, 2000, int(SAMPLING_FREQ) >> 1 };  // stores the frequency bands (in Hz) associated to SUB_BASS through VIBRANCE
 
-const float freqBandsK[NUM_FREQ_BANDS] = { 1.5, 1.0, 1.5, 1.25, 2.0 }; // additional weights for various frequency ranges used during amplitude scaling
-const int freqBandsMapK[NUM_FREQ_BANDS] { 30, 48, 80, 100, 110 }; // used for mapping frequencies to explicitly defined frequencies
+const float freqBandsK[NUM_FREQ_BANDS] = { 1.5, 1.0, 1.5, 1.25, 2.0 };  // additional weights for various frequency ranges used during amplitude scaling
+const int freqBandsMapK[NUM_FREQ_BANDS]{ 30, 48, 80, 100, 110 };        // used for mapping frequencies to explicitly defined frequencies
 
-#define DEBUG 0    // in debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
+#define DEBUG 0  // in debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
 /*/
 ########################################################
@@ -68,11 +77,11 @@ const int freqBandsMapK[NUM_FREQ_BANDS] { 30, 48, 80, 100, 110 }; // used for ma
 /*/
 
 // used for configuring operation mode
-void (*detectionFunc)(float*) = NULL;
-float* detFuncData;
+void (*detectionFunc)(float *) = NULL;
+float *detFuncData;
 
-int* assignSinWavesFreq;
-float* assignSinWavesAmp;
+int *assignSinWavesFreq;
+float *assignSinWavesAmp;
 int assignSinWavesNum;
 
 void (*weightingFunc)(int &, int &) = NULL;
@@ -81,11 +90,25 @@ unsigned long loop_time = 0;  // used for printing time main loop takes to execu
 
 /*/
 ########################################################
+  Other constants
+########################################################
+/*/
+
+const float a_weighting_k1 = pow(107.7 * 0.1, 2);
+const float a_weighting_k2 = pow(737.9 * 0.1, 2);
+
+const float b_weighting_k1 = pow(158.5 * 0.1, 2);
+
+const float c_weighting_k1 = pow(12200 * 0.1, 2);
+const float c_weighting_k2 = pow(20.6 * 0.1, 2);
+
+/*/
+########################################################
   FFT
 ########################################################
 /*/
 
-const int sampleDelayTime = int(1000000 / SAMPLING_FREQ); // the time delay between sample
+const int sampleDelayTime = int(1000000 / SAMPLING_FREQ);  // the time delay between sample
 
 float vReal[FFT_WINDOW_SIZE];  // vReal is used for input at SAMPLING_FREQ and receives computed results from FFT
 float vImag[FFT_WINDOW_SIZE];  // used to store imaginary values for computation
@@ -104,21 +127,21 @@ const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
 const float freqRes = float(SAMPLING_FREQ) / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
 
-const float freqWidth = 1.0 / freqRes; // the width of an FFT bin
+const float freqWidth = 1.0 / freqRes;  // the width of an FFT bin
 
-float rawFreqs[int(FFT_AVG_WINDOW)][FFT_WINDOW_SIZE_BY2]; // stores FFT windows for averaging
-float rawFreqsAvg[FFT_WINDOW_SIZE_BY2];               // stores the time averaged rawFreqs
-float rawFreqsAvgPrev[FFT_WINDOW_SIZE_BY2];           // stores the previous time averaged rawFreqs
-const float _FFT_AVG_WINDOW = 1.0 / FFT_AVG_WINDOW;
-int averageWindowCount = 0;       // global variable for iterating through circular rawFreqs buffer
+float rawFreqs[int(FFT_WINDOW_COUNT)][FFT_WINDOW_SIZE_BY2];  // stores FFT windows for averaging
+float rawFreqsAvg[FFT_WINDOW_SIZE_BY2];                      // stores the time averaged rawFreqs
+float rawFreqsAvgPrev[FFT_WINDOW_SIZE_BY2];                  // stores the previous time averaged rawFreqs
+const float _FFT_WINDOW_COUNT = 1.0 / FFT_WINDOW_COUNT;
+int averageWindowCount = 0;  // global variable for iterating through circular rawFreqs buffer
 
-float freqs[FFT_WINDOW_SIZE_BY2];   // stores the data from the current fft frequency magnitudes
-float freqsPrev[FFT_WINDOW_SIZE_BY2]; // stores the data from the previous fft frequency magnitudes
+float freqs[FFT_WINDOW_SIZE_BY2];      // stores the data from the current fft frequency magnitudes
+float freqsPrev[FFT_WINDOW_SIZE_BY2];  // stores the data from the previous fft frequency magnitudes
 
-int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1]; // stores the peaks computed by FFT
+int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1];  // stores the peaks computed by FFT
 float FFTPeaksAmp[FFT_WINDOW_SIZE_BY2 >> 1];
 
-int freqBandsIndexes[NUM_FREQ_BANDS]; // stores FFT bin indexes corresponding to freqBands array
+int freqBandsIndexes[NUM_FREQ_BANDS];  // stores FFT bin indexes corresponding to freqBands array
 
 // stores the peaks found by breadslicer and the sum of each band
 int breadslicerPeaks[NUM_FREQ_BANDS];
@@ -130,7 +153,7 @@ float breadslicerSums[NUM_FREQ_BANDS];
 ########################################################
 /*/
 
-const int AUD_IN_BUFFER_SIZE = FFT_WINDOW_SIZE;  
+const int AUD_IN_BUFFER_SIZE = FFT_WINDOW_SIZE;
 const int AUD_OUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 2;
 const int GEN_AUD_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
 
@@ -175,7 +198,7 @@ volatile int AUD_OUT_BUFFER_IDX = 0;
 hw_timer_t *SAMPLING_TIMER = NULL;
 
 // the procedure that is called when timer interrupt is triggered
-void IRAM_ATTR ON_SAMPLING_TIMER(){
+void IRAM_ATTR ON_SAMPLING_TIMER() {
   if (AUD_IN_BUFFER_FULL()) { return; }
   OUTPUT_SAMPLE();
   RECORD_SAMPLE();
@@ -197,6 +220,14 @@ void setup() {
   delay(3000);
   Serial.println("Ready");
 
+  // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots
+  for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
+    generateAudioBuffer[i] = 0.0;
+    if (i < AUD_OUT_BUFFER_SIZE) {
+      AUD_OUT_BUFFER[i] = 128;
+    }
+  }
+
   // calculate values of cosine and sine wave at certain sampling frequency
   calculateCosWave();
   calculateSinWave();
@@ -205,7 +236,7 @@ void setup() {
   calculatefreqBands();
 
   // setup detection algorithm mode
-  switch(DET_MODE) {
+  switch (DET_MODE) {
     case 'p':
       detectionFunc = &findMajorPeaks;
       assignSinWavesFreq = FFTPeaks;
@@ -228,7 +259,7 @@ void setup() {
   }
 
   // select data to use for detection algorithm, selected by DET_MODE
-  switch(DET_DATA) {
+  switch (DET_DATA) {
     case 'a':
       detFuncData = rawFreqsAvg;
       break;
@@ -242,7 +273,7 @@ void setup() {
   }
 
   // attach frequency/amplitude scaling function
-  switch(SCALING_MODE) {
+  switch (SCALING_MODE) {
     case 'a':
       weightingFunc = &ampFreqWeightingA;
       break;
@@ -262,17 +293,17 @@ void setup() {
   }
 
   // setup pins
-  pinMode(AUDIO_OUT_PIN, OUTPUT);
+  pinMode(AUD_OUT_PIN, OUTPUT);
 
   Serial.println("Setup complete");
 
   delay(1000);
 
   // setup timer interrupt for audio sampling
-  SAMPLING_TIMER = timerBegin(0, 80, true);                       // setting clock prescaler 1MHz (80MHz / 80)
-  timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
-  timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);         // trigger interrupt every @sampleDelayTime microseconds
-  timerAlarmEnable(SAMPLING_TIMER);                               // enabled interrupt
+  SAMPLING_TIMER = timerBegin(0, 80, true);                        // setting clock prescaler 1MHz (80MHz / 80)
+  timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true);  // attach interrupt function
+  timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);          // trigger interrupt every @sampleDelayTime microseconds
+  timerAlarmEnable(SAMPLING_TIMER);                                // enabled interrupt
   timerStart(SAMPLING_TIMER);
 }
 
@@ -286,7 +317,7 @@ void loop() {
   if (AUD_IN_BUFFER_FULL()) {
     // in debug mode, print total time spent in loop, optionally interrupt timer can be disabled
     if (DEBUG) {
-      // timerAlarmDisable(My_timer); // optionally disable interrupt timer during debug mode
+      // timerAlarmDisable(My_timer); // optionally disable interrupt timer during debug mode, DONT FORGET TO ENABLE AT THE END OF LOOP! (if needed)
       loop_time = micros();
     }
 
@@ -299,7 +330,7 @@ void loop() {
     if (DEBUG) {
       Serial.print("time spent processing in microseconds: ");
       Serial.println(micros() - loop_time);
-      
+
       Serial.print("(F, A): ");
       for (int i = 0; i < MAX_NUM_WAVES; i++) {
         Serial.printf("(%03d, %03d) ", sin_wave_frequency[i], sin_wave_amplitude[i]);
@@ -319,10 +350,10 @@ void loop() {
 int processData() {
   // copy values from AUD_IN_BUFFER to vReal array
   setupFFT();
-  
+
   // restores AUD_IN and AUD_OUT buffer positions
   RESET_AUD_IN_OUT_IDX();
-  
+
   // perform fft
   FFT.DCRemoval();                                  // DC Removal to reduce noise
   FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
@@ -331,21 +362,51 @@ int processData() {
 
   // copy values calculated by FFT to freqs and rawFreqs
   storeFreqs();
-  
+
   // noise flooring based on mean of data and a threshold
-  noiseFloor(detFuncData, 25.0);
+  noiseFloor(detFuncData, FFT_NOISE_THRESH);
 
   detectionFunc(detFuncData);
 
   // if @FREQ_MAX_AMP_DELTA was enabled, returns the index of the amplitude of most change within set threshold between FFT windows as well as the magnitude of change which is passed as a reference
   float maxAmpDeltaMag = 0.0;
-  int maxAmpDeltaIdx = FREQ_MAX_AMP_DELTA ? frequencyMaxAmplitudeDelta(freqs, freqsPrev, maxAmpDeltaMag) : -1;
-  
+  int maxAmpDeltaIdx = FREQ_MAX_AMP_DELTA ? frequencyMaxAmplitudeDelta(freqs, freqsPrev, FREQ_MAX_AMP_DELTA_START, FREQ_MAX_AMP_DELTA_END, maxAmpDeltaMag) : -1;
+
+
+
   int numSineWaves = assignSinWaves(assignSinWavesFreq, assignSinWavesAmp, assignSinWavesNum);
 
   // weight frequencies based on passed weighting function, returns the total sum of the amplitudes and the index of the max amplitude which is passed by reference
   int maxAmpIdx = 0;
   int totalEnergy = scaleAmplitudeFrequency(maxAmpIdx, maxAmpDeltaIdx, maxAmpDeltaMag, numSineWaves);
+
+  // a very basic way to look for high hats, simply just look for noise above a certain threshold throughout the spectrum
+  int noiseC = 0;
+  int highHatEnergy = 0;
+  for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
+    if (freqs[i] > 60) {
+      noiseC += 1;
+      highHatEnergy += freqs[i];
+    }
+  }
+  // if the noise is present in at least 80% the spectrum, then consider that a high hat has been detected
+  if (noiseC > (FFT_WINDOW_SIZE_BY2 * 0.8) && SCALING_MODE != 'm') {
+    int minAmp = sin_wave_amplitude[maxAmpIdx];
+    int minAmpIdx = maxAmpIdx;
+    // find the least amplitude sine waves array to replaced with dedicated freqeuncy for high hat representation
+    for (int i = 0; i < numSineWaves; i++) {
+      if (sin_wave_amplitude[i] < minAmp) {
+        minAmp = sin_wave_amplitude[i];
+        minAmpIdx = i;
+      }
+    }
+    // scale high hat energy by desired value
+    highHatEnergy *= 4;
+    // ensure that the total energy is accurate
+    totalEnergy += highHatEnergy - sin_wave_amplitude[minAmpIdx];
+    sin_wave_amplitude[minAmpIdx] = highHatEnergy;
+    sin_wave_frequency[minAmpIdx] = 90;
+  }
 
   // maps the amplitudes so that their total sum is no more or equal to 127
   mapAmplitudes(maxAmpIdx, totalEnergy, numSineWaves);
@@ -360,7 +421,7 @@ int processData() {
 /*/
 
 // stores the frequencies and amplitudes found by majorPeaks into separate arrays, and returns the number of sin waves to synthesize
-int assignSinWaves(int* freqData, float* ampData, int size) {
+int assignSinWaves(int *freqData, float *ampData, int size) {
   // restore amplitudes to 0, restoring frequencies isn't necassary
   for (int i = 0; i < MAX_NUM_WAVES; i++) {
     sin_wave_amplitude[i] = 0;
@@ -380,8 +441,8 @@ int assignSinWaves(int* freqData, float* ampData, int size) {
 }
 
 // iterates through sine waves and scales frequencies/amplitudes based on frequency bands and the frequency of max amplitude change
-int scaleAmplitudeFrequency(int &maxAmpIdx, int maxAmpDeltaIdx, float maxAmpDeltaMag, int numWaves) {
-  int sum = 0;
+long scaleAmplitudeFrequency(int &maxAmpIdx, int maxAmpDeltaIdx, float maxAmpDeltaMag, int numWaves) {
+  long sum = 0;
   int maxAmp = 0;
   // iterate through sin waves
   for (int i = 0; i < numWaves; i++) {
@@ -420,9 +481,11 @@ void ampFreqWeightingA(int &freq, int &amp) {
     if (freq <= freqBands[i]) {
       amp *= freqBandsK[i];
       freq = freqBandsMapK[i];
-      break;
+      return;
     }
   }
+  freq = 0;
+  amp = 0;
 }
 
 // scales frequencies based on values in between frequency bands stored in freqBandsMapK, amplitude weighting based on freqBandsK
@@ -431,14 +494,27 @@ void ampFreqWeightingB(int &freq, int &amp) {
     if (freq <= freqBands[i]) {
       amp *= freqBandsK[i];
       freq = map(freq, i > 0 ? freqBands[i - 1] : 1, freqBands[i], i > 0 ? freqBandsMapK[i - 1] : 25, freqBandsMapK[i]);
-      break;
+      return;
     }
   }
+  freq = 0;
+  amp = 0;
 }
 
-// scales frequency by mapping the full spectrum to the desired range
+// scales frequency by mapping sub-bass to 30Hz, and the full spectrum to the desired range
 void ampFreqWeightingC(int &freq, int &amp) {
-  freq = map(freq, 1, SAMPLING_FREQ * 0.5, 20, 120);
+  amp *= c_weightingFilter(freq);
+
+  if (freq < 60) {
+    freq = 35;
+  } else {
+    // normalize between 0 and 1.0, where 0.0 corresponds to 60Hz, while SAMPLING_FREQ / 2 Hz corresponds to 1.0
+    float freq_n = (freq - 60) / float(SAMPLING_FREQ * 0.5 - 60);
+    // broaden range for lower frequencies
+    freq_n = pow(freq_n, 0.2);
+    // multiply by maximum desired value
+    freq = round(freq_n * 120);
+  }
 }
 
 // custom frequency scaling and amplitude weighting
@@ -453,6 +529,7 @@ void ampFreqWeightingD(int &freq, int &amp) {
   amp *= freqBandsK[band];
   switch (band) {
     case 0:
+      freq = 25;
       break;
     case 1:
       freq = round(freq * 0.25) + 25;
@@ -474,7 +551,7 @@ void ampFreqWeightingM(int &freq, int &amp) {
   return;
 }
 
-// maps amplitudes between 0 and 127 range to correspond to 8-bit ADC on ESP32 Feather
+// maps amplitudes between 0 and 127 range to correspond to 8-bit DAC on ESP32 Feather
 void mapAmplitudes(int maxAmpIdx, int totalEnergy, int numWaves) {
   // weight of the max amplitude relative to other amplitudes
   float maxAmpWeight = sin_wave_amplitude[maxAmpIdx] / float(totalEnergy > 0 ? totalEnergy : 1.0);
@@ -502,6 +579,32 @@ void mapAmplitudes(int maxAmpIdx, int totalEnergy, int numWaves) {
 
 /*/
 ########################################################
+  amplitude weighting filters based on equal loudness contours (https://www.cross-spectrum.com/audio/weighting.html)
+########################################################
+/*/
+
+float a_weightingFilter(int frequency) {
+  float f_2 = pow(frequency * 0.1, 2);
+  float f_4 = pow(frequency * 0.1, 4);
+
+  return (c_weighting_k1 * f_4) / ((f_2 + c_weighting_k2) * (f_2 + c_weighting_k1) * pow(f_2 + a_weighting_k1, 0.5) * pow(f_2 + a_weighting_k2, 0.5));
+}
+
+float b_weightingFilter(int frequency) {
+  float f_2 = pow(frequency * 0.1, 2);
+  float f_3 = pow(frequency * 0.1, 3);
+
+  return (c_weighting_k1 * f_3) / ((f_2 + c_weighting_k2) * (f_2 + c_weighting_k1) * pow(f_2 + b_weighting_k1, 0.5));
+}
+
+float c_weightingFilter(int frequency) {
+  float f = pow(frequency * 0.1, 2);
+
+  return (c_weighting_k1 * f) / ((f + c_weighting_k2) * (f + c_weighting_k1));
+}
+
+/*/
+########################################################
   Functions related to FFT analysis
 ########################################################
 /*/
@@ -517,7 +620,7 @@ void setupFFT() {
 }
 
 // store the current window into freqs and rawFreqs for averaging windows to reduce noise and produce a cleaner spectrogram for signal processing
-void storeFreqs () {
+void storeFreqs() {
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
     float data = vReal[i] * freqWidth;
     // store oldfreqs into prevfreqs, and newly computed FFT results in freqs
@@ -527,17 +630,17 @@ void storeFreqs () {
     // store data in rawFreqs array
     rawFreqs[averageWindowCount][i] = data;
     float amplitudeSum = 0.0;
-    for (int j = 0; j < FFT_AVG_WINDOW; j++) {
+    for (int j = 0; j < FFT_WINDOW_COUNT; j++) {
       amplitudeSum += rawFreqs[j][i];
     }
     // store old averaged window in rawFreqsAvgPrev, and the current averaged window in rawFreqsAvg
     rawFreqsAvgPrev[i] = rawFreqsAvg[i];
-    rawFreqsAvg[i] = amplitudeSum * _FFT_AVG_WINDOW;
+    rawFreqsAvg[i] = amplitudeSum * _FFT_WINDOW_COUNT;
 
     //Serial.printf("idx: %d, averaged: %.2f, data: %.2f\n", i, vReal[i], freqs[i]);
   }
   averageWindowCount += 1;
-  if (averageWindowCount == FFT_AVG_WINDOW) { averageWindowCount = 0; }
+  if (averageWindowCount == FFT_WINDOW_COUNT) { averageWindowCount = 0; }
 }
 
 // noise flooring based on a set threshold
@@ -549,31 +652,18 @@ void noiseFloor(float *data, float threshold) {
   }
 }
 
-// noise flooring based on mean of data and threshold
-void noiseFloorMean(float *data, float threshold) {
-  float dataSum = 0.0;
-  // get the mean of data
-  for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
-    dataSum += data[i];
-  }
-  float dataMean = dataSum / float(FFT_WINDOW_SIZE_BY2);
-
-  // subtract mean from data
-  for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
-    data[i] -= dataMean;
-    if (data[i] < threshold) { data[i] = 0.0; }
-  }
-
-}
-
 // finds the frequency of most change within certain boundaries @FREQ_MAX_AMP_DELTA_MIN and @FREQ_MAX_AMP_DELTA_MAX
 // returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in changeMagnitude reference
-int frequencyMaxAmplitudeDelta(float *data, float *prevData, float &changeMagnitude) {
+int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &changeMagnitude) {
+  // calculate indexes in FFT bins correspoding to minFreq and maxFreq
+  int minIdx = round(minFreq * freqWidth);
+  int maxIdx = round(maxFreq * freqWidth);
   // restore global varialbes
   int maxAmpChange = 0;
   int maxAmpChangeIdx = -1;
   // iterate through data* and prevData* to find the amplitude with most change
-  for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
+  for (int i = minIdx; i < maxIdx; i++) {
+    if (i == FFT_WINDOW_SIZE_BY2) { break; }
     // calculate the change between this amplitude and previous amplitude
     int currAmpChange = abs(int(data[i]) - int(prevData[i]));
     // find the most dominant amplitude change and store in maxAmpChangeIdx, store the magnitude of the change in maxAmpChange
@@ -587,7 +677,7 @@ int frequencyMaxAmplitudeDelta(float *data, float *prevData, float &changeMagnit
 }
 
 // finds all the peaks in the fft data* and removes the minimum peaks to contain output to @MAX_NUM_PEAKS
-void findMajorPeaks(float* data) {
+void findMajorPeaks(float *data) {
   // restore output arrays
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2 >> 1; i++) {
     FFTPeaks[i] = 0;
@@ -638,7 +728,7 @@ void calculatefreqBands() {
 }
 
 // slices fft data into bands, storing the maximum peak in the band and averaged sum of the total energy in the band
-void breadslicer(float* data) {
+void breadslicer(float *data) {
   int sliceCount = 0;
   int sliceIdx = freqBandsIndexes[sliceCount];
   float sliceSum = 0.0;
@@ -650,7 +740,7 @@ void breadslicer(float* data) {
     if (f == FFT_WINDOW_SIZE_BY2 - 1) {
       breadslicerSums[sliceCount] = (sliceSum + data[f]);
       breadslicerPeaks[sliceCount] = sliceMaxIdx;
-      break; 
+      break;
     }
     // get the sum and max amplitude of the current slice
     if (f < sliceIdx) {
@@ -665,11 +755,11 @@ void breadslicer(float* data) {
           sliceMaxIdx = f;
         }
       }
-    // if exceeding the index of this slice, store sliceSum and sliceMaxIdx
+      // if exceeding the index of this slice, store sliceSum and sliceMaxIdx
     } else {
-      breadslicerSums[sliceCount] = sliceSum;       // store slice sum
-      breadslicerPeaks[sliceCount] = sliceMaxIdx;   // store slice peak
-      sliceSum = 0;     // reset variables
+      breadslicerSums[sliceCount] = sliceSum;      // store slice sum
+      breadslicerPeaks[sliceCount] = sliceMaxIdx;  // store slice peak
+      sliceSum = 0;                                // reset variables
       sliceMax = 0;
       sliceMaxIdx = 0;
       sliceCount += 1;  // iterate slice
@@ -691,7 +781,7 @@ int interpolateAroundPeak(float *data, int indexOfPeak) {
   float peakSum = prePeak + atPeak + postPeak;
   // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
   float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1.0);
-  
+
   // return interpolated frequency
   return int(round((float(indexOfPeak) + magnitudeOfChange) * freqRes));
 }
@@ -785,10 +875,10 @@ void RESET_AUD_IN_OUT_IDX() {
 
 // outputs a sample from the volatile output buffer to DAC
 void OUTPUT_SAMPLE() {
-  dacWrite(AUDIO_OUT_PIN, AUD_OUT_BUFFER[AUD_OUT_BUFFER_IDX++]);
+  dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[AUD_OUT_BUFFER_IDX++]);
 }
 
 // records a sample from the ADC and stores into volatile input buffer
 void RECORD_SAMPLE() {
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX++] = adc1_get_raw(AUDIO_IN_PIN);
+  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX++] = adc1_get_raw(AUD_IN_PIN);
 }

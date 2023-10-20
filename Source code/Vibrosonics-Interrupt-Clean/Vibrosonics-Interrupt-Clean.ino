@@ -23,8 +23,8 @@
 /*/
 
   // audio sampling stuff
-#define AUDIO_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
-#define AUDIO_OUT_PIN A0
+#define AUD_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
+#define AUD_OUT_PIN A0
 
 #define FFT_WINDOW_SIZE 256   // size of a recording window, this value MUST be a power of 2
 #define SAMPLING_FREQ 10000   // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just under 24kHz, but
@@ -150,12 +150,20 @@ void setup() {
   delay(3000);
   Serial.println("Ready");
 
+  // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots
+  for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
+    generateAudioBuffer[i] = 0.0;
+    if (i < AUD_OUT_BUFFER_SIZE) {
+      AUD_OUT_BUFFER[i] = 128;
+    }
+  }
+
   // calculate values of cosine and sine wave at certain sampling frequency
   calculateCosWave();
   calculateSinWave();
 
   // setup pins
-  pinMode(AUDIO_OUT_PIN, OUTPUT);
+  pinMode(AUD_OUT_PIN, OUTPUT);
 
   Serial.println("Setup complete");
 
@@ -272,7 +280,7 @@ int assignSinWaves(int* freqData, float* ampData, int size) {
   return c;
 }
 
-// maps amplitudes between 0 and 127 range to correspond to 8-bit ADC on ESP32 Feather
+// maps amplitudes between 0 and 127 range to correspond to 8-bit DAC on ESP32 Feather
 void mapAmplitudes(int totalEnergy, int numWaves) {
   // value to map amplitudes between 0.0 and 1.0 range, the MAX_AMP_SUM will be used to divide unless totalEnergy exceeds this value
   float divideBy = 1.0 / float(totalEnergy > MAX_AMP_SUM ? totalEnergy : MAX_AMP_SUM);
@@ -464,10 +472,10 @@ void RESET_AUD_IN_OUT_IDX() {
 
 // outputs a sample from the volatile output buffer to DAC
 void OUTPUT_SAMPLE() {
-  dacWrite(AUDIO_OUT_PIN, AUD_OUT_BUFFER[AUD_OUT_BUFFER_IDX++]);
+  dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[AUD_OUT_BUFFER_IDX++]);
 }
 
 // records a sample from the ADC and stores into volatile input buffer
 void RECORD_SAMPLE() {
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX++] = adc1_get_raw(AUDIO_IN_PIN);
+  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX++] = adc1_get_raw(AUD_IN_PIN);
 }
