@@ -24,7 +24,8 @@
 
   // audio sampling stuff
 #define AUD_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
-#define AUD_OUT_PIN A0
+#define AUD_OUT_PIN_L A0
+#define AUD_OUT_PIN_R A1
 
 #define FFT_WINDOW_SIZE 256   // size of a recording window, this value MUST be a power of 2
 #define SAMPLING_FREQ 10000   // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just under 24kHz, but
@@ -33,7 +34,7 @@
 #define FFT_MAX_AMP 300    // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
 
   // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
-#define MAX_NUM_PEAKS 16
+#define MAX_NUM_PEAKS 8
 
 #define DEBUG 0    // in debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
@@ -98,14 +99,14 @@ float sin_wave[SAMPLING_FREQ];
 const int MAX_NUM_WAVES = MAX_NUM_PEAKS;
 const int MAX_AMP_SUM = MAX_NUM_WAVES * FFT_MAX_AMP;
 // stores the sine wave frequencies and amplitudes to synthesize
-int sin_wave_frequency[MAX_NUM_WAVES];
-int sin_wave_amplitude[MAX_NUM_WAVES];
+int sin_waves_freq[2][MAX_NUM_WAVES];
+int sin_waves_amp[2][MAX_NUM_WAVES];
 
 // stores the position of sin_wave
 int sin_wave_idx = 0;
 
 // scratchpad array used for signal synthesis
-float generateAudioBuffer[GEN_AUD_BUFFER_SIZE];
+float generateAudioBuffer[2][GEN_AUD_BUFFER_SIZE];
 // stores the current index of the scratch pad audio output buffer
 int generateAudioIdx = 0;
 // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
@@ -122,7 +123,7 @@ volatile int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
 volatile int AUD_IN_BUFFER_IDX = 0;
 
 // rolling buffer for outputting synthesized signal
-volatile int AUD_OUT_BUFFER[AUD_OUT_BUFFER_SIZE];
+volatile int AUD_OUT_BUFFER[2][AUD_OUT_BUFFER_SIZE];
 volatile int AUD_OUT_BUFFER_IDX = 0;
 
 hw_timer_t *SAMPLING_TIMER = NULL;
@@ -152,9 +153,11 @@ void setup() {
 
   // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots
   for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
-    generateAudioBuffer[i] = 0.0;
+    generateAudioBuffer[0][i] = 0.0;
+    generateAudioBuffer[1][i] = 0.0;
     if (i < AUD_OUT_BUFFER_SIZE) {
-      AUD_OUT_BUFFER[i] = 128;
+      AUD_OUT_BUFFER[0][i] = 128;
+      AUD_OUT_BUFFER[1][i] = 128;
     }
   }
 
@@ -163,7 +166,8 @@ void setup() {
   calculateSinWave();
 
   // setup pins
-  pinMode(AUD_OUT_PIN, OUTPUT);
+  pinMode(AUD_OUT_PIN_L, OUTPUT);
+  pinMode(AUD_OUT_PIN_R, OUTPUT);
 
   Serial.println("Setup complete");
 
@@ -192,20 +196,40 @@ void loop() {
     }
 
     // fft data processing, returns num sine waves to synthesize
-    int numSineWaves = processData();
+    int numSineWavesL = 0;
+    int numSineWavesR = 0;
+    processData(numSineWavesL, numSineWavesR);
+
+    // synthesize 30Hz tone on left channel
+    // sin_waves_freq[0][0] = 30;
+    // sin_waves_amp[0][0] = 127;
+    // numSineWavesL = 1;
+    
+    // synthesize 55Hz tone on right channel
+    // sin_waves_freq[1][0] = 55;
+    // sin_waves_amp[1][0] = 127;
+    // numSineWavesR = 1;
+
+
 
     // generate audio for the next audio window
-    generateAudioForWindow(sin_wave_frequency, sin_wave_amplitude, numSineWaves);
+    generateAudioForWindow(numSineWavesL, numSineWavesR);
 
     if (DEBUG) {
       Serial.print("time spent processing in microseconds: ");
       Serial.println(micros() - loop_time);
       
-      Serial.print("(F, A): ");
-      for (int i = 0; i < MAX_NUM_WAVES; i++) {
-        Serial.printf("(%03d, %03d) ", sin_wave_frequency[i], sin_wave_amplitude[i]);
-      }
-      Serial.println();
+      // Serial.print("L_CH (F, A): ");
+      // for (int i = 0; i < numSineWavesL; i++) {
+      //   Serial.printf("(%03d, %03d) ", sin_waves_freq[0][i], sin_waves_amp[0][i]);
+      // }
+      // Serial.println();
+
+      // Serial.print("R_CH (F, A): ");
+      // for (int i = 0; i < numSineWavesR; i++) {
+      //   Serial.printf("(%03d, %03d) ", sin_waves_freq[1][i], sin_waves_amp[1][i]);
+      // }
+      // Serial.println();
       // timerAlarmEnable(SAMPLING_TIMER);  // enable interrupt timer
     }
   }
@@ -217,7 +241,7 @@ void loop() {
 ########################################################
 /*/
 
-int processData() {
+void processData(int &numSineWavesL, int &numSineWavesR) {
   // copy values from AUD_IN_BUFFER to vReal array
   setupFFT();
   
@@ -238,20 +262,23 @@ int processData() {
   // finds peaks in data, stores index of peak in FFTPeaks and Amplitude of peak in FFTPeaksAmp
   findMajorPeaks(freqs);
   
-  // assigns data found by findMajorPeaks to sine waves
-  int numSineWaves = assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
+  assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1, numSineWavesL, numSineWavesR);
 
   // convert from index to frequency and get the total sum of amplitudes
-  int totalEnergy = 0;
-  for (int i = 0; i < numSineWaves; i++) {
-    totalEnergy += sin_wave_amplitude[i];
-    sin_wave_frequency[i] = interpolateAroundPeak(freqs, sin_wave_frequency[i]);
+  int totalEnergyL = 0;
+  int totalEnergyR = 0;
+  for (int i = 0; i < numSineWavesL; i++) {
+    totalEnergyL += sin_waves_amp[0][i];
+    sin_waves_freq[0][i] = interpolateAroundPeak(freqs, sin_waves_freq[0][i]);
+  }
+
+  for (int i = 0; i < numSineWavesR; i++) {
+    totalEnergyR += sin_waves_amp[1][i];
+    sin_waves_freq[1][i] = interpolateAroundPeak(freqs, sin_waves_freq[1][i]);
   }
 
   // maps the amplitudes so that their total sum is no more or equal to 127
-  mapAmplitudes(totalEnergy, numSineWaves);
-
-  return numSineWaves;
+  mapAmplitudes(totalEnergyL, numSineWavesL, totalEnergyR, numSineWavesR);
 }
 
 /*/
@@ -260,37 +287,56 @@ int processData() {
 ########################################################
 /*/
 
+// index of frequency below 200 Hz
+int bassIdx = round(200 * freqWidth);
+
 // stores the frequencies and amplitudes found by majorPeaks into separate arrays, and returns the number of sin waves to synthesize
-int assignSinWaves(int* freqData, float* ampData, int size) {
+void assignSinWaves(int* freqData, float* ampData, int size, int& numWavesL, int& numWavesR) {
   // restore amplitudes to 0, restoring frequencies isn't necassary but is probably a good idea
   for (int i = 0; i < MAX_NUM_WAVES; i++) {
-    sin_wave_amplitude[i] = 0;
-    sin_wave_frequency[i] = 0;
+    sin_waves_amp[0][i] = 0;
+    sin_waves_freq[0][i] = 0;
   }
-  int c = 0;
+  int cL = 0;
+  int cR = 0;
   // copy amplitudes that are above 0, otherwise skip
   for (int i = 0; i < size; i++) {
     // skip storing if ampData is 0, or freqData is 0
     if (ampData[i] == 0.0 || freqData[i] == 0) { continue; }
-    sin_wave_amplitude[c] = round(ampData[i]);
-    sin_wave_frequency[c++] = freqData[i];
+    // assign frequencies below bass to left channel, otherwise to right channel
+    if (freqData[i] <= bassIdx) {
+      sin_waves_amp[0][cL] = round(ampData[i]);
+      sin_waves_freq[0][cL++] = freqData[i];
+    } else {
+      sin_waves_amp[1][cR] = round(ampData[i]);
+      sin_waves_freq[1][cR++] = freqData[i];
+    }
     // break so no overflow occurs
-    if (c == MAX_NUM_WAVES) { break; }
+    if (cL + cR == MAX_NUM_WAVES) { break; }
   }
-  return c;
+  numWavesL = cL;
+  numWavesR = cR;
 }
 
 // maps amplitudes between 0 and 127 range to correspond to 8-bit DAC on ESP32 Feather
-void mapAmplitudes(int totalEnergy, int numWaves) {
+void mapAmplitudes(int totalEnergyL, int numWavesL, int totalEnergyR, int numWavesR) {
   // value to map amplitudes between 0.0 and 1.0 range, the MAX_AMP_SUM will be used to divide unless totalEnergy exceeds this value
-  float divideBy = 1.0 / float(totalEnergy > MAX_AMP_SUM ? totalEnergy : MAX_AMP_SUM);
+  float divideByL = 1.0 / float(totalEnergyL > MAX_AMP_SUM ? totalEnergyL : MAX_AMP_SUM);
+  float divideByR = 1.0 / float(totalEnergyR > MAX_AMP_SUM ? totalEnergyR : MAX_AMP_SUM);
 
   // normalizing and multiplying to ensure that the sum of amplitudes is less than or equal to 127
-  for (int i = 0; i < numWaves; i++) {
-    int amplitude = sin_wave_amplitude[i];
+  for (int i = 0; i < numWavesL; i++) {
+    int amplitude = sin_waves_amp[0][i];
     if (amplitude == 0) { continue; }
     // map amplitude between 0 and 127
-    sin_wave_amplitude[i] = floor(amplitude * divideBy * 127.0);
+    sin_waves_amp[0][i] = floor(amplitude * divideByL * 127.0);
+  }
+
+  for (int i = 0; i < numWavesR; i++) {
+    int amplitude = sin_waves_amp[1][i];
+    if (amplitude == 0) { continue; }
+    // map amplitude between 0 and 127
+    sin_waves_amp[1][i] = floor(amplitude * divideByR * 127.0);
   }
 }
 
@@ -406,28 +452,44 @@ void calculateSinWave() {
 }
 
 // generates values for audio output buffer
-void generateAudioForWindow(int *sin_waves_freq, int *sin_waves_amp, int num_sin_waves) {
+void generateAudioForWindow(int num_sin_waves_l, int num_sin_waves_r) {
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     // variable store the value of the sum of sine waves at this particular moment
-    float sumOfSines = 0.0;
-    // sum together the sine waves
-    for (int s = 0; s < num_sin_waves; s++) {
-      if (sin_waves_amp[s] == 0 || sin_waves_freq[s] == 0) { continue; }
+    float sumOfSinesL = 0.0;
+    float sumOfSinesR = 0.0;
+
+    // sum together the sine waves for left channel
+    for (int s = 0; s < num_sin_waves_l; s++) {
+      if (sin_waves_amp[0][s] == 0 || sin_waves_freq[0][s] == 0) { continue; }
       // calculate the sine wave index of the sine wave corresponding to the frequency
       //int sin_wave_position = (sin_wave_freq_idx) % int(SAMPLING_FREQ); // a slightly faster way of doing mod function to reduce usage of division
-      float sin_wave_freq_idx = sin_wave_idx * sin_waves_freq[s] * _SAMPLING_FREQ;
+      float sin_wave_freq_idx = sin_wave_idx * sin_waves_freq[0][s] * _SAMPLING_FREQ;
       int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
-      sumOfSines += sin_waves_amp[s] * sin_wave[sin_wave_position];
+      sumOfSinesL += sin_waves_amp[0][s] * sin_wave[sin_wave_position];
     }
+
+    // sum together the sine waves for right channel
+    for (int s = 0; s < num_sin_waves_r; s++) {
+      if (sin_waves_amp[1][s] == 0 || sin_waves_freq[1][s] == 0) { continue; }
+      // calculate the sine wave index of the sine wave corresponding to the frequency
+      //int sin_wave_position = (sin_wave_freq_idx) % int(SAMPLING_FREQ); // a slightly faster way of doing mod function to reduce usage of division
+      float sin_wave_freq_idx = sin_wave_idx * sin_waves_freq[1][s] * _SAMPLING_FREQ;
+      int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
+      sumOfSinesR += sin_waves_amp[1][s] * sin_wave[sin_wave_position];
+    }
+
     // window sum of sines by cos wave at this moment in time
-    float synthesized_value = cos_wave[i] * sumOfSines;
+    float synthesized_value_l = cos_wave[i] * sumOfSinesL;
+    float synthesized_value_r = cos_wave[i] * sumOfSinesR;
     // add to the existing values in scratch pad audio output buffer
-    generateAudioBuffer[generateAudioIdx] += synthesized_value;
+    generateAudioBuffer[0][generateAudioIdx] += synthesized_value_l;
+    generateAudioBuffer[1][generateAudioIdx] += synthesized_value_r;
 
     // copy final, synthesized values to volatile audio output buffer
     if (i < AUD_IN_BUFFER_SIZE) {
       // shifting output by 128.0 for ESP32 DAC
-      AUD_OUT_BUFFER[generateAudioOutIdx++] = generateAudioBuffer[generateAudioIdx] + 128.0;
+      AUD_OUT_BUFFER[0][generateAudioOutIdx] = generateAudioBuffer[0][generateAudioIdx] + 128.0;
+      AUD_OUT_BUFFER[1][generateAudioOutIdx++] = generateAudioBuffer[1][generateAudioIdx] + 128.0;
       if (generateAudioOutIdx == AUD_OUT_BUFFER_SIZE) { generateAudioOutIdx = 0; }
     }
 
@@ -442,7 +504,8 @@ void generateAudioForWindow(int *sin_waves_freq, int *sin_waves_amp, int num_sin
   // reset the next window to synthesize new signal
   int generateAudioIdxCpy = generateAudioIdx;
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
-    generateAudioBuffer[generateAudioIdxCpy++] = 0.0;
+    generateAudioBuffer[0][generateAudioIdxCpy] = 0.0;
+    generateAudioBuffer[1][generateAudioIdxCpy++] = 0.0;
     if (generateAudioIdxCpy == GEN_AUD_BUFFER_SIZE) { generateAudioIdxCpy = 0; }
   }
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
@@ -472,7 +535,8 @@ void RESET_AUD_IN_OUT_IDX() {
 
 // outputs a sample from the volatile output buffer to DAC
 void OUTPUT_SAMPLE() {
-  dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[AUD_OUT_BUFFER_IDX++]);
+  dacWrite(AUD_OUT_PIN_L, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX]);
+  dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_BUFFER_IDX++]);
 }
 
 // records a sample from the ADC and stores into volatile input buffer

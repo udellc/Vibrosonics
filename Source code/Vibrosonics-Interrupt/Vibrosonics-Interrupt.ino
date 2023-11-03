@@ -32,21 +32,21 @@
 
 #define FFT_NOISE_THRESH 25
 
-#define FFT_MAX_AMP 300   // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
-#define FFT_MAX_SUM 3000  // the maximum sum of FFT bins, this value is used when using breadslicer DET_MODE
+#define FFT_MAX_AMP 400   // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
+#define FFT_MAX_SUM 4000  // the maximum sum of FFT bins, this value is used when using breadslicer DET_MODE
 
 #define FFT_WINDOW_COUNT 8  // number of FFT windows to average using circular buffer
 
 // FFT data processing settings
 #define DET_MODE 'p'      // 'p' = majorPeaks, 'b' = breadslicer
 #define DET_DATA 'c'      // data to use by detection algorithm selected by DET_MODE, 'a' = rawFreqsAvg, 'c' = freqs
-#define SCALING_MODE 'c'  // various frequency scaling modes 'a' through 'd', 'm' - mirror mode \
-                          // (Note: For true mirror mode, FREQ_MAX_AMP_DELTA must be 0, DET_MODE must be 'p' and DET_DATA must be 'c'!) \
-                          //   'a' - directly maps passed frequency to values stored in freqBandsMapK, and weights amplitude based on values stored in freqBandsK \
-                          //   'b' - maps passed frequencies to values between freqBandsMapK[i - 1] and freqBandsMapK[i] where i is the frequency band associated with the passed frequency. Amplitude weighting is based on the values stored in freqBandsK. \
-                          //   'c' - maps the full frequency spectrum (1Hz to (SAMPLING_FREQ / 2) Hz) to range between 20 and 120 Hz. \
-                          //   'd' - frequency and amplitude get scaled based on custom values. \
-                          //   'm' - mirror mode, nothing happens to frequencies and amplitudes
+#define SCALING_MODE 'c'  // various frequency scaling modes 'a' through 'd', 'm' - mirror mode
+                          // (Note: For true mirror mode, FREQ_MAX_AMP_DELTA must be 0, DET_MODE must be 'p' and DET_DATA must be 'c'!)
+                          //   'a' - directly maps passed frequency to values stored in freqBandsMapK, and weights amplitude based on values stored in freqBandsK.
+                          //   'b' - maps passed frequencies to values between freqBandsMapK[i - 1] and freqBandsMapK[i] where i is the frequency band associated with the passed frequency. Amplitude weighting is based on the values stored in freqBandsK.
+                          //   'c' - maps the full frequency spectrum (1Hz to (SAMPLING_FREQ / 2) Hz) to range between 20 and 120 Hz.
+                          //   'd' - frequency and amplitude get scaled based on custom values.
+                          //   'm' - mirror mode, nothing happens to frequencies and amplitudes.
 
 // frequency of min and max amplitude change settings
 #define FREQ_MAX_AMP_DELTA 1  // use frequency of max amplitude change function to weigh amplitude of most change
@@ -317,7 +317,7 @@ void loop() {
   if (AUD_IN_BUFFER_FULL()) {
     // in debug mode, print total time spent in loop, optionally interrupt timer can be disabled
     if (DEBUG) {
-      // timerAlarmDisable(My_timer); // optionally disable interrupt timer during debug mode, DONT FORGET TO ENABLE AT THE END OF LOOP! (if needed)
+      // timerAlarmDisable(SAMPLING_TIMER); // optionally disable interrupt timer during debug mode, DONT FORGET TO ENABLE AT THE END OF LOOP! (if needed)
       loop_time = micros();
     }
 
@@ -336,7 +336,7 @@ void loop() {
         Serial.printf("(%03d, %03d) ", sin_wave_frequency[i], sin_wave_amplitude[i]);
       }
       Serial.println();
-      // timerAlarmEnable(My_timer);  // enable interrupt timer
+      // timerAlarmEnable(SAMPLING_TIMER);  // enable interrupt timer
     }
   }
 }
@@ -363,6 +363,12 @@ int processData() {
   // copy values calculated by FFT to freqs and rawFreqs
   storeFreqs();
 
+  float mean = 0;
+  for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
+    mean += detFuncData[i];
+  }
+  mean /= FFT_WINDOW_SIZE_BY2;
+
   // noise flooring based on mean of data and a threshold
   noiseFloor(detFuncData, FFT_NOISE_THRESH);
 
@@ -371,8 +377,6 @@ int processData() {
   // if @FREQ_MAX_AMP_DELTA was enabled, returns the index of the amplitude of most change within set threshold between FFT windows as well as the magnitude of change which is passed as a reference
   float maxAmpDeltaMag = 0.0;
   int maxAmpDeltaIdx = FREQ_MAX_AMP_DELTA ? frequencyMaxAmplitudeDelta(freqs, freqsPrev, FREQ_MAX_AMP_DELTA_START, FREQ_MAX_AMP_DELTA_END, maxAmpDeltaMag) : -1;
-
-
 
   int numSineWaves = assignSinWaves(assignSinWavesFreq, assignSinWavesAmp, assignSinWavesNum);
 
@@ -383,8 +387,9 @@ int processData() {
   // a very basic way to look for high hats, simply just look for noise above a certain threshold throughout the spectrum
   int noiseC = 0;
   int highHatEnergy = 0;
+  int highHatThresh = mean * 0.5;
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
-    if (freqs[i] > 60) {
+    if (freqs[i] > highHatThresh) {
       noiseC += 1;
       highHatEnergy += freqs[i];
     }
