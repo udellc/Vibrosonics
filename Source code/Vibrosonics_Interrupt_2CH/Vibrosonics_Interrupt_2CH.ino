@@ -288,7 +288,7 @@ void processData(int &numSineWavesL, int &numSineWavesR) {
 /*/
 
 // index of frequency below 200 Hz
-int bassIdx = round(200 * freqWidth);
+int bassIdx = 200 * freqWidth;
 
 // stores the frequencies and amplitudes found by majorPeaks into separate arrays, and returns the number of sin waves to synthesize
 void assignSinWaves(int* freqData, float* ampData, int size, int& numWavesL, int& numWavesR) {
@@ -296,6 +296,8 @@ void assignSinWaves(int* freqData, float* ampData, int size, int& numWavesL, int
   for (int i = 0; i < MAX_NUM_WAVES; i++) {
     sin_waves_amp[0][i] = 0;
     sin_waves_freq[0][i] = 0;
+    sin_waves_amp[1][i] = 0;
+    sin_waves_freq[1][i] = 0;
   }
   int cL = 0;
   int cR = 0;
