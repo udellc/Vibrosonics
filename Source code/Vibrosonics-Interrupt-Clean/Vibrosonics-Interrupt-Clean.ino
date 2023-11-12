@@ -341,12 +341,13 @@ void findMajorPeaks(float* data) {
   for (int f = 1; f < FFT_WINDOW_SIZE_BY2 - 1; f++) {
     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
     if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
-      if (data[f] > maxPeak) {
-        maxPeak = data[f];
+      float peakSum = data[f - 1] + data[f] + data[f + 1];
+      if (peakSum > maxPeak) {
+        maxPeak = peakSum;
         maxPeakIdx = f;
       }
       // store sum around the peak and index of peak
-      FFTPeaksAmp[peaksFound] = data[f - 1] + data[f] + data[f + 1];
+      FFTPeaksAmp[peaksFound] = peakSum;
       FFTPeaks[peaksFound++] = f;
     }
   }
