@@ -32,20 +32,12 @@
 
 #define FFT_MAX_AMP 300   // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
 
-#define MAX_NUM_PEAKS 8   // // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
+#define MAX_NUM_PEAKS 8  // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
 
-#define MAX_NUM_WAVES 8   // maximum number of waves to synthesize (all channels combined)
+#define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
 #define AUD_OUT_CH 1  // number of audio channels to synthesize
 
 #define DEBUG 0    // in debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
-
-/*/
-########################################################
-  Other
-########################################################
-/*/
-
-unsigned long loop_time = 0;  // used for printing time main loop takes to execute in debug mode
 
 /*/
 ########################################################
@@ -142,6 +134,14 @@ void IRAM_ATTR ON_SAMPLING_TIMER(){
   OUTPUT_SAMPLE();
   RECORD_SAMPLE();
 }
+
+/*/
+########################################################
+  Other
+########################################################
+/*/
+
+unsigned long loop_time = 0;  // used for printing time main loop takes to execute in debug mode
 
 /*/
 ########################################################
@@ -355,12 +355,13 @@ void findMajorPeaks(float* data) {
   for (int f = 1; f < FFT_WINDOW_SIZE_BY2 - 1; f++) {
     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
     if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
-      if (data[f] > maxPeak) {
-        maxPeak = data[f];
+      float peakSum = data[f - 1] + data[f] + data[f + 1];
+      if (peakSum > maxPeak) {
+        maxPeak = peakSum;
         maxPeakIdx = f;
       }
       // store sum around the peak and index of peak
-      FFTPeaksAmp[peaksFound] = data[f - 1] + data[f] + data[f + 1];
+      FFTPeaksAmp[peaksFound] = peakSum;
       FFTPeaks[peaksFound++] = f;
     }
   }
@@ -368,11 +369,11 @@ void findMajorPeaks(float* data) {
   int numPeaksToRemove = peaksFound - MAX_NUM_PEAKS;
   for (int j = 0; j < numPeaksToRemove; j++) {
     // store minimum as the maximum peak
-    int minimumPeak = maxPeak;
+    float minimumPeak = maxPeak;
     int minimumPeakIdx = maxPeakIdx;
     // find the minimum peak and replace with zero
-    for (int i = 1; i < peaksFound; i++) {
-      int thisPeakAmplitude = FFTPeaksAmp[i];
+    for (int i = 0; i < peaksFound; i++) {
+      float thisPeakAmplitude = FFTPeaksAmp[i];
       if (thisPeakAmplitude > 0 && thisPeakAmplitude < minimumPeak) {
         minimumPeak = thisPeakAmplitude;
         minimumPeakIdx = i;
