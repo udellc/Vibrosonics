@@ -187,7 +187,6 @@ void setup() {
   timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
   timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);         // trigger interrupt every @sampleDelayTime microseconds
   timerAlarmEnable(SAMPLING_TIMER);                               // enabled interrupt
-  timerStart(SAMPLING_TIMER);
 }
 
 /*/
@@ -208,16 +207,16 @@ void loop() {
     processData();
 
     // use data from FFT
-    restoreSinWaves(0);
-    restoreSinWaves(1);
+    resetSinWaves(0);
+    resetSinWaves(1);
     assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
     mapAmplitudes();
 
     // synthesize 30Hz on left channel, and 55Hz on right channel
-    // restoreSinWaves(0);
-    // addSinWave(30, 128, 0);
-    // restoreSinWaves(1);
-    // addSinWave(55, 128, 1);
+    // resetSinWaves(0);
+    // addSinWave(30, 127, 0);
+    // resetSinWaves(1);
+    // addSinWave(55, 127, 1);
 
     // generate audio for the next audio window
     generateAudioForWindow();
@@ -272,7 +271,7 @@ void processData() {
 ########################################################
 /*/
 
-// index of frequency below 200 Hz
+// index of frequency around 200 Hz
 int bassIdx = 200 * freqWidth;
 
 // stores the frequencies and amplitudes found by majorPeaks into separate arrays, and returns the number of sin waves to synthesize
@@ -284,8 +283,7 @@ void assignSinWaves(int* freqData, float* ampData, int size) {
     // assign frequencies below bass to left channel, otherwise to right channel
     if (freqData[i] <= bassIdx) {
       int freq = freqData[i] * freqRes;
-      int freqAvg = (freqs[freqData[i] - 1] + freqs[freqData[i] + 1]) * 0.5;
-      if (freqAvg + 75 > freqs[freqData[i] - 1] && freqAvg - 75 < freqs[freqData[i] - 1]) {
+      if (abs(freqs[freqData[i] - 1] - freqs[freqData[i] + 1]) > 100) {
         freq = freqs[freqData[i] - 1] > freqs[freqData[i] + 1] ? (freqData[i] - 0.5) * freqRes : (freqData[i] + 0.5) * freqRes;
       }
       addSinWave(freq, ampData[i], 0);
@@ -293,12 +291,6 @@ void assignSinWaves(int* freqData, float* ampData, int size) {
       int interpFreq = interpolateAroundPeak(freqs, freqData[i]);
       addSinWave(interpFreq, ampData[i], 1);
     }
-    // break so no overflow occurs
-    int num_waves_total = 0;
-    for (int c = 0; c < AUD_OUT_CH; c++) {
-      num_waves_total += num_waves[c];
-    }
-    if (num_waves_total == MAX_NUM_WAVES) break;
   }
 }
 
@@ -449,10 +441,10 @@ void calculateWaves() {
   }
 }
 
-// assigns a sine wave for current window and specified channel
+// assigns a sine wave to specified channel
 void addSinWave(int freq, int amp, int ch) {
   if (ch > AUD_OUT_CH - 1) {
-    Serial.printf("CANNOT ADD SINE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    if (DEBUG) Serial.printf("CANNOT ADD SINE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
     return;
   }
   // ensures that the sum of waves in the channels is no greater than MAX_NUM_WAVES
@@ -462,7 +454,7 @@ void addSinWave(int freq, int amp, int ch) {
   }
 
   if (num_waves_count == MAX_NUM_WAVES) {
-    Serial.println("CANNOT ASSIGN MORE WAVES, CHANGE MAX_NUM_WAVES!");
+    if (DEBUG) Serial.println("CANNOT ASSIGN MORE WAVES, CHANGE MAX_NUM_WAVES!");
     return;
   }
 
@@ -471,22 +463,53 @@ void addSinWave(int freq, int amp, int ch) {
   num_waves[ch] += 1;
 }
 
-// sets all sine waves and frequencies for window to 0 on specified channel
-void restoreSinWaves(int ch) {
+// removes a sine wave at specified index and channel
+void removeSinWave(int idx, int ch) {
   if (ch > AUD_OUT_CH - 1) {
-    Serial.printf("CANNOT RESTORE, CHANNEL %d ISN'T DEFINED\n", ch);
+    if (DEBUG) Serial.printf("CANNOT REMOVE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    return;
+  }
+  if (idx >= num_waves[ch]) {
+    if (DEBUG) Serial.printf("CANNOT REMOVE WAVE, INDEX %d DOESN'T EXIST!\n", idx);
+    return;
+  }
+
+  for (int i = idx; i < --num_waves[ch]; i++) {
+    sin_waves_amp[ch][i] = sin_waves_amp[ch][i + 1];
+  }
+}
+
+// modify sine wave at specified index and channel to desired frequency and amplitude
+void modifySinWave(int idx, int ch, int freq, int amp) {
+  if (ch > AUD_OUT_CH - 1) {
+    if (DEBUG) Serial.printf("CANNOT MODIFY WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    return;
+  }
+  if (idx >= num_waves[ch]) {
+    if (DEBUG) Serial.printf("CANNOT MODIFY WAVE, INDEX %d DOESN'T EXIST!\n", idx);
+    return;
+  }
+  sin_waves_amp[ch][idx] = amp;
+  sin_waves_freq[ch][idx] = freq;
+}
+
+// sets all sine waves and frequencies to 0 on specified channel
+void resetSinWaves(int ch) {
+  if (ch > AUD_OUT_CH - 1) {
+    if (DEBUG) Serial.printf("CANNOT RESET WAVES, CHANNEL %d ISN'T DEFINED\n", ch);
     return;
   }
   // restore amplitudes and frequencies on ch
-    for (int i = 0; i < MAX_NUM_WAVES; i++) {
-      sin_waves_amp[ch][i] = 0;
-      sin_waves_freq[ch][i] = 0;
-      num_waves[ch] = 0;
-    }
+  for (int i = 0; i < MAX_NUM_WAVES; i++) {
+    sin_waves_amp[ch][i] = 0;
+    sin_waves_freq[ch][i] = 0;
+  }
+  num_waves[ch] = 0;
 }
 
 // generates values for audio output buffer
 void generateAudioForWindow() {
+  //Serial.printf("%d, %d, %d\n", generateAudioIdx, generateAudioOutIdx, sin_wave_idx);
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     // sum together the sine waves for left channel and right channel
     for (int c = 0; c < AUD_OUT_CH; c++) {
@@ -499,19 +522,17 @@ void generateAudioForWindow() {
         int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
         sumOfSines += sin_waves_amp[c][s] * sin_wave[sin_wave_position];
       }
-    // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
+      // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
       generateAudioBuffer[c][generateAudioIdx] += sumOfSines * cos_wave_w[i];
     }
-
     // copy final, synthesized values to volatile audio output buffer
     if (i < AUD_IN_BUFFER_SIZE) {
-      for (int c = 0; c < AUD_OUT_CH; c++) {
       // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255 to ensure clipping won't occur
-        AUD_OUT_BUFFER[c][generateAudioOutIdx] = max(0, min(255, int(round(generateAudioBuffer[c][generateAudioIdx] + 128.0))));
+      for (int c = 0; c < AUD_OUT_CH; c++) {
+        AUD_OUT_BUFFER[c][generateAudioOutIdx] = generateAudioBuffer[c][generateAudioIdx] + 128.0;
       }
       if (++generateAudioOutIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutIdx = 0;
     }
-
     // increment generate audio index
     if (++generateAudioIdx == GEN_AUD_BUFFER_SIZE) generateAudioIdx = 0;
     // increment sine wave index
@@ -539,26 +560,24 @@ void generateAudioForWindow() {
 
 // returns true if AUD_IN_BUFFER is full
 bool AUD_IN_BUFFER_FULL() {
-  return !(AUD_IN_BUFFER_IDX < FFT_WINDOW_SIZE);
+  return !(AUD_IN_BUFFER_IDX < AUD_IN_BUFFER_SIZE);
 }
 
 // restores AUD_IN_BUFFER_IDX and AUD_OUT_BUFFER_IDX, and increments NUM_WINDOWS_REC to allow values to be properly synthesized for AUD_OUT_BUFFER
 void RESET_AUD_IN_OUT_IDX() {
-  // reset volatile audio input buffer position
   AUD_IN_BUFFER_IDX = 0;
-  // reset volatile audio output buffer position, if needed
-  if (AUD_OUT_BUFFER_IDX < AUD_OUT_BUFFER_SIZE) return;
-  AUD_OUT_BUFFER_IDX = 0;
+  if (!(AUD_OUT_BUFFER_IDX < AUD_OUT_BUFFER_SIZE)) AUD_OUT_BUFFER_IDX = 0;
 }
 
 // outputs a sample from the volatile output buffer to DAC
 void OUTPUT_SAMPLE() {
   dacWrite(AUD_OUT_PIN_L, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX]);
   dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_BUFFER_IDX]);
-  AUD_OUT_BUFFER_IDX++;
+  AUD_OUT_BUFFER_IDX += 1;
 }
 
 // records a sample from the ADC and stores into volatile input buffer
 void RECORD_SAMPLE() {
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX++] = adc1_get_raw(AUD_IN_PIN);
+  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
+  AUD_IN_BUFFER_IDX += 1;
 }
