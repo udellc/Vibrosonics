@@ -123,15 +123,15 @@ volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
 // rolling buffer for outputting synthesized signal
 volatile static int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
-// audio input buffer index
+// audio input and output buffer index
 volatile static int AUD_IN_BUFFER_IDX = 0;
-volatile static int AUD_OUT_COUNT = 0;
+volatile static int AUD_OUT_BUFFER_IDX = 0;
 
 hw_timer_t *SAMPLING_TIMER = NULL;
 
 // the procedure that is called when timer interrupt is triggered
 void IRAM_ATTR ON_SAMPLING_TIMER(){
-  if (!AUD_IN_BUFFER_FULL()) AUD_IN_OUT();
+  AUD_IN_OUT();
 }
 
 /*/
@@ -574,16 +574,17 @@ bool AUD_IN_BUFFER_FULL() {
 
 // restores AUD_IN_BUFFER_IDX, and increments AUD_OUT_COUNT to synchronize AUD_OUT_BUFFER
 void RESET_AUD_IN_IDX() {
+  AUD_OUT_BUFFER_IDX += AUD_IN_BUFFER_SIZE;
+  if (AUD_OUT_BUFFER_IDX == AUD_OUT_BUFFER_SIZE) AUD_OUT_BUFFER_IDX = 0;
   AUD_IN_BUFFER_IDX = 0;
-  AUD_OUT_COUNT += 1;
-  if (AUD_OUT_COUNT == 2) AUD_OUT_COUNT = 0;
 }
 
 // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
 static void AUD_IN_OUT() {
   if (!AUD_IN_BUFFER_FULL()) {
-    int AUD_OUT_BUFFER_IDX = AUD_IN_BUFFER_SIZE * AUD_OUT_COUNT + AUD_IN_BUFFER_IDX;
-    dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX]);
+    int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
+    dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
+    
     AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
     AUD_IN_BUFFER_IDX += 1;
   }
