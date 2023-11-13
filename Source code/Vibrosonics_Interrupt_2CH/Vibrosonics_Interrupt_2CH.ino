@@ -213,6 +213,7 @@ void loop() {
 
     // use data from FFT
     resetSinWaves(0);
+    resetSinWaves(1);
     assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
     mapAmplitudes();
 
