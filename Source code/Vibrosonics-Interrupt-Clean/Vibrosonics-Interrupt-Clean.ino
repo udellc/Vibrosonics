@@ -37,7 +37,7 @@
 #define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
 #define AUD_OUT_CH 1  // number of audio channels to synthesize
 
-#define DEBUG 0    // in debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
+// #define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
 /*/
 ########################################################
@@ -86,31 +86,31 @@ const int GEN_AUD_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
 const float _SAMPLING_FREQ = 1.0 / SAMPLING_FREQ;
 
 // a cosine wave for modulating sine waves
-static float cos_wave_w[AUD_OUT_BUFFER_SIZE];
+float cos_wave_w[AUD_OUT_BUFFER_SIZE];
 
 // sine wave for storing pre-generated values of a sine wave at SAMPLING_FREQ sample rate
-static float sin_wave[SAMPLING_FREQ];
+float sin_wave[SAMPLING_FREQ];
 // float cos_wave[SAMPLING_FREQ];
 // float tri_wave[SAMPLING_FREQ];
 // float sqr_wave[SAMPLING_FREQ];
 // float saw_wave[SAMPLING_FREQ];
 
 // stores the sine wave frequencies and amplitudes to synthesize
-static int sin_waves_freq[AUD_OUT_CH][MAX_NUM_WAVES];
-static int sin_waves_amp[AUD_OUT_CH][MAX_NUM_WAVES];
+int sin_waves_freq[AUD_OUT_CH][MAX_NUM_WAVES];
+int sin_waves_amp[AUD_OUT_CH][MAX_NUM_WAVES];
 
 // stores the number of sine waves in each channel
-static int num_waves[AUD_OUT_CH];
+int num_waves[AUD_OUT_CH];
 
 // stores the position of wave
-static int sin_wave_idx = 0;
+int sin_wave_idx = 0;
 
 // scratchpad array used for signal synthesis
-static float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
+float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
 // stores the current index of the scratch pad audio output buffer
-static int generateAudioIdx = 0;
+int generateAudioIdx = 0;
 // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
-static int generateAudioOutIdx = 0;
+int generateAudioOutIdx = 0;
 
 /*/
 ########################################################
@@ -119,13 +119,13 @@ static int generateAudioOutIdx = 0;
 /*/
 
 // used to store recorded samples for a gien window
-volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
+volatile int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
 // rolling buffer for outputting synthesized signal
-volatile static int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
+volatile int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
 // audio input and output buffer index
-volatile static int AUD_IN_BUFFER_IDX = 0;
-volatile static int AUD_OUT_BUFFER_IDX = 0;
+volatile int AUD_IN_BUFFER_IDX = 0;
+volatile int AUD_OUT_BUFFER_IDX = 0;
 
 hw_timer_t *SAMPLING_TIMER = NULL;
 
@@ -140,7 +140,9 @@ void IRAM_ATTR ON_SAMPLING_TIMER(){
 ########################################################
 /*/
 
+#ifdef DEBUG
 unsigned long loop_time = 0;  // used for printing time main loop takes to execute in debug mode
+#endif
 
 const int bassIdx = 200 * freqWidth; // FFT bin index of frequency ~200Hz
 
@@ -187,7 +189,6 @@ void setup() {
   timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
   timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);         // trigger interrupt every @sampleDelayTime microseconds
   timerAlarmEnable(SAMPLING_TIMER);                               // enabled interrupt
-  timerRestart(SAMPLING_TIMER);
 }
 
 /*/
@@ -199,10 +200,10 @@ void setup() {
 void loop() {
   if (AUD_IN_BUFFER_FULL()) {
     // in debug mode, print total time spent in loop, optionally interrupt timer can be disabled
-    if (DEBUG) {
-      // timerAlarmDisable(SAMPLING_TIMER); // optionally disable interrupt timer during debug mode
-      loop_time = micros();
-    }
+    #ifdef DEBUG
+    // timerAlarmDisable(SAMPLING_TIMER); // optionally disable interrupt timer during debug mode
+    loop_time = micros();
+    #endif
 
     // fft and data processing
     processData();
@@ -219,19 +220,19 @@ void loop() {
     // generate audio for the next audio window
     generateAudioForWindow();
 
-    if (DEBUG) {
-      Serial.print("time spent processing in microseconds: ");
-      Serial.println(micros() - loop_time);
-      
-      for (int c = 0; c < AUD_OUT_CH; c++) {
-        Serial.printf("CH %d (F, A): ", c);
-        for (int i = 0; i < num_waves[c]; i++) {
-          Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
-        }
-        Serial.println();
+    #ifdef DEBUG
+    Serial.print("time spent processing in microseconds: ");
+    Serial.println(micros() - loop_time);
+    
+    for (int c = 0; c < AUD_OUT_CH; c++) {
+      Serial.printf("CH %d (F, A): ", c);
+      for (int i = 0; i < num_waves[c]; i++) {
+        Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
       }
-      // timerAlarmEnable(SAMPLING_TIMER);  // enable interrupt timer
+      Serial.println();
     }
+    // timerAlarmEnable(SAMPLING_TIMER);  // enable interrupt timer
+    #endif
   }
 }
 
@@ -247,7 +248,7 @@ void processData() {
   setupFFT();
   
   // reset AUD_IN_BUFFER_IDX to 0, so interrupt can continue to perform audio input and output
-  RESET_AUD_IN_IDX();
+  RESET_AUD_IN_OUT_IDX();
 
   FFT.DCRemoval();                                  // DC Removal to reduce noise
   FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
@@ -443,7 +444,9 @@ void calculateWaves() {
 // assigns a sine wave to specified channel
 void addSinWave(int freq, int amp, int ch) {
   if (ch > AUD_OUT_CH - 1) {
-    if (DEBUG) Serial.printf("CANNOT ADD SINE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    #ifdef DEBUG
+    Serial.printf("CANNOT ADD SINE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    #endif
     return;
   }
   // ensures that the sum of waves in the channels is no greater than MAX_NUM_WAVES
@@ -453,7 +456,9 @@ void addSinWave(int freq, int amp, int ch) {
   }
 
   if (num_waves_count == MAX_NUM_WAVES) {
-    if (DEBUG) Serial.println("CANNOT ASSIGN MORE WAVES, CHANGE MAX_NUM_WAVES!");
+    #ifdef DEBUG
+    Serial.println("CANNOT ASSIGN MORE WAVES, CHANGE MAX_NUM_WAVES!");
+    #endif
     return;
   }
 
@@ -465,11 +470,15 @@ void addSinWave(int freq, int amp, int ch) {
 // removes a sine wave at specified index and channel
 void removeSinWave(int idx, int ch) {
   if (ch > AUD_OUT_CH - 1) {
-    if (DEBUG) Serial.printf("CANNOT REMOVE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    #ifdef DEBUG
+    Serial.printf("CANNOT REMOVE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    #endif
     return;
   }
   if (idx >= num_waves[ch]) {
-    if (DEBUG) Serial.printf("CANNOT REMOVE WAVE, INDEX %d DOESN'T EXIST!\n", idx);
+    #ifdef DEBUG
+    Serial.printf("CANNOT REMOVE WAVE, INDEX %d DOESN'T EXIST!\n", idx);
+    #endif
     return;
   }
 
@@ -481,11 +490,15 @@ void removeSinWave(int idx, int ch) {
 // modify sine wave at specified index and channel to desired frequency and amplitude
 void modifySinWave(int idx, int ch, int freq, int amp) {
   if (ch > AUD_OUT_CH - 1) {
-    if (DEBUG) Serial.printf("CANNOT MODIFY WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    #ifdef DEBUG
+    Serial.printf("CANNOT MODIFY WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    #endif
     return;
   }
   if (idx >= num_waves[ch]) {
-    if (DEBUG) Serial.printf("CANNOT MODIFY WAVE, INDEX %d DOESN'T EXIST!\n", idx);
+    #ifdef DEBUG
+    Serial.printf("CANNOT MODIFY WAVE, INDEX %d DOESN'T EXIST!\n", idx);
+    #endif
     return;
   }
   sin_waves_amp[ch][idx] = amp;
@@ -495,7 +508,9 @@ void modifySinWave(int idx, int ch, int freq, int amp) {
 // sets all sine waves and frequencies to 0 on specified channel
 void resetSinWaves(int ch) {
   if (ch > AUD_OUT_CH - 1) {
-    if (DEBUG) Serial.printf("CANNOT RESET WAVES, CHANNEL %d ISN'T DEFINED\n", ch);
+    #ifdef DEBUG
+    Serial.printf("CANNOT RESET WAVES, CHANNEL %d ISN'T DEFINED\n", ch);
+    #endif
     return;
   }
   // restore amplitudes and frequencies on ch
@@ -534,7 +549,7 @@ void generateAudioForWindow() {
     if (i < AUD_IN_BUFFER_SIZE) {
       // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255 to ensure clipping won't occur
       for (int c = 0; c < AUD_OUT_CH; c++) {
-        AUD_OUT_BUFFER[c][generateAudioOutIdx] = round(generateAudioBuffer[c][generateAudioIdx] + 128.0);
+        AUD_OUT_BUFFER[c][generateAudioOutIdx] = max(0, min(255, int(round(generateAudioBuffer[c][generateAudioIdx] + 128.0))));
       }
       generateAudioOutIdx += 1;
       if (generateAudioOutIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutIdx = 0;
@@ -572,20 +587,20 @@ bool AUD_IN_BUFFER_FULL() {
   return !(AUD_IN_BUFFER_IDX < AUD_IN_BUFFER_SIZE);
 }
 
-// restores AUD_IN_BUFFER_IDX, and increments AUD_OUT_COUNT to synchronize AUD_OUT_BUFFER
-void RESET_AUD_IN_IDX() {
+// restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
+void RESET_AUD_IN_OUT_IDX() {
   AUD_OUT_BUFFER_IDX += AUD_IN_BUFFER_SIZE;
-  if (AUD_OUT_BUFFER_IDX == AUD_OUT_BUFFER_SIZE) AUD_OUT_BUFFER_IDX = 0;
+  if (AUD_OUT_BUFFER_IDX >= AUD_OUT_BUFFER_SIZE) AUD_OUT_BUFFER_IDX = 0;
   AUD_IN_BUFFER_IDX = 0;
 }
 
 // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
-static void AUD_IN_OUT() {
-  if (!AUD_IN_BUFFER_FULL()) {
-    int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
-    dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
-    
-    AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
-    AUD_IN_BUFFER_IDX += 1;
-  }
+void AUD_IN_OUT() {
+  if (AUD_IN_BUFFER_FULL()) return;
+
+  int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
+  dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
+  
+  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
+  AUD_IN_BUFFER_IDX += 1;
 }
