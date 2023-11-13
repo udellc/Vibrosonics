@@ -208,13 +208,13 @@ void loop() {
     processData();
 
     // use data from FFT
-    // resetSinWaves(0);
-    // assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
-    // mapAmplitudes();
-
-    // synthesize 30Hz on left channel
     resetSinWaves(0);
-    addSinWave(30, 127, 0);
+    assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
+    mapAmplitudes();
+
+    // synthesize 30Hz
+    // resetSinWaves(0);
+    // addSinWave(30, 127, 0);
 
     // generate audio for the next audio window
     generateAudioForWindow();
