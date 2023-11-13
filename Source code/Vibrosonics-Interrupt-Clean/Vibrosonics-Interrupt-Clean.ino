@@ -86,31 +86,31 @@ const int GEN_AUD_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
 const float _SAMPLING_FREQ = 1.0 / SAMPLING_FREQ;
 
 // a cosine wave for modulating sine waves
-float cos_wave_w[AUD_OUT_BUFFER_SIZE];
+static float cos_wave_w[AUD_OUT_BUFFER_SIZE];
 
 // sine wave for storing pre-generated values of a sine wave at SAMPLING_FREQ sample rate
-float sin_wave[SAMPLING_FREQ];
+static float sin_wave[SAMPLING_FREQ];
 // float cos_wave[SAMPLING_FREQ];
 // float tri_wave[SAMPLING_FREQ];
 // float sqr_wave[SAMPLING_FREQ];
 // float saw_wave[SAMPLING_FREQ];
 
 // stores the sine wave frequencies and amplitudes to synthesize
-int sin_waves_freq[AUD_OUT_CH][MAX_NUM_WAVES];
-int sin_waves_amp[AUD_OUT_CH][MAX_NUM_WAVES];
+static int sin_waves_freq[AUD_OUT_CH][MAX_NUM_WAVES];
+static int sin_waves_amp[AUD_OUT_CH][MAX_NUM_WAVES];
 
 // stores the number of sine waves in each channel
-int num_waves[AUD_OUT_CH];
+static int num_waves[AUD_OUT_CH];
 
 // stores the position of wave
-int sin_wave_idx = 0;
+static int sin_wave_idx = 0;
 
 // scratchpad array used for signal synthesis
-float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
+static float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
 // stores the current index of the scratch pad audio output buffer
-int generateAudioIdx = 0;
+static int generateAudioIdx = 0;
 // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
-int generateAudioOutIdx = 0;
+static int generateAudioOutIdx = 0;
 
 /*/
 ########################################################
@@ -119,20 +119,19 @@ int generateAudioOutIdx = 0;
 /*/
 
 // used to store recorded samples for a gien window
-volatile int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
-volatile int AUD_IN_BUFFER_IDX = 0;
-
+volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
 // rolling buffer for outputting synthesized signal
-volatile int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
-volatile int AUD_OUT_BUFFER_IDX = 0;
+volatile static int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
+
+// audio input buffer index
+volatile static int AUD_IN_BUFFER_IDX = 0;
+volatile static int AUD_OUT_COUNT = 0;
 
 hw_timer_t *SAMPLING_TIMER = NULL;
 
 // the procedure that is called when timer interrupt is triggered
 void IRAM_ATTR ON_SAMPLING_TIMER(){
-  if (AUD_IN_BUFFER_FULL()) return;
-  OUTPUT_SAMPLE();
-  RECORD_SAMPLE();
+  if (!AUD_IN_BUFFER_FULL()) AUD_IN_OUT();
 }
 
 /*/
@@ -142,6 +141,8 @@ void IRAM_ATTR ON_SAMPLING_TIMER(){
 /*/
 
 unsigned long loop_time = 0;  // used for printing time main loop takes to execute in debug mode
+
+const int bassIdx = 200 * freqWidth; // FFT bin index of frequency ~200Hz
 
 /*/
 ########################################################
@@ -172,6 +173,7 @@ void setup() {
   // calculate values of cosine and sine wave at certain sampling frequency
   calculateWindowingWave();
   calculateWaves();
+  resetSinWaves(0);
 
   // setup pins
   pinMode(AUD_OUT_PIN, OUTPUT);
@@ -185,6 +187,7 @@ void setup() {
   timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
   timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);         // trigger interrupt every @sampleDelayTime microseconds
   timerAlarmEnable(SAMPLING_TIMER);                               // enabled interrupt
+  timerRestart(SAMPLING_TIMER);
 }
 
 /*/
@@ -205,13 +208,13 @@ void loop() {
     processData();
 
     // use data from FFT
-    resetSinWaves(0);
-    assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
-    mapAmplitudes();
-
-    // synthesize 30Hz on left channel, and 55Hz on right channel
     // resetSinWaves(0);
-    // addSinWave(30, 127, 0);
+    // assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
+    // mapAmplitudes();
+
+    // synthesize 30Hz on left channel
+    resetSinWaves(0);
+    addSinWave(30, 127, 0);
 
     // generate audio for the next audio window
     generateAudioForWindow();
@@ -238,12 +241,13 @@ void loop() {
 ########################################################
 /*/
 
+// FFT data processing
 void processData() {
   // copy values from AUD_IN_BUFFER to vReal array
   setupFFT();
   
-  // restores AUD_IN and AUD_OUT buffer positions
-  RESET_AUD_IN_OUT_IDX();
+  // reset AUD_IN_BUFFER_IDX to 0, so interrupt can continue to perform audio input and output
+  RESET_AUD_IN_IDX();
 
   FFT.DCRemoval();                                  // DC Removal to reduce noise
   FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
@@ -266,15 +270,25 @@ void processData() {
 ########################################################
 /*/
 
-// stores the frequencies and amplitudes found by majorPeaks into separate arrays, and returns the number of sin waves to synthesize
+// assigns the frequencies and amplitudes found by majorPeaks to sine waves
 void assignSinWaves(int* freqData, float* ampData, int size) {  
   // assign sin_waves and freq/amps that are above 0, otherwise skip
   for (int i = 0; i < size; i++) {
     // skip storing if ampData is 0, or freqData is 0
     if (ampData[i] == 0.0 || freqData[i] == 0) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
-    int interpFreq = interpolateAroundPeak(freqs, freqData[i]);
-    addSinWave(interpFreq, ampData[i], 0);
+    if (freqData[i] <= bassIdx) {
+      int freq = freqData[i] * freqRes;
+      // if the difference of energy around the peak is greater than threshold
+      if (abs(freqs[freqData[i] - 1] - freqs[freqData[i] + 1]) > 100) {
+        // assign frequency based on whichever side is greater
+        freq = freqs[freqData[i] - 1] > freqs[freqData[i] + 1] ? (freqData[i] - 0.5) * freqRes : (freqData[i] + 0.5) * freqRes;
+      }
+      addSinWave(freq, ampData[i], 0);
+    } else {
+      int interpFreq = interpolateAroundPeak(freqs, freqData[i]);
+      addSinWave(interpFreq, ampData[i], 0);
+    }
   }
 }
 
@@ -492,45 +506,55 @@ void resetSinWaves(int ch) {
   num_waves[ch] = 0;
 }
 
-// generates values for audio output buffer
+// returns value of sine wave at given frequency and amplitude
+float get_sin_wave_val(int freq, int amp) {
+  float sin_wave_freq_idx = sin_wave_idx * freq * _SAMPLING_FREQ;
+  int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
+  return amp * sin_wave[sin_wave_position];
+}
+
+// returns sum of sine waves of given channel
+float get_sum_of_channel(int ch) {
+  float sum = 0.0;
+  for (int s = 0; s < num_waves[ch]; s++) {
+    sum += get_sin_wave_val(sin_waves_freq[ch][s], sin_waves_amp[ch][s]);
+  }
+  return sum;
+}
+
+// generates values for one window of audio output buffer
 void generateAudioForWindow() {
-  //Serial.printf("%d, %d, %d\n", generateAudioIdx, generateAudioOutIdx, sin_wave_idx);
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     // sum together the sine waves for left channel and right channel
     for (int c = 0; c < AUD_OUT_CH; c++) {
-      float sumOfSines = 0.0;
-      for (int s = 0; s < num_waves[c]; s++) {
-        if (sin_waves_amp[c][s] == 0 || sin_waves_freq[c][s] == 0) continue;
-        // calculate the sine wave index of the sine wave corresponding to the frequency
-        //int sin_wave_position = (sin_wave_freq_idx) % int(SAMPLING_FREQ); // a slightly faster way of doing mod function to reduce usage of division
-        float sin_wave_freq_idx = sin_wave_idx * sin_waves_freq[c][s] * _SAMPLING_FREQ;
-        int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
-        sumOfSines += sin_waves_amp[c][s] * sin_wave[sin_wave_position];
-      }
       // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
-      generateAudioBuffer[c][generateAudioIdx] += sumOfSines * cos_wave_w[i];
+      generateAudioBuffer[c][generateAudioIdx] += get_sum_of_channel(c) * cos_wave_w[i];
     }
     // copy final, synthesized values to volatile audio output buffer
     if (i < AUD_IN_BUFFER_SIZE) {
       // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255 to ensure clipping won't occur
       for (int c = 0; c < AUD_OUT_CH; c++) {
-        AUD_OUT_BUFFER[c][generateAudioOutIdx] = generateAudioBuffer[c][generateAudioIdx] + 128.0;
+        AUD_OUT_BUFFER[c][generateAudioOutIdx] = round(generateAudioBuffer[c][generateAudioIdx] + 128.0);
       }
-      if (++generateAudioOutIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutIdx = 0;
+      generateAudioOutIdx += 1;
+      if (generateAudioOutIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutIdx = 0;
     }
     // increment generate audio index
-    if (++generateAudioIdx == GEN_AUD_BUFFER_SIZE) generateAudioIdx = 0;
+    generateAudioIdx += 1;
+    if (generateAudioIdx == GEN_AUD_BUFFER_SIZE) generateAudioIdx = 0;
     // increment sine wave index
-    if (++sin_wave_idx == SAMPLING_FREQ) sin_wave_idx = 0;
+    sin_wave_idx += 1;
+    if (sin_wave_idx == SAMPLING_FREQ) sin_wave_idx = 0;
   }
 
   // reset the next window to synthesize new signal
   int generateAudioIdxCpy = generateAudioIdx;
-  for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
+  for (int i = 0; i < AUD_IN_BUFFER_SIZE; i++) {
     for (int c = 0; c < AUD_OUT_CH; c++) {
       generateAudioBuffer[c][generateAudioIdxCpy] = 0.0;
     }
-    if (++generateAudioIdxCpy == GEN_AUD_BUFFER_SIZE) generateAudioIdxCpy = 0;
+    generateAudioIdxCpy += 1;
+    if (generateAudioIdxCpy == GEN_AUD_BUFFER_SIZE) generateAudioIdxCpy = 0;
   }
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
   generateAudioIdx = int(generateAudioIdx - FFT_WINDOW_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
@@ -543,25 +567,24 @@ void generateAudioForWindow() {
 ########################################################
 /*/
 
-// returns true if AUD_IN_BUFFER is full
+// returns true if audio input buffer is full
 bool AUD_IN_BUFFER_FULL() {
   return !(AUD_IN_BUFFER_IDX < AUD_IN_BUFFER_SIZE);
 }
 
-// restores AUD_IN_BUFFER_IDX and AUD_OUT_BUFFER_IDX, and increments NUM_WINDOWS_REC to allow values to be properly synthesized for AUD_OUT_BUFFER
-void RESET_AUD_IN_OUT_IDX() {
+// restores AUD_IN_BUFFER_IDX, and increments AUD_OUT_COUNT to synchronize AUD_OUT_BUFFER
+void RESET_AUD_IN_IDX() {
   AUD_IN_BUFFER_IDX = 0;
-  if (!(AUD_OUT_BUFFER_IDX < AUD_OUT_BUFFER_SIZE)) AUD_OUT_BUFFER_IDX = 0;
+  AUD_OUT_COUNT += 1;
+  if (AUD_OUT_COUNT == 2) AUD_OUT_COUNT = 0;
 }
 
-// outputs a sample from the volatile output buffer to DAC
-void OUTPUT_SAMPLE() {
-  dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX]);
-  AUD_OUT_BUFFER_IDX += 1;
-}
-
-// records a sample from the ADC and stores into volatile input buffer
-void RECORD_SAMPLE() {
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
-  AUD_IN_BUFFER_IDX += 1;
+// outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
+static void AUD_IN_OUT() {
+  if (!AUD_IN_BUFFER_FULL()) {
+    int AUD_OUT_BUFFER_IDX = AUD_IN_BUFFER_SIZE * AUD_OUT_COUNT + AUD_IN_BUFFER_IDX;
+    dacWrite(AUD_OUT_PIN, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX]);
+    AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
+    AUD_IN_BUFFER_IDX += 1;
+  }
 }
