@@ -378,14 +378,15 @@ void processData() {
   // copy values calculated by FFT to freqs and rawFreqs
   storeFreqs();
 
-  float mean = 0;
-  for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
-    mean += detFuncData[i];
-  }
-  mean /= FFT_WINDOW_SIZE_BY2;
+  resetSinWaves(0);
 
+  // noise flooring based on threshold
+  noiseFloor(freqs, 20.0);
+
+  float mean = dataMean(freqs, FFT_WINDOW_SIZE_BY2);
+  
   // noise flooring based on mean of data and a threshold
-  noiseFloor(detFuncData, FFT_NOISE_THRESH);
+  // if (mean < 20.0) return;
 
   detectionFunc(detFuncData);
 
@@ -393,7 +394,6 @@ void processData() {
   float maxAmpDeltaMag = 0.0;
   int maxAmpDeltaIdx = FREQ_MAX_AMP_DELTA ? frequencyMaxAmplitudeDelta(freqs, freqsPrev, FREQ_MAX_AMP_DELTA_START, FREQ_MAX_AMP_DELTA_END, maxAmpDeltaMag) : -1;
 
-  resetSinWaves(0);
   assignSinWaves(assignSinWavesFreq, assignSinWavesAmp, assignSinWavesNum);
 
   // weight frequencies based on passed weighting function, returns the total sum of the amplitudes and the index of the max amplitude which is passed by reference
@@ -663,6 +663,15 @@ void noiseFloor(float *data, float threshold) {
       data[i] = 0.0;
     }
   }
+}
+
+// returns the mean of data
+float dataMean(float *data, int size) {
+  float sum = 0.0;
+  for (int i = 0; i < size; i++) {
+    sum += data[i];
+  }
+  return sum / size;
 }
 
 // finds the frequency of most change within certain boundaries @FREQ_MAX_AMP_DELTA_MIN and @FREQ_MAX_AMP_DELTA_MAX

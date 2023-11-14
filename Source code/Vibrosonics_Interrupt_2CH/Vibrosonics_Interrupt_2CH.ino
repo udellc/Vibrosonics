@@ -208,14 +208,8 @@ void loop() {
     loop_time = micros();
     #endif
 
-    // fft and data processing
+    // fft, data processing and sine wave assignment
     processData();
-
-    // use data from FFT
-    resetSinWaves(0);
-    resetSinWaves(1);
-    assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
-    mapAmplitudes();
 
     // synthesize 30Hz on left channel, and 80Hz on right channel
     // resetSinWaves(0);
@@ -256,12 +250,18 @@ void processData() {
 
   // copy values calculated by FFT to freqs
   storeFreqs();
-  
-  // noise flooring based on mean of data and a threshold
+
+  // noise flooring based on a threshold
   noiseFloor(freqs, 20.0);
 
   // finds peaks in data, stores index of peak in FFTPeaks and Amplitude of peak in FFTPeaksAmp
   findMajorPeaks(freqs);
+
+  // assign sine waves based on data found by major peaks
+  resetSinWaves(0);
+  resetSinWaves(1);
+  assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
+  mapAmplitudes();
 }
 
 /*/
