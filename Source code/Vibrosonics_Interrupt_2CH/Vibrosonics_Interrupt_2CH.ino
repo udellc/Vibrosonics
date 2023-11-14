@@ -229,14 +229,7 @@ void loop() {
     #ifdef DEBUG
     Serial.print("time spent processing in microseconds: ");
     Serial.println(micros() - loop_time);
-    
-    for (int c = 0; c < AUD_OUT_CH; c++) {
-      Serial.printf("CH %d (F, A): ", c);
-      for (int i = 0; i < num_waves[c]; i++) {
-        Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
-      }
-      Serial.println();
-    }
+    printSinWaves();
     // timerAlarmEnable(SAMPLING_TIMER);  // enable interrupt timer
     #endif
   }
@@ -299,7 +292,7 @@ void assignSinWaves(int* freqData, float* ampData, int size) {
   }
 }
 
-// maps amplitudes between 0 and 127 range to correspond to 8-bit DAC on ESP32 Feather
+// maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather
 void mapAmplitudes() {
   // map amplitudes on both channels
   for (int c = 0; c < AUD_OUT_CH; c++) {
@@ -525,6 +518,17 @@ void resetSinWaves(int ch) {
     sin_waves_freq[ch][i] = 0;
   }
   num_waves[ch] = 0;
+}
+
+// prints assigned sine waves
+void printSinWaves() {
+  for (int c = 0; c < AUD_OUT_CH; c++) {
+    Serial.printf("CH %d (F, A): ", c);
+    for (int i = 0; i < num_waves[c]; i++) {
+      Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
+    }
+    Serial.println();
+  }
 }
 
 // returns value of sine wave at given frequency and amplitude

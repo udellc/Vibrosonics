@@ -350,14 +350,7 @@ void loop() {
     #ifdef DEBUG
     Serial.print("time spent processing in microseconds: ");
     Serial.println(micros() - loop_time);
-
-    for (int c = 0; c < AUD_OUT_CH; c++) {
-      Serial.printf("CH %d (F, A): ", c);
-      for (int i = 0; i < num_waves[c]; i++) {
-        Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
-      }
-      Serial.println();
-    }
+    printSinWaves();
     // timerAlarmEnable(SAMPLING_TIMER);  // enable interrupt timer
     #endif
   }
@@ -913,6 +906,17 @@ void resetSinWaves(int ch) {
     sin_waves_freq[ch][i] = 0;
   }
   num_waves[ch] = 0;
+}
+
+// prints assigned sine waves
+void printSinWaves() {
+  for (int c = 0; c < AUD_OUT_CH; c++) {
+    Serial.printf("CH %d (F, A): ", c);
+    for (int i = 0; i < num_waves[c]; i++) {
+      Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
+    }
+    Serial.println();
+  }
 }
 
 // returns value of sine wave at given frequency and amplitude
