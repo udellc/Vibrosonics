@@ -209,10 +209,6 @@ void loop() {
     // fft and data processing
     processData();
 
-    // synthesize 30Hz
-    // resetSinWaves(0);
-    // addSinWave(30, 127, 0, 0);
-
     // generate audio for the next audio window
     generateAudioForWindow();
 

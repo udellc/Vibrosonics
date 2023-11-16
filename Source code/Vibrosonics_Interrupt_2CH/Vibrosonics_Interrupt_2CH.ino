@@ -212,12 +212,6 @@ void loop() {
     // fft, data processing and sine wave assignment
     processData();
 
-    // synthesize 30Hz on left channel, and 80Hz on right channel
-    // resetSinWaves(0);
-    // addSinWave(30, 127, 0, 0);
-    // resetSinWaves(1);
-    // addSinWave(80, 127, 1, 0);
-
     // generate audio for the next audio window
     generateAudioForWindow();
 
