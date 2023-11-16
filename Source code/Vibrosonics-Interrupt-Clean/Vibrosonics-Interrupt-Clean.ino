@@ -98,6 +98,7 @@ float sin_wave[SAMPLING_FREQ];
 // stores the sine wave frequencies and amplitudes to synthesize
 int sin_waves_freq[AUD_OUT_CH][MAX_NUM_WAVES];
 int sin_waves_amp[AUD_OUT_CH][MAX_NUM_WAVES];
+int sin_waves_phase[AUD_OUT_CH][MAX_NUM_WAVES];
 
 // stores the number of sine waves in each channel
 int num_waves[AUD_OUT_CH];
@@ -210,7 +211,7 @@ void loop() {
 
     // synthesize 30Hz
     // resetSinWaves(0);
-    // addSinWave(30, 127, 0);
+    // addSinWave(30, 127, 0, 0);
 
     // generate audio for the next audio window
     generateAudioForWindow();
@@ -272,16 +273,16 @@ void assignSinWaves(int* freqData, float* ampData, int size) {
     if (ampData[i] == 0.0 || freqData[i] == 0) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
     if (freqData[i] <= bassIdx) {
-      int freq = freqData[i] * freqRes;
+      int freq = freqData[i];
       // if the difference of energy around the peak is greater than threshold
       if (abs(freqs[freqData[i] - 1] - freqs[freqData[i] + 1]) > 100) {
         // assign frequency based on whichever side is greater
-        freq = freqs[freqData[i] - 1] > freqs[freqData[i] + 1] ? (freqData[i] - 0.5) * freqRes : (freqData[i] + 0.5) * freqRes;
+        freq = freqs[freqData[i] - 1] > freqs[freqData[i] + 1] ? (freqData[i] - 0.5) : (freqData[i] + 0.5);
       }
-      addSinWave(freq, ampData[i], 0);
+      addSinWave(freq * freqRes, ampData[i], 0, 0);
     } else {
       int interpFreq = interpolateAroundPeak(freqs, freqData[i]);
-      addSinWave(interpFreq, ampData[i], 0);
+      addSinWave(interpFreq, ampData[i], 0, 0);
     }
   }
 }
@@ -434,14 +435,22 @@ void calculateWaves() {
   }
 }
 
-// assigns a sine wave to specified channel
-void addSinWave(int freq, int amp, int ch) {
-  if (ch > AUD_OUT_CH - 1) {
+// assigns a sine wave to specified channel, phase makes most sense to be between 0 and SAMPLING_FREQ where if phase == SAMPLING_FREQ / 2 then the wave is synthesized in counter phase
+void addSinWave(int freq, int amp, int ch, int phase) {
+  if (freq < 0 || phase < 0) {
+    #ifdef DEBUG
+    Serial.printf("CANNOT ADD SINE WAVE, FREQ AND PHASE MUST BE POSTIVE!");
+    #endif
+    return;
+  } 
+
+  if (ch > AUD_OUT_CH - 1 || ch < 0) {
     #ifdef DEBUG
     Serial.printf("CANNOT ADD SINE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
     #endif
     return;
   }
+
   // ensures that the sum of waves in the channels is no greater than MAX_NUM_WAVES
   int num_waves_count = 0;
   for (int c = 0; c < AUD_OUT_CH; c++) {
@@ -457,14 +466,15 @@ void addSinWave(int freq, int amp, int ch) {
 
   sin_waves_amp[ch][num_waves[ch]] = amp;
   sin_waves_freq[ch][num_waves[ch]] = freq;
+  sin_waves_phase[ch][num_waves[ch]] = phase;
   num_waves[ch] += 1;
 }
 
 // removes a sine wave at specified index and channel
 void removeSinWave(int idx, int ch) {
-  if (ch > AUD_OUT_CH - 1) {
+  if (ch > AUD_OUT_CH - 1 || ch < 0) {
     #ifdef DEBUG
-    Serial.printf("CANNOT REMOVE WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    Serial.printf("CANNOT REMOVE WAVE, CHANNEL %d ISN'T DEFINED!\n", ch);
     #endif
     return;
   }
@@ -477,14 +487,23 @@ void removeSinWave(int idx, int ch) {
 
   for (int i = idx; i < --num_waves[ch]; i++) {
     sin_waves_amp[ch][i] = sin_waves_amp[ch][i + 1];
+    sin_waves_freq[ch][i] = sin_waves_freq[ch][i + 1];
+    sin_waves_phase[ch][i] = sin_waves_phase[ch][i + 1];
   }
 }
 
 // modify sine wave at specified index and channel to desired frequency and amplitude
-void modifySinWave(int idx, int ch, int freq, int amp) {
+void modifySinWave(int idx, int ch, int freq, int amp, int phase) {
+    if (freq < 0 || phase < 0) {
+    #ifdef DEBUG
+    Serial.printf("CANNOT ADD SINE WAVE, FREQ AND PHASE MUST BE POSTIVE!");
+    #endif
+    return;
+  } 
+
   if (ch > AUD_OUT_CH - 1) {
     #ifdef DEBUG
-    Serial.printf("CANNOT MODIFY WAVE, CHANNEL %d ISN'T DEFINED\n", ch);
+    Serial.printf("CANNOT MODIFY WAVE, CHANNEL %d ISN'T DEFINED!\n", ch);
     #endif
     return;
   }
@@ -496,13 +515,14 @@ void modifySinWave(int idx, int ch, int freq, int amp) {
   }
   sin_waves_amp[ch][idx] = amp;
   sin_waves_freq[ch][idx] = freq;
+  sin_waves_phase[ch][idx] = phase;
 }
 
 // sets all sine waves and frequencies to 0 on specified channel
 void resetSinWaves(int ch) {
   if (ch > AUD_OUT_CH - 1) {
     #ifdef DEBUG
-    Serial.printf("CANNOT RESET WAVES, CHANNEL %d ISN'T DEFINED\n", ch);
+    Serial.printf("CANNOT RESET WAVES, CHANNEL %d ISN'T DEFINED!\n", ch);
     #endif
     return;
   }
@@ -510,6 +530,7 @@ void resetSinWaves(int ch) {
   for (int i = 0; i < MAX_NUM_WAVES; i++) {
     sin_waves_amp[ch][i] = 0;
     sin_waves_freq[ch][i] = 0;
+    sin_waves_phase[ch][i] = 0;
   }
   num_waves[ch] = 0;
 }
@@ -517,17 +538,21 @@ void resetSinWaves(int ch) {
 // prints assigned sine waves
 void printSinWaves() {
   for (int c = 0; c < AUD_OUT_CH; c++) {
-    Serial.printf("CH %d (F, A): ", c);
+    Serial.printf("CH %d (F, A, P?): ", c);
     for (int i = 0; i < num_waves[c]; i++) {
-      Serial.printf("(%03d, %03d) ", sin_waves_freq[c][i], sin_waves_amp[c][i]);
+      Serial.printf("(%03d, %03d", sin_waves_freq[c][i], sin_waves_amp[c][i]);
+      if (sin_waves_phase[c][i] > 0) {
+        Serial.printf(", %04d", sin_waves_phase[c][i]);
+      }
+      Serial.print(") ");
     }
     Serial.println();
   }
 }
 
 // returns value of sine wave at given frequency and amplitude
-float get_sin_wave_val(int freq, int amp) {
-  float sin_wave_freq_idx = sin_wave_idx * freq * _SAMPLING_FREQ;
+float get_sin_wave_val(int freq, int amp, int phase) {
+  float sin_wave_freq_idx = (sin_wave_idx * freq + phase) * _SAMPLING_FREQ;
   int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
   return amp * sin_wave[sin_wave_position];
 }
@@ -536,7 +561,7 @@ float get_sin_wave_val(int freq, int amp) {
 float get_sum_of_channel(int ch) {
   float sum = 0.0;
   for (int s = 0; s < num_waves[ch]; s++) {
-    sum += get_sin_wave_val(sin_waves_freq[ch][s], sin_waves_amp[ch][s]);
+    sum += get_sin_wave_val(sin_waves_freq[ch][s], sin_waves_amp[ch][s], sin_waves_phase[ch][s]);
   }
   return sum;
 }
