@@ -557,6 +557,7 @@ float get_sin_wave_val(int freq, int amp, int phase) {
 float get_sum_of_channel(int ch) {
   float sum = 0.0;
   for (int s = 0; s < num_waves[ch]; s++) {
+    if (sin_waves_amp[ch][s] == 0 || (sin_waves_freq[ch][s] == 0 && sin_waves_phase[ch][s] == 0)) continue;
     sum += get_sin_wave_val(sin_waves_freq[ch][s], sin_waves_amp[ch][s], sin_waves_phase[ch][s]);
   }
   return sum;
