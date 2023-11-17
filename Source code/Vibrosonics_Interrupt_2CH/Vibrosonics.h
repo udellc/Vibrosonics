@@ -1,3 +1,6 @@
+#ifndef Vibrosonics_h
+#define Vibrosonics_h
+
 /*/
 ########################################################
   This code asynchronously samples a signal via an interrupt timer to fill an input buffer. Once the input buffer is full, a fast fourier transform is performed using the arduinoFFT library.
@@ -31,14 +34,14 @@
 
 #define FFT_WINDOW_SIZE 256   // size of a recording window, this value MUST be a power of 2
 #define SAMPLING_FREQ 10000   // The audio sampling and audio output rate, with the ESP32 the fastest we could sample at is just under 24kHz, but
-                              // bringing this down leaves more processing time for FFT, signal processing functions, and synthesis
+                // bringing this down leaves more processing time for FFT, signal processing functions, and synthesis
 
 #define FFT_MAX_AMP 300   // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
 
 #define MAX_NUM_PEAKS 8  // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
 
 #define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
-#define AUD_OUT_CH 2  // number of audio channels to synthesize
+#define AUD_OUT_CH 1  // number of audio channels to synthesize
 
 // #define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
@@ -52,19 +55,17 @@
 
 /*/
 ########################################################
-    Variables used for interrupt and function to call when interrupt is triggered
+  Variables used for interrupt and function to call when interrupt is triggered
 ########################################################
 /*/
 
 static const int AUD_IN_BUFFER_SIZE = FFT_WINDOW_SIZE;  
 static const int AUD_OUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 2;
 
-#ifdef USE_FFT
 // used to store recorded samples for a gien window
 volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
 // rolling buffer for outputting synthesized signal
 volatile static int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
-#endif
 
 // audio input and output buffer index
 volatile static int AUD_IN_BUFFER_IDX = 0;
@@ -72,205 +73,242 @@ volatile static int AUD_OUT_BUFFER_IDX = 0;
 
 static hw_timer_t *SAMPLING_TIMER = NULL;
 
-#ifdef DEBUG
-static unsigned long loop_time;  // used for printing time main loop takes to execute in debug mode
-#endif
-
 // class declaration
 
 class Vibrosonics
 {
-    
-    private:
-
-        /*/
-        ########################################################
-            FFT
-        ########################################################
-        /*/
-
-        #ifdef USE_FFT
-        float vReal[FFT_WINDOW_SIZE];  // vReal is used for input at SAMPLING_FREQ and receives computed results from FFT
-        float vImag[FFT_WINDOW_SIZE];  // used to store imaginary values for computation
-
-        arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WINDOW_SIZE, SAMPLING_FREQ);  // Object for performing FFT's
-
-
-        /*/
-        ########################################################
-            Stuff relevant to FFT signal processing
-        ########################################################
-        /*/
-
-        static const int sampleDelayTime = 1000000 / SAMPLING_FREQ;
-
-        // FFT_SIZE_BY_2 is FFT_WINDOW_SIZE / 2. We are sampling at double the frequency we are trying to detect, therefore only half of the FFT bins are used for analysis post FFT
-        static const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
-
-        static constexpr float freqRes = float(SAMPLING_FREQ) / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
-
-        static constexpr float freqWidth = 1.0 / freqRes; // the width of an FFT bin
-
-        float freqs[FFT_WINDOW_SIZE_BY2];   // stores the data from the current fft window
-
-        int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1]; // stores the peaks computed by FFT
-        float FFTPeaksAmp[FFT_WINDOW_SIZE_BY2 >> 1];
   
-        static const int bassIdx = 200 * freqWidth; // FFT bin index of frequency ~200Hz
+  private:
 
-        static const int MAX_AMP_SUM = MAX_NUM_WAVES * FFT_MAX_AMP;
-        #endif
+    /*/
+    ########################################################
+      FFT
+    ########################################################
+    /*/
 
-        /*/
-        ########################################################
-            Variables used for generating an audio output
-        ########################################################
-        /*/
+    #ifdef USE_FFT
+    float vReal[FFT_WINDOW_SIZE];  // vReal is used for input at SAMPLING_FREQ and receives computed results from FFT
+    float vImag[FFT_WINDOW_SIZE];  // used to store imaginary values for computation
 
-        static const int GEN_AUD_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
-
-        const float _SAMPLING_FREQ = 1.0 / SAMPLING_FREQ;
-
-        // a cosine wave for modulating sine waves
-        float cos_wave_w[AUD_OUT_BUFFER_SIZE];
-
-        // sine wave for storing pre-generated values of a sine wave at SAMPLING_FREQ sample rate
-        float sin_wave[SAMPLING_FREQ];
-        // float cos_wave[SAMPLING_FREQ];
-        // float tri_wave[SAMPLING_FREQ];
-        // float sqr_wave[SAMPLING_FREQ];
-        // float saw_wave[SAMPLING_FREQ];
-
-        // structure for wave
-        struct wave 
-        {
-          int amp;
-          int freq;
-          int phase;
-        };
-
-        typedef struct wave Wave;
-
-        // stores the sine wave frequencies and amplitudes to synthesize
-        wave waves[AUD_OUT_CH][MAX_NUM_WAVES];
+    arduinoFFT FFT = arduinoFFT(vReal, vImag, FFT_WINDOW_SIZE, SAMPLING_FREQ);  // Object for performing FFT's
 
 
-        // stores the number of sine waves in each channel
-        int num_waves[AUD_OUT_CH];
+    /*/
+    ########################################################
+      Stuff relevant to FFT signal processing
+    ########################################################
+    /*/
 
-        // stores the position of wave
-        int sin_wave_idx = 0;
+    static const int sampleDelayTime = 1000000 / SAMPLING_FREQ;
 
-        // scratchpad array used for signal synthesis
-        float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
-        // stores the current index of the scratch pad audio output buffer
-        int generateAudioIdx = 0;
-        // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
-        int generateAudioOutIdx = 0;
+    // FFT_SIZE_BY_2 is FFT_WINDOW_SIZE / 2. We are sampling at double the frequency we are trying to detect, therefore only half of the FFT bins are used for analysis post FFT
+    static const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
-        /*/
-        ########################################################
-            Functions
-        ########################################################
-        /*/
+    static const constexpr float freqRes = float(SAMPLING_FREQ) / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
 
-        
-        // calculate values for cosine function that is used for smoothing transition between frequencies and amplitudes (0.5 * (1 - cos((2PI / T) * x)), where T = AUD_OUT_BUFFER_SIZE
-        void calculateWindowingWave();
-        // calculate values for 1Hz sine wave @SAMPLING_FREQ sample rate
-        void calculateWaves();
+    // static float freqRes() { 
+    //   if freqRes() float(SAMPLING_FREQ) / FFT_WINDOW_SIZE; }
 
-        /*/
-        ########################################################
-            Functions related to FFT analysis
-        ########################################################
-        /*/
+    // static float xx = 0;
 
-        #ifdef USE_FFT
-        // setup arrays for FFT analysis
-        void setupFFT();
+    static const constexpr float freqWidth = 1.0 / freqRes; // the width of an FFT bin
 
-        // store the current window into freqs
-        void storeFreqs();
+    float freqs[FFT_WINDOW_SIZE_BY2];   // stores the data from the current fft window
 
-        // noise flooring based on a set threshold
-        void noiseFloor(float *data, float threshold);
+    int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1]; // stores the peaks computed by FFT
+    float FFTPeaksAmp[FFT_WINDOW_SIZE_BY2 >> 1];
+  
+    static const int bassIdx = 200 * freqWidth; // FFT bin index of frequency ~200Hz
 
-        // finds all the peaks in the fft data* and removes the minimum peaks to contain output to @MAX_NUM_PEAKS
-        void findMajorPeaks(float* data);
+    static const int MAX_AMP_SUM = MAX_NUM_WAVES * FFT_MAX_AMP;
+    #endif
 
-        // interpolation based on the weight of amplitudes around a peak
-        int interpolateAroundPeak(float *data, int indexOfPeak);
+    /*/
+    ########################################################
+      Variables used for generating an audio output
+    ########################################################
+    /*/
 
-        // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather
-        void assignSinWaves(int* freqData, float* ampData, int size);
-        void mapAmplitudes();
-        #endif
+    static const int GEN_AUD_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
 
-        /*/
-        ########################################################
-            Functions related to generating values for the circular audio output buffer
-        ########################################################
-        /*/
+    const float _SAMPLING_FREQ = 1.0 / SAMPLING_FREQ;
 
-        // returns value of sine wave at given frequency and amplitude
-        float get_sin_wave_val(Wave w);
+    // a cosine wave for modulating sine waves
+    float cos_wave_w[AUD_OUT_BUFFER_SIZE];
 
-        // returns sum of sine waves of given channel
-        float get_sum_of_channel(int ch);
+    // sine wave for storing pre-generated values of a sine wave at SAMPLING_FREQ sample rate
+    float sin_wave[SAMPLING_FREQ];
+    // float cos_wave[SAMPLING_FREQ];
+    // float tri_wave[SAMPLING_FREQ];
+    // float sqr_wave[SAMPLING_FREQ];
+    // float saw_wave[SAMPLING_FREQ];
 
-        /*/
-        ########################################################
-            Functions related to sampling and outputting audio by interrupt
-        ########################################################
-        /*/
+    // structure for wave
+    typedef struct wave 
+    {
+      int amp;
+      int freq;
+      int phase;
+    } Wave;
 
-        // returns true if audio input buffer is full
-        static bool AUD_IN_BUFFER_FULL();
+    //typedef struct wave Wave;
 
-        // restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
-        void RESET_AUD_IN_OUT_IDX();
-        // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
-        static void AUD_IN_OUT();
+    // stores the sine wave frequencies and amplitudes to synthesize
+    wave waves[AUD_OUT_CH][MAX_NUM_WAVES];
 
-        // the function that is called when timer interrupt is triggered
-        static void IRAM_ATTR ON_SAMPLING_TIMER();
-        
-    public:
 
-        Vibrosonics();
+    // stores the number of sine waves in each channel
+    int num_waves[AUD_OUT_CH];
 
-        void init();
+    // stores the position of wave
+    int sin_wave_idx = 0;
 
-        bool ready();
+    // scratchpad array used for signal synthesis
+    float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
+    // stores the current index of the scratch pad audio output buffer
+    int generateAudioIdx = 0;
+    // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
+    int generateAudioOutIdx = 0;
 
-        #ifdef USE_FFT
-        void pullSamples();
-        // pulls samples from audio input buffer, performs fft
-        void performFFT();
+    /*/
+    ########################################################
+      Functions related to FFT analysis
+    ########################################################
+    /*/
 
-        // FFT data processing
-        void processData();
-        #endif
+    #ifdef USE_FFT
+    // setup arrays for FFT analysis
+    void setupFFT();
 
-        /*/
-        ########################################################
-            Wave assignment and modifcation
-        ########################################################
-        /*/
+    // store the current window into freqs
+    void storeFreqs();
 
-        // assigns a sine wave to specified channel, phase makes most sense to be between 0 and SAMPLING_FREQ where if phase == SAMPLING_FREQ / 2 then the wave is synthesized in counter phase
-        void addSinWave(int freq, int amp, int ch, int phase = 0);
-        // removes a sine wave at specified index and channel
-        void removeSinWave(int idx, int ch);
-        // modify sine wave at specified index and channel to desired frequency and amplitude
-        void modifySinWave(int idx, int ch, int freq, int amp, int phase = 0);
-        // sets all sine waves and frequencies to 0 on specified channel
-        void resetSinWaves(int ch);
-        // prints assigned sine waves
-        void printSinWaves();
+    // noise flooring based on a set threshold
+    void noiseFloor(float *data, float threshold);
 
-        // generates values for one window of audio output buffer
-        void generateAudioForWindow(); 
+    // finds all the peaks in the fft data* and removes the minimum peaks to contain output to @MAX_NUM_PEAKS
+    void findMajorPeaks(float* data);
+
+    // interpolation based on the weight of amplitudes around a peak
+    int interpolateAroundPeak(float *data, int indexOfPeak);
+
+    // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather
+    void assignSinWaves(int* freqData, float* ampData, int size);
+    void mapAmplitudes();
+    #endif
+
+    /*/
+    ########################################################
+      Functions related to generating values for the circular audio output buffer
+    ########################################################
+    /*/
+
+    // calculate values for cosine function that is used for smoothing transition between frequencies and amplitudes (0.5 * (1 - cos((2PI / T) * x)), where T = AUD_OUT_BUFFER_SIZE
+    void calculate_windowing_wave();
+    // calculate values for 1Hz sine wave @SAMPLING_FREQ sample rate
+    void calculate_waves();
+
+    // returns value of sine wave at given frequency and amplitude
+    float get_sin_wave_val(Wave w);
+
+    // returns sum of sine waves of given channel
+    float get_sum_of_channel(int ch);
+
+    /*/
+    ########################################################
+      Functions related to sampling and outputting audio by interrupt
+    ########################################################
+    /*/
+
+    void setupISR();
+
+    void initAudio();
+
+    // returns true if audio input buffer is full
+    static bool AUD_IN_BUFFER_FULL();
+
+    // restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
+    void RESET_AUD_IN_OUT_IDX();
+    // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
+    static void AUD_IN_OUT();
+
+    // the function that is called when timer interrupt is triggered
+    static void IRAM_ATTR ON_SAMPLING_TIMER();
     
+  public:
+    // class init
+    Vibrosonics();
+
+    // initialize pins and setup interrupt timer
+    void init();
+
+    // returns true when the audio input buffer fills. If not using FFT then returns true when modifications to waves can be made
+    bool ready();
+
+    // call resume to continue audio input and/or output
+    void resume();
+
+    #ifdef USE_FFT
+    // pulls samples from audio input buffer and stores them directly to vReal
+    void pullSamples();
+    // pulls samples from audio input buffer and stores them directly to a specified output buffer
+    void pullSamples(float *output);
+    // performs fft on vReal buffer
+    void performFFT();
+    // perform FFT on a given input (SIZE OF INPUT MUST BE EQUAL TO WINDOW SIZE)
+    void performFFT(float *input);
+
+    // Process data from FFT
+    void processData();
+    #endif
+
+    /*/
+    ########################################################
+      Wave assignment and modifcation
+    ########################################################
+    /*/
+
+    // assigns a sine wave to specified channel, phase makes most sense to be between 0 and SAMPLING_FREQ where if phase == SAMPLING_FREQ / 2 then the wave is synthesized in counter phase
+    bool addSinWave(int freq, int amp, int ch, int phase = 0);
+    // removes a sine wave at specified index and channel
+    bool removeSinWave(int idx, int ch);
+    // modify sine wave at specified index and channel to desired frequency and amplitude
+    bool modifySinWave(int idx, int ch, int freq, int amp, int phase = 0);
+    // sets all sine waves and frequencies to 0 on specified channel
+    void resetSinWaves(int ch);
+
+    // returns total number of waves on a ch, returns -1 if passed channel is invalid
+    int getNumWaves(int ch = 0);
+    // returns frequency of wave at idx and ch, returns -1 if passed index is invalid
+    int getFreq(int idx, int ch = 0);
+    // returns amplitude of wave at idx and ch, returns -1 if passed index is invalid
+    int getAmp(int idx, int ch = 0);
+    // returns phase of wave at idx and ch, returns -1 if passed index is invalid
+    int getPhase(int idx, int ch = 0);
+
+    // change frequency of wave at idx and ch
+    bool setFreq(int freq, int idx, int ch = 0);
+    // change amplitude of wave at idx and ch
+    bool setAmp(int amp, int idx, int ch = 0);
+    // change phase of wave at idx and ch
+    bool setPhase(int phase, int idx, int ch = 0);
+
+    // returns true if index and channel exists
+    bool isValidIndex(int idx, int ch = 0);
+    // returns true if channel exists
+    bool isValidChannel(int ch);
+
+    // prints assigned sine waves
+    void printSinWaves();
+
+    // generates values for one window of audio output buffer
+    void generateAudioForWindow(); 
+
+    // enable interrupt timer
+    void enableAudio();
+    // disable interrupt timer
+    void disableAudio();
+  
 };
+
+#endif

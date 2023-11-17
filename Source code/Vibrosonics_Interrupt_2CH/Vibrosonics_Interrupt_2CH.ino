@@ -22,7 +22,11 @@ void setup() {
   // wait for Serial to set up
   while (!Serial);
 
+  delay(4000);
+
   v.init();
+
+  delay(1000);
 }
 
 /*/
@@ -31,23 +35,25 @@ void setup() {
 ########################################################
 /*/
 
-int sin_c = 1;
-
-
 void loop() {
   if (v.ready()) {
     //loopt = micros();
     v.pullSamples();
+
+    v.resume();
 
     v.performFFT();
 
     // fft, data processing and sine wave assignment
     v.processData();
 
-    // v.resetSinWaves(0);
+    v.resetSinWaves(0);
     // for (int i = 0; i < 8; i++) {
     //   v.addSinWave(i * 2 + 1, i * 5 + 1, i % 1, i * 5);
     // }
+    v.addSinWave(10, 20, 0);
+
+    v.setPhase(50, 0, 0);
 
     // generate audio for the next audio window
     v.generateAudioForWindow();
