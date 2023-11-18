@@ -44,10 +44,8 @@ void loop() {
 
     v.performFFT();
 
-    // fft, data processing and sine wave assignment
     v.processData();
    
-    // generate audio for the next audio window
     v.generateAudioForWindow();
     // Serial.println(micros() - loopt);
   }

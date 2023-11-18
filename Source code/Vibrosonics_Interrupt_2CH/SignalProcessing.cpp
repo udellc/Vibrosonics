@@ -12,9 +12,6 @@ void Vibrosonics::processData(void) {
   findMajorPeaks(freqs);
 
   // assign sine waves based on data found by major peaks
-  resetWaves(0);
-  resetWaves(1);
-  
   assignWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
   mapAmplitudes();
 }
@@ -102,6 +99,10 @@ Functions relating to assigning sine waves and mapping their frequencies and amp
 
 // assigns the frequencies and amplitudes found by majorPeaks to sine waves
 void Vibrosonics::assignWaves(int* freqData, float* ampData, int size) {  
+  resetWaves(0);
+  #if NUM_OUT_CH == 2
+  resetWaves(1);
+  #endif
   // assign sin_waves and freq/amps that are above 0, otherwise skip
   for (int i = 0; i < size; i++) {
     // skip storing if ampData is 0, or freqData is 0

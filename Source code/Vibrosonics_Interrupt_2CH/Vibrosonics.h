@@ -1,6 +1,3 @@
-#ifndef Vibrosonics_h
-#define Vibrosonics_h
-
 /*/
 ########################################################
   This code asynchronously samples a signal via an interrupt timer to fill an input buffer. Once the input buffer is full, a fast fourier transform is performed using the arduinoFFT library.
@@ -12,6 +9,9 @@
   Special thanks to: Vincent Vaughn, Chet Udell, and Oleksiy Synytsia
 ########################################################
 /*/
+
+#ifndef Vibrosonics_h
+#define Vibrosonics_h
 
 #include <arduinoFFTFloat.h>
 #include <Arduino.h>
@@ -41,7 +41,7 @@
 #define MAX_NUM_PEAKS 8  // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
 
 #define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
-#define NUM_OUT_CH 2  // number of audio channels to synthesize
+#define NUM_OUT_CH 1  // number of audio channels to synthesize
 
 // #define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
@@ -111,11 +111,6 @@ class Vibrosonics
     static const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
     static const constexpr float freqRes = float(SAMPLING_FREQ) / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
-
-    // static float freqRes() { 
-    //   if freqRes() float(SAMPLING_FREQ) / FFT_WINDOW_SIZE; }
-
-    // static float xx = 0;
 
     static const constexpr float freqWidth = 1.0 / freqRes; // the width of an FFT bin
 
@@ -202,9 +197,6 @@ class Vibrosonics
     int interpolateAroundPeak(float *data, int indexOfPeak);
 
     void assignWaves(int* freqData, float* ampData, int size);
-
-    // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather
-    void mapAmplitudes(int minSum = MAX_AMP_SUM);
     #endif
 
     /*/
@@ -213,12 +205,19 @@ class Vibrosonics
     ########################################################
     /*/
 
+    // maps wave to id
     int mapWave(int ch, int idx);
+    // removes map of wave to id
     void unmapWave(int id);
+    // remaps wave to id
     void remapWave(int id, int ch, int idx);
+    // returns id of wave
     int getWaveId(int ch, int idx);
+    // returns channel of wave
     int getWaveCh(int id);
+    // returns index of wave
     int getWaveIdx(int id);
+    // returns true if id is valid
     bool isValidId(int id);
 
     // returns true if channel exists
@@ -239,6 +238,9 @@ class Vibrosonics
     float get_wave_val(wave w);
     // returns sum of sine waves of given channel
     float get_sum_of_channel(int ch);
+
+    // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather
+    void mapAmplitudes(int minSum = MAX_AMP_SUM);
 
     /*/
     ########################################################
@@ -265,14 +267,10 @@ class Vibrosonics
     // class init
     Vibrosonics();
 
-    //int& operator[](int index);
-
     // initialize pins and setup interrupt timer
     void init();
-
     // returns true when the audio input buffer fills. If not using FFT then returns true when modifications to waves can be made
     bool ready();
-
     // call resume to continue audio input and/or output
     void resume();
 
@@ -296,9 +294,6 @@ class Vibrosonics
     ########################################################
     /*/
 
-    // returns true if index and channel exists
-    bool isValidWave(int ch, int idx);
-
     // assigns a sine wave to specified channel, phase makes most sense to be between 0 and SAMPLING_FREQ where if phase == SAMPLING_FREQ / 2 then the wave is synthesized in counter phase
     int addWave(int ch, int freq, int amp, int phase = 0);
     // removes a wave given id
@@ -317,18 +312,18 @@ class Vibrosonics
     // returns phase of wave id, returns -1 if id is invalid
     int getPhase(int id);
 
-    // change frequency of wave with given id
+    // change frequency of wave with given id, returns true if frequency was set
     bool setFreq(int id, int freq);
-    // change amplitude of wave with given id
+    // change amplitude of wave with given id, returns true if amplitude was set
     bool setAmp(int id, int amp);
-    // change phase of wave with given id
+    // change phase of wave with given id, returns true if phase was set
     bool setPhase(int id, int phase);
-
-    // prints assigned sine waves
-    void printWaves();
 
     // generates values for one window of audio output buffer
     void generateAudioForWindow(); 
+
+    // prints assigned sine waves
+    void printWaves();
 
     // enable interrupt timer
     void enableAudio();
