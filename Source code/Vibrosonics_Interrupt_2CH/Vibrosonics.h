@@ -41,16 +41,22 @@
 #define MAX_NUM_PEAKS 8  // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
 
 #define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
-#define AUD_OUT_CH 1  // number of audio channels to synthesize
+#define NUM_OUT_CH 2  // number of audio channels to synthesize
 
 // #define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
+/*/
+########################################################
+  Check for errors in directives
+########################################################
+/*/
+
 #if MAX_NUM_WAVES <= 0
-#error MAX_NUM_WAVES 
+#error MAX_NUM_WAVES MUST BE AT LEAST 1
 #endif
 
-#if AUD_OUT_CH <= 0
-#error AUD_OUT_CH
+#if NUM_OUT_CH <= 0
+#error NUM_OUT_CH MUST BE AT LEAST 1
 #endif
 
 /*/
@@ -65,7 +71,7 @@ static const int AUD_OUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 2;
 // used to store recorded samples for a gien window
 volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
 // rolling buffer for outputting synthesized signal
-volatile static int AUD_OUT_BUFFER[AUD_OUT_CH][AUD_OUT_BUFFER_SIZE];
+volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
 // audio input and output buffer index
 volatile static int AUD_IN_BUFFER_IDX = 0;
@@ -149,22 +155,28 @@ class Vibrosonics
       int amp;
       int freq;
       int phase;
-    } Wave;
+    };
 
-    //typedef struct wave Wave;
+    typedef struct wave_map
+    {
+      int ch = 0;
+      int idx = 0;
+      bool valid = 0;
+    }; 
+
+    wave_map waves_map[MAX_NUM_WAVES];
 
     // stores the sine wave frequencies and amplitudes to synthesize
-    wave waves[AUD_OUT_CH][MAX_NUM_WAVES];
-
+    wave waves[NUM_OUT_CH][MAX_NUM_WAVES];
 
     // stores the number of sine waves in each channel
-    int num_waves[AUD_OUT_CH];
+    int num_waves[NUM_OUT_CH];
 
     // stores the position of wave
     int sin_wave_idx = 0;
 
     // scratchpad array used for signal synthesis
-    float generateAudioBuffer[AUD_OUT_CH][GEN_AUD_BUFFER_SIZE];
+    float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
     // stores the current index of the scratch pad audio output buffer
     int generateAudioIdx = 0;
     // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
@@ -177,9 +189,6 @@ class Vibrosonics
     /*/
 
     #ifdef USE_FFT
-    // setup arrays for FFT analysis
-    void setupFFT();
-
     // store the current window into freqs
     void storeFreqs();
 
@@ -192,10 +201,29 @@ class Vibrosonics
     // interpolation based on the weight of amplitudes around a peak
     int interpolateAroundPeak(float *data, int indexOfPeak);
 
+    void assignWaves(int* freqData, float* ampData, int size);
+
     // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather
-    void assignSinWaves(int* freqData, float* ampData, int size);
-    void mapAmplitudes();
+    void mapAmplitudes(int minSum = MAX_AMP_SUM);
     #endif
+
+    /*/
+    ########################################################
+      Functions related to mapping waves to id
+    ########################################################
+    /*/
+
+    int mapWave(int ch, int idx);
+    void unmapWave(int id);
+    void remapWave(int id, int ch, int idx);
+    int getWaveId(int ch, int idx);
+    int getWaveCh(int id);
+    int getWaveIdx(int id);
+    bool isValidId(int id);
+
+    // returns true if channel exists
+    bool isValidChannel(int ch);
+
 
     /*/
     ########################################################
@@ -207,10 +235,8 @@ class Vibrosonics
     void calculate_windowing_wave();
     // calculate values for 1Hz sine wave @SAMPLING_FREQ sample rate
     void calculate_waves();
-
     // returns value of sine wave at given frequency and amplitude
-    float get_sin_wave_val(Wave w);
-
+    float get_wave_val(wave w);
     // returns sum of sine waves of given channel
     float get_sum_of_channel(int ch);
 
@@ -238,6 +264,8 @@ class Vibrosonics
   public:
     // class init
     Vibrosonics();
+
+    //int& operator[](int index);
 
     // initialize pins and setup interrupt timer
     void init();
@@ -268,38 +296,36 @@ class Vibrosonics
     ########################################################
     /*/
 
+    // returns true if index and channel exists
+    bool isValidWave(int ch, int idx);
+
     // assigns a sine wave to specified channel, phase makes most sense to be between 0 and SAMPLING_FREQ where if phase == SAMPLING_FREQ / 2 then the wave is synthesized in counter phase
-    bool addSinWave(int freq, int amp, int ch, int phase = 0);
-    // removes a sine wave at specified index and channel
-    bool removeSinWave(int idx, int ch);
-    // modify sine wave at specified index and channel to desired frequency and amplitude
-    bool modifySinWave(int idx, int ch, int freq, int amp, int phase = 0);
+    int addWave(int ch, int freq, int amp, int phase = 0);
+    // removes a wave given id
+    void removeWave(int id);
+    // modify wave given id
+    void modifyWave(int id, int freq, int amp, int phase = 0);
     // sets all sine waves and frequencies to 0 on specified channel
-    void resetSinWaves(int ch);
+    void resetWaves(int ch);
 
     // returns total number of waves on a ch, returns -1 if passed channel is invalid
-    int getNumWaves(int ch = 0);
-    // returns frequency of wave at idx and ch, returns -1 if passed index is invalid
-    int getFreq(int idx, int ch = 0);
-    // returns amplitude of wave at idx and ch, returns -1 if passed index is invalid
-    int getAmp(int idx, int ch = 0);
-    // returns phase of wave at idx and ch, returns -1 if passed index is invalid
-    int getPhase(int idx, int ch = 0);
+    int getNumWaves(int ch);
+    // returns frequency of wave id, returns -1 if id is invalid
+    int getFreq(int id);
+    // returns amplitude of wave id, returns -1 if id is invalid
+    int getAmp(int id);
+    // returns phase of wave id, returns -1 if id is invalid
+    int getPhase(int id);
 
-    // change frequency of wave at idx and ch
-    bool setFreq(int freq, int idx, int ch = 0);
-    // change amplitude of wave at idx and ch
-    bool setAmp(int amp, int idx, int ch = 0);
-    // change phase of wave at idx and ch
-    bool setPhase(int phase, int idx, int ch = 0);
-
-    // returns true if index and channel exists
-    bool isValidIndex(int idx, int ch = 0);
-    // returns true if channel exists
-    bool isValidChannel(int ch);
+    // change frequency of wave with given id
+    bool setFreq(int id, int freq);
+    // change amplitude of wave with given id
+    bool setAmp(int id, int amp);
+    // change phase of wave with given id
+    bool setPhase(int id, int phase);
 
     // prints assigned sine waves
-    void printSinWaves();
+    void printWaves();
 
     // generates values for one window of audio output buffer
     void generateAudioForWindow(); 
@@ -309,6 +335,13 @@ class Vibrosonics
     // disable interrupt timer
     void disableAudio();
   
+};
+
+class GenerateAudio
+{
+  private:
+
+  public:
 };
 
 #endif

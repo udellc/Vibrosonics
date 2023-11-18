@@ -1,8 +1,7 @@
 #include "Vibrosonics.h"
 
-Vibrosonics::Vibrosonics() {
+Vibrosonics::Vibrosonics() {}
 
-}
 void Vibrosonics::init(void) {
   analogReadResolution(12);
 
@@ -31,3 +30,7 @@ void Vibrosonics::resume(void) {
   // reset AUD_IN_BUFFER_IDX to 0, so interrupt can continue to perform audio input and output
   RESET_AUD_IN_OUT_IDX();
 }
+
+// int& Vibrosonics::operator[](int index) {
+//   return array[index];
+// }

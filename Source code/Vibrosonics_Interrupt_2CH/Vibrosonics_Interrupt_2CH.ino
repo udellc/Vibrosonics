@@ -37,7 +37,7 @@ void setup() {
 
 void loop() {
   if (v.ready()) {
-    //loopt = micros();
+    // loopt = micros();
     v.pullSamples();
 
     v.resume();
@@ -46,18 +46,10 @@ void loop() {
 
     // fft, data processing and sine wave assignment
     v.processData();
-
-    v.resetSinWaves(0);
-    // for (int i = 0; i < 8; i++) {
-    //   v.addSinWave(i * 2 + 1, i * 5 + 1, i % 1, i * 5);
-    // }
-    v.addSinWave(10, 20, 0);
-
-    v.setPhase(50, 0, 0);
-
+   
     // generate audio for the next audio window
     v.generateAudioForWindow();
-    //Serial.println(micros() - loopt);
+    // Serial.println(micros() - loopt);
   }
 }
 

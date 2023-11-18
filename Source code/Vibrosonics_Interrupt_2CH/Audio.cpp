@@ -1,29 +1,83 @@
 #include "Vibrosonics.h"
 
-/*/
-########################################################
-  Functions related to generating values for the circular audio output buffer
-########################################################
-/*/
+int Vibrosonics::mapWave(int ch, int idx) {
+  int unmapped_idx = 0;
+  for (int i = 0; i < MAX_NUM_WAVES; i++) {
+    if (waves_map[i].valid == 0) {
+      unmapped_idx = i;
+      break;
+    }
+  }
+  waves_map[unmapped_idx].ch = ch;
+  waves_map[unmapped_idx].idx = idx;
+  waves_map[unmapped_idx].valid = 1;
+  return unmapped_idx;
+}
 
-bool Vibrosonics::addSinWave(int freq, int amp, int ch, int phase) {
-  if (freq < 0 || phase < 0) {
+void Vibrosonics::unmapWave(int id) {
+  waves_map[id].valid = 0;
+}
+
+void Vibrosonics::remapWave(int id, int ch, int idx) {
+  waves_map[id].ch = ch;
+  waves_map[id].idx = idx;
+}
+
+int Vibrosonics::getWaveId(int ch, int idx) {
+  for (int i = 0; i < MAX_NUM_WAVES; i++) {
+    if (waves_map[i].valid == 0) continue;
+    if (waves_map[i].ch != ch) continue;
+    if (waves_map[i].idx == idx) return i;
+  }
+  return -1;
+}
+
+int Vibrosonics::getWaveCh(int id) {
+  return waves_map[id].ch;
+}
+
+int Vibrosonics::getWaveIdx(int id) {
+  return waves_map[id].idx;
+}
+
+bool Vibrosonics::isValidId(int id) {
+  if (id >= 0 && id < MAX_NUM_WAVES) {
+    if (waves_map[id].valid) return 1;
+  }
+  #ifdef DEBUG
+  Serial.printf("WAVE ID %d INVALID! ", id);
+  #endif
+  return 0;
+}
+
+bool Vibrosonics::isValidChannel(int ch) {
+  if (ch < 0 || ch > NUM_OUT_CH - 1) {
     #ifdef DEBUG
-    Serial.println("CANNOT ADD WAVE, FREQ AND PHASE MUST BE POSTIVE!");
+    Serial.printf("CHANNEL %d IS INVALID! ", ch);
     #endif
     return 0;
-  } 
-  
+  }
+  return 1;
+}
+
+int Vibrosonics::addWave(int ch, int freq, int amp, int phase) {
   if (!isValidChannel(ch)) {
     #ifdef DEBUG
     Serial.println("CANNOT ADD WAVE");
     #endif
-    return 0;
+    return -1;
   }
+
+  if (freq < 0 || phase < 0) {
+    #ifdef DEBUG
+    Serial.println("CANNOT ADD WAVE, FREQ AND PHASE MUST BE POSTIVE!");
+    #endif
+    return -1;
+  } 
 
   // ensures that the sum of waves in the channels is no greater than MAX_NUM_WAVES
   int num_waves_count = 0;
-  for (int c = 0; c < AUD_OUT_CH; c++) {
+  for (int c = 0; c < NUM_OUT_CH; c++) {
     num_waves_count += num_waves[c];
   }
 
@@ -31,54 +85,62 @@ bool Vibrosonics::addSinWave(int freq, int amp, int ch, int phase) {
     #ifdef DEBUG
     Serial.println("CANNOT ADD WAVE, CHANGE MAX_NUM_WAVES!");
     #endif
-    return 0;
+    return -1;
   }
 
-  waves[ch][num_waves[ch]].amp = amp;
-  waves[ch][num_waves[ch]].freq = freq;
-  waves[ch][num_waves[ch]].phase = phase;
+  int idx = num_waves[ch];
+  waves[ch][idx].amp = amp;
+  waves[ch][idx].freq = freq;
+  waves[ch][idx].phase = phase;
   num_waves[ch] += 1;
-  return 1;
+  return mapWave(ch, idx);
 }
 
-bool Vibrosonics::removeSinWave(int idx, int ch) {
-  if (!isValidIndex(idx, ch)) {
+void Vibrosonics::removeWave(int id) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT REMOVE WAVE");
     #endif
-    return 0;
+    return;
   }
 
-  for (int i = idx; i < --num_waves[ch]; i++) {
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
+  unmapWave(id);
+  num_waves[ch] -= 1;
+  for (int i = idx; i < num_waves[ch]; i++) {
     waves[ch][i].amp = waves[ch][i + 1].amp;
     waves[ch][i].freq = waves[ch][i + 1].freq;
     waves[ch][i].phase = waves[ch][i + 1].phase;
+    remapWave(getWaveId(ch, i + 1), ch, i);
   }
-  return 1;
 }
 
-bool Vibrosonics::modifySinWave(int idx, int ch, int freq, int amp, int phase) {
-  if (!isValidIndex(idx, ch)) {
+void Vibrosonics::modifyWave(int id, int freq, int amp, int phase) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT MODIFY WAVE");
     #endif
-    return 0;
+    return;
   }
 
   if (freq < 0 || phase < 0) {
     #ifdef DEBUG
     Serial.println("CANNOT MODIFY WAVE, FREQ AND PHASE MUST BE POSTIVE!");
     #endif
-    return 0;
+    return;
   } 
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
 
   waves[ch][idx].amp = amp;
   waves[ch][idx].freq = freq;
   waves[ch][idx].phase = phase;
-  return 1;
 }
 
-void Vibrosonics::resetSinWaves(int ch) {
+void Vibrosonics::resetWaves(int ch) {
   if (!isValidChannel(ch)) {
     #ifdef DEBUG
     Serial.println("CANNOT RESET WAVES");
@@ -90,6 +152,8 @@ void Vibrosonics::resetSinWaves(int ch) {
     waves[ch][i].amp = 0;
     waves[ch][i].freq = 0;
     waves[ch][i].phase = 0;
+    int id = getWaveId(ch, i);
+    if (id != -1) unmapWave(id);
   }
   num_waves[ch] = 0;
 }
@@ -104,95 +168,98 @@ int Vibrosonics::getNumWaves(int ch) {
   return num_waves[ch];
 }
 
-int Vibrosonics::getFreq(int idx, int ch) {
-  if (!isValidIndex(idx, ch)) {
+int Vibrosonics::getFreq(int id) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT GET FREQUENCY");
     #endif
     return -1;
   }
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
   return waves[ch][idx].freq;
 }
 
-int Vibrosonics::getAmp(int idx, int ch) { 
-  if (!isValidIndex(idx, ch)) {
+int Vibrosonics::getAmp(int id) { 
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT GET AMPLITUDE");
     #endif
     return -1;
   }
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
   return waves[ch][idx].amp;
 }
 
-int Vibrosonics::getPhase(int idx, int ch) {
-  if (!isValidIndex(idx, ch)) {
+int Vibrosonics::getPhase(int id) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT GET PHASE");
     #endif
     return -1;
   }
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
   return waves[ch][idx].phase;
 }
 
-bool Vibrosonics::setFreq(int freq, int idx, int ch) {
-  if (!isValidIndex(idx, ch)) {
+bool Vibrosonics::setFreq(int id, int freq) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT SET FREQUENCY");
     #endif
     return 0;
   } 
-  waves[ch][idx].phase = freq;
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
+  waves[ch][idx].freq = freq;
   return 1;
 }
 
-bool Vibrosonics::setAmp(int amp, int idx, int ch) {
-  if (!isValidIndex(idx, ch)) {
+bool Vibrosonics::setAmp(int id, int amp) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT SET AMPLITUDE");
     #endif
     return 0;
   } 
-  waves[ch][idx].phase = amp;
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
+  waves[ch][idx].amp = amp;
   return 1;
 }
 
-bool Vibrosonics::setPhase(int phase, int idx, int ch) {
-  if (!isValidIndex(idx, ch)) {
+bool Vibrosonics::setPhase(int id, int phase) {
+  if (!isValidId(id)) {
     #ifdef DEBUG
     Serial.println("CANNOT SET PHASE");
     #endif
     return 0;
   } 
+
+  int ch = getWaveCh(id);
+  int idx = getWaveIdx(id);
+
   waves[ch][idx].phase = phase;
   return 1;
 }
 
-bool Vibrosonics::isValidChannel(int ch) {
-  if (ch < 0 || ch > AUD_OUT_CH - 1) {
-    #ifdef DEBUG
-    Serial.printf("CHANNEL %d IS INVALID! ", ch);
-    #endif
-    return 0;
-  }
-  return 1;
-}
-
-bool Vibrosonics::isValidIndex(int idx, int ch) {
-  if (!isValidChannel(ch)) return 0;
-  if (idx < 0 || idx >= num_waves[ch]) {
-    #ifdef DEBUG
-    Serial.printf("INDEX %d IS INVALID! ", ch);
-    #endif
-    return 0;
-  }
-  return 1;
-}
-
-void Vibrosonics::printSinWaves(void) {
-  for (int c = 0; c < AUD_OUT_CH; c++) {
+void Vibrosonics::printWaves(void) {
+  for (int c = 0; c < NUM_OUT_CH; c++) {
     Serial.printf("CH %d (F, A, P?): ", c);
     for (int i = 0; i < num_waves[c]; i++) {
-    Serial.printf("(%03d, %03d", waves[c][i].amp, waves[c][i].freq);
+    Serial.printf("(%03d, %03d", waves[c][i].freq, waves[c][i].amp);
     if (waves[c][i].phase > 0) {
       Serial.printf(", %04d", waves[c][i].phase);
     }
@@ -202,7 +269,37 @@ void Vibrosonics::printSinWaves(void) {
   }
 }
 
-float Vibrosonics::get_sin_wave_val(Wave w) {
+// maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather mapping is based on the MAX_AMP_SUM
+void Vibrosonics::mapAmplitudes(int minSum) {
+  // map amplitudes on both channels
+  for (int c = 0; c < NUM_OUT_CH; c++) {
+    int ampSum = 0;
+    for (int i = 0; i < num_waves[c]; i++) {
+      int amplitude = waves[c][i].amp;
+      if (amplitude == 0) continue;
+      ampSum += amplitude;
+    }
+    // since all amplitudes are 0, then there is no need to map between 0-127 range.
+    if (ampSum == 0) { 
+      resetWaves(c);
+      continue; 
+    }
+    // value to map amplitudes between 0.0 and 1.0 range, the MAX_AMP_SUM will be used to divide unless totalEnergy exceeds this value
+    float divideBy = 1.0 / float(ampSum > MAX_AMP_SUM ? ampSum : MAX_AMP_SUM);
+    ampSum = 0;
+    // map all amplitudes between 0 and 128
+    for (int i = 0; i < num_waves[c]; i++) {
+      int amplitude = waves[c][i].amp;
+      if (amplitude == 0) continue;
+      waves[c][i].amp = round(amplitude * divideBy * 127.0);
+      ampSum += amplitude;
+    }
+    // ensures that nothing gets synthesized for this channel
+    if (ampSum == 0) resetWaves(c);
+  }
+}
+
+float Vibrosonics::get_wave_val(wave w) {
   float sin_wave_freq_idx = (sin_wave_idx * w.freq + w.phase) * _SAMPLING_FREQ;
   int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
   return w.amp * sin_wave[sin_wave_position];
@@ -212,7 +309,7 @@ float Vibrosonics::get_sum_of_channel(int ch) {
   float sum = 0.0;
   for (int s = 0; s < num_waves[ch]; s++) {
     if (waves[ch][s].amp == 0 || (waves[ch][s].freq == 0 && waves[ch][s].phase == 0)) continue;
-    sum += get_sin_wave_val(waves[ch][s]);
+    sum += get_wave_val(waves[ch][s]);
   }
   return sum;
 }
@@ -240,7 +337,7 @@ void Vibrosonics::calculate_waves(void) {
 void Vibrosonics::generateAudioForWindow(void) {
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     // sum together the sine waves for left channel and right channel
-    for (int c = 0; c < AUD_OUT_CH; c++) {
+    for (int c = 0; c < NUM_OUT_CH; c++) {
       // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
       generateAudioBuffer[c][generateAudioIdx] += get_sum_of_channel(c) * cos_wave_w[i];
     }
@@ -248,7 +345,7 @@ void Vibrosonics::generateAudioForWindow(void) {
     // copy final, synthesized values to volatile audio output buffer
     if (i < AUD_IN_BUFFER_SIZE) {
     // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255 to ensure clipping won't occur
-      for (int c = 0; c < AUD_OUT_CH; c++) {
+      for (int c = 0; c < NUM_OUT_CH; c++) {
         AUD_OUT_BUFFER[c][generateAudioOutIdx] = max(0, min(255, int(round(generateAudioBuffer[c][generateAudioIdx] + 128.0))));
       }
       generateAudioOutIdx += 1;
@@ -266,7 +363,7 @@ void Vibrosonics::generateAudioForWindow(void) {
   // reset the next window to synthesize new signal
   int generateAudioIdxCpy = generateAudioIdx;
   for (int i = 0; i < AUD_IN_BUFFER_SIZE; i++) {
-    for (int c = 0; c < AUD_OUT_CH; c++) {
+    for (int c = 0; c < NUM_OUT_CH; c++) {
       generateAudioBuffer[c][generateAudioIdxCpy] = 0.0;
     }
     generateAudioIdxCpy += 1;
@@ -277,15 +374,9 @@ void Vibrosonics::generateAudioForWindow(void) {
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
 
   #ifdef DEBUG
-  printSinWaves();
+  printWaves();
   #endif
 }
-
-/*/
-########################################################
-Functions related to sampling and outputting audio by interrupt
-########################################################
-/*/
 
 void Vibrosonics::ON_SAMPLING_TIMER(void) {
   AUD_IN_OUT();
@@ -306,7 +397,7 @@ void Vibrosonics::AUD_IN_OUT(void) {
 
   int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
   dacWrite(AUD_OUT_PIN_L, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
-  #if AUD_OUT_CH == 2
+  #if NUM_OUT_CH == 2
   dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_IDX]);
   #endif
 
@@ -339,7 +430,7 @@ void Vibrosonics::initAudio(void) {
 
   // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots
   for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
-    for (int c = 0; c < AUD_OUT_CH; c++) {
+    for (int c = 0; c < NUM_OUT_CH; c++) {
     generateAudioBuffer[c][i] = 0.0;
       if (i < AUD_OUT_BUFFER_SIZE) {
         AUD_OUT_BUFFER[c][i] = 128;
@@ -348,7 +439,7 @@ void Vibrosonics::initAudio(void) {
   }
 
   // reset waves
-  for (int i = 0; i < AUD_OUT_CH; i++) {
-    resetSinWaves(i);
+  for (int i = 0; i < NUM_OUT_CH; i++) {
+    resetWaves(i);
   }
 }

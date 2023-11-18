@@ -12,9 +12,10 @@ void Vibrosonics::processData(void) {
   findMajorPeaks(freqs);
 
   // assign sine waves based on data found by major peaks
-  resetSinWaves(0);
-  // resetSinWaves(1);
-  assignSinWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
+  resetWaves(0);
+  resetWaves(1);
+  
+  assignWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
   mapAmplitudes();
 }
 
@@ -100,7 +101,7 @@ Functions relating to assigning sine waves and mapping their frequencies and amp
 /*/
 
 // assigns the frequencies and amplitudes found by majorPeaks to sine waves
-void Vibrosonics::assignSinWaves(int* freqData, float* ampData, int size) {  
+void Vibrosonics::assignWaves(int* freqData, float* ampData, int size) {  
   // assign sin_waves and freq/amps that are above 0, otherwise skip
   for (int i = 0; i < size; i++) {
     // skip storing if ampData is 0, or freqData is 0
@@ -113,44 +114,14 @@ void Vibrosonics::assignSinWaves(int* freqData, float* ampData, int size) {
         // assign frequency based on whichever side is greater
         freq = freqs[freqData[i] - 1] > freqs[freqData[i] + 1] ? (freqData[i] - 0.5) : (freqData[i] + 0.5);
       }
-      addSinWave(freq * freqRes, ampData[i], 0, 0);
+      int id = addWave(freq * freqRes, ampData[i], 0, 0);
     } else {
       int interpFreq = interpolateAroundPeak(freqs, freqData[i]);
-      #if AUD_OUT_CH == 2
-      addSinWave(interpFreq, ampData[i], 1, 0);
+      #if NUM_OUT_CH == 2
+      int id = addWave(interpFreq, ampData[i], 1, 0);
       #else
-      addSinWave(interpFreq, ampData[i], 0, 0);
+      int id = addWave(interpFreq, ampData[i], 0, 0);
       #endif
     }
-  }
-}
-
-// maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather mapping is based on the MAX_AMP_SUM
-void Vibrosonics::mapAmplitudes(void) {
-  // map amplitudes on both channels
-  for (int c = 0; c < AUD_OUT_CH; c++) {
-    int ampSum = 0;
-    for (int i = 0; i < num_waves[c]; i++) {
-      int amplitude = waves[c][i].amp;
-      if (amplitude == 0) continue;
-      ampSum += amplitude;
-    }
-    // since all amplitudes are 0, then there is no need to map between 0-127 range.
-    if (ampSum == 0) { 
-    num_waves[c] = 0;
-    continue; 
-    }
-    // value to map amplitudes between 0.0 and 1.0 range, the MAX_AMP_SUM will be used to divide unless totalEnergy exceeds this value
-    float divideBy = 1.0 / float(ampSum > MAX_AMP_SUM ? ampSum : MAX_AMP_SUM);
-    ampSum = 0;
-    // map all amplitudes between 0 and 128
-    for (int i = 0; i < num_waves[c]; i++) {
-      int amplitude = waves[c][i].amp;
-      if (amplitude == 0) continue;
-      waves[c][i].amp = round(amplitude * divideBy * 127.0);
-      ampSum += amplitude;
-    }
-    // ensures that nothing gets synthesized for this channel
-    if (ampSum == 0) num_waves[c] = 0;
   }
 }
