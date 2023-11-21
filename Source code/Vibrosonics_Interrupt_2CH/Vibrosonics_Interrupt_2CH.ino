@@ -26,7 +26,7 @@ void setup() {
 
   v.init();
 
-  delay(1000);
+  delay(4000);
 }
 
 /*/
@@ -42,12 +42,26 @@ void loop() {
 
     v.resume();
 
-    v.performFFT();
+    //v.performFFT();
 
-    v.processData();
-   
+    // v.processData();
+
+    v.resetAllWaves();
+
+    int a = v.addWave(0, 50, 50);
+    int d = v.addWave(1, 50, 20);
+    int b = v.addWave(0, 10, 20);
+    int c = v.addWave(0, 70, 30);
+
+    //Serial.printf("%d, %d, %d, %d\n", a, b, c, d);
+
+    v.removeWave(b);
+    v.removeWave(a);
+    //v.removeWave(6);
+    
+    //v.printWaves();
+
     v.generateAudioForWindow();
     // Serial.println(micros() - loopt);
   }
 }
-

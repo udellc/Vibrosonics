@@ -105,7 +105,7 @@ void Vibrosonics::generateAudioForWindow(void) {
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
 }
 
-void Vibrosonics::ON_SAMPLING_TIMER(void) {
+void IRAM_ATTR Vibrosonics::ON_SAMPLING_TIMER(void) {
   AUD_IN_OUT();
 }
 
@@ -128,9 +128,9 @@ void Vibrosonics::AUD_IN_OUT(void) {
   dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_IDX]);
   #endif
 
-  #ifdef USE_FFT
+  //#ifdef USE_FFT
   AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
-  #endif
+  //#endif
   AUD_IN_BUFFER_IDX += 1;
 }
 
@@ -161,12 +161,13 @@ void Vibrosonics::initAudio(void) {
     generateAudioBuffer[c][i] = 0.0;
       if (i < AUD_OUT_BUFFER_SIZE) {
         AUD_OUT_BUFFER[c][i] = 128;
+        if (i < AUD_IN_BUFFER_SIZE) {
+          AUD_IN_BUFFER[i] = 2048;
+        }
       }
     }
   }
 
   // reset waves
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    resetWaves(i);
-  }
+  resetAllWaves();
 }

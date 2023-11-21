@@ -29,6 +29,7 @@
 
 // audio sampling stuff
 #define AUD_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
+// #define AUD_IN_PINA A2
 #define AUD_OUT_PIN_L A0
 #define AUD_OUT_PIN_R A1
 
@@ -38,12 +39,20 @@
 
 #define FFT_MAX_AMP 300   // the maximum frequency magnitude of an FFT bin, this is multiplied by the total number of waves being synthesized for volume representation
 
-#define MAX_NUM_PEAKS 8  // the maximum number of peaks to look for with the findMajorPeaks() function, also corresponds to how many sine waves are being synthesized
+#define NUM_FREQ_WINDOWS 8  // the number of frequency windows to store in circular buffer freqs
+
+#define FREQ_MAX_AMP_DELTA_MIN 50     // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
+#define FREQ_MAX_AMP_DELTA_MAX 500    // the max threshold of change in amplitude
+#define FREQ_MAX_AMP_DELTA_K 16.0      // weight for amplitude of most change
+
+#define MAX_NUM_PEAKS 7  // the maximum number of peaks to look for with the findMajorPeaks() function
 
 #define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
-#define NUM_OUT_CH 1  // number of audio channels to synthesize
+#define NUM_OUT_CH 2  // number of audio channels to synthesize
 
-// #define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
+#define MIRROR_MODE
+
+#define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
 /*/
 ########################################################
@@ -114,12 +123,17 @@ class Vibrosonics
 
     static const constexpr float freqWidth = 1.0 / freqRes; // the width of an FFT bin
 
-    float freqs[FFT_WINDOW_SIZE_BY2];   // stores the data from the current fft window
+    float freqs[NUM_FREQ_WINDOWS][FFT_WINDOW_SIZE_BY2];   // stores frequency magnitudes computed by FFT over NUM_FREQ_WINDOWS
+    int freqsWindow = 0;                                  // time position of freqs buffer
+    int freqsWindowPrev = 0;
+
+    float* freqsCurrent = NULL;
+    float* freqsPrevious = NULL;
 
     int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1]; // stores the peaks computed by FFT
     float FFTPeaksAmp[FFT_WINDOW_SIZE_BY2 >> 1];
   
-    static const int bassIdx = 200 * freqWidth; // FFT bin index of frequency ~200Hz
+    static const int bassIdx = 120 * freqWidth; // FFT bin index of frequency ~200Hz
 
     static const int MAX_AMP_SUM = MAX_NUM_WAVES * FFT_MAX_AMP;
     #endif
@@ -184,11 +198,17 @@ class Vibrosonics
     /*/
 
     #ifdef USE_FFT
-    // store the current window into freqs
+    // store the current window into freqs array with freqsWindow acting as time
     void storeFreqs();
 
     // noise flooring based on a set threshold
     void noiseFloor(float *data, float threshold);
+
+    // returns mean of data
+    float getMean(float *data, int size);
+
+    // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
+    int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude);
 
     // finds all the peaks in the fft data* and removes the minimum peaks to contain output to @MAX_NUM_PEAKS
     void findMajorPeaks(float* data);
@@ -196,7 +216,14 @@ class Vibrosonics
     // interpolation based on the weight of amplitudes around a peak
     int interpolateAroundPeak(float *data, int indexOfPeak);
 
+    // returns the sum around an index in data, helps better represent the energy of a peak
+    int sumOfPeak(float *data, int indexOfPeak);
+
+    // assigns passed freq and amp data to waves
     void assignWaves(int* freqData, float* ampData, int size);
+
+    // weights frequencies above 120Hz to between 0 and 120Hz
+    int freqWeighting(int freq);
     #endif
 
     /*/
@@ -211,6 +238,8 @@ class Vibrosonics
     void unmapWave(int id);
     // remaps wave to id
     void remapWave(int id, int ch, int idx);
+    // resets a wave at ch and idx
+    void resetWave(int ch, int idx);
     // returns id of wave
     int getWaveId(int ch, int idx);
     // returns channel of wave
@@ -257,6 +286,7 @@ class Vibrosonics
 
     // restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
     void RESET_AUD_IN_OUT_IDX();
+
     // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
     static void AUD_IN_OUT();
 
@@ -302,6 +332,8 @@ class Vibrosonics
     void modifyWave(int id, int freq, int amp, int phase = 0);
     // sets all sine waves and frequencies to 0 on specified channel
     void resetWaves(int ch);
+    // resets waves on all channels
+    void resetAllWaves();
 
     // returns total number of waves on a ch, returns -1 if passed channel is invalid
     int getNumWaves(int ch);

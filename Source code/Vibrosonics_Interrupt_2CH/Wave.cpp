@@ -93,7 +93,8 @@ int Vibrosonics::addWave(int ch, int freq, int amp, int phase) {
   waves[ch][idx].freq = freq;
   waves[ch][idx].phase = phase;
   num_waves[ch] += 1;
-  return mapWave(ch, idx);
+  int id = mapWave(ch, idx);
+  return id;
 }
 
 void Vibrosonics::removeWave(int id) {
@@ -109,12 +110,24 @@ void Vibrosonics::removeWave(int id) {
 
   unmapWave(id);
   num_waves[ch] -= 1;
-  for (int i = idx; i < num_waves[ch]; i++) {
-    waves[ch][i].amp = waves[ch][i + 1].amp;
-    waves[ch][i].freq = waves[ch][i + 1].freq;
-    waves[ch][i].phase = waves[ch][i + 1].phase;
-    remapWave(getWaveId(ch, i + 1), ch, i);
+
+  for (int i = 0; i < MAX_NUM_WAVES; i++) {
+    if (i < num_waves[ch]) {
+      waves[ch][i].amp = waves[ch][i + 1].amp;
+      waves[ch][i].freq = waves[ch][i + 1].freq;
+      waves[ch][i].phase = waves[ch][i + 1].phase;
+      remapWave(getWaveId(ch, i + 1), ch, i);
+    }
+    else {
+      resetWave(ch, i);
+    }
   }
+  // for (int i = idx; i < num_waves[ch]; i++) {
+  //   waves[ch][i].amp = waves[ch][i + 1].amp;
+  //   waves[ch][i].freq = waves[ch][i + 1].freq;
+  //   waves[ch][i].phase = waves[ch][i + 1].phase;
+  //   remapWave(getWaveId(ch, i + 1), ch, i);
+  // }
 }
 
 void Vibrosonics::modifyWave(int id, int freq, int amp, int phase) {
@@ -140,6 +153,12 @@ void Vibrosonics::modifyWave(int id, int freq, int amp, int phase) {
   waves[ch][idx].phase = phase;
 }
 
+void Vibrosonics::resetWave(int ch, int idx) {
+  waves[ch][idx].amp = 0;
+  waves[ch][idx].freq = 0;
+  waves[ch][idx].phase = 0;
+}
+
 void Vibrosonics::resetWaves(int ch) {
   if (!isValidChannel(ch)) {
     #ifdef DEBUG
@@ -147,15 +166,22 @@ void Vibrosonics::resetWaves(int ch) {
     #endif
     return;
   }
+
   // restore amplitudes and frequencies on ch
   for (int i = 0; i < MAX_NUM_WAVES; i++) {
-    waves[ch][i].amp = 0;
-    waves[ch][i].freq = 0;
-    waves[ch][i].phase = 0;
-    int id = getWaveId(ch, i);
-    if (id != -1) unmapWave(id);
+    resetWave(ch, i);
+    if (waves_map[i].valid == 0) continue;
+    if (getWaveCh(i) == ch) {
+      unmapWave(i);
+    }
   }
   num_waves[ch] = 0;
+}
+
+void Vibrosonics::resetAllWaves(void) {
+  for (int ch = 0; ch < NUM_OUT_CH; ch++) {
+    resetWaves(ch);
+  }
 }
 
 int Vibrosonics::getNumWaves(int ch) { 
