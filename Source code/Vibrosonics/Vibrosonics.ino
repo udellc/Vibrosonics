@@ -73,8 +73,19 @@ volatile int AUD_OUT_BUFFER_IDX = 0;
 
 hw_timer_t *SAMPLING_TIMER = NULL;
 
-void IRAM_ATTR ON_SAMPLING_TIMER() {
-  AUD_IN_OUT();
+void IRAM_ATTR AUD_IN_OUT(void) {
+  if (AUD_IN_BUFFER_FULL()) return;
+
+  int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
+  dacWrite(AUD_OUT_PIN_L, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
+  #if NUM_OUT_CH == 2
+  dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_IDX]);
+  #endif
+
+  #ifdef USE_FFT
+  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
+  #endif
+  AUD_IN_BUFFER_IDX += 1;
 }
 
 /*/
@@ -192,7 +203,6 @@ void setup() {
   delay(4000);
 
   init();
-  delay(1000);
 }
 
 /*/
@@ -246,8 +256,7 @@ void init(void) {
 }
 
 bool ready(void) {
-  if (AUD_IN_BUFFER_FULL()) return 1;
-  return 0;
+  return AUD_IN_BUFFER_FULL();
 }
 
 void resume(void) {
@@ -281,11 +290,9 @@ void processData(void) {
   storeFreqs();
 
   // noise flooring based on a threshold
-  // if (getMean(freqsCurrent, FFT_WINDOW_SIZE_BY2) < 1.0) {
-  //   return;
-  // }
+  if (getMean(freqsCurrent, FFT_WINDOW_SIZE_BY2) < 30.0) return;
 
-  noiseFloor(freqsCurrent, 20.0);
+  // noiseFloor(freqsCurrent, 20.0);
   
   // find frequency of most change and its magnitude between the current and previous window
   #ifndef MIRROR_MODE
@@ -322,7 +329,6 @@ void storeFreqs(void) {
   freqsCurrent = freqs[freqsWindow];
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
     freqsCurrent[i] = vReal[i] * freqWidth;
-    // Serial.println(vReal[i]);
   }
 }
 
@@ -339,7 +345,7 @@ float getMean(float *data, int size) {
   for (int i = 0; i < size; i++) {
     sum += data[i];
   }
-  return sum > 0.0 ? sum / size : 0.0;
+  return sum != 0.0 ? sum / size : 0.0;
 }
 
 void findMajorPeaks(float* data) {
@@ -852,21 +858,6 @@ void RESET_AUD_IN_OUT_IDX(void) {
   AUD_IN_BUFFER_IDX = 0;
 }
 
-void AUD_IN_OUT(void) {
-  if (AUD_IN_BUFFER_FULL()) return;
-
-  int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
-  dacWrite(AUD_OUT_PIN_L, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
-  #if NUM_OUT_CH == 2
-  dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_IDX]);
-  #endif
-
-  #ifdef USE_FFT
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
-  #endif
-  AUD_IN_BUFFER_IDX += 1;
-}
-
 void enableAudio(void) {
   timerAlarmEnable(SAMPLING_TIMER);   // enable interrupt
 }
@@ -878,7 +869,7 @@ void disableAudio(void) {
 void setupISR(void) {
   // setup timer interrupt for audio sampling
   SAMPLING_TIMER = timerBegin(0, 80, true);             // setting clock prescaler 1MHz (80MHz / 80)
-  timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
+  timerAttachInterrupt(SAMPLING_TIMER, &AUD_IN_OUT, true); // attach interrupt function
   timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);     // trigger interrupt every @sampleDelayTime microseconds
   timerAlarmEnable(SAMPLING_TIMER);                 // enabled interrupt
 }
