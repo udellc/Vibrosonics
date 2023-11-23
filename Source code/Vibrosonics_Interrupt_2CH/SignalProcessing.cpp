@@ -38,7 +38,6 @@ void Vibrosonics::processData(void) {
   // assign sine waves based on data found by major peaks
   assignWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
   mapAmplitudes();
-  addWave(0, 50, 127);
 }
 
 
@@ -171,7 +170,6 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int size) {
   for (int i = 0; i < size; i++) {
     // skip storing if ampData is 0, or freqData is 0
     if (ampData[i] == 0.0 || freqData[i] == 0) continue;
-    Serial.println(freqData[i]);
     // assign frequencies below bass to left channel, otherwise to right channel
     if (freqData[i] <= bassIdx) {
       int freq = freqData[i];
@@ -180,10 +178,9 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int size) {
         // assign frequency based on whichever side is greater
         freq = freqsCurrent[freqData[i] - 1] > freqsCurrent[freqData[i] + 1] ? (freqData[i] - 0.5) : (freqData[i] + 0.5);
       }
-      addWave(freq * freqRes, ampData[i], 0, 0);
+      addWave(0, freq * freqRes, ampData[i]);
     } else {
       int interpFreq = interpolateAroundPeak(freqsCurrent, freqData[i]);
-      Serial.println(interpFreq);
 
       #ifndef MIRROR_MODE
       interpFreq = freqWeighting(interpFreq);

@@ -1,4 +1,6 @@
 #include "Vibrosonics.h"
+#include <soc/sens_reg.h>
+#include <soc/sens_struct.h>
 
 // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather mapping is based on the MAX_AMP_SUM
 void Vibrosonics::mapAmplitudes(int minSum) {
@@ -66,6 +68,20 @@ void Vibrosonics::calculate_waves(void) {
 }
 
 void Vibrosonics::generateAudioForWindow(void) {
+  // setup waves array
+  for (int c = 0; c < NUM_OUT_CH; c++) {
+    num_waves[c] = 0;
+  }
+  for (int i = 0; i < MAX_NUM_WAVES; i++) {
+    for (int c = 0; c < NUM_OUT_CH; c++) {
+      waves[c][i] = wave();
+    }
+    if (waves_map[i].valid == 0) continue;
+    int ch = waves_map[i].ch;
+    waves[ch][num_waves[ch]++] = waves_map[i].w;
+  }
+
+  // calculate values for waves
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     // sum together the sine waves for left channel and right channel
     for (int c = 0; c < NUM_OUT_CH; c++) {
@@ -105,7 +121,7 @@ void Vibrosonics::generateAudioForWindow(void) {
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
 }
 
-void IRAM_ATTR Vibrosonics::ON_SAMPLING_TIMER(void) {
+void Vibrosonics::ON_SAMPLING_TIMER(void) {
   AUD_IN_OUT();
 }
 
@@ -128,9 +144,12 @@ void Vibrosonics::AUD_IN_OUT(void) {
   dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_IDX]);
   #endif
 
-  //#ifdef USE_FFT
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
-  //#endif
+  #ifdef USE_FFT
+  //adc1_get_raw(AUD_IN_PIN);
+  //analogRead(A2);
+  //AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = 2048;
+  //AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
+  #endif
   AUD_IN_BUFFER_IDX += 1;
 }
 
@@ -171,3 +190,14 @@ void Vibrosonics::initAudio(void) {
   // reset waves
   resetAllWaves();
 }
+
+// int Vibrosonics::local_adc1_read(adc1_channel_t channel) {
+//   u_int16_t adc_value;
+//   SENS.sar_meas_start1.sar1_en_pad = (1 << channel);
+//   while (SENS.sar_slave_addr1.meas_status != 0);
+//   SENS.sar_meas_start1.meas1_start_sar = 0;
+//   SENS.sar_meas_start1.meas1_start_sar = 1;
+//   while(SENS.sar_meas_start1.meas1_done_sar == 0);
+//   adc_value =  SENS.sar_meas_start1.meas1_data_sar;
+//   return adc_value;
+// }

@@ -13,12 +13,13 @@ void Vibrosonics::init(void) {
 
   delay(1000);
 
-  adc1_config_width(ADC_WIDTH_BIT_12);
-  adc1_config_channel_atten(AUD_IN_PIN, ADC_ATTEN_DB_0);
+  //adc1_config_width(ADC_WIDTH_BIT_12);
+  //adc1_config_channel_atten(AUD_IN_PIN, ADC_ATTEN_DB_0);
 
   delay(1000);
 
   Serial.println(adc1_get_raw(AUD_IN_PIN));
+  // Serial.println(local_adc1_read(AUD_IN_PIN));
   Serial.println(analogRead(A2));
 
   // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots

@@ -161,16 +161,21 @@ class Vibrosonics
     // structure for wave
     typedef struct wave 
     {
-      int amp;
+      wave(int amp, int freq, int phase): freq(freq), amp(amp), phase(phase) {}
+      wave(): amp(0), freq(0), phase(0) {}
       int freq;
+      int amp;
       int phase;
     };
 
     typedef struct wave_map
     {
+      wave_map(int ch, int amp, int freq, int phase): ch(ch), valid(1), w(wave(freq, amp, phase)) {}
+      wave_map(): ch(0), valid(0), w(wave(0, 0, 0)) {}
       int ch = 0;
       int idx = 0;
       bool valid = 0;
+      wave w;
     }; 
 
     wave_map waves_map[MAX_NUM_WAVES];
@@ -232,23 +237,8 @@ class Vibrosonics
     ########################################################
     /*/
 
-    // maps wave to id
-    int mapWave(int ch, int idx);
-    // removes map of wave to id
-    void unmapWave(int id);
-    // remaps wave to id
-    void remapWave(int id, int ch, int idx);
-    // resets a wave at ch and idx
-    void resetWave(int ch, int idx);
-    // returns id of wave
-    int getWaveId(int ch, int idx);
-    // returns channel of wave
-    int getWaveCh(int id);
-    // returns index of wave
-    int getWaveIdx(int id);
     // returns true if id is valid
     bool isValidId(int id);
-
     // returns true if channel exists
     bool isValidChannel(int ch);
 
@@ -282,16 +272,18 @@ class Vibrosonics
     void initAudio();
 
     // returns true if audio input buffer is full
-    static bool AUD_IN_BUFFER_FULL();
+    static bool IRAM_ATTR AUD_IN_BUFFER_FULL();
 
     // restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
     void RESET_AUD_IN_OUT_IDX();
 
     // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
-    static void AUD_IN_OUT();
+    static void IRAM_ATTR AUD_IN_OUT();
 
     // the function that is called when timer interrupt is triggered
     static void IRAM_ATTR ON_SAMPLING_TIMER();
+
+    // static int IRAM_ATTR local_adc1_read(adc1_channel_t channel);
     
   public:
     // class init
@@ -329,7 +321,7 @@ class Vibrosonics
     // removes a wave given id
     void removeWave(int id);
     // modify wave given id
-    void modifyWave(int id, int freq, int amp, int phase = 0);
+    void modifyWave(int id, int freq, int amp, int phase = 0, int ch = 0);
     // sets all sine waves and frequencies to 0 on specified channel
     void resetWaves(int ch);
     // resets waves on all channels
@@ -343,6 +335,8 @@ class Vibrosonics
     int getAmp(int id);
     // returns phase of wave id, returns -1 if id is invalid
     int getPhase(int id);
+    // returns channel of wave id
+    int getChannel(int id);
 
     // change frequency of wave with given id, returns true if frequency was set
     bool setFreq(int id, int freq);
@@ -350,12 +344,17 @@ class Vibrosonics
     bool setAmp(int id, int amp);
     // change phase of wave with given id, returns true if phase was set
     bool setPhase(int id, int phase);
+    // set channel of wave with given id, returns true if channel was set
+    bool setChannel(int id, int ch);
 
     // generates values for one window of audio output buffer
     void generateAudioForWindow(); 
 
     // prints assigned sine waves
     void printWaves();
+
+    // prints assigned sine waves
+    void printWavesB();
 
     // enable interrupt timer
     void enableAudio();
