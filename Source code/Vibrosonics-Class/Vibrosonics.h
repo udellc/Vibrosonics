@@ -86,7 +86,7 @@ volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 volatile static int AUD_IN_BUFFER_IDX = 0;
 volatile static int AUD_OUT_BUFFER_IDX = 0;
 
-static hw_timer_t *SAMPLING_TIMER = NULL;
+// static hw_timer_t *SAMPLING_TIMER = NULL;
 
 // class declaration
 
@@ -267,8 +267,6 @@ class Vibrosonics
     ########################################################
     /*/
 
-    void setupISR();
-
     void initAudio();
 
     // returns true if audio input buffer is full
@@ -280,14 +278,12 @@ class Vibrosonics
     // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
     static void IRAM_ATTR AUD_IN_OUT();
 
-    // the function that is called when timer interrupt is triggered
-    static void IRAM_ATTR ON_SAMPLING_TIMER();
-
-    // static int IRAM_ATTR local_adc1_read(adc1_channel_t channel);
-    
+    void(*ISRStop)();
+    void(*ISRStart)(const unsigned long interval_us, void(*fnPtr)());
+   
   public:
     // class init
-    Vibrosonics();
+    Vibrosonics(void(*audStart)(const unsigned long interval_us, void(*fnPtr)()), void(*audStop)());
 
     // initialize pins and setup interrupt timer
     void init();
@@ -312,7 +308,7 @@ class Vibrosonics
 
     /*/
     ########################################################
-      Wave assignment and modifcation
+      Wave assignment and modification
     ########################################################
     /*/
 
@@ -353,21 +349,11 @@ class Vibrosonics
     // prints assigned sine waves
     void printWaves();
 
-    // prints assigned sine waves
-    void printWavesB();
-
     // enable interrupt timer
     void enableAudio();
     // disable interrupt timer
     void disableAudio();
   
-};
-
-class GenerateAudio
-{
-  private:
-
-  public:
 };
 
 #endif

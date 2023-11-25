@@ -1,6 +1,6 @@
 #include "Vibrosonics.h"
-#include <soc/sens_reg.h>
-#include <soc/sens_struct.h>
+// #include <soc/sens_reg.h>
+// #include <soc/sens_struct.h>
 
 // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather mapping is based on the MAX_AMP_SUM
 void Vibrosonics::mapAmplitudes(int minSum) {
@@ -121,10 +121,6 @@ void Vibrosonics::generateAudioForWindow(void) {
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
 }
 
-void Vibrosonics::ON_SAMPLING_TIMER(void) {
-  AUD_IN_OUT();
-}
-
 bool Vibrosonics::AUD_IN_BUFFER_FULL(void) {
   return !(AUD_IN_BUFFER_IDX < AUD_IN_BUFFER_SIZE);
 }
@@ -145,29 +141,26 @@ void Vibrosonics::AUD_IN_OUT(void) {
   #endif
 
   #ifdef USE_FFT
-  //adc1_get_raw(AUD_IN_PIN);
-  //analogRead(A2);
-  //AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = 2048;
-  //AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
+  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
   #endif
   AUD_IN_BUFFER_IDX += 1;
 }
 
-void Vibrosonics::enableAudio(void) {
-  timerAlarmEnable(SAMPLING_TIMER);   // enable interrupt
-}
+// void Vibrosonics::enableAudio(void) {
+//   timerAlarmEnable(SAMPLING_TIMER);   // enable interrupt
+// }
 
-void Vibrosonics::disableAudio(void) {
-  timerAlarmDisable(SAMPLING_TIMER);  // disable interrupt
-}
+// void Vibrosonics::disableAudio(void) {
+//   timerAlarmDisable(SAMPLING_TIMER);  // disable interrupt
+// }
 
-void Vibrosonics::setupISR(void) {
-  // setup timer interrupt for audio sampling
-  SAMPLING_TIMER = timerBegin(0, 80, true);             // setting clock prescaler 1MHz (80MHz / 80)
-  timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
-  timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);     // trigger interrupt every @sampleDelayTime microseconds
-  timerAlarmEnable(SAMPLING_TIMER);                 // enabled interrupt
-}
+// void Vibrosonics::setupISR(void) {
+//   // setup timer interrupt for audio sampling
+//   SAMPLING_TIMER = timerBegin(0, 80, true);             // setting clock prescaler 1MHz (80MHz / 80)
+//   timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
+//   timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);     // trigger interrupt every @sampleDelayTime microseconds
+//   timerAlarmEnable(SAMPLING_TIMER);                 // enabled interrupt
+// }
 
 void Vibrosonics::initAudio(void) {
   // calculate values of cosine and sine wave at certain sampling frequency
@@ -190,14 +183,3 @@ void Vibrosonics::initAudio(void) {
   // reset waves
   resetAllWaves();
 }
-
-// int Vibrosonics::local_adc1_read(adc1_channel_t channel) {
-//   u_int16_t adc_value;
-//   SENS.sar_meas_start1.sar1_en_pad = (1 << channel);
-//   while (SENS.sar_slave_addr1.meas_status != 0);
-//   SENS.sar_meas_start1.meas1_start_sar = 0;
-//   SENS.sar_meas_start1.meas1_start_sar = 1;
-//   while(SENS.sar_meas_start1.meas1_done_sar == 0);
-//   adc_value =  SENS.sar_meas_start1.meas1_data_sar;
-//   return adc_value;
-// }

@@ -10,11 +10,10 @@
 ########################################################
 /*/
 
-#define USE_FFT  // comment to disable FFT
+#define USE_FFT  // comment to disable FFT / audio input
 
 // audio sampling stuff
 #define AUD_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
-// #define AUD_IN_PINA A2
 #define AUD_OUT_PIN_L A0
 #define AUD_OUT_PIN_R A1
 
@@ -35,7 +34,7 @@
 #define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
 #define NUM_OUT_CH 2  // number of audio channels to synthesize
 
-#define MIRROR_MODE
+#define MIRROR_MODE // comment to disable mirror mode
 
 #define DEBUG   // uncomment for debug mode, the time taken in loop is printed (in microseconds), along with the assigned sine wave frequencies and amplitudes
 
@@ -227,6 +226,15 @@ void loop() {
   }
 }
 
+
+
+/*/
+########################################################
+  General functions that are used in setup and loop
+########################################################
+/*/
+
+// initialization of input and output pins, ISR and buffers
 void init(void) {
   analogReadResolution(12);
 
@@ -234,12 +242,11 @@ void init(void) {
   //pinMode(AUD_IN_PINA, INPUT);
   pinMode(AUD_OUT_PIN_L, OUTPUT);
   pinMode(AUD_OUT_PIN_R, OUTPUT);
-  pinMode(A2, INPUT);
 
   delay(1000);
 
-  //adc1_config_width(ADC_WIDTH_BIT_12);
-  //adc1_config_channel_atten(AUD_IN_PIN, ADC_ATTEN_DB_0);
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(AUD_IN_PIN, ADC_ATTEN_DB_0);
 
   delay(1000);
 
@@ -252,17 +259,26 @@ void init(void) {
   Serial.println("Vibrosonics setup complete");
   Serial.printf("SAMPLE RATE: %d Hz\tWINDOW SIZE: %d\tSPEED AND RESOLUTION: %.1f Hz\tTIME PER WINDOW: %.1f ms\tAUD IN OUT DELAY: %.1f ms", SAMPLING_FREQ, FFT_WINDOW_SIZE, freqRes, sampleDelayTime * FFT_WINDOW_SIZE * 0.001, 2 * sampleDelayTime * FFT_WINDOW_SIZE * 0.001);
   Serial.println();
+  delay(1000);
   enableAudio();
 }
 
+// returns true when the audio input buffer fills. If not using FFT then returns true when modifications to waves can be made
 bool ready(void) {
   return AUD_IN_BUFFER_FULL();
 }
 
+// call resume to continue audio input and/or output
 void resume(void) {
   // reset AUD_IN_BUFFER_IDX to 0, so interrupt can continue to perform audio input and output
   RESET_AUD_IN_OUT_IDX();
 }
+
+/*/
+########################################################
+  Functions related to FFT analysis
+########################################################
+/*/
 
 void pullSamples() {
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
@@ -391,6 +407,7 @@ void findMajorPeaks(float* data) {
   }
 }
 
+// finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
 int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude) {
   // calculate indexes in FFT bins correspoding to minFreq and maxFreq
   int minIdx = round(minFreq * freqWidth);
@@ -439,7 +456,7 @@ int sumOfPeak(float *data, int indexOfPeak) {
 
 /*/
 ########################################################
-Functions relating to assigning sine waves and mapping their frequencies and amplitudes
+  Functions relating to assigning sine waves and mapping their frequencies and amplitudes
 ########################################################
 /*/
 
@@ -482,6 +499,12 @@ int freqWeighting(int freq) {
   // multiply by maximum desired value
   freq = round(freq_n * 120);
 }
+
+/*/
+########################################################
+  Wave assignment and modification
+########################################################
+/*/
 
 bool isValidId(int id) {
   if (id >= 0 && id < MAX_NUM_WAVES) {
@@ -759,6 +782,12 @@ void mapAmplitudes(int minSum) {
   }
 }
 
+/*/
+########################################################
+  Generating values for audio output
+########################################################
+/*/
+
 float get_wave_val(struct wave w) {
   float sin_wave_freq_idx = (sin_wave_idx * w.freq + w.phase) * _SAMPLING_FREQ;
   int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLING_FREQ;
@@ -847,6 +876,12 @@ void generateAudioForWindow(void) {
   generateAudioIdx = int(generateAudioIdx - FFT_WINDOW_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
 }
+
+/*/
+########################################################
+  Timer interrupt and initialization
+########################################################
+/*/
 
 bool AUD_IN_BUFFER_FULL(void) {
   return !(AUD_IN_BUFFER_IDX < AUD_IN_BUFFER_SIZE);

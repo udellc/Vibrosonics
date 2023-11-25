@@ -1,6 +1,17 @@
 #include "Vibrosonics.h"
 
-Vibrosonics::Vibrosonics() {}
+Vibrosonics::Vibrosonics(void(*audStart)(const unsigned long interval_us, void(*fnPtr)()), void(*audStop)()) {
+  ISRStart = audStart;
+  ISRStop = audStop;
+}
+
+void Vibrosonics::enableAudio(void) {
+  (*ISRStart)(sampleDelayTime, AUD_IN_OUT);
+}
+
+void Vibrosonics::disableAudio(void) {
+  (*ISRStop)();
+}
 
 void Vibrosonics::init(void) {
   analogReadResolution(12);
@@ -18,25 +29,21 @@ void Vibrosonics::init(void) {
 
   delay(1000);
 
-  Serial.println(adc1_get_raw(AUD_IN_PIN));
-  // Serial.println(local_adc1_read(AUD_IN_PIN));
-  Serial.println(analogRead(A2));
-
   // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots
   initAudio();
   // attach timer interrupt
-  setupISR();
+  enableAudio();
 
   disableAudio();
   Serial.println("Vibrosonics setup complete");
   Serial.printf("SAMPLE RATE: %d Hz\tWINDOW SIZE: %d\tSPEED AND RESOLUTION: %.1f Hz\tTIME PER WINDOW: %.1f ms\tAUD IN OUT DELAY: %.1f ms", SAMPLING_FREQ, FFT_WINDOW_SIZE, freqRes, sampleDelayTime * FFT_WINDOW_SIZE * 0.001, 2 * sampleDelayTime * FFT_WINDOW_SIZE * 0.001);
   Serial.println();
+  delay(1000);
   enableAudio();
 }
 
 bool Vibrosonics::ready(void) {
-  if (AUD_IN_BUFFER_FULL()) return 1;
-  return 0;
+  return AUD_IN_BUFFER_FULL();
 }
 
 void Vibrosonics::resume(void) {
