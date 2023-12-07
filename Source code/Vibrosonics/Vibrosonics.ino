@@ -212,7 +212,7 @@ void setup() {
 
 void loop() {
   if (ready()) {
-    unsigned long loopt = micros();
+    //unsigned long loopt = micros();
     pullSamples();
 
     resume();
@@ -221,8 +221,10 @@ void loop() {
 
     processData();
 
+    printWaves();
+
     generateAudioForWindow();
-    Serial.println(micros() - loopt);
+    //Serial.println(micros() - loopt);
   }
 }
 
@@ -245,8 +247,8 @@ void init(void) {
 
   delay(1000);
 
-  adc1_config_width(ADC_WIDTH_BIT_12);
-  adc1_config_channel_atten(AUD_IN_PIN, ADC_ATTEN_DB_0);
+  // adc1_config_width(ADC_WIDTH_BIT_12);
+  // adc1_config_channel_atten(AUD_IN_PIN, ADC_ATTEN_DB_0);
 
   delay(1000);
 
@@ -283,6 +285,8 @@ void resume(void) {
 void pullSamples() {
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
     vReal[i] = AUD_IN_BUFFER[i];
+    // Serial.println(vReal[i]);
+    // delay(1);
   }
 }
 
@@ -306,9 +310,9 @@ void processData(void) {
   storeFreqs();
 
   // noise flooring based on a threshold
-  if (getMean(freqsCurrent, FFT_WINDOW_SIZE_BY2) < 30.0) return;
+  //if (getMean(freqsCurrent, FFT_WINDOW_SIZE_BY2) < 30.0) return;
 
-  // noiseFloor(freqsCurrent, 20.0);
+  noiseFloor(freqsCurrent, 20.0);
   
   // find frequency of most change and its magnitude between the current and previous window
   #ifndef MIRROR_MODE
@@ -757,24 +761,26 @@ void mapAmplitudes(int minSum) {
   // map amplitudes on both channels
   for (int c = 0; c < NUM_OUT_CH; c++) {
     int ampSum = 0;
-    for (int i = 0; i < num_waves[c]; i++) {
-      int amplitude = waves[c][i].amp;
-      if (amplitude == 0) continue;
-      ampSum += amplitude;
+    for (int i = 0; i < MAX_NUM_WAVES; i++) {
+      if (waves_map[i].valid == 0) continue;
+      if (waves_map[i].ch != c) continue;
+      ampSum += waves_map[i].w.amp;
     }
     // since all amplitudes are 0, then there is no need to map between 0-127 range.
-    if (ampSum == 0) { 
+    if (ampSum == 0) {
       resetWaves(c);
-      continue; 
+      continue;
     }
     // value to map amplitudes between 0.0 and 1.0 range, the MAX_AMP_SUM will be used to divide unless totalEnergy exceeds this value
     float divideBy = 1.0 / float(ampSum > MAX_AMP_SUM ? ampSum : MAX_AMP_SUM);
     ampSum = 0;
     // map all amplitudes between 0 and 128
-    for (int i = 0; i < num_waves[c]; i++) {
-      int amplitude = waves[c][i].amp;
+    for (int i = 0; i < MAX_NUM_WAVES; i++) {
+      if (waves_map[i].valid == 0) continue;
+      if (waves_map[i].ch != c) continue;
+      int amplitude = waves_map[i].w.amp;
       if (amplitude == 0) continue;
-      waves[c][i].amp = round(amplitude * divideBy * 127.0);
+      waves_map[i].w.amp = round(amplitude * divideBy * 127.0);
       ampSum += amplitude;
     }
     // ensures that nothing gets synthesized for this channel

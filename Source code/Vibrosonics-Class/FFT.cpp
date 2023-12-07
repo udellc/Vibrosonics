@@ -6,10 +6,10 @@
 ########################################################
 /*/
 
-void Vibrosonics::pullSamples() {
+void Vibrosonics::pullSamples(void) {
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
     vReal[i] = AUD_IN_BUFFER[i];
-    // Serial.println(AUD_IN_BUFFER[i]);
+    //Serial.println(vReal[i]);
   }
 }
 
@@ -19,7 +19,7 @@ void Vibrosonics::pullSamples(float* output) {
   }
 }
 
-void Vibrosonics::performFFT() {
+void Vibrosonics::performFFT(void) {
   for (int i = 0; i < FFT_WINDOW_SIZE; i++) {
     vImag[i] = 0.0;
   }

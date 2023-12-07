@@ -12,24 +12,7 @@
 
 #include "Vibrosonics.h"
 
-unsigned long loopt;
-
-hw_timer_t *SAMPLING_TIMER = NULL;
-
-void stopISR() {
-  timerAlarmDisable(SAMPLING_TIMER);                 // disable interrupt
-  timerDetachInterrupt(SAMPLING_TIMER);
-  timerRestart(SAMPLING_TIMER);
-}
-
-void startISR(const unsigned long interval_us, void(*fnPtr)()) {
-  SAMPLING_TIMER = timerBegin(0, 80, true); 
-  timerAttachInterrupt(SAMPLING_TIMER, fnPtr, true);
-  timerAlarmWrite(SAMPLING_TIMER, interval_us, true);
-  timerAlarmEnable(SAMPLING_TIMER);                 // enabled interrupt
-}
-
-Vibrosonics v(startISR, stopISR);
+Vibrosonics v;
 
 void setup() {
   // set baud rate
@@ -37,7 +20,7 @@ void setup() {
   // wait for Serial to set up
   while (!Serial);
 
-  delay(4000);
+  delay(3000);
 
   v.init();
 }
@@ -48,20 +31,33 @@ void setup() {
 ########################################################
 /*/
 
+unsigned long loopt = 0;
+
 void loop() {
+  // returns true when next window can be synthesized
   if (v.ready()) {
+    v.disableAudio();
     loopt = micros();
+
+    // pull samples from audio input buffer
     v.pullSamples();
 
-    v.resume();
+    // continue sampling
+    v.flush();
 
-    //v.performFFT();
+    // perform FFT on data from audio input
+    v.performFFT();
 
-    //v.processData();
-    
+    // process FFT data
+    v.processData();
+
+    // print the waves that will be synthesized
     //v.printWaves();
 
+    // generates a window of samples for audio output buffer
     v.generateAudioForWindow();
+
     Serial.println(micros() - loopt);
+    v.enableAudio();
   }
 }

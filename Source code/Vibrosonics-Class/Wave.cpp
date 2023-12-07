@@ -94,8 +94,8 @@ void Vibrosonics::resetWaves(int ch) {
 
   // restore amplitudes and frequencies on ch, invalidate wave
   for (int i = 0; i < MAX_NUM_WAVES; i++) {
-    if (waves_map[i].valid == 0) continue;
     if (waves_map[i].ch != ch) continue;
+    if (waves_map[i].valid == 0) continue;
     waves_map[i].valid = 0;
     waves_map[i].w = wave();
   }

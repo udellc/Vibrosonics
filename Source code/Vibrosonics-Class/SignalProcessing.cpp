@@ -2,16 +2,21 @@
 
 // FFT data processing
 void Vibrosonics::processData(void) {  
-  resetAllWaves();
+  // reset the sine waves for synthesis
+  resetAllWaves(); 
 
-  // copy values calculated by FFT to freqs
+  // perform FFT on vReal
+  performFFT();
+  
+  // copy freq/amp value pairs calculated by FFT to freqs array
   storeFreqs();
 
   // noise flooring based on a threshold
-  // if (getMean(freqsCurrent, FFT_WINDOW_SIZE_BY2) < 1.0) {
-  //   return;
-  // }
+  if (getMean(freqsCurrent, FFT_WINDOW_SIZE_BY2) < 20.0) {
+    return;
+  }
 
+  // weed out low amps
   noiseFloor(freqsCurrent, 20.0);
   
   // find frequency of most change and its magnitude between the current and previous window
@@ -49,7 +54,7 @@ void Vibrosonics::storeFreqs(void) {
   freqsCurrent = freqs[freqsWindow];
   for (int i = 0; i < FFT_WINDOW_SIZE_BY2; i++) {
     freqsCurrent[i] = vReal[i] * freqWidth;
-    // Serial.println(vReal[i]);
+    //Serial.println(vReal[i]);
   }
 }
 
@@ -110,7 +115,15 @@ void Vibrosonics::findMajorPeaks(float* data) {
     FFTPeaks[minimumPeakIdx] = 0;
     FFTPeaksAmp[minimumPeakIdx] = 0;
   }
+
+  // for (int i = 0; i < peaksFound; i++) {
+  //   if (FFTPeaksAmp[i] == 0) continue;
+  //   Serial.printf("%d, ", FFTPeaks[i]);
+  // }
+  // Serial.println();
 }
+
+// ADD Comments!!!
 
 int Vibrosonics::frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude) {
   // calculate indexes in FFT bins correspoding to minFreq and maxFreq
@@ -172,7 +185,7 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int size) {
     if (ampData[i] == 0.0 || freqData[i] == 0) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
     if (freqData[i] <= bassIdx) {
-      int freq = freqData[i];
+      float freq = freqData[i];
       // if the difference of energy around the peak is greater than threshold
       if (abs(freqsCurrent[freqData[i] - 1] - freqsCurrent[freqData[i] + 1]) > 100) {
         // assign frequency based on whichever side is greater
@@ -195,6 +208,7 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int size) {
   }
 }
 
+// add more parameters
 int Vibrosonics::freqWeighting(int freq) {
   // normalize between 0 and 1.0, where 0.0 corresponds to 120Hz, while SAMPLING_FREQ / 2 Hz corresponds to 1.0
   float freq_n = (freq - 120) / float(SAMPLING_FREQ * 0.5 - 120);

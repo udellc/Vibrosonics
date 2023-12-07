@@ -1,30 +1,30 @@
 #include "Vibrosonics.h"
-// #include <soc/sens_reg.h>
-// #include <soc/sens_struct.h>
 
 // maps amplitudes between 0 and 127 range to correspond to 8-bit (0, 255) DAC on ESP32 Feather mapping is based on the MAX_AMP_SUM
 void Vibrosonics::mapAmplitudes(int minSum) {
   // map amplitudes on both channels
   for (int c = 0; c < NUM_OUT_CH; c++) {
     int ampSum = 0;
-    for (int i = 0; i < num_waves[c]; i++) {
-      int amplitude = waves[c][i].amp;
-      if (amplitude == 0) continue;
-      ampSum += amplitude;
+    for (int i = 0; i < MAX_NUM_WAVES; i++) {
+      if (waves_map[i].valid == 0) continue;
+      if (waves_map[i].ch != c) continue;
+      ampSum += waves_map[i].w.amp;
     }
     // since all amplitudes are 0, then there is no need to map between 0-127 range.
-    if (ampSum == 0) { 
+    if (ampSum == 0) {
       resetWaves(c);
-      continue; 
+      continue;
     }
     // value to map amplitudes between 0.0 and 1.0 range, the MAX_AMP_SUM will be used to divide unless totalEnergy exceeds this value
     float divideBy = 1.0 / float(ampSum > MAX_AMP_SUM ? ampSum : MAX_AMP_SUM);
     ampSum = 0;
     // map all amplitudes between 0 and 128
-    for (int i = 0; i < num_waves[c]; i++) {
-      int amplitude = waves[c][i].amp;
+    for (int i = 0; i < MAX_NUM_WAVES; i++) {
+      if (waves_map[i].valid == 0) continue;
+      if (waves_map[i].ch != c) continue;
+      int amplitude = waves_map[i].w.amp;
       if (amplitude == 0) continue;
-      waves[c][i].amp = round(amplitude * divideBy * 127.0);
+      waves_map[i].w.amp = round(amplitude * divideBy * 127.0);
       ampSum += amplitude;
     }
     // ensures that nothing gets synthesized for this channel
@@ -71,11 +71,11 @@ void Vibrosonics::generateAudioForWindow(void) {
   // setup waves array
   for (int c = 0; c < NUM_OUT_CH; c++) {
     num_waves[c] = 0;
-  }
-  for (int i = 0; i < MAX_NUM_WAVES; i++) {
-    for (int c = 0; c < NUM_OUT_CH; c++) {
+    for (int i = 0 ; i < MAX_NUM_WAVES; i++) {
       waves[c][i] = wave();
     }
+  }
+  for (int i = 0; i < MAX_NUM_WAVES; i++) {
     if (waves_map[i].valid == 0) continue;
     int ch = waves_map[i].ch;
     waves[ch][num_waves[ch]++] = waves_map[i].w;
@@ -119,67 +119,4 @@ void Vibrosonics::generateAudioForWindow(void) {
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
   generateAudioIdx = int(generateAudioIdx - FFT_WINDOW_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   sin_wave_idx = int(sin_wave_idx - FFT_WINDOW_SIZE + SAMPLING_FREQ) % int(SAMPLING_FREQ);
-}
-
-bool Vibrosonics::AUD_IN_BUFFER_FULL(void) {
-  return !(AUD_IN_BUFFER_IDX < AUD_IN_BUFFER_SIZE);
-}
-
-void Vibrosonics::RESET_AUD_IN_OUT_IDX(void) {
-  AUD_OUT_BUFFER_IDX += AUD_IN_BUFFER_SIZE;
-  if (AUD_OUT_BUFFER_IDX >= AUD_OUT_BUFFER_SIZE) AUD_OUT_BUFFER_IDX = 0;
-  AUD_IN_BUFFER_IDX = 0;
-}
-
-void Vibrosonics::AUD_IN_OUT(void) {
-  if (AUD_IN_BUFFER_FULL()) return;
-
-  int AUD_OUT_IDX = AUD_OUT_BUFFER_IDX + AUD_IN_BUFFER_IDX;
-  dacWrite(AUD_OUT_PIN_L, AUD_OUT_BUFFER[0][AUD_OUT_IDX]);
-  #if NUM_OUT_CH == 2
-  dacWrite(AUD_OUT_PIN_R, AUD_OUT_BUFFER[1][AUD_OUT_IDX]);
-  #endif
-
-  #ifdef USE_FFT
-  AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
-  #endif
-  AUD_IN_BUFFER_IDX += 1;
-}
-
-// void Vibrosonics::enableAudio(void) {
-//   timerAlarmEnable(SAMPLING_TIMER);   // enable interrupt
-// }
-
-// void Vibrosonics::disableAudio(void) {
-//   timerAlarmDisable(SAMPLING_TIMER);  // disable interrupt
-// }
-
-// void Vibrosonics::setupISR(void) {
-//   // setup timer interrupt for audio sampling
-//   SAMPLING_TIMER = timerBegin(0, 80, true);             // setting clock prescaler 1MHz (80MHz / 80)
-//   timerAttachInterrupt(SAMPLING_TIMER, &ON_SAMPLING_TIMER, true); // attach interrupt function
-//   timerAlarmWrite(SAMPLING_TIMER, sampleDelayTime, true);     // trigger interrupt every @sampleDelayTime microseconds
-//   timerAlarmEnable(SAMPLING_TIMER);                 // enabled interrupt
-// }
-
-void Vibrosonics::initAudio(void) {
-  // calculate values of cosine and sine wave at certain sampling frequency
-  calculate_windowing_wave();
-  calculate_waves();
-
-  // initialize generate audio and output buffers to 0, not necassary but helps prevent glitches when program boots
-  for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
-    for (int c = 0; c < NUM_OUT_CH; c++) {
-    generateAudioBuffer[c][i] = 0.0;
-      if (i < AUD_OUT_BUFFER_SIZE) {
-        AUD_OUT_BUFFER[c][i] = 128;
-        if (i < AUD_IN_BUFFER_SIZE) {
-          AUD_IN_BUFFER[i] = 2048;
-        }
-      }
-    }
-  }
-
-  // reset waves
-  resetAllWaves();
 }

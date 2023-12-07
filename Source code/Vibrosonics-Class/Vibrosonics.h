@@ -1,3 +1,4 @@
+
 /*/
 ########################################################
   This code asynchronously samples a signal via an interrupt timer to fill an input buffer. Once the input buffer is full, a fast fourier transform is performed using the arduinoFFT library.
@@ -27,7 +28,6 @@
 
 #define USE_FFT  // comment to disable FFT
 
-// audio sampling stuff
 #define AUD_IN_PIN ADC1_CHANNEL_6 // corresponds to ADC on A2
 // #define AUD_IN_PINA A2
 #define AUD_OUT_PIN_L A0
@@ -68,31 +68,10 @@
 #error NUM_OUT_CH MUST BE AT LEAST 1
 #endif
 
-/*/
-########################################################
-  Variables used for interrupt and function to call when interrupt is triggered
-########################################################
-/*/
-
-static const int AUD_IN_BUFFER_SIZE = FFT_WINDOW_SIZE;  
-static const int AUD_OUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 2;
-
-// used to store recorded samples for a gien window
-volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
-// rolling buffer for outputting synthesized signal
-volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
-
-// audio input and output buffer index
-volatile static int AUD_IN_BUFFER_IDX = 0;
-volatile static int AUD_OUT_BUFFER_IDX = 0;
-
-// static hw_timer_t *SAMPLING_TIMER = NULL;
-
 // class declaration
 
 class Vibrosonics
 {
-  
   private:
 
     /*/
@@ -114,12 +93,10 @@ class Vibrosonics
     ########################################################
     /*/
 
-    static const int sampleDelayTime = 1000000 / SAMPLING_FREQ;
-
     // FFT_SIZE_BY_2 is FFT_WINDOW_SIZE / 2. We are sampling at double the frequency we are trying to detect, therefore only half of the FFT bins are used for analysis post FFT
     static const int FFT_WINDOW_SIZE_BY2 = int(FFT_WINDOW_SIZE) >> 1;
 
-    static const constexpr float freqRes = float(SAMPLING_FREQ) / FFT_WINDOW_SIZE;  // the frequency resolution of FFT with the current window size
+    static const constexpr float freqRes = float(SAMPLING_FREQ) / float(FFT_WINDOW_SIZE);  // the frequency resolution of FFT with the current window size
 
     static const constexpr float freqWidth = 1.0 / freqRes; // the width of an FFT bin
 
@@ -133,17 +110,21 @@ class Vibrosonics
     int FFTPeaks[FFT_WINDOW_SIZE_BY2 >> 1]; // stores the peaks computed by FFT
     float FFTPeaksAmp[FFT_WINDOW_SIZE_BY2 >> 1];
   
-    static const int bassIdx = 120 * freqWidth; // FFT bin index of frequency ~200Hz
+    static const int bassIdx = 200 * freqWidth; // FFT bin index of frequency ~200Hz
 
     static const int MAX_AMP_SUM = MAX_NUM_WAVES * FFT_MAX_AMP;
     #endif
 
     /*/
     ########################################################
-      Variables used for generating an audio output
+      Variables used for audio input and generating audio output
     ########################################################
     /*/
 
+    static const int sampleDelayTime = 1000000 / SAMPLING_FREQ;
+
+    static const int AUD_IN_BUFFER_SIZE = FFT_WINDOW_SIZE;  
+    static const int AUD_OUT_BUFFER_SIZE = FFT_WINDOW_SIZE * 2;
     static const int GEN_AUD_BUFFER_SIZE = FFT_WINDOW_SIZE * 3;
 
     const float _SAMPLING_FREQ = 1.0 / SAMPLING_FREQ;
@@ -196,6 +177,34 @@ class Vibrosonics
     // used for copying final synthesized values from scratchpad audio output buffer to volatile audio output buffer
     int generateAudioOutIdx = 0;
 
+
+    /*/
+    ########################################################
+      Interrupt timer, input and output buffers and indexes
+    ########################################################
+    /*/
+
+    // timer object
+    static hw_timer_t *SAMPLING_TIMER;
+
+    // function that gets called when timer is triggered
+    static void IRAM_ATTR AUD_IN_OUT(void);
+
+    static bool AUD_IN_BUFFER_FULL(void);
+
+    // restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
+    void RESET_AUD_IN_OUT_IDX(void);
+
+    
+    // used to store recorded samples for a given window
+    volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
+    // rolling buffer for outputting synthesized signal
+    volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
+
+    // audio input and output buffer index
+    volatile static int AUD_IN_BUFFER_IDX;
+    volatile static int AUD_OUT_BUFFER_IDX;
+
     /*/
     ########################################################
       Functions related to FFT analysis
@@ -204,7 +213,7 @@ class Vibrosonics
 
     #ifdef USE_FFT
     // store the current window into freqs array with freqsWindow acting as time
-    void storeFreqs();
+    void storeFreqs(void);
 
     // noise flooring based on a set threshold
     void noiseFloor(float *data, float threshold);
@@ -250,9 +259,9 @@ class Vibrosonics
     /*/
 
     // calculate values for cosine function that is used for smoothing transition between frequencies and amplitudes (0.5 * (1 - cos((2PI / T) * x)), where T = AUD_OUT_BUFFER_SIZE
-    void calculate_windowing_wave();
+    void calculate_windowing_wave(void);
     // calculate values for 1Hz sine wave @SAMPLING_FREQ sample rate
-    void calculate_waves();
+    void calculate_waves(void);
     // returns value of sine wave at given frequency and amplitude
     float get_wave_val(wave w);
     // returns sum of sine waves of given channel
@@ -267,43 +276,34 @@ class Vibrosonics
     ########################################################
     /*/
 
-    void initAudio();
+    void initAudio(void);
 
-    // returns true if audio input buffer is full
-    static bool IRAM_ATTR AUD_IN_BUFFER_FULL();
-
-    // restores AUD_IN_BUFFER_IDX, and ensures AUD_OUT_BUFFER is synchronized
-    void RESET_AUD_IN_OUT_IDX();
-
-    // outputs sample from AUD_OUT_BUFFER to DAC and reads sample from ADC to AUD_IN_BUFFER
-    static void IRAM_ATTR AUD_IN_OUT();
-
-    void(*ISRStop)();
-    void(*ISRStart)(const unsigned long interval_us, void(*fnPtr)());
+    void setupISR(void);
    
   public:
     // class init
-    Vibrosonics(void(*audStart)(const unsigned long interval_us, void(*fnPtr)()), void(*audStop)());
+    //Vibrosonics();
 
     // initialize pins and setup interrupt timer
-    void init();
+    void init(void);
     // returns true when the audio input buffer fills. If not using FFT then returns true when modifications to waves can be made
-    bool ready();
+    bool ready(void);
     // call resume to continue audio input and/or output
-    void resume();
+    void flush(void);
 
     #ifdef USE_FFT
     // pulls samples from audio input buffer and stores them directly to vReal
-    void pullSamples();
+    void pullSamples(void);
     // pulls samples from audio input buffer and stores them directly to a specified output buffer
     void pullSamples(float *output);
+
     // performs fft on vReal buffer
-    void performFFT();
+    void performFFT(void);
     // perform FFT on a given input (SIZE OF INPUT MUST BE EQUAL TO WINDOW SIZE)
     void performFFT(float *input);
 
     // Process data from FFT
-    void processData();
+    void processData(void);
     #endif
 
     /*/
@@ -321,7 +321,7 @@ class Vibrosonics
     // sets all sine waves and frequencies to 0 on specified channel
     void resetWaves(int ch);
     // resets waves on all channels
-    void resetAllWaves();
+    void resetAllWaves(void);
 
     // returns total number of waves on a ch, returns -1 if passed channel is invalid
     int getNumWaves(int ch);
@@ -344,16 +344,24 @@ class Vibrosonics
     bool setChannel(int id, int ch);
 
     // generates values for one window of audio output buffer
-    void generateAudioForWindow(); 
+    void generateAudioForWindow(void); 
 
     // prints assigned sine waves
-    void printWaves();
+    void printWaves(void);
 
     // enable interrupt timer
-    void enableAudio();
+    void enableAudio(void);
     // disable interrupt timer
-    void disableAudio();
+    void disableAudio(void);
   
 };
+
+// class SignalProcessing {
+
+// };
+
+// class GenerateAudio {
+  
+// };
 
 #endif
