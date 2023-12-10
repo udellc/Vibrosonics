@@ -2,8 +2,8 @@
 
 // FFT data processing
 void Vibrosonics::processData(void) {  
-  // reset the sine waves for synthesis
-  resetAllWaves(); 
+
+  resetAllWaves();
 
   // perform FFT on vReal
   performFFT();
@@ -42,6 +42,8 @@ void Vibrosonics::processData(void) {
 
   // assign sine waves based on data found by major peaks
   assignWaves(FFTPeaks, FFTPeaksAmp, FFT_WINDOW_SIZE_BY2 >> 1);
+
+  // map all amplitudes based on MAX_AMP_SUM (default)
   mapAmplitudes();
 }
 
@@ -127,19 +129,17 @@ void Vibrosonics::findMajorPeaks(float* data) {
 
 int Vibrosonics::frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude) {
   // calculate indexes in FFT bins correspoding to minFreq and maxFreq
-  int minIdx = round(minFreq * freqWidth);
-  if (minIdx == 0) minIdx = 1;
-  int maxIdx = round(maxFreq * freqWidth);
-  if (maxIdx > FFT_WINDOW_SIZE_BY2 - 1) maxIdx = FFT_WINDOW_SIZE_BY2 - 1;
-  // restore global varialbes
+  int minIdx = max(1, min(FFT_WINDOW_SIZE_BY2 - 1, int(round(minFreq * freqWidth))));
+  int maxIdx = max(1, min(FFT_WINDOW_SIZE_BY2 - 1, int(round(maxFreq * freqWidth))));;
+  // stores amplitude of most change
   int maxAmpChange = 0;
   int maxAmpChangeIdx = -1;
   // iterate through data* and prevData* to find the amplitude with most change
   for (int i = minIdx; i < maxIdx; i++) {
     // calculate the change between this amplitude and previous amplitude
-    int sumAroundDataI = sumOfPeak(data, i);
-    int sumAroundPrevDataI = sumOfPeak(prevData, i);
-    int currAmpChange = abs(sumAroundDataI - sumAroundPrevDataI);
+    float sumAroundDataI = data[i - 1] + data[i] + data[i + 1];
+    float sumAroundPrevDataI = prevData[i - 1] + prevData[i] + prevData[i + 1];
+    float currAmpChange = abs(sumAroundDataI - sumAroundPrevDataI);
     // find the most dominant amplitude change and store in maxAmpChangeIdx, store the magnitude of the change in maxAmpChange
     if ((currAmpChange >= FREQ_MAX_AMP_DELTA_MIN) && (currAmpChange <= FREQ_MAX_AMP_DELTA_MAX) && (currAmpChange > maxAmpChange)) {
       maxAmpChange = currAmpChange;

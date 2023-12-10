@@ -45,9 +45,9 @@
 #define FREQ_MAX_AMP_DELTA_MAX 500    // the max threshold of change in amplitude
 #define FREQ_MAX_AMP_DELTA_K 16.0      // weight for amplitude of most change
 
-#define MAX_NUM_PEAKS 7  // the maximum number of peaks to look for with the findMajorPeaks() function
+#define MAX_NUM_PEAKS 6  // the maximum number of peaks to look for with the findMajorPeaks() function
 
-#define MAX_NUM_WAVES 8  // maximum number of waves to synthesize (all channels combined)
+#define MAX_NUM_WAVES 7  // maximum number of waves to synthesize (all channels combined)
 #define NUM_OUT_CH 2  // number of audio channels to synthesize
 
 #define MIRROR_MODE
