@@ -10,7 +10,7 @@ void Vibrosonics::init() {
   Serial.begin(115200);
   while (!Serial)
     ;
-  delay(1000);
+  delay(4000);
 
   AudioLab.init();
 
