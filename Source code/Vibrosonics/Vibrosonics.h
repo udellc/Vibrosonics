@@ -21,6 +21,8 @@ class Vibrosonics
     float* freqsCurrent = freqs[0];
     float* freqsPrevious = freqs[0];
 
+    float freqsLow[WINDOW_SIZE_BY2];
+
     static const int MAX_NUM_PEAKS = WINDOW_SIZE_BY2 >> 1;
     int FFTPeaks[MAX_NUM_PEAKS];
     float FFTPeaksAmp[MAX_NUM_PEAKS];
@@ -40,6 +42,9 @@ class Vibrosonics
 
     // stores data computed by FFT into freqs array
     void storeFFTData();
+
+    // stores data computed by FFT into freqsLow array
+    void storeFFTDataLow();
 
     // returns the mean of some data
     float getMean(float* data, int dataLength);
@@ -64,6 +69,14 @@ class Vibrosonics
 
     // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
     int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude);
+
+    void calculateDownsampleSincFilterTable(int ratio, int nz);
+
+    bool downsampleSignal(int* data);
+
+    int *getDownsampledSignal();
+
+    int FFTMajorPeak(int sampleRate);
     
 };
 

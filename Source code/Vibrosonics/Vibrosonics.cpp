@@ -1,10 +1,8 @@
 #include "Vibrosonics.h"
 #include "Pulse.h"
 
-int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 
-// example pulse
-//Pulse aPulse = Pulse(0, SINE);
+int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 
 void Vibrosonics::init() {
   Serial.begin(115200);
@@ -12,30 +10,32 @@ void Vibrosonics::init() {
     ;
   delay(4000);
 
-  AudioLab.init();
+  calculateDownsampleSincFilterTable(4, 8);
 
-  // set pulse parameters
-  // aPulse.setAttack(20, 10, 10);
-  // aPulse.setAttackCurve(4.0);
-  // aPulse.setSustain(100, 100, 5);
-  // aPulse.setRelease(40, 50, 20);
-  // aPulse.setReleaseCurve(0.5);
+  AudioLab.init();
 }
 
 void Vibrosonics::update() {
   if (AudioLab.ready()) {
-    // call static function update() to update all pulses every window
-    Pulse::update();
-
-    // call start() to pulse, note: this doesn't have to wait for a pulse to finish,
-    // can call start() again to restart the pulse...
-    //aPulse.start();
+    //unsigned long timeMicros = micros();
 
     // perform FFT on AudioLab input buffer, using ArduinoFFT
     performFFT(AudioLabInputBuffer);
 
+    Serial.printf("default peak: %d\n", FFTMajorPeak(SAMPLE_RATE));
+
     // store frequencies computed by FFT into freqs array
     storeFFTData();
+
+    // filtering signal and performing FFT when downsampled signal buffer fills
+    if (downsampleSignal(AudioLabInputBuffer)) {
+      performFFT(getDownsampledSignal());
+
+      Serial.printf("downsampled peak: %d\n", FFTMajorPeak(SAMPLE_RATE / 4));
+
+      // storing frequency magnitudes computed by FFT into separate freqs array
+      storeFFTDataLow();
+    }
 
     // ensure that the mean energy of frequency magnitudes is above a certain threshold
     if (getMean(freqsCurrent, WINDOW_SIZE) > 15.0) {
@@ -54,8 +54,12 @@ void Vibrosonics::update() {
       assignWaves(FFTPeaks, FFTPeaksAmp, MAX_NUM_PEAKS);
     }
 
+    // call static function update() to update all pulses every window
+    Pulse::update();
     // call AudioLab.synthesize() after all waves are set.
     AudioLab.synthesize();
-    //AudioLab.printWaves();
+    // AudioLab.printWaves();
+
+    //Serial.println(micros() - timeMicros);
   }
 }

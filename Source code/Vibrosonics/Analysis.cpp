@@ -8,6 +8,18 @@ arduinoFFT FFT = arduinoFFT();
 const float frequencyResolution = float(SAMPLE_RATE) / WINDOW_SIZE;
 const float frequencyWidth = 1.0 / frequencyResolution;
 
+int Vibrosonics::FFTMajorPeak(int sampleRate) {
+  int maxIdx = 0;
+  int max = 0;
+  for (int i = 0; i < WINDOW_SIZE_BY2; i++) {
+    if (vReal[i] > max) {
+      max = vReal[i];
+      maxIdx = i;
+    }
+  }
+  return maxIdx * sampleRate / WINDOW_SIZE;
+}
+
 void Vibrosonics::performFFT(int *input) {
   // copy samples from input to vReal and set vImag to 0
   for (int i = 0; i < WINDOW_SIZE; i++) {
@@ -36,6 +48,12 @@ void Vibrosonics::storeFFTData(void) {
     // multiplying vReal by frequencyWidth is not necassary, but helps make frequency magnitudes
     // relative when using different window size and sample rate
     freqsCurrent[i] = vReal[i] * frequencyWidth;
+  }
+}
+
+void Vibrosonics::storeFFTDataLow(void) {
+  for (int i = 0; i < WINDOW_SIZE_BY2; i++) {
+    freqsLow[i] = vReal[i];
   }
 }
 
