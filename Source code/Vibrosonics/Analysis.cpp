@@ -156,8 +156,8 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength) {
   }
 }
 
-// interpolation based on the weight of amplitudes around a peak
-int Vibrosonics::interpolateAroundPeak(float *data, int indexOfPeak) {
+int Vibrosonics::interpolateAroundPeak(float *data, int indexOfPeak, int sampleRate, int windowSize) {
+  float _freqRes = sampleRate * 1.0 / windowSize;
   float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
   float atPeak = data[indexOfPeak];
   float postPeak = indexOfPeak == WINDOW_SIZE_BY2 ? 0.0 : data[indexOfPeak + 1];
@@ -167,7 +167,7 @@ int Vibrosonics::interpolateAroundPeak(float *data, int indexOfPeak) {
   float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1.0);
   
   // return interpolated frequency
-  return int(round((float(indexOfPeak) + magnitudeOfChange) * frequencyResolution));
+  return int(round((float(indexOfPeak) + magnitudeOfChange) * _freqRes));
 }
 
 int Vibrosonics::sumOfPeak(float *data, int indexOfPeak) {
@@ -177,7 +177,6 @@ int Vibrosonics::sumOfPeak(float *data, int indexOfPeak) {
   return 0;
 }
 
-// finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
 int Vibrosonics::frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude) {
   // calculate indexes in FFT bins correspoding to minFreq and maxFreq
   int minIdx = round(minFreq * frequencyWidth);

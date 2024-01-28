@@ -10,8 +10,10 @@ void Vibrosonics::init() {
     ;
   delay(4000);
 
+  // calculate sinc filter table for downsampling by a factor of 4 with 8 number of zeroes
   calculateDownsampleSincFilterTable(4, 8);
 
+  // initialize AudioLab
   AudioLab.init();
 }
 
@@ -22,6 +24,7 @@ void Vibrosonics::update() {
     // perform FFT on AudioLab input buffer, using ArduinoFFT
     performFFT(AudioLabInputBuffer);
 
+    // a debug print to compare raw fft output to downsampled output
     Serial.printf("default peak: %d\n", FFTMajorPeak(SAMPLE_RATE));
 
     // store frequencies computed by FFT into freqs array
@@ -29,8 +32,10 @@ void Vibrosonics::update() {
 
     // filtering signal and performing FFT when downsampled signal buffer fills
     if (downsampleSignal(AudioLabInputBuffer)) {
+      // perfom FFT on downsampled single
       performFFT(getDownsampledSignal());
 
+      // a debug print to compare raw fft output to downsampled output
       Serial.printf("downsampled peak: %d\n", FFTMajorPeak(SAMPLE_RATE / 4));
 
       // storing frequency magnitudes computed by FFT into separate freqs array
@@ -58,7 +63,7 @@ void Vibrosonics::update() {
     Pulse::update();
     // call AudioLab.synthesize() after all waves are set.
     AudioLab.synthesize();
-    // AudioLab.printWaves();
+    //AudioLab.printWaves();
 
     //Serial.println(micros() - timeMicros);
   }

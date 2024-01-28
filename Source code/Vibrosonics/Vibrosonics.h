@@ -43,7 +43,7 @@ class Vibrosonics
     // stores data computed by FFT into freqs array
     void storeFFTData();
 
-    // stores data computed by FFT into freqsLow array
+    // stores data computed by FFT of downsampled signal into freqsLow array
     void storeFFTDataLow();
 
     // returns the mean of some data
@@ -61,21 +61,34 @@ class Vibrosonics
     // assigns sine waves based on the data
     void assignWaves(int* freqData, float* ampData, int dataLength);
 
-    // interpolates a peak based on weight of surrounding values
-    int interpolateAroundPeak(float *data, int indexOfPeak);
+    // interpolates a peak based on weight of surrounding values, optionally pass sampleRate and windowSize
+    int interpolateAroundPeak(float *data, int indexOfPeak, int sampleRate = SAMPLE_RATE, int windowSize = WINDOW_SIZE);
 
     // returns the sum of the peak and surrounding values
     int sumOfPeak(float *data, int indexOfPeak);
 
-    // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
+    // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change,
+    // and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
     int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude);
 
+
+    // calculate sinc filter table
+    // Parameter ratio is how many factors to downsample the signal by, i.e. if original sample rate
+    // was 8192Hz and ratio is 4, the signal will be resampled to 2048Hz with a 1024Hz brick wall filter.
+    // Parameter nz is the number of zero crossings in the filter, a higher nz value will result in a 
+    // more ideal filter but will also considerably reduce performance
     void calculateDownsampleSincFilterTable(int ratio, int nz);
 
+    // downsample a signal of length WINDOW_SIZE, returns true when downsampled output buffer is full
+    // which will fill every @ratio windows
+    // Note: data must be of length WINDOW_SIZE, and sample rate "does not" matter
     bool downsampleSignal(int* data);
 
+    // returns pointer to downsampled signal buffer, call this when downsampleSignal() returns true
     int *getDownsampledSignal();
 
+    // a very basic "testing" function to go through raw FFT data and return the frequency associated to
+    //  the maximum bin based on the sampleRate
     int FFTMajorPeak(int sampleRate);
     
 };
