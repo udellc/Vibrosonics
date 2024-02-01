@@ -4,7 +4,8 @@
 int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 
 // example pulse
-//Pulse aPulse = Pulse(0, SINE);
+Pulse highPulse = Pulse(0, TRIANGLE);
+Pulse lowPulse = Pulse(0, SINE);
 
 void Vibrosonics::init() {
   Serial.begin(115200);
@@ -14,28 +15,37 @@ void Vibrosonics::init() {
 
   AudioLab.init();
 
-  // set pulse parameters
-  // aPulse.setAttack(20, 10, 10);
-  // aPulse.setAttackCurve(4.0);
-  // aPulse.setSustain(100, 100, 5);
-  // aPulse.setRelease(40, 50, 20);
-  // aPulse.setReleaseCurve(0.5);
+  // high pulse (snare, hihats, etc) parameters
+  highPulse.setAttack(200, 10, 0);
+  highPulse.setAttackCurve(4.0);
+  highPulse.setSustain(88, 100, 1);
+  highPulse.setRelease(40, 0, 8);
+  highPulse.setReleaseCurve(0.5);
+
+  // low pulse (kick, impacts, etc) parameters
+  lowPulse.setAttack(50, 10, 0);
+  lowPulse.setAttackCurve(4.0);
+  lowPulse.setSustain(80, 100, 4);
+  lowPulse.setRelease(0, 0, 12);
+  lowPulse.setReleaseCurve(0.5);
 }
 
 void Vibrosonics::update() {
   if (AudioLab.ready()) {
-    // call static function update() to update all pulses every window
-    Pulse::update();
-
-    // call start() to pulse, note: this doesn't have to wait for a pulse to finish,
-    // can call start() again to restart the pulse...
-    //aPulse.start();
 
     // perform FFT on AudioLab input buffer, using ArduinoFFT
     performFFT(AudioLabInputBuffer);
 
     // store frequencies computed by FFT into freqs array
     storeFFTData();
+
+    // call start() to pulse, note: this doesn't have to wait for a pulse to finish,
+    // can call start() again to restart the pulse...
+
+    if(detectPercussionFromTotalAmp(freqsCurrent, 0, 127, 6000) &&
+        detectPercussionFromDeltaAmp(freqsCurrent, freqsPrevious, 0, 127, 3000)){
+      lowPulse.start();
+    }
 
     // ensure that the mean energy of frequency magnitudes is above a certain threshold
     if (getMean(freqsCurrent, WINDOW_SIZE) > 15.0) {
@@ -53,6 +63,9 @@ void Vibrosonics::update() {
       // assign peaks to sine waves
       assignWaves(FFTPeaks, FFTPeaksAmp, MAX_NUM_PEAKS);
     }
+
+    // call static function update() to update all pulses every window
+    Pulse::update();
 
     // call AudioLab.synthesize() after all waves are set.
     AudioLab.synthesize();

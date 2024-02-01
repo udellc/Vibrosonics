@@ -1,6 +1,7 @@
 #ifndef Vibrosonics_h
 #define Vibrosonics_h
 
+#include "pulse.h"
 #include <AudioLab.h>
 
 #define NUM_FREQ_WINDOWS 8  // the number of frequency windows to store in circular buffer freqs
@@ -65,6 +66,14 @@ class Vibrosonics
     // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
     int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude);
     
+    float findMaxAmp(float *data, int lowerBin, int upperBin);
+    float calculateTotalAmp(float *data, int lowerBin, int upperBin);
+    float calculateDeltaAmp(float *currentData, float* prevData, int lowerBin, int upperBin);
+    float calculateNoisiness(float *data, int lowerBin, int upperBin);
+
+    bool detectPercussionFromTotalAmp(float *data, int lowerBin, int upperBin, int threshold);
+    bool detectPercussionFromDeltaAmp(float *currentData, float* prevData, int lowerBin, int upperBin, int threshold);
+    bool detectPercussion(float *currentData, float *prevData, int lowerBin, int upperBin, float totalAmpThreshold, float deltaAmpThreshold, float noisinessThreshold);
 };
 
 #endif

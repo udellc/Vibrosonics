@@ -1,4 +1,5 @@
 #include "Vibrosonics.h"
+#include "Pulse.h"
 #include <arduinoFFTFloat.h>
 
 float vReal[WINDOW_SIZE];
@@ -120,7 +121,8 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength) {
     if (ampData[i] == 0.0 || freqData[i] == 0) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
     int _interpFreq = 0;
-    int _channel = 0;
+    
+    int _channel = 1;
     if (freqData[i] <= _bassIdx) {
       float _freq = freqData[i];
       // if the difference of energy around the peak is greater than threshold
@@ -130,6 +132,7 @@ void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength) {
       }
       _interpFreq = round(_freq * frequencyResolution);
     } else {
+      //TODO: RETURN TO 0
       _channel = 1;
       _interpFreq = interpolateAroundPeak(freqsCurrent, freqData[i]);
     }
@@ -183,4 +186,71 @@ int Vibrosonics::frequencyMaxAmplitudeDelta(float *data, float *prevData, int mi
   }
   magnitude = maxAmpChange * (1.0 / FREQ_MAX_AMP_DELTA_MAX) * FREQ_MAX_AMP_DELTA_K;
   return maxAmpChangeIdx;
+}
+
+float Vibrosonics::calculateTotalAmp(float *data, int lowerBin, int upperBin){
+  float ampSum = 0;
+  for(int i=lowerBin; i<upperBin; i++){
+    ampSum += data[i];
+  }
+  return ampSum;
+}
+
+float Vibrosonics::findMaxAmp(float *data, int lowerBin, int upperBin){
+  float maxAmp = 0;
+  for(int i=lowerBin; i<upperBin; i++){
+    if(maxAmp < data[i]) maxAmp = data[i];
+  }
+  return maxAmp;
+}
+
+float Vibrosonics::calculateDeltaAmp(float *currentData, float* prevData, int lowerBin, int upperBin){
+  float currentAmp = calculateTotalAmp(currentData, lowerBin, upperBin);
+  float prevAmp = calculateTotalAmp(prevData, lowerBin, upperBin);
+  return (currentAmp - prevAmp);
+}
+
+float Vibrosonics::calculateNoisiness(float *data, int lowerBin, int upperBin){
+
+  float totalAmp = calculateTotalAmp(data, lowerBin, upperBin);
+  float maxAmp = findMaxAmp(data, lowerBin, upperBin);
+  float meanAmp = totalAmp / (upperBin - lowerBin);
+
+  // calculate noisiness
+  float noisiness = 0;
+  if(meanAmp > 10.0){
+    noisiness = 1 - ((maxAmp / meanAmp) / 66.7);
+  }
+
+  return noisiness;
+}
+
+bool Vibrosonics::detectPercussionFromTotalAmp(float *data, int lowerBin, int upperBin, int threshold){
+  if(calculateTotalAmp(data, lowerBin, upperBin) > threshold){
+    return true;
+  }
+  return false;
+}
+
+bool Vibrosonics::detectPercussionFromDeltaAmp(float *currentData, float* prevData, int lowerBin, int upperBin, int threshold){
+  if(calculateDeltaAmp(currentData, prevData, lowerBin, upperBin) > threshold){
+    return true;
+  }
+  return false;
+}
+
+bool Vibrosonics::detectPercussion(float *currentData, float *prevData, int lowerBin, int upperBin, 
+                                  float totalAmpThreshold, float deltaAmpThreshold, float noisinessThreshold){
+  
+  bool currentNoise = calculateNoisiness(currentData, lowerBin, upperBin)   > noisinessThreshold;
+  //bool prevNoise = calculateNoisiness(prevData, lowerBin, upperBin)         < noisinessThreshold;
+  bool prevNoise = 1;
+
+  bool delta = calculateDeltaAmp(currentData, prevData, lowerBin, upperBin) > deltaAmpThreshold;
+  bool total = calculateTotalAmp(currentData, lowerBin, upperBin)           > totalAmpThreshold;
+  
+  if(currentNoise && prevNoise && delta && total){
+    return true;
+  }
+  return false;
 }

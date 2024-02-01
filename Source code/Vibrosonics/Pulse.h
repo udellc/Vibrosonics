@@ -68,7 +68,7 @@ class Pulse {
     void setSustain(int aFrequency, int anAmplitude, int aDuration);
     
     // set Pulse release parameters, will transition from sustain parameters over a given duration
-    void setRelease(int aFrequency, int anAmplitude, int aDuration);
+    void setRelease(int aFrequency, int anAmplitude, int aDuration); 
     // set the curve to follow when transtioning from sustain parameters to release parameters
     void setReleaseCurve(float aCurveValue);
 
