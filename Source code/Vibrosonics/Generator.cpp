@@ -1,6 +1,5 @@
 #include "Vibrosonics.h"
 
-
 /******************************************************************************
 **  GENERATOR BASE CLASS
 ******************************************************************************/
@@ -24,16 +23,12 @@ class Generator
         int outputChannels[2];
 };   
 
-{
+// Example usage
     AdditiveSynth s;
     s.addOutputChannel(0);
     s.addOutputChannel(1);
 
     s.rmvOutputChannel(0);
-
-    int mychannels[5] = {0, 1, 5, 6, 7};
-    s.addOutputChannels(mychannels);
-}
 
 // default constructor
 Generator::Generator()

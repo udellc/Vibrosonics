@@ -22,8 +22,8 @@ class Vibrosonics
     float* freqsPrevious = freqs[0];
 
     static const int MAX_NUM_PEAKS = WINDOW_SIZE_BY2 >> 1;
-    int FFTPeaks[MAX_NUM_PEAKS];
-    float FFTPeaksAmp[MAX_NUM_PEAKS];
+    //int FFTPeaks[MAX_NUM_PEAKS];
+    //float FFTPeaksAmp[MAX_NUM_PEAKS];
 
   public:
 

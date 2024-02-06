@@ -1,97 +1,23 @@
 #include "Vibrosonics.h"
 
-class AnalysisModule
+template <template T> class AnalysisModule
 {
 public:
     int windowSize;
-    int outputLength;
-    int* outputFrequencies;
-    float* outputAmplitudes;
-    virtual void doAnalysis() = 0;
+    int** inputFreqs;
+    T output;
 
-    // constructors
-    AnalysisModule();
-    AnalysisModule(int n)
+    // IDEA: eventually add freq range constraints
+    
+    virtual void doAnalysis() = 0;
+    T getOutput { return output; }
 };
 
-AnalysisModule::AnalysisModule()
-{
-    outputLength = 0;
-    // allocate default output length
-    // outputFrequencies = new int(0);
-    // outputAmplitude = new float(0);
-}
-
-AnalysisModule::AnalysisModule(int n)
-{
-    outputLength = n;
-    // allocate provided output length
-    outputFrequencies = new int(outputLength);
-    outputAmplitudes = new float(outputLength);
-}
-
-AnalysisModule::~AnalysisModule()
-{
-    delete outputFrequencies;
-    delete outputAmplitudes;
-}
-
-class MajorPeaks : public AnalysisModule
+class MajorPeaks : public AnalysisModule<float**>
 {
 public:
     int numPeaks;
-    
-    // constructors
-    MajorPeaks() : AnalysisModule(16);
-    MajorPeaks(int n) : AnalysisModule(int n);
 };
-
-{
-    Vibrosonics v = Vibrosonics(); // create vibrosonics obj
-
-    // add synthesizer to channel 0
-    AdditiveSynth synth = AdditiveSynth(); // create generator
-    v.addGenerator(synth, channel_0);      // connect generator
-
-    // connect synth to majorpeaks analysis module
-    MajorPeaks m1 = MajorPeaks(); // create analysis module
-    synth.addInputSource(m1);     // connect analysis module
-
-    // add pulse generator to channel 1
-    PulseGenerator p = PulseGenerator(); // create generator
-    v.addGenerator(p, channel_1);        // connect generator
-    
-    // connect percussion detection to pulse generator
-    PercussionDetection det = PercussionDetection(); // create analysis module
-    p.addInputSource(det);                           // connect analysis module
-}
-
-{
-     Vibrosonics v = Vibrosonics(); // create vibrosonics obj
-
-    MajorPeaks m1 = MajorPeaks(); // create analysis module
-    // add synthesizer to channel 0
-    AdditiveSynth synth = AdditiveSynth(m1); // create generator
-    v.addGenerator(synth, channel_0);      // connect generator
-
-    // add pulse generator to channel 1
-    PulseGenerator p = PulseGenerator(); // create generator
-    v.addGenerator(p, channel_1);        // connect generator
-    
-    // connect percussion detection to pulse generator
-    PercussionDetection det = PercussionDetection(); // create analysis module
-    p.addInputSource(det);                           // connect analysis module
-}
-
-MajorPeaks::MajorPeaks()
-{
-    numPeaks = 8; // default value
-}
-
-MajorPeaks::MajorPeaks(int n)
-{
-    numPeaks = n; // user provided value
-}
 
 void MajorPeaks::doAnalysis()
 {
@@ -107,7 +33,7 @@ void MajorPeaks::doAnalysis()
   // iterate through data to find peaks
   for (int f = 1; f < WINDOW_SIZE_BY2 - 1; f++) {
     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
-    if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
+    if ((inputFreqs[0][f - 1] < data[f]) && (data[f] > data[f + 1])) {
     float _peakSum = data[f - 1] + data[f] + data[f + 1];
     if (_peakSum > _maxPeak) {
       _maxPeak = _peakSum;
@@ -134,5 +60,76 @@ void MajorPeaks::doAnalysis()
     }
     outputFrequencies[_minimumPeakIdx] = 0;
     outputAmplitudes[_minimumPeakIdx] = 0;
+  }
+  output[0] = outputFrequencies;
+  output[1] = outputAmplitudes;
+}
+
+class TotalAmplitude : public AnalysisModule<float>
+{
+
+};
+
+TotalAmplitude::doAnalysis()
+{
+  float total = 0.0;
+  // add up total divide by bins
+  output = total
+}
+
+class MeanAmplitude : public AnalysisModule<float>
+{
+  TotalAmplitude ta;
+};
+
+MeanAmplitude::doAnalysis()
+{
+  ta.doAnalysis();
+  output = ta.output / windowSize>>1;
+}
+
+class Noisiness : public AnalysisModule<float>
+{
+  MeanAmplitude ma;
+};
+
+Noisiness::doAnalysis()
+{
+  ma.doAnalysis;
+  float mean = ma.output;
+
+  // do whatever
+
+  output = //whatever
+}
+
+class PercussionDetection : public AnalysisModule<bool>{
+  float volThreshold;
+  float deltThreshold;
+  float noiseThreshold;
+  
+  
+  TotalAmplitude total;
+  DeltaAmplitude delta;
+  Noisiness noise;
+
+  n.doAnalysis();
+  n.getOutput();
+  // high volume && big change in volume && high noisiness
+}
+
+PercussionDetection::doAnalysis()
+{
+  noise.doAnalysis();
+  total.doAnalysis();
+  delta.doAnalysis();
+
+  if(noise.getOutput() > noiseThreshold &&
+     total.getOutput() > volThreshold &&
+     delta.getOutput() > deltThreshold)
+  {
+    output = 1;
+  } else {
+    output = 0;
   }
 }
