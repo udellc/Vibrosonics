@@ -42,28 +42,28 @@ class BreadSlicer : public AnalysisModule<float*>
     void doAnalysis()
     {
       int sliceCount = 0;
-      int sliceBinIdx = freqBandsIndexes[sliceCount];
+      int sliceBinIdx = freqBandIndexes[sliceCount];
       float sliceSum = 0.0;
-      int numBins = freqBandsIndexes[sliceCount];
+      int numBins = freqBandIndexes[sliceCount];
       int sliceMax = 0;
       int sliceMaxIdx = 0;
       for (int f = 0; f < windowSize>>1; f++) {
         // break if on last index of data array
         if (f == windowSize>>1 - 1) {
-          breadSlicerSums[sliceCount] = (sliceSum + inputFreqs[0][f]);
+          breadSlicerSums[sliceCount] = (sliceSum + input[0][f]);
           breadSlicerPeaks[sliceCount] = sliceMaxIdx;
           break;
         }
         // get the sum and max amplitude of the current slice
         if (f < sliceBinIdx) {
-          if (inputFreqs[0][f] == 0) { continue; }
-          sliceSum += inputFreqs[0][f];
+          if (input[0][f] == 0) { continue; }
+          sliceSum += input[0][f];
           if (f == 0) { continue; }
           // look for maximum peak in slice
-          if ((inputFreqs[0][f - 1] < inputFreqs[0][f]) && (inputFreqs[0][f] > inputFreqs[0][f + 1])) {
+          if ((input[0][f - 1] < input[0][f]) && (input[0][f] > input[0][f + 1])) {
             // compare with previous max amplitude at peak
-            if (inputFreqs[0][f] > sliceMax) {
-              sliceMax = inputFreqs[0][f];
+            if (input[0][f] > sliceMax) {
+              sliceMax = input[0][f];
               sliceMaxIdx = f;
             }
           }
@@ -77,15 +77,15 @@ class BreadSlicer : public AnalysisModule<float*>
           sliceCount += 1;  // iterate slice
           // break if sliceCount exceeds NUM_FREQ_BANDS
           if (sliceCount == numFreqBands) { break; }
-          numBins = freqBandsIndexes[sliceCount] - freqBandsIndexes[sliceCount - 1];
-          sliceBinIdx = freqBandsIndexes[sliceCount];
+          numBins = freqBandIndexes[sliceCount] - freqBandIndexes[sliceCount - 1];
+          sliceBinIdx = freqBandIndexes[sliceCount];
           f -= 1;
         }
       }
-      output[0] = BreadSlicerSums;
+      output = breadSlicerSums;
     }
 
-    void changeNumFreqBands()
+    void changeNumFreqBands(int newSize, int* newFreqBands)
     {
       numFreqBands = newSize;
 
@@ -110,7 +110,7 @@ class BreadSlicer : public AnalysisModule<float*>
     {
       // converting from frequency to index
       for (int i = 0; i < numFreqBands; i++) {
-        freqBandsIndexes[i] = ceil(frequencyBands[i] * freqWidth);
+        freqBandIndexes[i] = ceil(frequencyBands[i] * freqWidth);
       }
     }
 };

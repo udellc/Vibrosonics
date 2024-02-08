@@ -2,10 +2,10 @@
 #define Salient_Freqs_h
 
 #include "AnalysisModule.h"
-#include <algorithm>
+#include "DeltaAmplitudes.h"
 
 //  used to find the n (numFreqs) bin indexes with the highest change in amplitude
-class SalientFreqs :: public AnalysisModule<int*>
+class SalientFreqs : public AnalysisModule<int*>
 {
   public:
     int numFreqs;
@@ -52,6 +52,7 @@ class SalientFreqs :: public AnalysisModule<int*>
         currMaxAmpIdx = -1;
       } 
     }
+    output = salientFreqs;
 };
 
 #endif
