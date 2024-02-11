@@ -9,9 +9,9 @@ public:
     void doAnalysis()
     {
         float max = 0.0;
-        for(int i=0; i<windowSizeBy2; i++)
+        for(int i=lowerBinBound; i<upperBinBound; i++)
         {
-            if(input[0][i] > max){ max = input[0][i]; }
+            if(curWindow[i] > max){ max = curWindow[i]; }
         }
         output = max;
     }

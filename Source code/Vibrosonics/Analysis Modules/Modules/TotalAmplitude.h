@@ -9,9 +9,9 @@ public:
     void doAnalysis()
     {
         float total = 0.0;
-        for(int i=0; i<windowSizeBy2; i++)
+        for(int i=lowerBinBound; i<upperBinBound; i++)
         {
-            total += input[0][i];
+            total += curWindow[i];
         }
         output = total;
     }

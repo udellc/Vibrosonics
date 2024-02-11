@@ -12,6 +12,11 @@ private:
     MaxAmplitude max = MaxAmplitude();
 
 public:
+    Noisiness()
+    {
+        submodules = {&mean, &max};
+    }
+    
     void doAnalysis()
     {
         mean.doAnalysis();
