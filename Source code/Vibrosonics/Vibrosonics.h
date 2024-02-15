@@ -1,7 +1,9 @@
 #ifndef Vibrosonics_h
 #define Vibrosonics_h
 
+
 #include <AudioLab.h>
+#include "Analysis Modules/Analysis Module/AnalysisModule.h"
 
 #define NUM_FREQ_WINDOWS 8  // the number of frequency windows to store in circular buffer freqs
 
