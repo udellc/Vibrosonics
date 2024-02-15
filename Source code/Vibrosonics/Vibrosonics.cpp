@@ -6,7 +6,8 @@ int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 // example pulse
 //Pulse aPulse = Pulse(0, SINE);
 
-void Vibrosonics::init() {
+void Vibrosonics::init() 
+{
   Serial.begin(115200);
   while (!Serial)
     ;
@@ -22,7 +23,8 @@ void Vibrosonics::init() {
   // aPulse.setReleaseCurve(0.5);
 }
 
-void Vibrosonics::update() {
+void Vibrosonics::update()
+{
   if (AudioLab.ready()) {
     // call static function update() to update all pulses every window
     Pulse::update();
@@ -58,4 +60,28 @@ void Vibrosonics::update() {
     AudioLab.synthesize();
     //AudioLab.printWaves();
   }
+}
+
+void Vibrosonics::processInput()
+{
+  peformFFT(AudioLabInputBuffer);
+  storeFFTData();
+
+  noiseFloor(freqsCurrent, 15.0);
+
+  return;
+}
+
+void Vibrosonics::analyze()
+{
+  for(int i=0; i<sizeof(modules)/(sizeof(modules[0])); i++)
+  {
+    modules[i].doAnalysis();
+  } 
+}
+
+void Vibrosonics::addModule(AnalysisModule* m)
+{
+  modules = m;
+  return;
 }
