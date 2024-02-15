@@ -4,25 +4,23 @@
 #include <math.h>
 
 // include derived analysis modules so they can be used by including this file
-#include "BreadSlicer.h"
-#include "MajorPeaks.h"
-#include "PercussionDetection.h"
+#include "../Modules/BreadSlicer.h"
+#include "../Modules/MajorPeaks.h"
+#include "../Modules/PercussionDetection.h"
 
-#include "SalientFreqs.h"
-#include "Noisiness.h"
+#include "../Modules/SalientFreqs.h"
+#include "../Modules/Noisiness.h"
 
-#include "MaxAmplitude.h"
-#include "MeanAmplitude.h"
-#include "TotalAmplitude.h"
-#include "Centroid.h"
-#include "DeltaAmplitudes.h"
+#include "../Modules/MaxAmplitude.h"
+#include "../Modules/MeanAmplitude.h"
+#include "../Modules/TotalAmplitude.h"
+#include "../Modules/Centroid.h"
+#include "../Modules/DeltaAmplitudes.h"
 
-// constants temporarily defined here during dev... 
-// delete defines & uncomment AudioLab.h when ready to test on Arduino
-//#include <AudioLab.h>
-#define WINDOW_SIZE = 256;
-#define WINDOW_SIZE_BY_2 = 128;
-#define FREQ_WIDTH = 8192 / 256;
+#include <AudioLab.h>
+//#define WINDOW_SIZE = 256;
+//#define WINDOW_SIZE_BY_2 = 128;
+//#define FREQ_WIDTH = 8192 / 256;
 
 template <typename T> class AnalysisModule
 {
