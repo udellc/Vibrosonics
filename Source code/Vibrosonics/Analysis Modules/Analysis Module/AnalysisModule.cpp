@@ -1,8 +1,8 @@
 #include "AnalysisModule.h"
 
-template <typename T> void AnalysisModule<T>::setAnalysisFreqRange(int lower, int upper);
+template <typename T> void AnalysisModule<T>::setAnalysisFreqRange(int lowerFreq, int upperFreq);
 {
-    if(lower < 0 || upper > SAMPLE_RATE>>1 || lower > upper)
+    if(lowerFreq < 0 || upperFreq > SAMPLE_RATE>>1 || lowerFreq > upperFreq)
     {
         Serial.println("Error: invalid frequency range");
         return;
@@ -10,8 +10,8 @@ template <typename T> void AnalysisModule<T>::setAnalysisFreqRange(int lower, in
 
     // lower and upper are frequency values
     // convert frequencies to bin indices
-    lowerBin = round(lower / freqWidth);
-    upperBin = round(upper / freqWidth);
+    lowerBin = round(lowerFreq * freqWidth);
+    upperBin = round(upperFreq * freqWidth);
 
     if(submodules)
     {

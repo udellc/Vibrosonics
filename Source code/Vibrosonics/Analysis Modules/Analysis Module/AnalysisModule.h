@@ -29,7 +29,9 @@ protected:
     // global constants from audio lab
     int windowSize = WINDOW_SIZE;
     int windowSizeBy2 = windowSize >> 1;
-    int freqWidth = FREQ_WIDTH;
+    
+    int freqRes = SAMPLE_RATE / WINDOW_SIZE;
+    int freqWidth = WINDOW_SIZE / SAMPLE_RATE;
     
     // input arrays from Vibrosonics
     int** pastWindows;
