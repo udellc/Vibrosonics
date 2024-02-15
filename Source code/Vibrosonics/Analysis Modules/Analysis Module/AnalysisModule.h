@@ -32,10 +32,6 @@ protected:
     
     int freqRes = SAMPLE_RATE / WINDOW_SIZE;
     int freqWidth = WINDOW_SIZE / SAMPLE_RATE;
-    
-    // input arrays from Vibrosonics
-    int** pastWindows;
-    int* curWindow;
 
     // frequency range
     int lowerBinBound = 0;
@@ -48,6 +44,10 @@ protected:
     T output;
 
 public:
+    // input arrays from Vibrosonics
+    int** pastWindows;
+    int* curWindow;
+
     // pure virtual function to be implemented by dervied classes
     virtual void doAnalysis() = 0;
     
