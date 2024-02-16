@@ -38,12 +38,12 @@ protected:
     int upperBinBound = windowSizeBy2;
 
     // reference to submodules (used to automatically propagate parameters)
-    AnalysisModule* submodules;
+    AnalysisModule** submodules;
 
 public:
     // input arrays from Vibrosonics
-    int** pastWindows;
-    int* curWindow;
+    float* pastWindow;
+    float* curWindow;
 
     // pure virtual function to be implemented by dervied classes
     virtual void doAnalysis() = 0;
@@ -53,7 +53,7 @@ public:
     void addSubmodule(AnalysisModule* module);
 
     // provide a references to the input arrays
-    void setInputArrays(int** pastWindows, int* curWindow);
+    void setInputArrays(float* past, float* current);
 
     // set the frequency range to analyze 
     void setAnalysisFreqRange(int lower, int upper);
