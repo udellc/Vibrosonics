@@ -1,7 +1,7 @@
 #ifndef Bread_Slicer_h
 #define Bread_Slicer_h
 
-#include "AnalysisModule.h"
+#include "../Analysis Module/AnalysisModule.h"
 #include <cmath>
 
 // **Vibrosonics class will need freqWidth

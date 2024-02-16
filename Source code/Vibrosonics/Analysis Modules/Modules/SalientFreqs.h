@@ -1,7 +1,7 @@
 #ifndef Salient_Freqs_h
 #define Salient_Freqs_h
 
-#include "AnalysisModule.h"
+#include "../Analysis Module/AnalysisModule.h"
 #include "DeltaAmplitudes.h"
 
 //  used to find the n (numFreqs) bin indexes with the highest change in amplitude

@@ -1,4 +1,4 @@
-#include "MajorPeaks.h"
+#include "../Analysis Module/MajorPeaks.h"
 
 class MajorPeaks : public AnalysisModule<float**>
 {

@@ -1,7 +1,7 @@
 #ifndef Noisiness_h
 #define Noisiness_h
 
-#include "AnalysisModule.h"
+#include "../Analysis Module/AnalysisModule.h"
 #include "MaxAmplitude.h"
 #include "MeanAmplitude.h"
 

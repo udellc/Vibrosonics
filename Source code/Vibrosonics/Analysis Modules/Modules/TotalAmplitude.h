@@ -1,9 +1,9 @@
 #ifndef Total_Amplitude_h
 #define Total_Amplitude_h
 
-#include "AnalysisModule.h"
+#include "../Analysis Module/AnalysisModule.h"
 
-class TotalAmplitude : public AnalysisModule<float>
+class TotalAmplitude : public ModuleInterface<float>
 {
 public:
     void doAnalysis()

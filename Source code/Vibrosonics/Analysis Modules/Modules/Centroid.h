@@ -1,7 +1,7 @@
 #ifndef Centroid_h
 #define Centroid_h
 
-#include "AnalysisModule.h"
+#include "../Analysis Module/AnalysisModule.h"
 #include <cmath>
 
 //  finds the weighted mean of the frequencies present, using amplitude as weights

@@ -32,10 +32,6 @@ protected:
     int windowSizeBy2 = windowSize >> 1;
     int freqRes = SAMPLE_RATE / WINDOW_SIZE;
     int freqWidth = WINDOW_SIZE / SAMPLE_RATE;
-    
-    // input arrays
-    int** pastWindows;
-    int* curWindow;
 
     // frequency range
     int lowerBinBound = 0;
@@ -45,7 +41,11 @@ protected:
     AnalysisModule* submodules;
 
 public:
-    // pure virtual analysis function to be implemented by dervied classes
+    // input arrays from Vibrosonics
+    int** pastWindows;
+    int* curWindow;
+
+    // pure virtual function to be implemented by dervied classes
     virtual void doAnalysis() = 0;
 
     // if a module needs submodules, call this function in the parent module's constructor 

@@ -1,7 +1,7 @@
 #ifndef Mean_Amplitude_h
 #define Mean_Amplitude_h
 
-#include "AnalysisModule.h"
+#include "../Analysis Module/AnalysisModule.h"
 #include "TotalAmplitude.h"
 
 class MeanAmplitude : public AnalysisModule<float>
