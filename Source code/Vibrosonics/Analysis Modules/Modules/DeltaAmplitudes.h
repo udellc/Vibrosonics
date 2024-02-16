@@ -6,14 +6,14 @@
 
 /*  Used to find the change in amplitudes between the current and previous FFT window
     for each bin */ 
-class DeltaAmplitudes : public AnalysisModule<int*>
+class DeltaAmplitudes : public ModuleInterface<float*>
 {
   public:
-    int* deltaAmplitudes; 
+    float* deltaAmplitudes; 
 
     DeltaAmplitudes()
     {
-      deltaAmplitudes = new int[windowSize];
+      deltaAmplitudes = new float[windowSize];
     } 
     ~DeltaAmplitudes()
     {
@@ -23,9 +23,8 @@ class DeltaAmplitudes : public AnalysisModule<int*>
     void doAnalysis()
     {
       // iterate through FFT data and store the change in amplitudes between current and previous window
-      int ampChange = 0;
-      for (int i = 0; i < windowSize>>1; i++) {
-        deltaAmplitudes[i] = abs(int(input[0][i]) - int(input[1][i])) 
+      for (int i = lowerBinBound; i < upperBinBound; i++) {
+        deltaAmplitudes[i] = abs(curWindow[i] - pastWindow[i]);
       }
 
       output = deltaAmplitudes;
