@@ -5,7 +5,7 @@
 #include <cmath>
 
 //  finds the weighted mean of the frequencies present, using amplitude as weights
-class Centroid : public AnalysisModule<int>
+class Centroid : public ModuleInterface<int>
 {
   public:
     int centroid;
@@ -17,8 +17,8 @@ class Centroid : public AnalysisModule<int>
       float ampSum = 0;
       float freqAmpSum = 0;
       int amp, freq;
-      for (int i = 0; i < windowSize>>1; i++) {
-        amp = input[0][i];
+      for (int i = lowerBinBound; i < upperBinBound; i++) {
+        amp = curWindow[i];
         freq = ((i+1) * freqWidth - freqWidthBy2);  // use the center frequency of a bin
         ampSum += amp;
         freqAmpSum += freq * amp;
