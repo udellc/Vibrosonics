@@ -11,7 +11,7 @@ public:
         float total = 0.0;
         for(int i=lowerBinBound; i<upperBinBound; i++)
         {
-            //total += curWindow[i];
+          total += curWindow[i];
         }
         output = total;
     }
