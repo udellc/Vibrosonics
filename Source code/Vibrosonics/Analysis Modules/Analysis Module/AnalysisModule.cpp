@@ -13,11 +13,11 @@ template <typename T> void AnalysisModule<T>::setAnalysisFreqRange(int lowerFreq
     lowerBin = round(lowerFreq * freqWidth);
     upperBin = round(upperFreq * freqWidth);
 
-    if(submodules)
-    {
-        for(int i=0; i<sizeof(submodules)/sizeof(submodules[0]); i++)
-        {
-            submodules[i]->setAnalysisFreqRange(lower, upper);
-        }
-    }
+    // if(submodules)
+    // {
+    //     for(int i=0; i<sizeof(submodules)/sizeof(submodules[0]); i++)
+    //     {
+    //         submodules[i]->setAnalysisFreqRange(lower, upper);
+    //     }
+    // }
 }

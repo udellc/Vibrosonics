@@ -38,7 +38,7 @@ protected:
     int upperBinBound = windowSizeBy2;
 
     // reference to submodules (used to automatically propagate base class parameters)
-    AnalysisModule* submodules;
+    //AnalysisModule* submodules;
 
     // result of most recent analysis
     T output;
@@ -46,17 +46,19 @@ protected:
 public:
     // input arrays from Vibrosonics
     int** pastWindows;
-    int* curWindow;
+    float* curWindow;
 
     // pure virtual function to be implemented by dervied classes
     virtual void doAnalysis() = 0;
     
     // return output of most recent analysis
-    T getOutput();
+    T getOutput() {
+        return output;
+    }
 
     // if a module needs submodules, call this function in the parent module's constructor 
     // this is necessary to automatically propagate base class parameters like freq range
-    void addSubmodule(AnalysisModule* module);
+    //void addSubmodule(AnalysisModule* module);
 
     // provide a references to the input arrays
     void setInputArrays(int** pastWindows, int* curWindow);

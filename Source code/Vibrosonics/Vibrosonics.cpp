@@ -64,7 +64,7 @@ void Vibrosonics::update()
 
 void Vibrosonics::processInput()
 {
-  peformFFT(AudioLabInputBuffer);
+  performFFT(AudioLabInputBuffer);
   storeFFTData();
 
   noiseFloor(freqsCurrent, 15.0);
@@ -74,14 +74,16 @@ void Vibrosonics::processInput()
 
 void Vibrosonics::analyze()
 {
-  for(int i=0; i<sizeof(modules)/(sizeof(modules[0])); i++)
-  {
-    modules[i].doAnalysis();
-  } 
+  // for(int i=0; i<sizeof(modules)/(sizeof(modules[0])); i++)
+  // {
+  //   modules[i].doAnalysis();
+  // } 
+  modules->doAnalysis();
 }
 
-void Vibrosonics::addModule(AnalysisModule* m)
+void Vibrosonics::addModule(TotalAmplitude* m)
 {
   modules = m;
+  modules->curWindow = freqsCurrent;
   return;
 }

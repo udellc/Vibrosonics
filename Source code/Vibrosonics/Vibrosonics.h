@@ -4,6 +4,7 @@
 
 #include <AudioLab.h>
 #include "Analysis Modules/Analysis Module/AnalysisModule.h"
+#include "Analysis Modules/Modules/TotalAmplitude.h"
 
 #define NUM_FREQ_WINDOWS 8  // the number of frequency windows to store in circular buffer freqs
 
@@ -24,14 +25,14 @@ class Vibrosonics
     float* freqsPrevious = freqs[0];
 
     static const int MAX_NUM_PEAKS = WINDOW_SIZE_BY2 >> 1;
-    //int FFTPeaks[MAX_NUM_PEAKS];
-    //float FFTPeaksAmp[MAX_NUM_PEAKS];
+    int FFTPeaks[MAX_NUM_PEAKS];
+    float FFTPeaksAmp[MAX_NUM_PEAKS];
 
-    AnalysisModule* modules;
+    TotalAmplitude* modules;
 
   public:
 
-    void addModule(AnalysisModule* m);
+    //void addModule(AnalysisModule* m);
 
     // this function has to be called once in Arduino's void setup(). 
     // Note: this is optional, stuff inside init() can be called directly inside setup()
@@ -46,6 +47,12 @@ class Vibrosonics
 
     // stores data computed by FFT into freqs array
     void storeFFTData();
+
+    void processInput();
+
+    void analyze();
+
+    void addModule(TotalAmplitude* mod);
 
     // returns the mean of some data
     float getMean(float* data, int dataLength);
