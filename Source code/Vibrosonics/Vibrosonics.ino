@@ -1,14 +1,18 @@
 #include "Vibrosonics.h"
+#include "Analysis Modules/Analysis Module/AnalysisModule.h"
+#include "Analysis Modules/Modules/TotalAmplitude.h"
 
 Vibrosonics v = Vibrosonics();
-TotatAmplitude total = TotalAmplitude();
-v.addModule(&total);
-
-//MajorPeaks majorPeaks = MajorPeaks(/* */);
+TotalAmplitude total1 = TotalAmplitude();
+TotalAmplitude total2 = TotalAmplitude();
 
 void setup() {
   v.init();
+  Serial.printf("Ready\n");
+  v.addModule(&total1);
+  v.addModule(&total2);
 
+  Serial.printf("Ready\n");
 }
 
 void loop() {
@@ -17,8 +21,8 @@ void loop() {
     v.processInput();
     v.analyze();
 
-    float tot = total.getOutput();
-    Serial.printf("%f", tot);
+    Serial.printf("total1: %f\n", total1.getOutput());
+    Serial.printf("total2: %f\n", total2.getOutput());
     // other modules etc
 
     // map to outputs
