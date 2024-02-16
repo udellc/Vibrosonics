@@ -1,7 +1,6 @@
 #ifndef Vibrosonics_h
 #define Vibrosonics_h
 
-
 #include <AudioLab.h>
 #include "Analysis Modules/Analysis Module/AnalysisModule.h"
 
@@ -24,14 +23,12 @@ class Vibrosonics
     float* freqsPrevious = freqs[0];
 
     static const int MAX_NUM_PEAKS = WINDOW_SIZE_BY2 >> 1;
-    //int FFTPeaks[MAX_NUM_PEAKS];
-    //float FFTPeaksAmp[MAX_NUM_PEAKS];
+    int FFTPeaks[MAX_NUM_PEAKS];
+    float FFTPeaksAmp[MAX_NUM_PEAKS];
 
-    AnalysisModule* modules;
+    AnalysisModule** modules;
 
   public:
-
-    void addModule(AnalysisModule* m);
 
     // this function has to be called once in Arduino's void setup(). 
     // Note: this is optional, stuff inside init() can be called directly inside setup()
@@ -71,6 +68,9 @@ class Vibrosonics
     // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
     int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude);
     
+    void addModule(AnalysisModule* module);
+    void processInput();
+    void analyze();
 
 };
 
