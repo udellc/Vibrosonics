@@ -18,9 +18,10 @@
 #include "../Modules/Centroid.h"
 #include "../Modules/DeltaAmplitudes.h"
 */
-//#include <AudioLab.h>
-#define WINDOW_SIZE 256
-#define SAMPLE_RATE 8192
+
+#include <AudioLab.h>
+//#define WINDOW_SIZE 256
+//#define SAMPLE_RATE 8192
 
 class AnalysisModule
 {
