@@ -26,6 +26,7 @@ class Vibrosonics
     int FFTPeaks[MAX_NUM_PEAKS];
     float FFTPeaksAmp[MAX_NUM_PEAKS];
 
+    int numModules = 0;
     AnalysisModule** modules;
 
   public:

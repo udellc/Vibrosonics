@@ -73,8 +73,7 @@ void Vibrosonics::processInput()
 }
 
 void Vibrosonics::analyze()
-{
-  int numModules = sizeof(modules)/(sizeof(modules[0]));
+{  
   for(int i=0; i<numModules; i++)
   {
     modules[i]->doAnalysis();
@@ -83,21 +82,21 @@ void Vibrosonics::analyze()
 
 void Vibrosonics::addModule(AnalysisModule* module)
 {
-    if(modules)
-    {
-        int numModules = sizeof(modules)/sizeof(modules[0]);
-        AnalysisModule** newModules = new AnalysisModule*[numModules+1];
-        for(int i=0; i<numModules; i++)
-        {
-            newModules[i] = modules[i];
-        }
-        newModules[numModules] = module;
-        delete[] modules;
-        modules = newModules;
-    }
-    else
-    {
-        modules = new AnalysisModule*[1];
-        modules[0] = module;
-    }
+  
+  // set module parameters
+  module->setInputArrays(freqsPrevious, freqsCurrent);
+  
+  // create new larger array for modules
+  numModules++;
+  AnalysisModule** newModules = new AnalysisModule*[numModules];
+  
+  // copy modules over and add new module
+  for(int i=0; i<numModules-1; i++){
+    newModules[i] = modules[i];
+  }
+  newModules[numModules-1] = module;
+  
+  // free old modules array and store reference to new modules array
+  delete [] modules;
+  modules = newModules;
 }
