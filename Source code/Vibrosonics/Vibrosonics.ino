@@ -9,9 +9,12 @@ TotalAmplitude total2 = TotalAmplitude();
 void setup() {
   v.init();
   Serial.printf("Ready\n");
+  
+  total2.setAnalysisFreqRange(0, 500);
+
   v.addModule(&total1);
   v.addModule(&total2);
-
+  
   Serial.printf("Ready\n");
 }
 
