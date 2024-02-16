@@ -28,16 +28,18 @@ class AnalysisModule
 protected:
     
     // important constants
-    int windowSize = WINDOW_SIZE;
+    int sampleRate = 8192;
+    int windowSize = 256;
     int windowSizeBy2 = windowSize >> 1;
-    int freqRes = SAMPLE_RATE / WINDOW_SIZE;
-    int freqWidth = WINDOW_SIZE / SAMPLE_RATE;
+    float freqRes = float(sampleRate) / float(windowSize);
+    float freqWidth = float(windowSize) / float(sampleRate);
 
     // frequency range
     int lowerBinBound = 0;
     int upperBinBound = windowSizeBy2;
 
     // reference to submodules (used to automatically propagate parameters)
+    int numSubmodules = 0;
     AnalysisModule** submodules;
 
 public:
