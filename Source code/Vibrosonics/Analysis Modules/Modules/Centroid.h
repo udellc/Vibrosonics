@@ -9,7 +9,7 @@ class Centroid : public ModuleInterface<int>
 {
   public:
     int centroid;
-    int freqWidthBy2 = freqWidth/2;
+    int freqResBy2 = freqRes/2;
 
     void doAnalysis()
     {
@@ -19,7 +19,7 @@ class Centroid : public ModuleInterface<int>
       int amp, freq;
       for (int i = lowerBinBound; i < upperBinBound; i++) {
         amp = curWindow[i];
-        freq = ((i+1) * freqWidth - freqWidthBy2);  // use the center frequency of a bin
+        freq = (i * freqRes + freqResBy2);  // use the center frequency of a bin
         ampSum += amp;
         freqAmpSum += freq * amp;
       }

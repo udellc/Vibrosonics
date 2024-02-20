@@ -10,16 +10,19 @@ class SalientFreqs : public AnalysisModule<int*>
   public:
     int numFreqs;
     int* salientFreqs;
+    float* amplitudes;
     DeltaAmplitudes deltaAmps;
 
     SalientFreqs()
     {
       int numFreqs = 1; // default to finding frequency of max change
       salientFreqs = new int[numFreqs];
+      amplitudes = new float[windowSize];
     }
     ~SalientFreqs()
     {
       delete [] salientFreqs;
+      delete [] amplitudes;
     }
 
     // change the amount of salient frequencies to be found
@@ -34,13 +37,13 @@ class SalientFreqs : public AnalysisModule<int*>
     void doAnalysis()
     {
       deltaAmps.doAnalysis();
-      int* amplitudes = deltaAmps.getOutput();
+      amplitudes = deltaAmps.getOutput();   // copy amplitudes
 
       // iterate through amplitudes to find the maximum(s)
       int currMaxAmp = 0; 
       int currMaxAmpIdx = -1;
       for (int i = 0; i < numFreqs; i++) {
-        for (int j = 0; j < windowSize>>1; j++) {
+        for (int j = lowerBinBound; j < upperBinBound; j++) {
           if (amplitudes[j] > currMaxAmp) {
             currMaxAmp = amplitudes[j];
             currMaxAmpIdx = j;
