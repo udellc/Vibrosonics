@@ -1,11 +1,11 @@
 #ifndef Noisiness_h
 #define Noisiness_h
 
-#include "../Analysis Module/AnalysisModule.h"
+#include "../AnalysisModule.h"
 #include "MaxAmplitude.h"
 #include "MeanAmplitude.h"
 
-class Noisiness : public AnalysisModule<float>
+class Noisiness : public ModuleInterface<float>
 {
 private:
     MeanAmplitude mean = MeanAmplitude();
@@ -14,7 +14,8 @@ private:
 public:
     Noisiness()
     {
-        submodules = {&mean, &max};
+        addSubmodule(&mean);
+        addSubmodule(&max);
     }
     
     void doAnalysis()

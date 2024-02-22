@@ -1,6 +1,5 @@
 #include "AnalysisModule.h"
 
-
 void AnalysisModule::addSubmodule(AnalysisModule *module)
 {
   

@@ -3,22 +3,6 @@
 
 #include <math.h>
 
-// include derived analysis modules so they can be used by including this file
-/*
-#include "../Modules/BreadSlicer.h"
-#include "../Modules/MajorPeaks.h"
-#include "../Modules/PercussionDetection.h"
-
-#include "../Modules/SalientFreqs.h"
-#include "../Modules/Noisiness.h"
-
-#include "../Modules/MaxAmplitude.h"
-#include "../Modules/MeanAmplitude.h"
-#include "../Modules/TotalAmplitude.h"
-#include "../Modules/Centroid.h"
-#include "../Modules/DeltaAmplitudes.h"
-*/
-
 #include <AudioLab.h>
 //#define WINDOW_SIZE 256
 //#define SAMPLE_RATE 8192
@@ -73,5 +57,19 @@ public:
     T getOutput(){ return output;}
 
 };
+
+// include derived analysis modules so they can be used by including this file
+//#include "modules/BreadSlicer.h"
+//#include "modules/MajorPeaks.h"
+#include "modules/PercussionDetection.h"
+
+//#include "modules/SalientFreqs.h"
+#include "modules/Noisiness.h"
+
+#include "modules/MaxAmplitude.h"
+#include "modules/MeanAmplitude.h"
+#include "modules/TotalAmplitude.h"
+#include "modules/Centroid.h"
+#include "modules/DeltaAmplitudes.h"
 
 #endif

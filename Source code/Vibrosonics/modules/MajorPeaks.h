@@ -1,6 +1,9 @@
-#include "../Analysis Module/MajorPeaks.h"
+#ifndef Major_Peaks_h
+#define Major_Peaks_h
 
-class MajorPeaks : public AnalysisModule<float**>
+#include "../AnalysisModule.h"
+
+class MajorPeaks : public ModuleInterface<float**>
 {
 
 };
@@ -50,3 +53,5 @@ void MajorPeaks::doAnalysis()
   output[0] = outputFrequencies;
   output[1] = outputAmplitudes;
 }
+
+#endif

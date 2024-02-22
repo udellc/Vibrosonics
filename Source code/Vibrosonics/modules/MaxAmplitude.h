@@ -1,9 +1,9 @@
 #ifndef Max_Amplitude_h
 #define Max_Amplitude_h
 
-#include "../Analysis Module/AnalysisModule.h"
+#include "../AnalysisModule.h"
 
-class MaxAmplitude : public AnalysisModule<float>
+class MaxAmplitude : public ModuleInterface<float>
 {
 public:
     void doAnalysis()

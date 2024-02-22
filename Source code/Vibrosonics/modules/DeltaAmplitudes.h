@@ -1,7 +1,7 @@
 #ifndef Delta_Amplitudes_h
 #define Delta_Amplitudes_h
 
-#include "../Analysis Module/AnalysisModule.h"
+#include "../AnalysisModule.h"
 #include <cmath>
 
 /*  Used to find the change in amplitudes between the current and previous FFT window

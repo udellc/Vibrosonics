@@ -1,10 +1,10 @@
 #ifndef Mean_Amplitude_h
 #define Mean_Amplitude_h
 
-#include "../Analysis Module/AnalysisModule.h"
+#include "../AnalysisModule.h"
 #include "TotalAmplitude.h"
 
-class MeanAmplitude : public AnalysisModule<float>
+class MeanAmplitude : public ModuleInterface<float>
 {
 private:
     TotalAmplitude totalAmp = TotalAmplitude();
@@ -12,7 +12,7 @@ private:
 public:
     MeanAmplitude()
     {
-        submodules = &totalAmp;
+        addSubmodule(&totalAmp);
     }
     
     void doAnalysis()

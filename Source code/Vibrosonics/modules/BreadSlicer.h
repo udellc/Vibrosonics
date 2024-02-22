@@ -1,7 +1,7 @@
 #ifndef Bread_Slicer_h
 #define Bread_Slicer_h
 
-#include "../Analysis Module/AnalysisModule.h"
+#include "../AnalysisModule.h"
 #include <cmath>
 
 // **Vibrosonics class will need freqWidth
@@ -9,7 +9,7 @@
 /*  Analysis method that splits the frequency spectrum in to 'slices' then sums the
     amplitude within those ranges which are used as weights for a specified list
     of frequencies */
-class BreadSlicer : public AnalysisModule<float*>
+class BreadSlicer : public ModuleInterface<float*>
 {
   public:
     int numFreqBands;
