@@ -1,19 +1,24 @@
 #include "Vibrosonics.h"
-#include "Analysis Modules/Analysis Module/AnalysisModule.h"
-#include "Analysis Modules/Modules/TotalAmplitude.h"
+#include "AnalysisModule.h"
 
 Vibrosonics v = Vibrosonics();
-TotalAmplitude total1 = TotalAmplitude();
-TotalAmplitude total2 = TotalAmplitude();
+
+TotalAmplitude totalAmp = TotalAmplitude();
+MaxAmplitude maxAmp = MaxAmplitude();
+MeanAmplitude meanAmp = MeanAmplitude();
+Centroid cent = Centroid();
+//SalientFreqs salFreqs = SalientFreqs();
 
 void setup() {
   v.init();
-  Serial.printf("Ready\n");
   
-  total2.setAnalysisFreqRange(0, 500);
+  //total.setAnalysisFreqRange(0, 500);
 
-  v.addModule(&total1);
-  v.addModule(&total2);
+  v.addModule(&totalAmp);
+  v.addModule(&maxAmp);
+  v.addModule(&meanAmp);
+  v.addModule(&cent);
+  //v.addModule(&salFreqs);
   
   Serial.printf("Ready\n");
 }
@@ -24,10 +29,11 @@ void loop() {
     v.processInput();
     v.analyze();
 
-    Serial.printf("total1: %f\n", total1.getOutput());
-    Serial.printf("total2: %f\n", total2.getOutput());
-    // other modules etc
-
+    Serial.printf("total: %f\n", totalAmp.getOutput());
+    Serial.printf("max: %f\n", maxAmp.getOutput());
+    Serial.printf("mean: %f\n", meanAmp.getOutput());
+    Serial.printf("cent: %f\n", cent.getOutput());
+    
     // map to outputs
     //assignWaves(/* major peaks output */); // additive synthesizer
 
