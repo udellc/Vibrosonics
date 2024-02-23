@@ -14,8 +14,8 @@ private:
 public:
     Noisiness()
     {
-        addSubmodule(&mean);
-        addSubmodule(&max);
+        this->addSubmodule(&mean);
+        this->addSubmodule(&max);
     }
     
     void doAnalysis()
@@ -27,9 +27,10 @@ public:
         float maxAmp = max.getOutput();
 
         float noisiness = 0.0;
-        if(meanAmp > 10.0){
+        if(meanAmp > 1.0){
             noisiness = 1 - ((maxAmp / meanAmp) / 66.7);
         }
+        //Serial.printf("Lower %d, Upper %d, Noisiness: %f\n", lowerBinBound, upperBinBound, noisiness);
         output = noisiness;
     }
 };
