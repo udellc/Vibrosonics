@@ -34,9 +34,10 @@ public:
 
         float total = totalAmp.getOutput();
         //float delta = deltaAmp.getOutput();
+        
         float noiseOutput = noise.getOutput();
 
-        output = (total >= loudness_threshold) && (delta >= delta_threshold) && (noiseOutput >= noise_threshold);
+        output = (total >= loudness_threshold) /*&& (delta >= delta_threshold) */&& (noiseOutput >= noise_threshold);
     }
 };
 #endif
