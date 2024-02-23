@@ -61,7 +61,7 @@ public:
 
 // include derived analysis modules so they can be used by including this file
 //#include "modules/BreadSlicer.h"
-//#include "modules/MajorPeaks.h"
+#include "modules/MajorPeaks.h"
 #include "modules/PercussionDetection.h"
 
 //#include "modules/SalientFreqs.h"
