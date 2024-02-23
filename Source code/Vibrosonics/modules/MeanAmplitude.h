@@ -12,7 +12,7 @@ private:
 public:
     MeanAmplitude()
     {
-        addSubmodule(&totalAmp);
+        this->addSubmodule(&totalAmp);
     }
     
     void doAnalysis()
