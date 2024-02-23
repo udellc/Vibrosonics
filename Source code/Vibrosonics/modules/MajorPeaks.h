@@ -5,53 +5,104 @@
 
 class MajorPeaks : public ModuleInterface<float**>
 {
+private:
+  int maxNumPeaks = 8;
+  int numPeaks = 0;
+  float* outputFrequencies = new float[windowSizeBy2>>1];
+  float* outputAmplitudes = new float[windowSizeBy2>>1];
 
-};
+public:
+  MajorPeaks(int n){
+    maxNumPeaks = n;
+    output = new float*[2];
+    output[0] = new float[maxNumPeaks];
+    output[1] = new float[maxNumPeaks];
+  }
 
-void MajorPeaks::doAnalysis()
-{
-  // restore output arrays
-  for (int i = 0; i < WINDOW_SIZE_BY2 >> 1; i++) {
-    outputFrequencies[i] = 0;
-    outputAmplitudes[i] = 0;
+  ~MajorPeaks(){
+    // free all memory
+    delete[] output[0];
+    delete[] output[1];
+    delete[] output;
+    delete[] outputFrequencies;
+    delete[] outputAmplitudes;
   }
-  // total sum of data
-  int _peaksFound = 0;
-  float _maxPeak = 0;
-  int _maxPeakIdx = 0;
-  // iterate through data to find peaks
-  for (int f = 1; f < WINDOW_SIZE_BY2 - 1; f++) {
-    // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
-    if ((inputFreqs[0][f - 1] < data[f]) && (data[f] > data[f + 1])) {
-    float _peakSum = data[f - 1] + data[f] + data[f + 1];
-    if (_peakSum > _maxPeak) {
-      _maxPeak = _peakSum;
-      _maxPeakIdx = f;
-    }
-    // store sum around the peak and index of peak
-    outputAmplitudes[_peaksFound] = _peakSum;
-    outputFrequencies[_peaksFound++] = f;
+
+  // reset peaks arrays
+  void resetPeaksArrays(){
+    numPeaks = 0;
+    for(int i=0; i<windowSizeBy2>>1; i++){
+      outputFrequencies[i] = 0;
+      outputAmplitudes[i] = 0;
     }
   }
-  // if needed, remove a certain number of the minumum peaks to contain output to @maxNumPeaks
-  int _numPeaksToRemove = _peaksFound - maxNumPeaks;
-  for (int j = 0; j < _numPeaksToRemove; j++) {
-    // store minimum as the maximum peak
-    float _minimumPeak = _maxPeak;
-    int _minimumPeakIdx = _maxPeakIdx;
-    // find the minimum peak and replace with zero
-    for (int i = 0; i < _peaksFound; i++) {
-      float _thisPeakAmplitude = FFTPeaksAmp[i];
-      if (_thisPeakAmplitude > 0 && _thisPeakAmplitude < _minimumPeak) {
-        _minimumPeak = _thisPeakAmplitude;
-        _minimumPeakIdx = i;
+
+  // find peaks in the current window
+  void findPeaks(){
+    for(int i=lowerBinBound+1; i<upperBinBound; i++){
+      if(curWindow[i] > curWindow[i - 1] && curWindow[i] > curWindow[i + 1]){
+        outputFrequencies[numPeaks] = i * freqRes;
+        outputAmplitudes[numPeaks] = curWindow[i];
+        numPeaks++;
       }
     }
-    outputFrequencies[_minimumPeakIdx] = 0;
-    outputAmplitudes[_minimumPeakIdx] = 0;
   }
-  output[0] = outputFrequencies;
-  output[1] = outputAmplitudes;
-}
+
+  // remove the smallest peaks until numPeaks <= maxNumPeaks
+  void trimPeaks(){
+    while(numPeaks > maxNumPeaks){
+      
+      float minAmp = outputAmplitudes[0];
+      int minIndex = 0;
+      
+      // find the smallest peak
+      for(int i=1; i<numPeaks; i++){
+        if(outputAmplitudes[i] < minAmp){
+          minAmp = outputAmplitudes[i];
+          minIndex = i;
+        }
+      }
+      
+      // remove the smallest peak
+      for(int i=minIndex; i<numPeaks-1; i++){
+        outputFrequencies[i] = outputFrequencies[i+1];
+        outputAmplitudes[i] = outputAmplitudes[i+1];
+      }
+      numPeaks--;
+    }
+  }
+
+  // copy peaks to the output arrays
+  void storePeaks(){
+    for(int i=0; i<maxNumPeaks; i++){
+      // if there are fewer than maxNumPeaks peaks, pad array with zeros
+      if(i < numPeaks){
+        output[0][i] = outputFrequencies[i];
+        output[1][i] = outputAmplitudes[i];
+      } else {
+        output[0][i] = 0;
+        output[1][i] = 0;
+      }
+    }
+  }
+
+  // for demo/debugging purposes
+  void printOutput(){
+    Serial.printf("[Freq, Amp]: ");
+    for(int i=0; i<maxNumPeaks-1; i++){
+      Serial.printf("[%g, %g], ", round(output[0][i]), round(output[1][i]));
+    }
+    Serial.printf("[%g, %g]\n", round(output[0][maxNumPeaks-1]), round(output[1][maxNumPeaks-1]));
+  }
+
+  // perform the analysis
+  void doAnalysis(){
+    resetPeaksArrays();
+    findPeaks();
+    trimPeaks();
+    storePeaks();
+  }
+
+};
 
 #endif
