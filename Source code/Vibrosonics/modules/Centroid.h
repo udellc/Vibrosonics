@@ -23,7 +23,7 @@ class Centroid : public ModuleInterface<int>
         ampSum += amp;
         freqAmpSum += freq * amp;
       }
-      centroid = std::ceil(freqAmpSum / ampSum);
+      centroid = (ampSum == 0) ? 0 : std::ceil(freqAmpSum / ampSum);
       output = centroid;
     }
 };
