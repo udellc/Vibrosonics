@@ -5,7 +5,7 @@ void AnalysisModule::addSubmodule(AnalysisModule *module)
   
   // set module parameters
   module->setInputArrays(pastWindow, curWindow);
-  module->setAnalysisFreqRange(lowerBinBound * freqWidth, upperBinBound * freqWidth);
+  module->setAnalysisRangeByBin(lowerBinBound, upperBinBound);
   
   // create new larger array for modules
   numSubmodules++;
@@ -29,11 +29,12 @@ void AnalysisModule::setInputArrays(float* past, float* current)
 
   for(int i=0; i<numSubmodules; i++)
   {
+    Serial.printf("setting input arrays for submodule %d\n", i);
     submodules[i]->setInputArrays(past, current);
   }
 }
 
-void AnalysisModule::setAnalysisFreqRange(int lowerFreq, int upperFreq)
+void AnalysisModule::setAnalysisRangeByFreq(int lowerFreq, int upperFreq)
 {
   if(lowerFreq < 0 || upperFreq > sampleRate>>1 || lowerFreq > upperFreq)
   {
@@ -48,6 +49,25 @@ void AnalysisModule::setAnalysisFreqRange(int lowerFreq, int upperFreq)
 
   for(int i=0; i<numSubmodules; i++)
   {
-    submodules[i]->setAnalysisFreqRange(lowerFreq, upperFreq);
+    submodules[i]->setAnalysisRangeByBin(lowerBinBound, upperBinBound);
+  }
+}
+
+void AnalysisModule::setAnalysisRangeByBin(int lowerBin, int upperBin)
+{
+  if(lowerBin < 0 || upperBin > windowSize>>1 || lowerBin > upperBin)
+  {
+    Serial.println("Error: invalid frequency range");
+    return;
+  }
+
+  // lower and upper are frequency values
+  // convert frequencies to bin indices
+  lowerBinBound = lowerBin;
+  upperBinBound = upperBin;
+
+  for(int i=0; i<numSubmodules; i++)
+  {
+    submodules[i]->setAnalysisRangeByBin(lowerBinBound, upperBinBound);
   }
 }

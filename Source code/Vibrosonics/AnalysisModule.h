@@ -42,7 +42,8 @@ public:
     void setInputArrays(float* past, float* current);
 
     // set the frequency range to analyze 
-    void setAnalysisFreqRange(int lower, int upper);
+    void setAnalysisRangeByFreq(int lowerFreq, int upperFreq);
+    void setAnalysisRangeByBin(int lowerBin, int upperBin);
 };
 
 // interface for analysis module templatized components
