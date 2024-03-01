@@ -53,7 +53,7 @@ void Vibrosonics::storeFFTData(void) {
 
 void Vibrosonics::storeFFTDataLow(void) {
   for (int i = 0; i < WINDOW_SIZE_BY2; i++) {
-    freqsLow[i] = vReal[i];
+    freqsLow[i] = vReal[i] * (WINDOW_SIZE / (SAMPLE_RATE / 4.0));
   }
 }
 
@@ -76,16 +76,16 @@ void Vibrosonics::noiseFloor(float *data, float threshold) {
 
 void Vibrosonics::findPeaks(float* data, int maxNumPeaks) {
   // restore output arrays
-  for (int i = 0; i < WINDOW_SIZE_BY2 >> 1; i++) {
-    FFTPeaks[i] = 0;
-    FFTPeaksAmp[i] = 0;
+  for (int i = 0; i < MAX_NUM_PEAKS; i++) {
+    FFTPeaks[0][i] = 0;
+    FFTPeaks[1][i] = 0;
   }
   // total sum of data
   int _peaksFound = 0;
   float _maxPeak = 0;
   int _maxPeakIdx = 0;
   // iterate through data to find peaks
-  for (int f = 1; f < WINDOW_SIZE_BY2 - 1; f++) {
+  for (int f = 0; f < WINDOW_SIZE_BY2; f++) {
     // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
     if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
     float _peakSum = data[f - 1] + data[f] + data[f + 1];
@@ -94,10 +94,11 @@ void Vibrosonics::findPeaks(float* data, int maxNumPeaks) {
       _maxPeakIdx = f;
     }
     // store sum around the peak and index of peak
-    FFTPeaksAmp[_peaksFound] = _peakSum;
-    FFTPeaks[_peaksFound++] = f;
+    FFTPeaks[0][_peaksFound] = f;
+    FFTPeaks[1][_peaksFound++] = _peakSum;
     }
   }
+
   // if needed, remove a certain number of the minumum peaks to contain output to @maxNumPeaks
   int _numPeaksToRemove = _peaksFound - maxNumPeaks;
   for (int j = 0; j < _numPeaksToRemove; j++) {
@@ -106,14 +107,20 @@ void Vibrosonics::findPeaks(float* data, int maxNumPeaks) {
     int _minimumPeakIdx = _maxPeakIdx;
     // find the minimum peak and replace with zero
     for (int i = 0; i < _peaksFound; i++) {
-      float _thisPeakAmplitude = FFTPeaksAmp[i];
+      float _thisPeakAmplitude = FFTPeaks[1][i];
       if (_thisPeakAmplitude > 0 && _thisPeakAmplitude < _minimumPeak) {
         _minimumPeak = _thisPeakAmplitude;
         _minimumPeakIdx = i;
       }
     }
-    FFTPeaks[_minimumPeakIdx] = 0;
-    FFTPeaksAmp[_minimumPeakIdx] = 0;
+
+    for (int i = _minimumPeakIdx; i < _peaksFound - 1; i++) {
+      FFTPeaks[0][i] = FFTPeaks[0][i + 1];
+      FFTPeaks[1][i] = FFTPeaks[1][i + 1];
+    }
+    FFTPeaks[0][_peaksFound] = 0;
+    FFTPeaks[1][_peaksFound] = 0;
+    _peaksFound -= 1;
   }
 }
 
@@ -126,33 +133,25 @@ void Vibrosonics::mapAmplitudes(float* ampData, int dataLength, float maxDataSum
   float _divideBy = 1.0 / (_dataSum > maxDataSum ? _dataSum : maxDataSum);
 
   for (int i = 0; i < dataLength; i++) {
-    ampData[i] = round(ampData[i] * _divideBy * 127.0);
+    ampData[i] = ampData[i] * _divideBy;
   }
 }
 
-void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength) {  
-  int _bassIdx = 200 * frequencyWidth;
+void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength, int channel, int startFrequency, int endFrequency, int sampleRate, int windowSize) {  
+  int _frequencyResolution = sampleRate / windowSize;
+  int startIndex = 0;
+  int endIndex = windowSize;
+  if (startFrequency < endFrequency) {
+    startIndex = startFrequency / _frequencyResolution;
+    endIndex = endFrequency / _frequencyResolution;
+  }
   // assign sin_waves and freq/amps that are above 0, otherwise skip
   for (int i = 0; i < dataLength; i++) {
     // skip storing if ampData is 0, or freqData is 0
-    if (ampData[i] == 0.0 || freqData[i] == 0) continue;
+    if (ampData[i] == 0.0 || freqData[i] == 0 || freqData[i] < startIndex || freqData[i] > endIndex) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
-    int _interpFreq = 0;
-    int _channel = 0;
-    if (freqData[i] <= _bassIdx) {
-      float _freq = freqData[i];
-      // if the difference of energy around the peak is greater than threshold
-      if (abs(freqsCurrent[freqData[i] - 1] - freqsCurrent[freqData[i] + 1]) > 100) {
-        // assign frequency based on whichever side is greater
-        _freq = freqsCurrent[freqData[i] - 1] > freqsCurrent[freqData[i] + 1] ? (freqData[i] - 0.5) : (freqData[i] + 0.5);
-      }
-      _interpFreq = round(_freq * frequencyResolution);
-    } else {
-      _channel = 1;
-      _interpFreq = interpolateAroundPeak(freqsCurrent, freqData[i]);
-    }
-    Wave _wave = AudioLab.dynamicWave(_channel, _interpFreq, round(ampData[i]));
-    //wave->set(_channel, _interpFreq, round(ampData[i]));
+    //int _interpFreq = interpolateAroundPeak(freqsCurrent, freqData[i], sampleRate, windowSize);
+    Wave _wave = AudioLab.dynamicWave(channel, freqData[i], ampData[i]);
   }
 }
 
@@ -200,4 +199,17 @@ int Vibrosonics::frequencyMaxAmplitudeDelta(float *data, float *prevData, int mi
   }
   magnitude = maxAmpChange * (1.0 / FREQ_MAX_AMP_DELTA_MAX) * FREQ_MAX_AMP_DELTA_K;
   return maxAmpChangeIdx;
+}
+
+void Vibrosonics::frequencyMapExample(float *frequencies, int numFrequencies, float fromMin, float fromMax, float toMin, float toMax, float aCurve) {
+  float fromDifference = fromMax - fromMin;
+  float toDifference = toMax - toMin;
+
+  for (int i = 0; i < numFrequencies; i++) {
+    if (frequencies[i] - fromMin < 0.0) {
+      frequencies[i] = 0.0;
+      continue;
+    }
+    frequencies[i] = toMin + pow((frequencies[i] - fromMin) / fromDifference, aCurve) * toDifference;
+  }
 }

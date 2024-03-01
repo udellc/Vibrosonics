@@ -53,7 +53,7 @@ void Pulse::start(void) {
   this->windowCounter = 0;
 }
 
-void Pulse::setAttack(int aFrequency, int anAmplitude, int aDuration) {
+void Pulse::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   this->attackFrequency = aFrequency;
   this->attackAmplitude = anAmplitude;
   this->attackDuration = aDuration;
@@ -69,7 +69,7 @@ void Pulse::setAttackCurve(float aCurveValue) {
   this->attackCurve = aCurveValue;
 }
 
-void Pulse::setSustain(int aFrequency, int anAmplitude, int aDuration) {
+void Pulse::setSustain(float aFrequency, float anAmplitude, int aDuration) {
   this->sustainFrequency = aFrequency;
   this->sustainAmplitude = anAmplitude;
   this->sustainDuration = aDuration;
@@ -81,7 +81,7 @@ void Pulse::setSustain(int aFrequency, int anAmplitude, int aDuration) {
   this->releaseSustainAmplitudeDifference = this->releaseAmplitude - this->sustainAmplitude;
 }
 
-void Pulse::setRelease(int aFrequency, int anAmplitude, int aDuration) {
+void Pulse::setRelease(float aFrequency, float anAmplitude, int aDuration) {
   this->releaseFrequency = aFrequency;
   this->releaseAmplitude = anAmplitude;
   this->releaseDuration = aDuration;
@@ -111,8 +111,8 @@ void Pulse::run() {
     return;
   }
 
-  int _nowFrequency = 0;
-  int _nowAmplitude = 0;
+  float _nowFrequency = 0;
+  float _nowAmplitude = 0;
   if (this->state == ATTACK) {
     if (this->windowCounter < this->attackDuration) {
       float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);

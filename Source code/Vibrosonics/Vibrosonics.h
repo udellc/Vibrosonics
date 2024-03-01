@@ -7,7 +7,7 @@
 
 #define FREQ_MAX_AMP_DELTA_MIN 50     // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
 #define FREQ_MAX_AMP_DELTA_MAX 500    // the max threshold of change in amplitude
-#define FREQ_MAX_AMP_DELTA_K 16.0      // weight for amplitude of most change
+#define FREQ_MAX_AMP_DELTA_K 1.0      // weight for amplitude of most change
 
 class Vibrosonics
 {
@@ -24,8 +24,7 @@ class Vibrosonics
     float freqsLow[WINDOW_SIZE_BY2];
 
     static const int MAX_NUM_PEAKS = WINDOW_SIZE_BY2 >> 1;
-    int FFTPeaks[MAX_NUM_PEAKS];
-    float FFTPeaksAmp[MAX_NUM_PEAKS];
+    int FFTPeaks[2][MAX_NUM_PEAKS];
 
   public:
 
@@ -59,7 +58,7 @@ class Vibrosonics
     void mapAmplitudes(float* ampData, int dataLength, float maxDataSum);
 
     // assigns sine waves based on the data
-    void assignWaves(int* freqData, float* ampData, int dataLength);
+    void assignWaves(int* freqData, float* ampData, int dataLength, int channel, int startFrequency = 0, int endFrequency = 0, int sampleRate = SAMPLE_RATE, int windowSize = WINDOW_SIZE);
 
     // interpolates a peak based on weight of surrounding values, optionally pass sampleRate and windowSize
     int interpolateAroundPeak(float *data, int indexOfPeak, int sampleRate = SAMPLE_RATE, int windowSize = WINDOW_SIZE);
@@ -90,6 +89,8 @@ class Vibrosonics
     // a very basic "testing" function to go through raw FFT data and return the frequency associated to
     //  the maximum bin based on the sampleRate
     int FFTMajorPeak(int sampleRate);
+
+    void frequencyMapExample(float *frequencies, int numFrequencies, float fromMin, float fromMax, float toMin, float toMax, float aCurve);
     
 };
 

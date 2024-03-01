@@ -4,6 +4,10 @@
 
 int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 
+// Pulse pulseMajorPeak = Pulse(0, SINE);
+// Pulse pulseDeltaAmp = Pulse(0, SINE);
+// Pulse pulseBass = Pulse(1, SINE);
+
 void Vibrosonics::init() {
   Serial.begin(115200);
   while (!Serial)
@@ -25,45 +29,46 @@ void Vibrosonics::update() {
     performFFT(AudioLabInputBuffer);
 
     // a debug print to compare raw fft output to downsampled output
-    Serial.printf("default peak: %d\n", FFTMajorPeak(SAMPLE_RATE));
+    //Serial.printf("default peak: %d\n", FFTMajorPeak(SAMPLE_RATE));
 
     // store frequencies computed by FFT into freqs array
     storeFFTData();
-
-    // filtering signal and performing FFT when downsampled signal buffer fills
-    if (downsampleSignal(AudioLabInputBuffer)) {
-      // perfom FFT on downsampled single
-      performFFT(getDownsampledSignal());
-
-      // a debug print to compare raw fft output to downsampled output
-      Serial.printf("downsampled peak: %d\n", FFTMajorPeak(SAMPLE_RATE / 4));
-
-      // storing frequency magnitudes computed by FFT into separate freqs array
-      storeFFTDataLow();
-    }
 
     // ensure that the mean energy of frequency magnitudes is above a certain threshold
     if (getMean(freqsCurrent, WINDOW_SIZE) > 15.0) {
       
       // floor frequency magnitudes below a certain threshold
-      noiseFloor(freqsCurrent, 15.0);
+      //noiseFloor(freqsCurrent, 15.0);
 
       // use findPeaks function to find at most 16 peaks in frequency data
       findPeaks(freqsCurrent, 16);
 
       // maps amplitudes to 0-127 range by dividing amplitudes by the max amplitude sum 
       // (will divide by actual sum if it exceeds this threshold)
-      mapAmplitudes(FFTPeaksAmp, MAX_NUM_PEAKS, 3000);
+      // mapAmplitudes(FFTPeaksAmp, MAX_NUM_PEAKS, 3000);
 
-      // assign peaks to sine waves
-      assignWaves(FFTPeaks, FFTPeaksAmp, MAX_NUM_PEAKS);
+      int peakFreqs[16];
+      float peakAmps[16];
+      for (int i = 0; i < 16; i++) {
+        peakFreqs[i] = FFTPeaks[0][i];
+        peakAmps[i] = FFTPeaks[1][i];
+      }
+
+      mapAmplitudes(peakAmps, 16, 3000);
+
+      for (int i = 0; i < 16; i++) {
+        peakFreqs[i] = interpolateAroundPeak(freqsCurrent, peakFreqs[i]);
+      }
+
+      assignWaves(peakFreqs, peakAmps, 16, 1);
+
     }
 
     // call static function update() to update all pulses every window
-    Pulse::update();
+    //Pulse::update();
     // call AudioLab.synthesize() after all waves are set.
     AudioLab.synthesize();
-    //AudioLab.printWaves();
+    AudioLab.printWaves();
 
     //Serial.println(micros() - timeMicros);
   }
