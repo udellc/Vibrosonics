@@ -20,7 +20,7 @@ int Vibrosonics::FFTMajorPeak(int sampleRate) {
   return maxIdx * sampleRate / WINDOW_SIZE;
 }
 
-void Vibrosonics::performFFT(int *input) {
+float *Vibrosonics::performFFT(int *input) {
   // copy samples from input to vReal and set vImag to 0
   for (int i = 0; i < WINDOW_SIZE; i++) {
     vReal[i] = input[i];
@@ -32,29 +32,20 @@ void Vibrosonics::performFFT(int *input) {
   FFT.Windowing(vReal, WINDOW_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
   FFT.Compute(vReal, vImag, WINDOW_SIZE, FFT_FORWARD);             // Compute FFT
   FFT.ComplexToMagnitude(vReal, vImag, WINDOW_SIZE);             // Compute frequency magnitudes
+
+  return vReal;
 }
 
-void Vibrosonics::storeFFTData(void) {
-  // store pointer to freqsCurrent in freqsPrevious
-  freqsPrevious = freqsCurrent;
-  // increment rolling window counter [0..NUM_FREQ_WINDOWS)
-  freqsWindowCounter += 1;
-  if (freqsWindowCounter == NUM_FREQ_WINDOWS) freqsWindowCounter = 0;
-  // set freqsCurrent pointer to the current freqs window
-  freqsCurrent = freqs[freqsWindowCounter];
-
-  // copy frequency magnitudes from vReal to freqsCurrent
-  for (int i = 0; i < WINDOW_SIZE_BY2; i++) {
-    // multiplying vReal by frequencyWidth is not necassary, but helps make frequency magnitudes
-    // relative when using different window size and sample rate
-    freqsCurrent[i] = vReal[i] * frequencyWidth;
-  }
+float *Vibrosonics::getFFTData(void) {
+  return vReal;
 }
 
-void Vibrosonics::storeFFTDataLow(void) {
-  for (int i = 0; i < WINDOW_SIZE_BY2; i++) {
-    freqsLow[i] = vReal[i] * (WINDOW_SIZE / (SAMPLE_RATE / 4.0));
+float Vibrosonics::getSum(float *data, int dataLength) {
+  float _sum = 0.0;
+  for (int i = 0; i < dataLength; i++) {
+    _sum += data[i];
   }
+  return _sum;
 }
 
 float Vibrosonics::getMean(float *data, int dataLength) {
@@ -71,6 +62,49 @@ void Vibrosonics::noiseFloor(float *data, float threshold) {
     if (data[i] < threshold) {
       data[i] = 0.0;
     }
+  }
+}
+
+void Vibrosonics::noiseFloorMean(float *data, int dataLength, float threshold) {
+  float _threshold = getMean(data, dataLength) * threshold;
+  for (int i = 0; i < dataLength; i++) {
+    if (data[i] <= _threshold) data[i] = 0;
+  }
+}
+
+void Vibrosonics::doRMS(float *data, int dataLength, int size) {
+
+  float _temp[dataLength];
+  for (int i = 0; i < dataLength; i++) {
+    _temp[i] = pow(data[i], 2);
+  }
+
+  float _tempMean = getMean(_temp, dataLength);
+
+  int _sizeBy2 = size >> 1;
+  for (int i = 0; i < dataLength; i++) {
+    float _temp2[size];
+    int _windowStartIdx = i - _sizeBy2;
+    for (int j = 0; j < size; j++) {
+      if (_windowStartIdx + j < 0) _temp2[j] = _tempMean;
+      else if (_windowStartIdx + j < dataLength) _temp2[j] = _temp[_windowStartIdx + j];
+      else _temp2[j] = _tempMean;
+    }
+    data[i] = sqrt(getMean(_temp2, size));
+  }
+}
+
+void Vibrosonics::smartNoiseFloor(float *data, int dataLength, float threshold, int rmsWindowSize) {
+  float dataRMS[dataLength];
+  for (int i = 0; i < dataLength; i++) {
+    dataRMS[i] = data[i];
+  }
+
+  doRMS(dataRMS, dataLength, rmsWindowSize);
+
+  for (int i = 0; i < dataLength; i++) {
+    if (data[i] >= dataRMS[i] * threshold) continue;
+    data[i] = 0.0;
   }
 }
 
@@ -133,22 +167,19 @@ void Vibrosonics::mapAmplitudes(float* ampData, int dataLength, float maxDataSum
   float _divideBy = 1.0 / (_dataSum > maxDataSum ? _dataSum : maxDataSum);
 
   for (int i = 0; i < dataLength; i++) {
-    ampData[i] = ampData[i] * _divideBy;
+    ampData[i] *= _divideBy;
   }
 }
 
-void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength, int channel, int startFrequency, int endFrequency, int sampleRate, int windowSize) {  
-  int _frequencyResolution = sampleRate / windowSize;
-  int startIndex = 0;
-  int endIndex = windowSize;
-  if (startFrequency < endFrequency) {
-    startIndex = startFrequency / _frequencyResolution;
-    endIndex = endFrequency / _frequencyResolution;
+void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength, int channel, int startFrequency, int endFrequency) {  
+  if (!(startFrequency >= 0 && startFrequency < endFrequency)) {
+    startFrequency = 0;
+    endFrequency = SAMPLE_RATE >> 1;
   }
   // assign sin_waves and freq/amps that are above 0, otherwise skip
   for (int i = 0; i < dataLength; i++) {
     // skip storing if ampData is 0, or freqData is 0
-    if (ampData[i] == 0.0 || freqData[i] == 0 || freqData[i] < startIndex || freqData[i] > endIndex) continue;
+    if (ampData[i] == 0.0 || freqData[i] == 0 || freqData[i] < startFrequency || freqData[i] > endFrequency) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
     //int _interpFreq = interpolateAroundPeak(freqsCurrent, freqData[i], sampleRate, windowSize);
     Wave _wave = AudioLab.dynamicWave(channel, freqData[i], ampData[i]);
@@ -206,9 +237,8 @@ void Vibrosonics::frequencyMapExample(float *frequencies, int numFrequencies, fl
   float toDifference = toMax - toMin;
 
   for (int i = 0; i < numFrequencies; i++) {
-    if (frequencies[i] - fromMin < 0.0) {
-      frequencies[i] = 0.0;
-      continue;
+    if (frequencies[i] < fromMin || frequencies[i] > fromMax) {
+      frequencies[i] = 0;
     }
     frequencies[i] = toMin + pow((frequencies[i] - fromMin) / fromDifference, aCurve) * toDifference;
   }

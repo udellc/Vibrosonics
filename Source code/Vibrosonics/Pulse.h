@@ -53,11 +53,15 @@ class Pulse {
 
   public:
 
+    Pulse();
+
     // Pulse object constructor
     Pulse(uint8_t aChannel, WaveType aWaveType);
 
     // Begin pulsing, will do a single pulse with set parameters
     void start();
+
+    void stop();
 
     // set Pulse attack parameters, will transition to Sustain parameters over a given duration
     void setAttack(float aFrequency, float anAmplitude, int aDuration);

@@ -18,6 +18,36 @@ void Pulse::pushPulseNode(void) {
   _currentNode->next = new PulseNode(this);
 }
 
+Pulse::Pulse() {
+  pushPulseNode();
+  this->wave = AudioLab.staticWave(0, SINE);
+
+  this->attackDuration = 0;
+  this->attackFrequency = 0;
+  this->attackAmplitude = 0;
+  this->attackCurve = 1.0;
+  this->attackCurveStep = 1.0;
+  
+  this->sustainDuration = 0;
+  this->sustainFrequency = 0;
+  this->sustainAmplitude = 0;
+
+  this->releaseDuration = 0;
+  this->releaseFrequency = 0;
+  this->releaseAmplitude = 0;
+  this->releaseCurve = 1.0;
+  this->releaseCurveStep = 1.0;
+
+  this->sustainAttackAmplitudeDifference = 0;
+  this->sustainAttackFrequencyDifference = 0;
+  this->releaseSustainAmplitudeDifference = 0;
+  this->releaseSustainFrequencyDifference = 0;
+
+  this->windowCounter = 0;
+
+  this->state = READY;
+}
+
 Pulse::Pulse(uint8_t aChannel, WaveType aWaveType) {
   pushPulseNode();
   this->wave = AudioLab.staticWave(aChannel, aWaveType);
@@ -50,6 +80,11 @@ Pulse::Pulse(uint8_t aChannel, WaveType aWaveType) {
 
 void Pulse::start(void) {
   this->state = ATTACK;
+  this->windowCounter = 0;
+}
+
+void Pulse::stop(void) {
+  this->state = READY;
   this->windowCounter = 0;
 }
 
