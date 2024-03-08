@@ -1,3 +1,15 @@
+//============================================================================
+// MODULE INFORMATION
+//============================================================================
+// Name        : Noisiness
+// Return Type : float (noisiness of the current window)
+// Description : Calculates the noisiness of the current window. Noisiness is
+//               the opposite of periodicity, so a low noisiness value
+//               indicates a high degree of periodicity, like a sine wave, and
+//               a high noisiness value indicates a low degree of periodicity,
+//               like white noise. 
+//============================================================================
+
 #ifndef Noisiness_h
 #define Noisiness_h
 
@@ -5,6 +17,7 @@
 #include "MaxAmplitude.h"
 #include "MeanAmplitude.h"
 
+// Noisiness inherits from the ModuleInterface with a float output type
 class Noisiness : public ModuleInterface<float>
 {
 private:
@@ -30,7 +43,6 @@ public:
         if(meanAmp > 1.0){
             noisiness = 1 - ((maxAmp / meanAmp) / 66.7);
         }
-        //Serial.printf("Lower %d, Upper %d, Noisiness: %f\n", lowerBinBound, upperBinBound, noisiness);
         output = noisiness;
     }
 };

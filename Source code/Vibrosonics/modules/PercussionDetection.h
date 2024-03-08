@@ -1,3 +1,16 @@
+//============================================================================
+// MODULE INFORMATION
+//============================================================================
+// Name        : PercussionDetection
+// Return Type : bool (percussion detected in the current window)
+// Description : This module is used to detect the presence of noisy 
+//               transients. It uses the TotalAmplitude, DeltaAmplitude, and 
+//               Noisiness modules to determine if a percussive sound is 
+//               present. The thresholds for each of these modules can be set 
+//               by the user to better fit the specific qualities of the input 
+//               signal.
+//============================================================================
+
 #ifndef Percussion_Detection_h
 #define Percussion_Detection_h
 
@@ -7,6 +20,7 @@
 
 // TODO: enable delta analysis when input buffer is fixed
 
+// PercussionDetection inherits from the ModuleInterface with a bool output type
 class PercussionDetection : public ModuleInterface<bool>
 {
 private:

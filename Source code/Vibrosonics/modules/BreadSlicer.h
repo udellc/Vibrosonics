@@ -1,3 +1,12 @@
+//============================================================================
+// MODULE INFORMATION
+//============================================================================
+// Name        : BreadSlicer
+// Return Type : float*
+// Description : Analysis method that splits the frequency spectrum into slices,
+//               sums the amplitude within those ranges, and uses the sums as 
+//               weights for a specified list of output frequencies. 
+//============================================================================
 #ifndef Bread_Slicer_h
 #define Bread_Slicer_h
 
@@ -6,9 +15,7 @@
 
 // **Vibrosonics class will need freqWidth
 
-/*  Analysis method that splits the frequency spectrum in to 'slices' then sums the
-    amplitude within those ranges which are used as weights for a specified list
-    of frequencies */
+// BreadSlicer inherits from the ModuleInterface with a float* output type
 class BreadSlicer : public ModuleInterface<float*>
 {
   public:
