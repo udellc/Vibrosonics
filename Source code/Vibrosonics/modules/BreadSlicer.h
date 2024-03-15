@@ -21,15 +21,31 @@ class BreadSlicer : public ModuleInterface<float*>
   public:
     int numFreqBands;
     float* breadSlicerSums;
+    int* frequencyBands;
     int* freqBandIndexes;
     int* breadSlicerPeaks;
 
     BreadSlicer()
     {
-      numFreqBands = 5;  // default size
-      breadSlicerSums = new float(numFreqBands);
-      freqBandIndexes = new int(numFreqBands);
-      breadSlicerPeaks = new int(numFreqBands);
+      // check that there is room between the lowerBinBound and upperBinBound for default size
+      if (upperBinBound - lowerBinBound > 5) {
+        numFreqBands = 5;  // default size
+        breadSlicerSums = new float(numFreqBands);
+        freqBandIndexes = new int(numFreqBands);
+        breadSlicerPeaks = new int(numFreqBands);
+        frequencyBands = new int(numFreqBands);
+
+        int sliceWidth = (upperBinBound - lowerBinBound);
+
+        calculateFreqBandsIndexes();
+      } else {  // set band size to # of bins between lowerBB and upperBB
+        numFreqBands = upperBinBound - lowerBinBound;
+        breadSlicerSums = new float(numFreqBands);
+        freqBandIndexes = new int(numFreqBands);
+        breadSlicerPeaks = new int(numFreqBands);
+        frequencyBands = new int(numFreqBands);
+      }
+
 
       calculateFreqBandsIndexes();
     }
@@ -98,6 +114,9 @@ class BreadSlicer : public ModuleInterface<float*>
       breadSlicerSums = new float(numFreqBands);
       freqBandIndexes = new int(numFreqBands);
       breadSlicerPeaks = new int(numFreqBands);
+      frequencyBands = new int(numFreqBands);
+
+      // set frequency band
 
       calculateFreqBandsIndexes();
     }

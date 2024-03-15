@@ -3,6 +3,7 @@
 
 #include <AudioLab.h>
 #include "AnalysisModule.h"
+#include "CircularBuffer.h"
 
 #define NUM_FREQ_WINDOWS 8  // the number of frequency windows to store in circular buffer freqs
 
@@ -31,6 +32,7 @@ class Vibrosonics
 
   public:
 
+    CircularBuffer buffer = CircularBuffer(4, 128);
     // this function has to be called once in Arduino's void setup(). 
     // Note: this is optional, stuff inside init() can be called directly inside setup()
     void init();
@@ -45,6 +47,8 @@ class Vibrosonics
     // stores data computed by FFT into freqs array
     void storeFFTData();
 
+    void storeFFTDataCB();
+
     // returns the mean of some data
     float getMean(float* data, int dataLength);
 
@@ -58,7 +62,7 @@ class Vibrosonics
     void mapAmplitudes(float* ampData, int dataLength, float maxDataSum);
 
     // assigns sine waves based on the data
-    void assignWaves(int* freqData, float* ampData, int dataLength);
+    void assignWaves(float* freqData, float* ampData, int dataLength);
 
     // interpolates a peak based on weight of surrounding values
     int interpolateAroundPeak(float *data, int indexOfPeak);
@@ -71,8 +75,13 @@ class Vibrosonics
     
     void addModule(AnalysisModule* module);
     void processInput();
+    void processInputCB();
     void analyze();
-
+    void mapFrequenciesLinear(float* freqData, int dataLength);
+    void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
+    float* getCurrentWindow();
+    float* getPrevWindow();
+    void assignWave(float freq, float amp, int channel);
 };
 
 #endif

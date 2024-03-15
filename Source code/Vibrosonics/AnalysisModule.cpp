@@ -22,7 +22,7 @@ void AnalysisModule::addSubmodule(AnalysisModule *module)
   submodules = newSubmodules;
 }
 
-void AnalysisModule::setInputArrays(float* past, float* current)
+void AnalysisModule::setInputArrays(const float* past, const float* current)
 {
   pastWindow = past;
   curWindow = current;

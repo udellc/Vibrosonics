@@ -1,5 +1,5 @@
 #include "CircularBuffer.h"
-#include <iostream>
+#include <Audiolab.h>
 
 //****************************************************************************
 // CONSTRUCTORS / DESTRUCTORS
@@ -114,12 +114,13 @@ int CircularBuffer::smartModulo(int dividend, int divisor)
 
 // Write data to the current buffer, overwrite the oldest buffer
 // Current is incremented and wrapped around
-void CircularBuffer::write(float* buffer)
+void CircularBuffer::write(float* buffer, float freqWidth)
 {
     for (int i = 0; i < bufferSize; i++){
-        data[writeHead][i] = buffer[i];
+        float value = buffer[i] * freqWidth;
+        if(value < 5){ value = 0;}
+        data[writeHead][i] = value;
     }
-    
     readHead = smartModulo(writeHead, numBuffers);
     writeHead = smartModulo(writeHead + 1, numBuffers);
 }
@@ -151,10 +152,10 @@ const float* CircularBuffer::getPrevious()
 void CircularBuffer::printAll()
 {
     for(int i=0; i<numBuffers; i++){
-        std::cout << "Buffer[" << i << "]: ";
+        Serial.printf("Buffer[%d]: ", i);
         for(int j=0; j<bufferSize; j++){
-            std::cout << data[i][j] << ", ";
+            Serial.printf("%f, ", j);
         }
-        std::cout << std::endl;
+        Serial.printf("\n");
     }
 }

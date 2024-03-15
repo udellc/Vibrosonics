@@ -28,7 +28,7 @@ public:
     int smartModulo(int dividend, int divisor);
 
     // data access
-    void write(float* buffer);
+    void write(float* buffer, float freqWidth);
     const float* getBuffer(int idx);
     const float* getCurrent();
     const float* getPrevious();

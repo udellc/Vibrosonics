@@ -28,8 +28,8 @@ protected:
 
 public:
     // input arrays from Vibrosonics
-    float* pastWindow;
-    float* curWindow;
+    const float* pastWindow;
+    const float* curWindow;
 
     // pure virtual function to be implemented by dervied classes
     virtual void doAnalysis() = 0;
@@ -39,7 +39,7 @@ public:
     void addSubmodule(AnalysisModule* module);
 
     // provide a references to the input arrays
-    void setInputArrays(float* past, float* current);
+    void setInputArrays(const float* past, const float* current);
 
     // set the frequency range to analyze 
     void setAnalysisRangeByFreq(int lowerFreq, int upperFreq);
@@ -60,11 +60,11 @@ public:
 };
 
 // include derived analysis modules so they can be used by including this file
-//#include "modules/BreadSlicer.h"
+#include "modules/BreadSlicer.h"
 #include "modules/MajorPeaks.h"
 #include "modules/PercussionDetection.h"
 
-//#include "modules/SalientFreqs.h"
+#include "modules/SalientFreqs.h"
 #include "modules/Noisiness.h"
 
 #include "modules/MaxAmplitude.h"

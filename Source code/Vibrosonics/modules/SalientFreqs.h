@@ -61,7 +61,7 @@ class SalientFreqs : public ModuleInterface<int*>
           }
         }
         salientFreqs[i] = currMaxAmpIdx;  // add the new max amp index to the array
-        amplitudes[j] = 0;  // set the amp to 0 so it will not be found again
+        amplitudes[currMaxAmpIdx] = 0;  // set the amp to 0 so it will not be found again
         currMaxAmp = 0; // reset iterators
         currMaxAmpIdx = -1;
       } 

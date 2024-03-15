@@ -1,5 +1,6 @@
 #include "Vibrosonics.h"
 #include "Pulse.h"
+#include <cmath>
 
 int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 
@@ -53,7 +54,7 @@ void Vibrosonics::update()
       mapAmplitudes(FFTPeaksAmp, MAX_NUM_PEAKS, 3000);
 
       // assign peaks to sine waves
-      assignWaves(FFTPeaks, FFTPeaksAmp, MAX_NUM_PEAKS);
+      //assignWaves(FFTPeaks, FFTPeaksAmp, MAX_NUM_PEAKS);
     }
 
     // call AudioLab.synthesize() after all waves are set.
@@ -66,8 +67,17 @@ void Vibrosonics::processInput()
 {
   performFFT(AudioLabInputBuffer);
   storeFFTData();
-
   noiseFloor(freqsCurrent, 15.0);
+
+  return;
+}
+
+void Vibrosonics::processInputCB()
+{
+  performFFT(AudioLabInputBuffer);
+  storeFFTDataCB();
+  Serial.printf("Process Input");
+  //noiseFloor(freqsCurrent, 15.0);
 
   return;
 }
@@ -99,4 +109,25 @@ void Vibrosonics::addModule(AnalysisModule* module)
   // free old modules array and store reference to new modules array
   delete [] modules;
   modules = newModules;
+}
+
+// maps frequencies from 0-SAMPLE_RATE to haptic range (0-250)
+void Vibrosonics::mapFrequenciesLinear(float* freqData, int dataLength)
+{
+  float freqRatio;
+  for (int i = 0; i < dataLength; i++) {
+    freqRatio = freqData[i] / (SAMPLE_RATE>>1);
+    freqData[i] = round(freqRatio * 250) + 20;
+  }
+}
+
+// maps frequencies to haptic range (0-250Hz) using an exponent 
+void Vibrosonics::mapFrequenciesExponential(float* freqData, int dataLength, float exp)
+{
+  float freqRatio;
+  for (int i=0; i < dataLength; i++) {
+    if (freqData[i] <= 200) {continue;}  // freq already within range
+    freqRatio = freqData[i] / (SAMPLE_RATE>>1);
+    freqData[i] = pow(freqRatio, exp) * 250;
+  }
 }

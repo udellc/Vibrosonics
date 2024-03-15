@@ -1,4 +1,5 @@
 #include "Vibrosonics.h"
+#include "CircularBuffer.h"
 #include <arduinoFFTFloat.h>
 
 float vReal[WINDOW_SIZE];
@@ -37,6 +38,21 @@ void Vibrosonics::storeFFTData(void) {
     // relative when using different window size and sample rate
     freqsCurrent[i] = vReal[i] * frequencyWidth;
   }
+}
+
+void Vibrosonics::storeFFTDataCB() {
+  buffer.write(vReal, frequencyWidth);
+  for(int i=0; i<numModules; i++){
+    modules[i]->setInputArrays(buffer.getPrevious(), buffer.getCurrent());
+  }
+}
+
+float* Vibrosonics::getCurrentWindow(void) {
+  return this->freqsCurrent;
+}
+
+float* Vibrosonics::getPrevWindow(void) {
+  return this->freqsPrevious;
 }
 
 float Vibrosonics::getMean(float *data, int dataLength) {
@@ -108,32 +124,38 @@ void Vibrosonics::mapAmplitudes(float* ampData, int dataLength, float maxDataSum
   float _divideBy = 1.0 / (_dataSum > maxDataSum ? _dataSum : maxDataSum);
 
   for (int i = 0; i < dataLength; i++) {
-    ampData[i] = round(ampData[i] * _divideBy * 127.0);
+    ampData[i] = (ampData[i] * _divideBy);
   }
 }
 
-void Vibrosonics::assignWaves(int* freqData, float* ampData, int dataLength) {  
+void Vibrosonics::assignWave(float freq, float amp, int channel) {
+  Wave _wave = AudioLab.dynamicWave(channel, freq, amp); 
+}
+
+void Vibrosonics::assignWaves(float* freqData, float* ampData, int dataLength) {  
   int _bassIdx = 200 * frequencyWidth;
   // assign sin_waves and freq/amps that are above 0, otherwise skip
   for (int i = 0; i < dataLength; i++) {
     // skip storing if ampData is 0, or freqData is 0
     if (ampData[i] == 0.0 || freqData[i] == 0) continue;
     // assign frequencies below bass to left channel, otherwise to right channel
-    int _interpFreq = 0;
+    float _interpFreq = 0;
     int _channel = 0;
-    if (freqData[i] <= _bassIdx) {
-      float _freq = freqData[i];
+    if (freqData[i] <= 100) {
+      //float _freq = freqData[i];
       // if the difference of energy around the peak is greater than threshold
-      if (abs(freqsCurrent[freqData[i] - 1] - freqsCurrent[freqData[i] + 1]) > 100) {
-        // assign frequency based on whichever side is greater
-        _freq = freqsCurrent[freqData[i] - 1] > freqsCurrent[freqData[i] + 1] ? (freqData[i] - 0.5) : (freqData[i] + 0.5);
-      }
-      _interpFreq = round(_freq * frequencyResolution);
+      //if (abs(freqsCurrent[freqData[i] - 1] - freqsCurrent[freqData[i] + 1]) > 100) {
+      //  // assign frequency based on whichever side is greater
+      //  _freq = freqsCurrent[freqData[i] - 1] > freqsCurrent[freqData[i] + 1] ? (freqData[i] - 0.5) : (freqData[i] + 0.5);
+      //}
+      //_interpFreq = round(_freq * frequencyResolution);
+      _interpFreq = round(freqData[i]);
     } else {
       _channel = 1;
-      _interpFreq = interpolateAroundPeak(freqsCurrent, freqData[i]);
+      _interpFreq = round(freqData[i]);
     }
-    Wave _wave = AudioLab.dynamicWave(_channel, _interpFreq, round(ampData[i]));
+    Wave _wave = AudioLab.dynamicWave(_channel, _interpFreq, ampData[i]);
+    //Serial.printf("[Channel, freq, amp] = [%d, %g, %g]\n", _channel, _interpFreq, round(ampData[i]));
     //wave->set(_channel, _interpFreq, round(ampData[i]));
   }
 }
