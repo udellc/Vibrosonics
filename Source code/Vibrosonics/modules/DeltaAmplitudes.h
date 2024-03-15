@@ -23,6 +23,7 @@ class DeltaAmplitudes : public ModuleInterface<float*>
     {
       deltaAmplitudes = new float[windowSize];
     } 
+  
     ~DeltaAmplitudes()
     {
       delete [] deltaAmplitudes;

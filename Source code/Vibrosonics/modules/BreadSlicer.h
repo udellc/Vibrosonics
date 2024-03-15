@@ -13,119 +13,81 @@
 #include "../AnalysisModule.h"
 #include <cmath>
 
-// **Vibrosonics class will need freqWidth
-
 // BreadSlicer inherits from the ModuleInterface with a float* output type
 class BreadSlicer : public ModuleInterface<float*>
 {
+  private:
+    int *bandIndexes;
+    int numBands;
+
   public:
-    int numFreqBands;
-    float* breadSlicerSums;
-    int* frequencyBands;
-    int* freqBandIndexes;
-    int* breadSlicerPeaks;
+    // default constructor, initializes private members.
+    // For now this is the only constructor so setBands() must be used to setup this module
+    BreadSlicer() {
+      this->numBands = 0;       // initialize number of bands to 0
 
-    BreadSlicer()
-    {
-      // check that there is room between the lowerBinBound and upperBinBound for default size
-      if (upperBinBound - lowerBinBound > 5) {
-        numFreqBands = 5;  // default size
-        breadSlicerSums = new float(numFreqBands);
-        freqBandIndexes = new int(numFreqBands);
-        breadSlicerPeaks = new int(numFreqBands);
-        frequencyBands = new int(numFreqBands);
-
-        int sliceWidth = (upperBinBound - lowerBinBound);
-
-        calculateFreqBandsIndexes();
-      } else {  // set band size to # of bins between lowerBB and upperBB
-        numFreqBands = upperBinBound - lowerBinBound;
-        breadSlicerSums = new float(numFreqBands);
-        freqBandIndexes = new int(numFreqBands);
-        breadSlicerPeaks = new int(numFreqBands);
-        frequencyBands = new int(numFreqBands);
-      }
-
-
-      calculateFreqBandsIndexes();
+      this->bandIndexes = NULL; // initialize index array to null
+      this->output = NULL;      // initialize output pointer to null
     }
-    ~BreadSlicer()
-    {
-      delete [] breadSlicerSums;
-      delete [] freqBandIndexes;
-      delete [] breadSlicerPeaks;
+    // deconstructor, frees member pointers if memory was allocated
+    ~BreadSlicer() {
+      if (this->bandIndexes != NULL) free(bandIndexes);
+      if (this->output != NULL) free(output);
     }
 
-    void doAnalysis()
-    {
-      int sliceCount = 0;
-      int sliceBinIdx = freqBandIndexes[sliceCount];
-      float sliceSum = 0.0;
-      int numBins = freqBandIndexes[sliceCount];
-      int sliceMax = 0;
-      int sliceMaxIdx = 0;
-      for (int f = lowerBinBound; f < upperBinBound; f++) {
-        // break if on last index of data array
-        if (f == windowSize>>1 - 1) {
-          breadSlicerSums[sliceCount] = (sliceSum + curWindow[f]);
-          breadSlicerPeaks[sliceCount] = sliceMaxIdx;
-          break;
-        }
-        // get the sum and max amplitude of the current slice
-        if (f < sliceBinIdx) {
-          if (curWindow[f] == 0) { continue; }
-          sliceSum += curWindow[f];
-          if (f == 0) { continue; }
-          // look for maximum peak in slice
-          if ((curWindow[f - 1] < curWindow[f]) && (curWindow[f] > curWindow[f + 1])) {
-            // compare with previous max amplitude at peak
-            if (curWindow[f] > sliceMax) {
-              sliceMax = curWindow[f];
-              sliceMaxIdx = f;
-            }
-          }
-          // if exceeding the index of this slice, store sliceSum and sliceMaxIdx
-        } else {
-          breadSlicerSums[sliceCount] = sliceSum;      // store slice sum
-          breadSlicerPeaks[sliceCount] = sliceMaxIdx;  // store slice peak
-          sliceSum = 0;                                // reset variables
-          sliceMax = 0;
-          sliceMaxIdx = 0;
-          sliceCount += 1;  // iterate slice
-          // break if sliceCount exceeds NUM_FREQ_BANDS
-          if (sliceCount == numFreqBands) { break; }
-          numBins = freqBandIndexes[sliceCount] - freqBandIndexes[sliceCount - 1];
-          sliceBinIdx = freqBandIndexes[sliceCount];
-          f -= 1;
+    /* sets the bands ('slices') of this module
+      Ex. setBands([0, 200, 500, 2000, 4000], 5);
+      Band frequencies must be in ascending order, frequencies must be at least 
+      freqResolution-Hz apart so bands dont overlap
+    */
+    void setBands(int *frequencyBands, int numBands) {
+      int _nyquist = sampleRate >> 1; // nyquist frequency is 1/2 the sampleRate
+
+      for (int i = 0; i < numBands; i++) {  // check if each band is greater than the previous and less than next
+        if (!((frequencyBands[i] >= 0 && frequencyBands[i] <= _nyquist) &&
+            (frequencyBands[i] < frequencyBands[i + 1] && frequencyBands[i + 1] <= _nyquist)))
+        {
+          Serial.println("BreadSlicer setBands() fail! Invalid bands!");
+          return;
         }
       }
-      output = breadSlicerSums;
+
+      // free old bandIndexes and output pointers if bands have already been set
+      if (this->bandIndexes != NULL) free(bandIndexes);   // free bandIndexes
+      if (this->output != NULL) free(output);             // free output
+
+      // allocate memory for new bandIndexes and outpt pointers
+      this->bandIndexes = (int*)malloc(sizeof(int) * numBands + 1);
+      this->output = (float*)malloc(sizeof(float) * numBands);
+      this->numBands = numBands;                          // set new number of bands
+
+      // find the FFT bin index of each freq and store it in bandIndexes
+      for (int i = 0; i < numBands + 1; i++) {
+        bandIndexes[i] = round(frequencyBands[i] * freqWidth);
+        if (i < numBands) {
+          this->output[i] = 0.0;  // initialize amplitude of slice to 0
+        }
+      }
     }
+    
+    // Sums the amplitudes in each frequency band and stores the results in output.
+    void doAnalysis(float *input) {
+        if (this->bandIndexes == NULL) return;  // do not run analysis if bands are not set
 
-    void changeNumFreqBands(int newSize)
-    {
-      numFreqBands = newSize;
-
-      delete [] breadSlicerSums;
-      delete [] freqBandIndexes;
-      delete [] breadSlicerPeaks;
-
-      //frequencyBands = new int(numFreqBands);
-      breadSlicerSums = new float(numFreqBands);
-      freqBandIndexes = new int(numFreqBands);
-      breadSlicerPeaks = new int(numFreqBands);
-      frequencyBands = new int(numFreqBands);
-
-      // set frequency band
-
-      calculateFreqBandsIndexes();
-    }
-
-    void calculateFreqBandsIndexes()
-    {
-      // converting from frequency to index
-      for (int i = 0; i < numFreqBands; i++) {
-        freqBandIndexes[i] = ceil(frequencyBands[i] * freqWidth);
+      int _bandIndex = 1;
+      float _bandSum = 0;
+      // finds the total amplitude of each band by summing the bins within each band
+      // then stores that value in output
+      for (int i = this->bandIndexes[0]; i <= this->bandIndexes[this->numBands]; i++) {
+        if (i < this->bandIndexes[_bandIndex]) {
+          _bandSum += input[i];
+        }
+        else {
+        this->output[_bandIndex - 1] = _bandSum;
+        _bandIndex += 1;
+        _bandSum = 0;
+        i -= 1;
+        }
       }
     }
 };
