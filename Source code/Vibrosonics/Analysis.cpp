@@ -2,6 +2,7 @@
 #include "CircularBuffer.h"
 #include <arduinoFFTFloat.h>
 
+// constants based on AudioLab definitions
 float vReal[WINDOW_SIZE];
 float vImag[WINDOW_SIZE];
 arduinoFFT FFT = arduinoFFT();
@@ -40,21 +41,15 @@ void Vibrosonics::storeFFTData(void) {
   }
 }
 
+// writes FFT results to circular buffer, then updates submodule input pointers
 void Vibrosonics::storeFFTDataCB() {
   buffer.write(vReal, frequencyWidth);
-  for(int i=0; i<numModules; i++){
-    modules[i]->setInputArrays(buffer.getPrevious(), buffer.getCurrent());
-  }
+//   for(int i=0; i<numModules; i++){
+//     modules[i]->setInputArrays(buffer.getPrevious(), buffer.getCurrent());
+//   }
 }
 
-float* Vibrosonics::getCurrentWindow(void) {
-  return this->freqsCurrent;
-}
-
-float* Vibrosonics::getPrevWindow(void) {
-  return this->freqsPrevious;
-}
-
+// finds and returns the mean amplitude
 float Vibrosonics::getMean(float *data, int dataLength) {
   float _sum = 0.0;
   for (int i = 0; i < dataLength; i++) {
@@ -64,6 +59,7 @@ float Vibrosonics::getMean(float *data, int dataLength) {
   return _sum > 0.0 ? _sum / dataLength : _sum;
 }
 
+// sets amplitude of bin to 0 if less than threshold
 void Vibrosonics::noiseFloor(float *data, float threshold) {
   for (int i = 0; i < WINDOW_SIZE_BY2; i++) {
     if (data[i] < threshold) {
@@ -115,6 +111,7 @@ void Vibrosonics::findPeaks(float* data, int maxNumPeaks) {
   }
 }
 
+// maps and normalizes amplitudes
 void Vibrosonics::mapAmplitudes(float* ampData, int dataLength, float maxDataSum) {
   float _dataSum = 0.0;
   for (int i = 0; i < dataLength; i++) {
@@ -128,10 +125,12 @@ void Vibrosonics::mapAmplitudes(float* ampData, int dataLength, float maxDataSum
   }
 }
 
+// creates and adds a single dynamic wave to a channel with the given freq and amp
 void Vibrosonics::assignWave(float freq, float amp, int channel) {
   Wave _wave = AudioLab.dynamicWave(channel, freq, amp); 
 }
 
+// creates and adds dynamic waves for a list of frequencies and amplitudes
 void Vibrosonics::assignWaves(float* freqData, float* ampData, int dataLength) {  
   int _bassIdx = 200 * frequencyWidth;
   // assign sin_waves and freq/amps that are above 0, otherwise skip
