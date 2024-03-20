@@ -1,6 +1,9 @@
 #ifndef Circular_Buffer_h
 #define Circular_Buffer_h
 
+#define CURR_WINDOW 0
+#define PREV_WINDOW 1
+
 class CircularBuffer 
 {
 private:
@@ -32,6 +35,7 @@ public:
     const float* getBuffer(int idx);
     const float* getCurrent();
     const float* getPrevious();
+    const float** unwind();
     
     // print buffer
     void printAll();

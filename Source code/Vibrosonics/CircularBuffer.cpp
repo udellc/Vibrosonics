@@ -118,7 +118,7 @@ void CircularBuffer::write(float* buffer, float freqWidth)
 {
     for (int i = 0; i < bufferSize; i++){
         float value = buffer[i] * freqWidth;
-        if(value < 5){ value = 0;}
+        if(value < 25){ value = 0;}
         data[writeHead][i] = value;
     }
     readHead = smartModulo(writeHead, numBuffers);
@@ -149,6 +149,19 @@ const float* CircularBuffer::getPrevious()
     return getBuffer(-1); 
 }
 
+// Unwind the circular buffer into a 2D array
+// The 0 index is the most recent data, the 1 index is the previous data, etc.
+// This is necessary for passing data to the analysis modules which expect a 2D array
+const float** CircularBuffer::unwind()
+{
+    const float** unwoundData = new const float*[numBuffers];
+    for(int i=0; i<numBuffers; i++){
+        unwoundData[i] = getBuffer(-i);
+    }
+    return unwoundData;
+}
+
+// Print all the data in the buffer
 void CircularBuffer::printAll()
 {
     for(int i=0; i<numBuffers; i++){
