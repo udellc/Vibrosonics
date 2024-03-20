@@ -6,7 +6,8 @@
 #include <AudioLab.h>
 //#define WINDOW_SIZE 256
 //#define SAMPLE_RATE 8192
-
+#define CURR_WINDOW 0
+#define PREV_WINDOW 1
 class AnalysisModule
 {
 protected:
@@ -27,12 +28,8 @@ protected:
     AnalysisModule** submodules;
 
 public:
-    // input arrays from Vibrosonics
-    const float* pastWindow;
-    const float* curWindow;
-
     // pure virtual function to be implemented by dervied classes
-    virtual void doAnalysis() = 0;
+    virtual void doAnalysis(const float** input) = 0;
 
     // if a module needs submodules, call this function in the parent module's constructor 
     // this is necessary to automatically propagate base class parameters to submodules

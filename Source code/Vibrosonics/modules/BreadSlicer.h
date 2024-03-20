@@ -36,7 +36,7 @@ class BreadSlicer : public ModuleInterface<float*>
     }
 
     /* sets the bands ('slices') of this module
-      Ex. setBands([0, 200, 500, 2000, 4000], 5);
+      Ex. setBands([0, 200, 500, 2000, 4000], 4);
       Band frequencies must be in ascending order, frequencies must be at least 
       freqResolution-Hz apart so bands dont overlap
     */
@@ -71,8 +71,8 @@ class BreadSlicer : public ModuleInterface<float*>
     }
     
     // Sums the amplitudes in each frequency band and stores the results in output.
-    void doAnalysis(float *input) {
-        if (this->bandIndexes == NULL) return;  // do not run analysis if bands are not set
+    void doAnalysis(const float** input) {
+      if (this->bandIndexes == NULL) return;  // do not run analysis if bands are not set
 
       int _bandIndex = 1;
       float _bandSum = 0;
@@ -80,7 +80,7 @@ class BreadSlicer : public ModuleInterface<float*>
       // then stores that value in output
       for (int i = this->bandIndexes[0]; i <= this->bandIndexes[this->numBands]; i++) {
         if (i < this->bandIndexes[_bandIndex]) {
-          _bandSum += input[i];
+          _bandSum += input[CURR_WINDOW][i];
         }
         else {
         this->output[_bandIndex - 1] = _bandSum;

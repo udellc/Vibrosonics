@@ -22,18 +22,23 @@ class SalientFreqs : public ModuleInterface<int*>
     int numFreqs;
     int* salientFreqs;
     float* amplitudes;
-    DeltaAmplitudes deltaAmps;
+    DeltaAmplitudes deltaAmps = DeltaAmplitudes();
 
     SalientFreqs()
     {
-      int numFreqs = 1; // default to finding frequency of max change
+      int numFreqs = 3; // default to finding frequency of max change
       salientFreqs = new int[numFreqs];
-      amplitudes = new float[windowSize];
+      //amplitudes = new float[windowSize];
+      this->addSubmodule(&deltaAmps);
+
+      for (int i = 0; i < numFreqs; i++) {
+        salientFreqs[i] = -1;
+      }
     }
     ~SalientFreqs()
     {
       delete [] salientFreqs;
-      delete [] amplitudes;
+      //delete [] amplitudes;
     }
 
     // change the amount of salient frequencies to be found
@@ -45,28 +50,41 @@ class SalientFreqs : public ModuleInterface<int*>
     }
 
     // finds the n (numFreqs) bins with highest change in amplitude, stored in salientFreqs[]
-    void doAnalysis()
+    // input is assumed to be a 2D array of FFT data passed in from the Vibrosonics class
+    void doAnalysis(const float** input)
     {
-      deltaAmps.doAnalysis();
+      deltaAmps.doAnalysis(input);
       amplitudes = deltaAmps.getOutput();   // copy amplitudes
 
       // iterate through amplitudes to find the maximum(s)
       int currMaxAmp = 0; 
       int currMaxAmpIdx = -1;
-      for (int i = 0; i < numFreqs; i++) {
+      for (int i = 0; i < numFreqs+1; i++) {
         for (int j = lowerBinBound; j < upperBinBound; j++) {
           if (amplitudes[j] > currMaxAmp) {
             currMaxAmp = amplitudes[j];
             currMaxAmpIdx = j;
           }
         }
+        Serial.printf("i: %d, ", i);
+        Serial.printf("idx: %d, ", currMaxAmpIdx);
         salientFreqs[i] = currMaxAmpIdx;  // add the new max amp index to the array
         amplitudes[currMaxAmpIdx] = 0;  // set the amp to 0 so it will not be found again
         currMaxAmp = 0; // reset iterators
         currMaxAmpIdx = -1;
       } 
       output = salientFreqs;
+      Serial.printf("SF: %d\n", output[0]);
     }
+
+    void printSalientFreqs() {
+        Serial.printf("SalientFreqs: ");
+        for (int i = 0; i < numFreqs; i++) {
+          Serial.printf("%d, ", salientFreqs[0]);
+        }
+        Serial.printf("\n");
+    }
+
 };
 
 #endif

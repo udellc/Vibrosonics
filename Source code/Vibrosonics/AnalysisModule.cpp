@@ -4,7 +4,7 @@ void AnalysisModule::addSubmodule(AnalysisModule *module)
 {
   
   // set module parameters
-  module->setInputArrays(pastWindow, curWindow);
+  // module->setInputArrays(pastWindow, curWindow);
   module->setAnalysisRangeByBin(lowerBinBound, upperBinBound);
   
   // create new larger array for modules
@@ -22,17 +22,17 @@ void AnalysisModule::addSubmodule(AnalysisModule *module)
   submodules = newSubmodules;
 }
 
-void AnalysisModule::setInputArrays(const float* past, const float* current)
-{
-  pastWindow = past;
-  curWindow = current;
+// void AnalysisModule::setInputArrays(const float* past, const float* current)
+// {
+//   pastWindow = past;
+//   curWindow = current;
 
-  for(int i=0; i<numSubmodules; i++)
-  {
-    Serial.printf("setting input arrays for submodule %d\n", i);
-    submodules[i]->setInputArrays(past, current);
-  }
-}
+//   for(int i=0; i<numSubmodules; i++)
+//   {
+//     // Serial.printf("setting input arrays for submodule %d\n", i);
+//     submodules[i]->setInputArrays(past, current);
+//   }
+// }
 
 void AnalysisModule::setAnalysisRangeByFreq(int lowerFreq, int upperFreq)
 {

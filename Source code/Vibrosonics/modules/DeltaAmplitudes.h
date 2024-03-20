@@ -29,14 +29,23 @@ class DeltaAmplitudes : public ModuleInterface<float*>
       delete [] deltaAmplitudes;
     }
 
-    void doAnalysis()
+    void doAnalysis(const float** input)
     {
       // iterate through FFT data and store the change in amplitudes between current and previous window
       for (int i = lowerBinBound; i < upperBinBound; i++) {
-        deltaAmplitudes[i] = abs(curWindow[i] - pastWindow[i]);
+        deltaAmplitudes[i] = abs(input[CURR_WINDOW][i] - input[PREV_WINDOW][i]);
       }
 
       output = deltaAmplitudes;
+    }
+
+    void printOutput()
+    {
+        Serial.printf("Delta Amplitudes: ");
+        for(int i=lowerBinBound; i<upperBinBound; i++){
+            Serial.printf("%01g, ", round(output[i]));
+        }    
+        Serial.printf("\n");
     }
 };
 

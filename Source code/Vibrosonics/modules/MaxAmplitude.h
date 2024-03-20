@@ -21,7 +21,7 @@ public:
     // doAnalysis() is called by the analysis manager
     // it finds the frequency bin with the highest amplitude in the current window
     // the max amplitude is stored in the module's output variable
-    void doAnalysis()
+    void doAnalysis(const float** input)
     {
         // initialize max to 0 (there cannot be negative amplitudes)
         float max = 0.0;
@@ -31,7 +31,7 @@ public:
         // at the end of the loop, max will contain the amplitude of the highest bin
         for(int i=lowerBinBound; i<upperBinBound; i++)
         {
-            if(curWindow[i] > max){ max = curWindow[i]; }
+            if(input[CURR_WINDOW][i] > max){ max = input[CURR_WINDOW][i]; }
         }
 
         // store the max amplitude in the output variable

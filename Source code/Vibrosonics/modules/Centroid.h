@@ -24,7 +24,7 @@ public:
     int centroid;
     int freqResBy2 = freqRes/2;
 
-    void doAnalysis()
+    void doAnalysis(const float** input)
     {
         // get the sum of amplitudes and sum of frequencies*amplitudes
         float ampSum = 0;
@@ -32,7 +32,7 @@ public:
         int amp, freq;
         for (int i = lowerBinBound; i < upperBinBound; i++) 
         {
-            amp = curWindow[i];
+            amp = input[CURR_WINDOW][i];
             freq = (i * freqRes + freqResBy2);  // use the center frequency of a bin
             ampSum += amp;
             freqAmpSum += freq * amp;

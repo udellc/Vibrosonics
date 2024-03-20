@@ -19,7 +19,8 @@ public:
     // doAnalysis() is called by the analysis manager
     // it finds the sum of the amplitudes of the bins in the selected frequency range
     // the sum is stored in the module's output variable
-    void doAnalysis()
+    // input is a 2D array that contains the stored FFT history
+    void doAnalysis(const float** input)
     {
         // initialize total to 0, the minimum possible amplitude sum
         float total = 0.0;
@@ -27,7 +28,8 @@ public:
         // iterate through the bins in the selected frequency range, adding the amplitude of each bin to the total
         for(int i=lowerBinBound; i<upperBinBound; i++)
         {
-          total += curWindow[i];
+          //total += curWindow[i];
+          total += input[CURR_WINDOW][i];
         }
 
         // store the total amplitude in the output variable
