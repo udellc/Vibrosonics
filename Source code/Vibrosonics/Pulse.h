@@ -23,25 +23,25 @@ class Pulse {
     void pushPulseNode();
 
     int attackDuration;
-    int attackFrequency;
-    int attackAmplitude;
+    float attackFrequency;
+    float attackAmplitude;
     float attackCurve;
     float attackCurveStep;
     
     int sustainDuration;
-    int sustainFrequency;
-    int sustainAmplitude;
+    float sustainFrequency;
+    float sustainAmplitude;
 
     int releaseDuration;
-    int releaseFrequency;
-    int releaseAmplitude;
+    float releaseFrequency;
+    float releaseAmplitude;
     float releaseCurve;
     float releaseCurveStep;
 
-    int sustainAttackAmplitudeDifference;
-    int sustainAttackFrequencyDifference;
-    int releaseSustainAmplitudeDifference;
-    int releaseSustainFrequencyDifference;
+    float sustainAttackAmplitudeDifference;
+    float sustainAttackFrequencyDifference;
+    float releaseSustainAmplitudeDifference;
+    float releaseSustainFrequencyDifference;
 
     int windowCounter;
 
@@ -53,22 +53,26 @@ class Pulse {
 
   public:
 
+    Pulse();
+
     // Pulse object constructor
     Pulse(uint8_t aChannel, WaveType aWaveType);
 
     // Begin pulsing, will do a single pulse with set parameters
     void start();
 
+    void stop();
+
     // set Pulse attack parameters, will transition to Sustain parameters over a given duration
-    void setAttack(int aFrequency, int anAmplitude, int aDuration);
+    void setAttack(float aFrequency, float anAmplitude, int aDuration);
     // set the curve to follow when transitioning from attack parameters to sustain parameters
     void setAttackCurve(float aCurveValue);
 
     // set Pulse sustain parameters, will sustain the frequency and amplitude over a given duration
-    void setSustain(int aFrequency, int anAmplitude, int aDuration);
+    void setSustain(float aFrequency, float anAmplitude, int aDuration);
     
     // set Pulse release parameters, will transition from sustain parameters over a given duration
-    void setRelease(int aFrequency, int anAmplitude, int aDuration);
+    void setRelease(float aFrequency, float anAmplitude, int aDuration);
     // set the curve to follow when transtioning from sustain parameters to release parameters
     void setReleaseCurve(float aCurveValue);
 

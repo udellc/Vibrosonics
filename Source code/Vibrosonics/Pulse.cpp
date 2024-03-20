@@ -18,6 +18,36 @@ void Pulse::pushPulseNode(void) {
   _currentNode->next = new PulseNode(this);
 }
 
+Pulse::Pulse() {
+  pushPulseNode();
+  this->wave = AudioLab.staticWave(0, SINE);
+
+  this->attackDuration = 0;
+  this->attackFrequency = 0;
+  this->attackAmplitude = 0;
+  this->attackCurve = 1.0;
+  this->attackCurveStep = 1.0;
+  
+  this->sustainDuration = 0;
+  this->sustainFrequency = 0;
+  this->sustainAmplitude = 0;
+
+  this->releaseDuration = 0;
+  this->releaseFrequency = 0;
+  this->releaseAmplitude = 0;
+  this->releaseCurve = 1.0;
+  this->releaseCurveStep = 1.0;
+
+  this->sustainAttackAmplitudeDifference = 0;
+  this->sustainAttackFrequencyDifference = 0;
+  this->releaseSustainAmplitudeDifference = 0;
+  this->releaseSustainFrequencyDifference = 0;
+
+  this->windowCounter = 0;
+
+  this->state = READY;
+}
+
 Pulse::Pulse(uint8_t aChannel, WaveType aWaveType) {
   pushPulseNode();
   this->wave = AudioLab.staticWave(aChannel, aWaveType);
@@ -53,7 +83,12 @@ void Pulse::start(void) {
   this->windowCounter = 0;
 }
 
-void Pulse::setAttack(int aFrequency, int anAmplitude, int aDuration) {
+void Pulse::stop(void) {
+  this->state = READY;
+  this->windowCounter = 0;
+}
+
+void Pulse::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   this->attackFrequency = aFrequency;
   this->attackAmplitude = anAmplitude;
   this->attackDuration = aDuration;
@@ -69,7 +104,7 @@ void Pulse::setAttackCurve(float aCurveValue) {
   this->attackCurve = aCurveValue;
 }
 
-void Pulse::setSustain(int aFrequency, int anAmplitude, int aDuration) {
+void Pulse::setSustain(float aFrequency, float anAmplitude, int aDuration) {
   this->sustainFrequency = aFrequency;
   this->sustainAmplitude = anAmplitude;
   this->sustainDuration = aDuration;
@@ -81,7 +116,7 @@ void Pulse::setSustain(int aFrequency, int anAmplitude, int aDuration) {
   this->releaseSustainAmplitudeDifference = this->releaseAmplitude - this->sustainAmplitude;
 }
 
-void Pulse::setRelease(int aFrequency, int anAmplitude, int aDuration) {
+void Pulse::setRelease(float aFrequency, float anAmplitude, int aDuration) {
   this->releaseFrequency = aFrequency;
   this->releaseAmplitude = anAmplitude;
   this->releaseDuration = aDuration;
@@ -111,8 +146,8 @@ void Pulse::run() {
     return;
   }
 
-  int _nowFrequency = 0;
-  int _nowAmplitude = 0;
+  float _nowFrequency = 0;
+  float _nowAmplitude = 0;
   if (this->state == ATTACK) {
     if (this->windowCounter < this->attackDuration) {
       float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);
