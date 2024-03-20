@@ -63,38 +63,33 @@ void Vibrosonics::update()
   }
 }
 
-void Vibrosonics::processInput()
-{
-  performFFT(AudioLabInputBuffer);
-  storeFFTData();
-  noiseFloor(freqsCurrent, 15.0);
-
-  return;
-}
-
+// performs FFT on data stored in vReal, vImag then stores the results in circular buffer
 void Vibrosonics::processInputCB()
 {
   performFFT(AudioLabInputBuffer);
   storeFFTDataCB();
-  Serial.printf("Process Input");
-  //noiseFloor(freqsCurrent, 15.0);
 
   return;
 }
 
+// runs doAnalysis on all added modules
 void Vibrosonics::analyze()
 {  
+  // get data from circular buffer as 2D float array
+  const float** data = buffer.unwind();
+  
   for(int i=0; i<numModules; i++)
   {
-    modules[i]->doAnalysis();
-  } 
+    modules[i]->doAnalysis(data);
+  }
 }
 
+// adds a new module to the Manager list of added modules
 void Vibrosonics::addModule(AnalysisModule* module)
 {
   
   // set module parameters
-  module->setInputArrays(freqsPrevious, freqsCurrent);
+//   module->setInputArrays(freqsPrevious, freqsCurrent);
   
   // create new larger array for modules
   numModules++;
@@ -121,12 +116,12 @@ void Vibrosonics::mapFrequenciesLinear(float* freqData, int dataLength)
   }
 }
 
-// maps frequencies to haptic range (0-250Hz) using an exponent 
+// maps frequencies from 0-SAMPLE_RATE to haptic range (0-250Hz) using an exponent 
 void Vibrosonics::mapFrequenciesExponential(float* freqData, int dataLength, float exp)
 {
   float freqRatio;
   for (int i=0; i < dataLength; i++) {
-    if (freqData[i] <= 200) {continue;}  // freq already within range
+    if (freqData[i] <= 50) {continue;}         // freq already within range
     freqRatio = freqData[i] / (SAMPLE_RATE>>1);
     freqData[i] = pow(freqRatio, exp) * 250;
   }

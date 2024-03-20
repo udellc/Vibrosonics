@@ -10,7 +10,8 @@
 #define FREQ_MAX_AMP_DELTA_MIN 50     // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
 #define FREQ_MAX_AMP_DELTA_MAX 500    // the max threshold of change in amplitude
 #define FREQ_MAX_AMP_DELTA_K 16.0      // weight for amplitude of most change
-
+#define CURR_WINDOW 0
+#define PREV_WINDOW 1
 class Vibrosonics
 {
 
@@ -73,14 +74,23 @@ class Vibrosonics
     // finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
     int frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude);
     
+    // add a module to list of submodules
     void addModule(AnalysisModule* module);
+
+    // performs FFT and stores results in circular buffer member
     void processInput();
     void processInputCB();
+
+    // runs doAnalysis() for all added submodules
     void analyze();
+
+    // maps a list of frequencies from auditory to haptic spectrum linearly
     void mapFrequenciesLinear(float* freqData, int dataLength);
+
+    // maps a list of frequencies from auditory to haptic exponentially
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
-    float* getCurrentWindow();
-    float* getPrevWindow();
+
+    // creates and adds a single dynamic wave to a channel with given freq and amp
     void assignWave(float freq, float amp, int channel);
 };
 
