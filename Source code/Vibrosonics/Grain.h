@@ -1,26 +1,26 @@
-#ifndef Pulse_h
-#define Pulse_h
+#ifndef Grain_h
+#define Grain_h
 
 #include <AudioLab.h>
 
-enum pulseState {
+enum grainState {
   READY,
   ATTACK,
   SUSTAIN,
   RELEASE
 };
 
-class Pulse {
+class Grain {
   private:
-    struct PulseNode {
-      PulseNode(Pulse *object) : reference(object), next(NULL) {}
-      Pulse *reference;
-      PulseNode *next;
+    struct GrainNode {
+      GrainNode(Grain *object) : reference(object), next(NULL) {}
+      Grain *reference;
+      GrainNode *next;
     };
 
-    static PulseNode *globalPulseList;
+    static GrainNode *globalGrainList;
 
-    void pushPulseNode();
+    void pushGrainNode();
 
     int attackDuration;
     float attackFrequency;
@@ -45,7 +45,7 @@ class Pulse {
 
     int windowCounter;
 
-    pulseState state;
+    grainState state;
 
     Wave wave;
 
@@ -53,37 +53,37 @@ class Pulse {
 
   public:
 
-    Pulse();
+    Grain();
 
-    // Pulse object constructor
-    Pulse(uint8_t aChannel, WaveType aWaveType);
+    // Grain object constructor
+    Grain(uint8_t aChannel, WaveType aWaveType);
 
-    // Begin pulsing, will do a single pulse with set parameters
+    // Begin pulsing, will do a single grain with set parameters
     void start();
 
     void stop();
 
-    // set Pulse attack parameters, will transition to Sustain parameters over a given duration
+    // set Grain attack parameters, will transition to Sustain parameters over a given duration
     void setAttack(float aFrequency, float anAmplitude, int aDuration);
     // set the curve to follow when transitioning from attack parameters to sustain parameters
     void setAttackCurve(float aCurveValue);
 
-    // set Pulse sustain parameters, will sustain the frequency and amplitude over a given duration
+    // set Grain sustain parameters, will sustain the frequency and amplitude over a given duration
     void setSustain(float aFrequency, float anAmplitude, int aDuration);
     
-    // set Pulse release parameters, will transition from sustain parameters over a given duration
+    // set Grain release parameters, will transition from sustain parameters over a given duration
     void setRelease(float aFrequency, float anAmplitude, int aDuration);
     // set the curve to follow when transtioning from sustain parameters to release parameters
     void setReleaseCurve(float aCurveValue);
 
-    // set channel of pulse
+    // set channel of grain
     void setChannel(uint8_t aChannel);
 
-    // set pulse wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
+    // set grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
     void setWaveType(WaveType aWaveType);
 
-    // returns the state of a pulse (READY, ATTACK, SUSTAIN, RELEASE)
-    pulseState getPulseState();
+    // returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
+    grainState getGrainState();
 
     // call this function in AudioLab.ready() block
     static void update();

@@ -1,25 +1,25 @@
-#include "Pulse.h"
+#include "Grain.h"
 #include <math.h>
 
-Pulse::PulseNode *Pulse::globalPulseList = NULL;
+Grain::GrainNode *Grain::globalGrainList = NULL;
 
-void Pulse::pushPulseNode(void) {
-  if (globalPulseList == NULL) {
-    globalPulseList = new PulseNode(this);
+void Grain::pushGrainNode(void) {
+  if (globalGrainList == NULL) {
+    globalGrainList = new GrainNode(this);
     return;
   }
 
-  PulseNode *_currentNode = globalPulseList;
+  GrainNode *_currentNode = globalGrainList;
 
   while (_currentNode->next != NULL) {
     _currentNode = _currentNode->next;
   }
 
-  _currentNode->next = new PulseNode(this);
+  _currentNode->next = new GrainNode(this);
 }
 
-Pulse::Pulse() {
-  pushPulseNode();
+Grain::Grain() {
+  pushGrainNode();
   this->wave = AudioLab.staticWave(0, SINE);
 
   this->attackDuration = 0;
@@ -48,8 +48,8 @@ Pulse::Pulse() {
   this->state = READY;
 }
 
-Pulse::Pulse(uint8_t aChannel, WaveType aWaveType) {
-  pushPulseNode();
+Grain::Grain(uint8_t aChannel, WaveType aWaveType) {
+  pushGrainNode();
   this->wave = AudioLab.staticWave(aChannel, aWaveType);
 
   this->attackDuration = 0;
@@ -78,17 +78,17 @@ Pulse::Pulse(uint8_t aChannel, WaveType aWaveType) {
   this->state = READY;
 }
 
-void Pulse::start(void) {
+void Grain::start(void) {
   this->state = ATTACK;
   this->windowCounter = 0;
 }
 
-void Pulse::stop(void) {
+void Grain::stop(void) {
   this->state = READY;
   this->windowCounter = 0;
 }
 
-void Pulse::setAttack(float aFrequency, float anAmplitude, int aDuration) {
+void Grain::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   this->attackFrequency = aFrequency;
   this->attackAmplitude = anAmplitude;
   this->attackDuration = aDuration;
@@ -100,11 +100,11 @@ void Pulse::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   else this->attackCurveStep = 1.0;
 }
 
-void Pulse::setAttackCurve(float aCurveValue) {
+void Grain::setAttackCurve(float aCurveValue) {
   this->attackCurve = aCurveValue;
 }
 
-void Pulse::setSustain(float aFrequency, float anAmplitude, int aDuration) {
+void Grain::setSustain(float aFrequency, float anAmplitude, int aDuration) {
   this->sustainFrequency = aFrequency;
   this->sustainAmplitude = anAmplitude;
   this->sustainDuration = aDuration;
@@ -116,7 +116,7 @@ void Pulse::setSustain(float aFrequency, float anAmplitude, int aDuration) {
   this->releaseSustainAmplitudeDifference = this->releaseAmplitude - this->sustainAmplitude;
 }
 
-void Pulse::setRelease(float aFrequency, float anAmplitude, int aDuration) {
+void Grain::setRelease(float aFrequency, float anAmplitude, int aDuration) {
   this->releaseFrequency = aFrequency;
   this->releaseAmplitude = anAmplitude;
   this->releaseDuration = aDuration;
@@ -128,19 +128,19 @@ void Pulse::setRelease(float aFrequency, float anAmplitude, int aDuration) {
   else this->releaseCurveStep = 1.0;
 }
 
-void Pulse::setReleaseCurve(float aCurveValue) {
+void Grain::setReleaseCurve(float aCurveValue) {
   this->releaseCurve = aCurveValue;
 }
 
-void Pulse::setChannel(uint8_t aChannel) {
+void Grain::setChannel(uint8_t aChannel) {
   this->wave->setChannel(aChannel);
 }
 
-void Pulse::setWaveType(WaveType aWaveType) {
+void Grain::setWaveType(WaveType aWaveType) {
   AudioLab.changeWaveType(this->wave, aWaveType);
 }
 
-void Pulse::run() {
+void Grain::run() {
   if (this->state == READY) {
     this->windowCounter = 0;
     return;
@@ -185,12 +185,12 @@ void Pulse::run() {
   this->windowCounter += 1;
 }
 
-pulseState Pulse::getPulseState(void) {
+grainState Grain::getGrainState(void) {
   return this->state;
 }
 
-void Pulse::update() {
-  PulseNode* _currentNode = globalPulseList;
+void Grain::update() {
+  GrainNode* _currentNode = globalGrainList;
 
   while (_currentNode != NULL) {
     _currentNode->reference->run();
