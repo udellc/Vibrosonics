@@ -118,7 +118,7 @@ void CircularBuffer::write(float* buffer, float freqWidth)
 {
     for (int i = 0; i < bufferSize; i++){
         float value = buffer[i] * freqWidth;
-        if(value < 25){ value = 0;}
+        if(value < 22){ value = 0;}
         data[writeHead][i] = value;
     }
     readHead = smartModulo(writeHead, numBuffers);
