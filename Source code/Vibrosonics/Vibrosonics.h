@@ -10,8 +10,7 @@
 #define FREQ_MAX_AMP_DELTA_MIN 50     // the min threshold of change in amplitude to be considered significant by the frequencyMaxAmplitudeDelta() function
 #define FREQ_MAX_AMP_DELTA_MAX 500    // the max threshold of change in amplitude
 #define FREQ_MAX_AMP_DELTA_K 16.0      // weight for amplitude of most change
-#define CURR_WINDOW 0
-#define PREV_WINDOW 1
+
 class Vibrosonics
 {
 
