@@ -1,5 +1,5 @@
 #include "Vibrosonics.h"
-#include "Pulse.h"
+#include "Grain.h"
 #include "CircularBuffer.h"
 #include <arduinoFFTFloat.h>
 #include <cmath>
@@ -82,49 +82,6 @@ void Vibrosonics::noiseFloor(float *data, float threshold) {
   }
 }
 
-void Vibrosonics::findPeaks(float* data, int maxNumPeaks) {
-  // restore output arrays
-  for (int i = 0; i < WINDOW_SIZE_BY2 >> 1; i++) {
-    FFTPeaks[i] = 0;
-    FFTPeaksAmp[i] = 0;
-  }
-  // total sum of data
-  int _peaksFound = 0;
-  float _maxPeak = 0;
-  int _maxPeakIdx = 0;
-  // iterate through data to find peaks
-  for (int f = 1; f < WINDOW_SIZE_BY2 - 1; f++) {
-    // determines if data[f] is a peak by comparing with previous and next location, otherwise continue
-    if ((data[f - 1] < data[f]) && (data[f] > data[f + 1])) {
-    float _peakSum = data[f - 1] + data[f] + data[f + 1];
-    if (_peakSum > _maxPeak) {
-      _maxPeak = _peakSum;
-      _maxPeakIdx = f;
-    }
-    // store sum around the peak and index of peak
-    FFTPeaksAmp[_peaksFound] = _peakSum;
-    FFTPeaks[_peaksFound++] = f;
-    }
-  }
-  // if needed, remove a certain number of the minumum peaks to contain output to @maxNumPeaks
-  int _numPeaksToRemove = _peaksFound - maxNumPeaks;
-  for (int j = 0; j < _numPeaksToRemove; j++) {
-    // store minimum as the maximum peak
-    float _minimumPeak = _maxPeak;
-    int _minimumPeakIdx = _maxPeakIdx;
-    // find the minimum peak and replace with zero
-    for (int i = 0; i < _peaksFound; i++) {
-      float _thisPeakAmplitude = FFTPeaksAmp[i];
-      if (_thisPeakAmplitude > 0 && _thisPeakAmplitude < _minimumPeak) {
-        _minimumPeak = _thisPeakAmplitude;
-        _minimumPeakIdx = i;
-      }
-    }
-    FFTPeaks[_minimumPeakIdx] = 0;
-    FFTPeaksAmp[_minimumPeakIdx] = 0;
-  }
-}
-
 // maps and normalizes amplitudes
 void Vibrosonics::mapAmplitudes(float* ampData, int dataLength, float maxDataSum) {
   float _dataSum = 0.0;
@@ -173,52 +130,6 @@ void Vibrosonics::assignWaves(float* freqData, float* ampData, int dataLength) {
   }
 }
 
-// interpolation based on the weight of amplitudes around a peak
-int Vibrosonics::interpolateAroundPeak(float *data, int indexOfPeak) {
-  float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
-  float atPeak = data[indexOfPeak];
-  float postPeak = indexOfPeak == WINDOW_SIZE_BY2 ? 0.0 : data[indexOfPeak + 1];
-  // summing around the index of maximum amplitude to normalize magnitudeOfChange
-  float peakSum = prePeak + atPeak + postPeak;
-  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
-  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1.0);
-  
-  // return interpolated frequency
-  return int(round((float(indexOfPeak) + magnitudeOfChange) * frequencyResolution));
-}
-
-int Vibrosonics::sumOfPeak(float *data, int indexOfPeak) {
-  if (indexOfPeak > 0 && indexOfPeak < WINDOW_SIZE_BY2 - 1) {
-    return data[indexOfPeak - 1] + data[indexOfPeak] + data[indexOfPeak + 1];
-  }
-  return 0;
-}
-
-// finds the frequency of most change within minFreq and maxFreq, returns the index of the frequency of most change, and stores the magnitude of change (between 0.0 and FREQ_MAX_AMP_DELTA_K) in magnitude reference
-int Vibrosonics::frequencyMaxAmplitudeDelta(float *data, float *prevData, int minFreq, int maxFreq, float &magnitude) {
-  // calculate indexes in FFT bins correspoding to minFreq and maxFreq
-  int minIdx = round(minFreq * frequencyWidth);
-  if (minIdx == 0) minIdx = 1;
-  int maxIdx = round(maxFreq * frequencyWidth);
-  if (maxIdx > WINDOW_SIZE_BY2 - 1) maxIdx = WINDOW_SIZE_BY2 - 1;
-  // restore global varialbes
-  int maxAmpChange = 0;
-  int maxAmpChangeIdx = -1;
-  // iterate through data* and prevData* to find the amplitude with most change
-  for (int i = minIdx; i < maxIdx; i++) {
-    // calculate the change between this amplitude and previous amplitude
-    int sumAroundDataI = sumOfPeak(data, i);
-    int sumAroundPrevDataI = sumOfPeak(prevData, i);
-    int currAmpChange = abs(sumAroundDataI - sumAroundPrevDataI);
-    // find the most dominant amplitude change and store in maxAmpChangeIdx, store the magnitude of the change in maxAmpChange
-    if ((currAmpChange >= FREQ_MAX_AMP_DELTA_MIN) && (currAmpChange <= FREQ_MAX_AMP_DELTA_MAX) && (currAmpChange > maxAmpChange)) {
-      maxAmpChange = currAmpChange;
-      maxAmpChangeIdx = i;
-    }
-  }
-  magnitude = maxAmpChange * (1.0 / FREQ_MAX_AMP_DELTA_MAX) * FREQ_MAX_AMP_DELTA_K;
-  return maxAmpChangeIdx;
-}
 // performs FFT on data stored in vReal, vImag then stores the results in circular buffer
 void Vibrosonics::processInputCB()
 {
@@ -238,15 +149,16 @@ void Vibrosonics::analyze()
   {
     modules[i]->doAnalysis(data);
   }
+
+  delete [] data;
 }
 
 // adds a new module to the Manager list of added modules
 void Vibrosonics::addModule(AnalysisModule* module)
-{
-  
-  // set module parameters
-//   module->setInputArrays(freqsPrevious, freqsCurrent);
-  
+{  
+    module->setWindowSize(WINDOW_SIZE);
+    module->setSampleRate(SAMPLE_RATE);
+
   // create new larger array for modules
   numModules++;
   AnalysisModule** newModules = new AnalysisModule*[numModules];
