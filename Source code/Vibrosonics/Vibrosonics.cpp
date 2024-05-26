@@ -189,7 +189,7 @@ void Vibrosonics::mapFrequenciesExponential(float* freqData, int dataLength, flo
 {
   float freqRatio;
   for (int i=0; i < dataLength; i++) {
-    if (freqData[i] <= 50) {continue;}         // freq already within range
+    if (freqData[i] <= 50) { continue; }         // freq already within range
     freqRatio = freqData[i] / (SAMPLE_RATE>>1);
     freqData[i] = pow(freqRatio, exp) * 250;
   }

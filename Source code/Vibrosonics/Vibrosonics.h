@@ -13,7 +13,6 @@
 
 class Vibrosonics
 {
-
   private:
 
     static const int WINDOW_SIZE_BY2 = int(WINDOW_SIZE) >> 1;
