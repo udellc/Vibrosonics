@@ -86,6 +86,8 @@ void Grain::start(void) {
 void Grain::stop(void) {
   this->state = READY;
   this->windowCounter = 0;
+  grainAmplitude = 0;
+  grainFrequency = 0;
 }
 
 void Grain::setAttack(float aFrequency, float anAmplitude, int aDuration) {
@@ -147,17 +149,23 @@ void Grain::run() {
   }
 
   float _nowFrequency = 0;
+  grainFrequency = _nowFrequency;
   float _nowAmplitude = 0;
+  grainAmplitude = _nowAmplitude;
   if (this->state == ATTACK) {
     if (this->windowCounter < this->attackDuration) {
       float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);
       _nowFrequency = attackFrequency + sustainAttackFrequencyDifference * _curvePosition;
+      grainFrequency = _nowFrequency;
       _nowAmplitude = attackAmplitude + sustainAttackAmplitudeDifference * _curvePosition;
+      grainAmplitude = _nowAmplitude;
     } else {
       this->windowCounter = 0;
       this->state = SUSTAIN;
       _nowFrequency = this->sustainFrequency;
+      grainFrequency = _nowFrequency;
       _nowAmplitude = this->sustainAmplitude;
+      grainAmplitude = _nowAmplitude;
     }
   } else if (this->state == SUSTAIN) {
     if (!(this->windowCounter < this->sustainDuration)) {
@@ -165,16 +173,22 @@ void Grain::run() {
       this->state = RELEASE;
     }
     _nowFrequency = this->sustainFrequency;
+    grainFrequency = _nowFrequency;
     _nowAmplitude = this->sustainAmplitude;
+    grainAmplitude = _nowAmplitude;
   } else {
     if (this->windowCounter < this->releaseDuration) {
       float _curvePosition = pow(this->releaseCurveStep * this->windowCounter, this->releaseCurve);
       _nowFrequency = sustainFrequency + releaseSustainFrequencyDifference * _curvePosition;
+      grainFrequency = _nowFrequency;
       _nowAmplitude = sustainAmplitude + releaseSustainAmplitudeDifference * _curvePosition;
+      grainAmplitude = _nowAmplitude;
     } else {
       this->wave->reset();
       this->windowCounter = 0;
       this->state = READY;
+      grainFrequency = 0;
+      grainAmplitude = 0;
       return;
     }
   }
@@ -196,4 +210,12 @@ void Grain::update() {
     _currentNode->reference->run();
     _currentNode = _currentNode->next;
   }
+}
+
+float Grain::getAmplitude() {
+    return grainAmplitude;
+}
+
+float Grain::getFrequency() {
+    return grainFrequency;
 }

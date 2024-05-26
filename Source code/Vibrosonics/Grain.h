@@ -45,6 +45,12 @@ class Grain {
 
     int windowCounter;
 
+    // grainAmplitude and grainFrequency do not affect the output waves
+    // they are only used to report frequency and amplitude values
+    // SEE: getAmplitude() and getFrequency()
+    float grainAmplitude;
+    float grainFrequency;
+
     grainState state;
 
     Wave wave;
@@ -87,6 +93,10 @@ class Grain {
 
     // call this function in AudioLab.ready() block
     static void update();
+
+    // call these to retrieve the current amplitude or frequency of an executing grain
+    float getAmplitude();
+    float getFrequency();
 
 };
 
