@@ -759,7 +759,7 @@
 		(descr "simple 3-pin terminal block, pitch 5.08mm, revamped version of bornier3")
 		(tags "terminal block bornier3")
 		(property "Reference" "J6"
-			(at 5.05 -4.65 0)
+			(at 5.05 5.032 0)
 			(layer "F.SilkS")
 			(uuid "e0d6588f-8d9f-480e-8da5-54917f35b034")
 			(effects
@@ -5397,7 +5397,7 @@
 		(descr "simple 2-pin terminal block, pitch 5.08mm, revamped version of bornier2")
 		(tags "terminal block bornier2")
 		(property "Reference" "J5"
-			(at 2.54 -5.08 0)
+			(at 2.54 5.032 0)
 			(layer "F.SilkS")
 			(uuid "9c56976d-8106-44c3-be99-8b6f6d1ba075")
 			(effects
@@ -8031,7 +8031,7 @@
 		(descr "simple 3-pin terminal block, pitch 5.08mm, revamped version of bornier3")
 		(tags "terminal block bornier3")
 		(property "Reference" "J4"
-			(at 5.05 -4.65 0)
+			(at 5.048 5.032 0)
 			(layer "F.SilkS")
 			(uuid "62db06e9-93f8-4902-b8bb-6139f8a8cac6")
 			(effects
@@ -16347,7 +16347,7 @@
 		(width 0.2)
 		(layer "F.Cu")
 		(net 33)
-		(uuid "98411bc6-ba50-4fbe-9c1b-8c7048bd6ead")
+		(uuid "13af7aa6-b290-4820-be7d-3369e4457cf8")
 	)
 	(segment
 		(start 140.25 119)
@@ -16355,6 +16355,6 @@
 		(width 0.2)
 		(layer "F.Cu")
 		(net 33)
-		(uuid "fb9b945a-98bd-42a7-b0de-8db19d5e5cc7")
+		(uuid "433ce5c0-c06a-462e-bb7e-6741d46a77a7")
 	)
 )
