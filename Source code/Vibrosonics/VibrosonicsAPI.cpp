@@ -20,10 +20,10 @@ void VibrosonicsAPI::performFFT(int *input) {
     }
 
     // use arduinoFFT, 'FFT' object declared as private member of Vibrosonics
-    FFT.DCRemoval(vReal, WINDOW_SIZE);                                    // DC Removal to reduce noise
-    FFT.Windowing(vReal, WINDOW_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
-    FFT.Compute(vReal, vImag, WINDOW_SIZE, FFT_FORWARD);                  // Compute FFT
-    FFT.ComplexToMagnitude(vReal, vImag, WINDOW_SIZE);                    // Compute frequency magnitudes
+    FFT.dcRemoval(vReal, WINDOW_SIZE);                                    // DC Removal to reduce noise
+    FFT.windowing(vReal, WINDOW_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Apply windowing function to data
+    FFT.compute(vReal, vImag, WINDOW_SIZE, FFT_FORWARD);                  // Compute FFT
+    FFT.complexToMagnitude(vReal, vImag, WINDOW_SIZE);                    // Compute frequency magnitudes
 }
 
 // storeFFTData writes the result of the most recent FFT computation into 

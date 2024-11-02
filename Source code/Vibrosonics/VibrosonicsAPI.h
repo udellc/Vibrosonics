@@ -5,7 +5,7 @@
 #include <cmath>
 
 // external dependencies
-#include <arduinoFFTFloat.h>
+#include <arduinoFFT.h>
 #include <AudioLab.h>
 #include <AudioPrism.h>
 
@@ -20,7 +20,7 @@ private:
 // --- ArduinoFFT library ------------------------------------------------------
     
     // FFT stores the fourier transform engine
-    arduinoFFT FFT = arduinoFFT();  
+    ArduinoFFT<float> FFT = ArduinoFFT<float>();  
     
     // Fast Fourier Transform uses complex numbers
     // -- vReal: Real component of cosine amplitude of each frequency
