@@ -1,5 +1,5 @@
 #include "CircularBuffer.h"
-#include <AudioLab.h> // only used for Serial.printf(), maybe move printing elsewhere
+#include <Arduino.h>
 
 //****************************************************************************
 // CONSTRUCTORS / DESTRUCTORS
