@@ -1,42 +1,58 @@
 #ifndef Circular_Buffer_h
 #define Circular_Buffer_h
 
-class CircularBuffer 
-{
-private:
-    // parameters
-    int numBuffers;
-    int bufferSize;
+#include <cstddef>
+#include <cstdint>
 
-    // data
-    int readHead;
-    int writeHead;
-    float **data;
+template <typename T>
+class CircularBuffer {
+private:
+    T* bufferPtr;
+
+    uint16_t bufferIndex;
+
+    uint16_t numRows;
+    uint16_t numCols;
 
 public:
-    // constructors / destructor
-    CircularBuffer();
-    CircularBuffer(int numBuffers, int bufferSize);
-    ~CircularBuffer();
+    CircularBuffer()
+    {
+        this->bufferPtr = NULL;
+        this->numRows = 0;
+        this->numCols = 0;
+        this->bufferIndex = 0;
+    };
 
-    // paramter setting
-    void setNumAndSize(int num, int size);
-    void setNumBuffers(int num);
-    void setBufferSize(int size);
+    void setBuffer(T* bufferPtr, uint16_t numRows, uint16_t numColumns)
+    {
+        this->bufferPtr = bufferPtr;
 
-    // modulo
-    int smartModulo(int dividend, int divisor);
+        this->numRows = numRows;
+        this->numCols = numCols;
+    };
 
-    // data access
-    void write(float* buffer, float freqWidth);
-    const float* getBuffer(int idx);
-    const float* getCurrent();
-    const float* getPrevious();
-    const float** unwind();
-    
-    // print buffer
-    void printAll();
-    
+    T* getBuffer() { return this->bufferPtr; };
+    uint16_t getNumRows() const { return this->numRows; };
+    uint16_t getNumCols() const { return this->numCols; };
+    uint16_t getCurrentIndex() const { return this->bufferIndex; };
+
+    T* getCurrentData() { return this->bufferPtr + this->numRows * this->bufferIndex; };
+
+    T* getData(int relativeIndex)
+    {
+        uint16_t _index = (this->bufferIndex + this->numCols + relativeIndex) % this->numCols;
+        return this->bufferPtr + _index * this->numRows;
+    };
+
+    void clearBuffer(void)
+    {
+        for (int t = 0; t < this->numCols; t++) {
+            for (int f = 0; f < this->numRows; f++) {
+                *((this->bufferPtr + f) + t * this->numRows) = 0;
+            }
+        }
+        this->bufferIndex = 0;
+    };
 };
 
 #endif
