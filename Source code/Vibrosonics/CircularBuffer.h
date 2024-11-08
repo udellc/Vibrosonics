@@ -23,6 +23,14 @@ public:
         this->bufferIndex = 0;
     };
 
+    CircularBuffer(T* bufferPtr, uint16_t numRows, uint16_t numColumns)
+    {
+        this->bufferPtr = bufferPtr;
+        this->numRows = numRows;
+        this->numCols = numCols;
+        this->bufferIndex = 0;
+    };
+
     void setBuffer(T* bufferPtr, uint16_t numRows, uint16_t numColumns)
     {
         this->bufferPtr = bufferPtr;
@@ -42,6 +50,17 @@ public:
     {
         uint16_t _index = (this->bufferIndex + this->numCols + relativeIndex) % this->numCols;
         return this->bufferPtr + _index * this->numRows;
+    };
+
+    void pushData(T* data)
+    {
+        this->bufferIndex += 1;
+        if (this->bufferIndex == this->numCols)
+            this->bufferIndex = 0;
+
+        for (int i = 0; i < this->numRows; i++) {
+            *((this->bufferPtr + i) + this->numRows * this->bufferIndex) = data[i];
+        }
     };
 
     void clearBuffer(void)

@@ -29,7 +29,7 @@ void VibrosonicsAPI::performFFT(int *input) {
 // storeFFTData writes the result of the most recent FFT computation into 
 // VibrosonicsAPI's circular buffer.
 inline void VibrosonicsAPI::storeFFTData() {
-    buffer.write(vReal, frequencyWidth);
+    circularBuffer.pushData((float *) vReal);
 }
 
 // finds and returns the mean amplitude
@@ -98,7 +98,7 @@ void VibrosonicsAPI::processInput()
 void VibrosonicsAPI::analyze()
 {  
     // get data from circular buffer as 2D float array
-    const float** data = buffer.unwind();
+    const float** data = (const float **) staticBuffer;
 
     // loop through added modules
     for(int i=0; i<numModules; i++)

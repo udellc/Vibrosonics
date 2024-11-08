@@ -86,7 +86,8 @@ public:
     // be set to half the window size used for the FFT. 
     // -- Note: AudioPrism modules take regular 2D float arrays as input. Call
     // CircularBuffer::unwind to get a flat 2D version of the buffer's content.
-    CircularBuffer buffer = CircularBuffer(2, WINDOW_SIZE_BY2);
+    float staticBuffer[2][WINDOW_SIZE_BY2];
+    CircularBuffer<float> circularBuffer = CircularBuffer((float *) staticBuffer, 2, WINDOW_SIZE_BY2);
 
     // storeFFTData writes the result of the most recent FFT computation into 
     // the circular buffer.

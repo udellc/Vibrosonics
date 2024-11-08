@@ -96,7 +96,7 @@ void setup() {
 
     // configure bass grains    
     for(int i=0; i<NUM_BASS_PEAKS; i++) {
-        // Grain::setChannel(uint8_t aChannel)
+        // grain::setchannel(uint8_t achannel)
         //  $1 - aChannel is the channel the grain wave will be added to
         bass_grains[i].setChannel(0);      // output on channel 0
         // Grain::setAttack(float aFrequency, float anAmplitude, int aDuration)
