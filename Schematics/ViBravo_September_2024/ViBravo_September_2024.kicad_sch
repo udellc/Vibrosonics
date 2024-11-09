@@ -4020,16 +4020,6 @@
 	)
 	(wire
 		(pts
-			(xy 237.49 109.22) (xy 247.65 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "45b5d12a-83aa-428f-99c3-6113dfc3a96d")
-	)
-	(wire
-		(pts
 			(xy 44.45 78.74) (xy 43.18 78.74)
 		)
 		(stroke
@@ -4260,16 +4250,6 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 104.14) (xy 68.58 104.14)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "83337d8e-6609-4675-b973-dd85c7ba34f3")
-	)
-	(wire
-		(pts
 			(xy 224.79 66.04) (xy 223.52 66.04)
 		)
 		(stroke
@@ -4450,6 +4430,16 @@
 	)
 	(wire
 		(pts
+			(xy 43.18 104.14) (xy 68.58 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aca051be-d0b9-4102-80d9-6e63d25dbcc8")
+	)
+	(wire
+		(pts
 			(xy 50.8 81.28) (xy 50.8 73.66)
 		)
 		(stroke
@@ -4457,6 +4447,16 @@
 			(type default)
 		)
 		(uuid "afebac2d-6bdc-4233-8918-cd76ffc25e40")
+	)
+	(wire
+		(pts
+			(xy 43.18 101.6) (xy 68.58 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b3ce2eec-fc37-4fae-9860-100c9100bd17")
 	)
 	(wire
 		(pts
@@ -4677,16 +4677,6 @@
 			(type default)
 		)
 		(uuid "e13064b2-9f92-416d-87de-e38d2a869f3a")
-	)
-	(wire
-		(pts
-			(xy 43.18 101.6) (xy 68.58 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e1ad60a6-3d0f-4497-bd3a-933f609e96b2")
 	)
 	(wire
 		(pts
@@ -5298,28 +5288,6 @@
 			)
 		)
 	)
-	(global_label "RX"
-		(shape bidirectional)
-		(at 247.65 104.14 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "9d1611f4-2456-41fe-a577-1f1144ac3e85")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 241.074 104.14 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "A0"
 		(shape output)
 		(at 193.04 110.49 180)
@@ -5360,28 +5328,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "TX"
-		(shape bidirectional)
-		(at 247.65 106.68 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "b1ce70d2-f252-4feb-a49e-e30d7aba847c")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 241.3764 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 				(hide yes)
 			)
 		)
@@ -5652,8 +5598,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x04")
-		(at 38.1 101.6 0)
-		(mirror y)
+		(at 38.1 104.14 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5661,7 +5606,7 @@
 		(dnp no)
 		(uuid "009e8ea7-41fc-43b7-9bd2-7deb2749775a")
 		(property "Reference" "J2"
-			(at 35.56 101.5999 0)
+			(at 35.56 104.1401 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5670,7 +5615,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x04"
-			(at 35.56 104.1399 0)
+			(at 35.56 101.6001 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5679,7 +5624,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-4_1x04_P2.54mm_Horizontal"
-			(at 38.1 101.6 0)
+			(at 38.1 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5688,7 +5633,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 38.1 101.6 0)
+			(at 38.1 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5697,7 +5642,7 @@
 			)
 		)
 		(property "Description" "Generic screw terminal, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 38.1 101.6 0)
+			(at 38.1 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6273,6 +6218,7 @@
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x03")
 		(at 252.73 97.79 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6280,7 +6226,7 @@
 		(dnp no)
 		(uuid "14620cb3-407d-4f29-bdcf-c092c3e4345a")
 		(property "Reference" "J8"
-			(at 255.27 96.5199 0)
+			(at 255.27 99.0601 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6289,7 +6235,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x03"
-			(at 255.27 99.0599 0)
+			(at 255.27 96.5201 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6539,71 +6485,6 @@
 			(project "ViBravo_September_2024"
 				(path "/c40baf00-5d70-4382-8f24-d28e6ebf545d"
 					(reference "#PWR011")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 237.49 109.22 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "210a2e2e-d3f7-49f7-9b12-ab15cd96776a")
-		(property "Reference" "#PWR027"
-			(at 237.49 115.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 237.49 114.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 237.49 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 237.49 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 237.49 109.22 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "0c152cd2-fced-4baa-a3ee-f4cef2ba0348")
-		)
-		(instances
-			(project "ViBravo_September_2024"
-				(path "/c40baf00-5d70-4382-8f24-d28e6ebf545d"
-					(reference "#PWR027")
 					(unit 1)
 				)
 			)
@@ -6948,8 +6829,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x03")
-		(at 38.1 129.54 0)
-		(mirror y)
+		(at 38.1 129.54 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6957,7 +6837,7 @@
 		(dnp no)
 		(uuid "499e0f35-3a4f-47a4-9f68-a52b193c0785")
 		(property "Reference" "J1"
-			(at 35.56 128.2699 0)
+			(at 35.56 130.8101 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6966,7 +6846,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x03"
-			(at 35.56 130.8099 0)
+			(at 35.56 128.2701 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7226,7 +7106,8 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x04")
-		(at 252.73 115.57 0)
+		(at 252.73 118.11 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7234,7 +7115,7 @@
 		(dnp no)
 		(uuid "52547176-06de-4e2d-89f8-1c9dce027181")
 		(property "Reference" "J10"
-			(at 255.27 115.5699 0)
+			(at 255.27 118.1101 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7243,7 +7124,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x04"
-			(at 255.27 118.1099 0)
+			(at 255.27 115.5701 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7252,7 +7133,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-4_1x04_P2.54mm_Horizontal"
-			(at 252.73 115.57 0)
+			(at 252.73 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7261,7 +7142,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 252.73 115.57 0)
+			(at 252.73 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7270,7 +7151,7 @@
 			)
 		)
 		(property "Description" "Generic screw terminal, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 252.73 115.57 0)
+			(at 252.73 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7505,8 +7386,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x02")
-		(at 208.28 30.48 0)
-		(mirror y)
+		(at 208.28 33.02 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7514,7 +7394,7 @@
 		(dnp no)
 		(uuid "5cc36792-8e9f-4b76-86e8-afc086f9f432")
 		(property "Reference" "J5"
-			(at 205.74 30.4799 0)
+			(at 205.74 33.0201 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7523,7 +7403,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x02"
-			(at 205.74 33.0199 0)
+			(at 205.74 30.4801 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7532,7 +7412,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal"
-			(at 208.28 30.48 0)
+			(at 208.28 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7541,7 +7421,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 208.28 30.48 0)
+			(at 208.28 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7550,7 +7430,7 @@
 			)
 		)
 		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 208.28 30.48 0)
+			(at 208.28 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8913,8 +8793,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x03")
-		(at 59.69 25.4 0)
-		(mirror y)
+		(at 59.69 25.4 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8922,7 +8801,7 @@
 		(dnp no)
 		(uuid "a8fe07bc-17d6-48b0-af36-d933950cd125")
 		(property "Reference" "J4"
-			(at 57.15 24.1299 0)
+			(at 57.15 26.6701 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8931,7 +8810,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x03"
-			(at 57.15 26.6699 0)
+			(at 57.15 24.1301 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9801,78 +9680,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:Screw_Terminal_01x03")
-		(at 252.73 106.68 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c23569a3-d9a9-48cd-931b-90b6243b3afd")
-		(property "Reference" "J9"
-			(at 255.27 105.4099 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "Screw_Terminal_01x03"
-			(at 255.27 107.9499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-3_1x03_P2.54mm_Horizontal"
-			(at 252.73 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 252.73 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic screw terminal, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 252.73 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "5e29679f-1fcf-436f-a539-a5d6c73f39ab")
-		)
-		(pin "1"
-			(uuid "325bcc9a-64e1-4cb0-8634-13124cae2481")
-		)
-		(pin "3"
-			(uuid "6f4e52d1-96fe-4f8c-bd94-628e384460f9")
-		)
-		(instances
-			(project "ViBravo_September_2024"
-				(path "/c40baf00-5d70-4382-8f24-d28e6ebf545d"
-					(reference "J9")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 184.15 107.95 0)
 		(unit 1)
@@ -10546,8 +10353,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x03")
-		(at 38.1 78.74 0)
-		(mirror y)
+		(at 38.1 78.74 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10555,7 +10361,7 @@
 		(dnp no)
 		(uuid "dcc1aae0-95f6-4d49-81e8-f07e731083a2")
 		(property "Reference" "J3"
-			(at 35.56 77.4699 0)
+			(at 35.56 80.0101 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10564,7 +10370,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x03"
-			(at 35.56 80.0099 0)
+			(at 35.56 77.4701 0)
 			(effects
 				(font
 					(size 1.27 1.27)
