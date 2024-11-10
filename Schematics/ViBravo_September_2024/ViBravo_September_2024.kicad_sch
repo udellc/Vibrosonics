@@ -3012,6 +3012,164 @@
 				)
 			)
 		)
+		(symbol "Device:C_Polarized"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C_Polarized"
+				(at 0.635 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Polarized capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "CP_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "C_Polarized_0_1"
+				(rectangle
+					(start -2.286 0.508)
+					(end 2.286 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 2.286) (xy -0.762 2.286)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 2.794) (xy -1.27 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 2.286 -0.508)
+					(end -2.286 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+			)
+			(symbol "C_Polarized_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:LED"
 			(pin_numbers hide)
 			(pin_names
@@ -3591,6 +3749,12 @@
 		(uuid "11a2fc9f-747c-40af-bf38-7775660c57da")
 	)
 	(junction
+		(at 240.03 36.83)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "18ae215c-4f69-439f-9451-99d507e35383")
+	)
+	(junction
 		(at 205.74 68.58)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3607,12 +3771,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "354b448b-0d5e-4528-a1c1-db6cd23336a6")
-	)
-	(junction
-		(at 240.03 36.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3fc24156-3e46-47e7-a4a8-c4350604d9da")
 	)
 	(junction
 		(at 54.61 134.62)
@@ -3737,16 +3895,6 @@
 			(type default)
 		)
 		(uuid "1088c846-f463-4830-944e-89a8e927e40e")
-	)
-	(wire
-		(pts
-			(xy 223.52 36.83) (xy 240.03 36.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1090edf6-b58e-4ec3-9a06-825cc3f90e3a")
 	)
 	(wire
 		(pts
@@ -4570,6 +4718,16 @@
 	)
 	(wire
 		(pts
+			(xy 223.52 36.83) (xy 240.03 36.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d3067396-4731-41e2-8a4c-b5207363f9fc")
+	)
+	(wire
+		(pts
 			(xy 184.15 68.58) (xy 205.74 68.58)
 		)
 		(stroke
@@ -5092,7 +5250,7 @@
 	)
 	(global_label "MI"
 		(shape bidirectional)
-		(at 247.65 118.11 180)
+		(at 247.65 113.03 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5102,7 +5260,7 @@
 		)
 		(uuid "76cd9fa3-3153-4cef-b435-a8c88a303ccb")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 241.4973 118.11 0)
+			(at 241.4973 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5400,7 +5558,7 @@
 	)
 	(global_label "SCK"
 		(shape bidirectional)
-		(at 247.65 113.03 180)
+		(at 247.65 118.11 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5410,7 +5568,7 @@
 		)
 		(uuid "bd21750e-8939-4118-9870-4092f38b5fdc")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 239.804 113.03 0)
+			(at 239.804 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5673,7 +5831,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 240.03 40.64 0)
+		(at 240.03 33.02 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5682,7 +5840,7 @@
 		(fields_autoplaced yes)
 		(uuid "00fb8373-09da-4c5e-a836-55920b16c7da")
 		(property "Reference" "R6"
-			(at 242.57 39.3699 0)
+			(at 242.57 31.7499 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5691,7 +5849,7 @@
 			)
 		)
 		(property "Value" "5k"
-			(at 242.57 41.9099 0)
+			(at 242.57 34.2899 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5700,7 +5858,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
-			(at 238.252 40.64 90)
+			(at 238.252 33.02 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5709,7 +5867,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 240.03 40.64 0)
+			(at 240.03 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5718,7 +5876,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 240.03 40.64 0)
+			(at 240.03 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6491,6 +6649,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 54.61 129.54 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "20d3cc1b-a84e-4cca-9d69-185a3b1c3d5d")
+		(property "Reference" "C17"
+			(at 58.42 127.3809 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C_Polarized"
+			(at 58.42 129.9209 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm"
+			(at 55.5752 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 54.61 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 54.61 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a100c6a2-2d0b-4807-85a0-dbdd0a19c266")
+		)
+		(pin "2"
+			(uuid "591b7893-edba-469a-865b-7081fc47828f")
+		)
+		(instances
+			(project ""
+				(path "/c40baf00-5d70-4382-8f24-d28e6ebf545d"
+					(reference "C17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 213.36 33.02 0)
 		(unit 1)
@@ -7175,76 +7403,6 @@
 			(project "ViBravo_September_2024"
 				(path "/c40baf00-5d70-4382-8f24-d28e6ebf545d"
 					(reference "J10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 54.61 129.54 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "5346bf4d-e44e-4388-95c6-e7fc7f331af1")
-		(property "Reference" "C9"
-			(at 58.42 128.2699 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "1000uF"
-			(at 58.42 130.8099 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm"
-			(at 53.6448 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 54.61 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 54.61 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "757cd7a6-f712-4411-8717-cdc35336e19e")
-		)
-		(pin "1"
-			(uuid "e6c09bfa-745f-4910-820e-63a6a564ad24")
-		)
-		(instances
-			(project "ViBravo_September_2024"
-				(path "/c40baf00-5d70-4382-8f24-d28e6ebf545d"
-					(reference "C9")
 					(unit 1)
 				)
 			)
@@ -9475,7 +9633,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 240.03 33.02 0)
+		(at 240.03 40.64 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9484,7 +9642,7 @@
 		(fields_autoplaced yes)
 		(uuid "bdb8a3ee-e7c0-4fa2-aa53-a685b87c01e4")
 		(property "Reference" "R5"
-			(at 242.57 31.7499 0)
+			(at 242.57 39.3699 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9493,7 +9651,7 @@
 			)
 		)
 		(property "Value" "47k"
-			(at 242.57 34.2899 0)
+			(at 242.57 41.9099 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9502,7 +9660,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
-			(at 238.252 33.02 90)
+			(at 238.252 40.64 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9511,7 +9669,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 240.03 33.02 0)
+			(at 240.03 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9520,7 +9678,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 240.03 33.02 0)
+			(at 240.03 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
