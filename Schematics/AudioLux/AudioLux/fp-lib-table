@@ -1,8 +1,0 @@
-(fp_lib_table
-  (version 7)
-  (lib (name "digikey-footprints")(type "KiCad")(uri "C:/Users/Nikita.SYNYTSIA/Documents/KiCad/digikey-kicad-library/digikey-footprints.pretty")(options "")(descr ""))
-  (lib (name "MAX7403CSA")(type "KiCad")(uri "C:/Users/Nikita.SYNYTSIA/Documents/KiCad/MAX7403CSA_/KiCADv6/footprints.pretty")(options "")(descr ""))
-  (lib (name "ECA_0JM102")(type "KiCad")(uri "C:/Users/Nikita.SYNYTSIA/Documents/KiCad/ECA_0JM102")(options "")(descr "1000uF 6.3V Cap"))
-  (lib (name "LMV358IDR")(type "KiCad")(uri "C:/Users/Nikita.SYNYTSIA/Documents/KiCad/LMV358IDR/KiCADv6/footprints.pretty")(options "")(descr ""))
-  (lib (name "MAX7480ESA")(type "KiCad")(uri "C:/Users/Nikita.SYNYTSIA/Documents/KiCad/MAX7480ESA_/KiCADv6/footprints.pretty")(options "")(descr ""))
-)
