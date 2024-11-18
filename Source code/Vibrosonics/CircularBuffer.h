@@ -23,7 +23,7 @@ public:
         this->bufferIndex = 0;
     };
 
-    CircularBuffer(T* bufferPtr, uint16_t numRows, uint16_t numColumns)
+    CircularBuffer(T* bufferPtr, uint16_t numRows, uint16_t numCols)
     {
         this->bufferPtr = bufferPtr;
         this->numRows = numRows;
@@ -31,7 +31,7 @@ public:
         this->bufferIndex = 0;
     };
 
-    void setBuffer(T* bufferPtr, uint16_t numRows, uint16_t numColumns)
+    void setBuffer(T* bufferPtr, uint16_t numRows, uint16_t numCols)
     {
         this->bufferPtr = bufferPtr;
 
