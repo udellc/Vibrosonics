@@ -142,17 +142,21 @@ void Grain::setWaveType(WaveType aWaveType) {
   AudioLab.changeWaveType(this->wave, aWaveType);
 }
 
+//Proposed change: use a switch statement for improved efficiency and readability.
 void Grain::run() {
-  if (this->state == READY) {
+  float _nowFrequency = 0;
+  float _nowAmplitude = 0;
+  grainFrequency = _nowFrequency;
+  grainAmplitude = _nowAmplitude;
+
+  switch (this->state)
+  {
+  case READY:
     this->windowCounter = 0;
     return;
-  }
+    break;
 
-  float _nowFrequency = 0;
-  grainFrequency = _nowFrequency;
-  float _nowAmplitude = 0;
-  grainAmplitude = _nowAmplitude;
-  if (this->state == ATTACK) {
+  case ATTACK:
     if (this->windowCounter < this->attackDuration) {
       float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);
       _nowFrequency = attackFrequency + sustainAttackFrequencyDifference * _curvePosition;
@@ -167,32 +171,37 @@ void Grain::run() {
       _nowAmplitude = this->sustainAmplitude;
       grainAmplitude = _nowAmplitude;
     }
-  } else if (this->state == SUSTAIN) {
+    break;
+
+  case SUSTAIN:
     if (!(this->windowCounter < this->sustainDuration)) {
-      this->windowCounter = 0;
-      this->state = RELEASE;
+     this->windowCounter = 0;
+     this->state = RELEASE;
     }
-    _nowFrequency = this->sustainFrequency;
-    grainFrequency = _nowFrequency;
-    _nowAmplitude = this->sustainAmplitude;
-    grainAmplitude = _nowAmplitude;
-  } else {
-    if (this->windowCounter < this->releaseDuration) {
-      float _curvePosition = pow(this->releaseCurveStep * this->windowCounter, this->releaseCurve);
-      _nowFrequency = sustainFrequency + releaseSustainFrequencyDifference * _curvePosition;
+      _nowFrequency = this->sustainFrequency;
       grainFrequency = _nowFrequency;
-      _nowAmplitude = sustainAmplitude + releaseSustainAmplitudeDifference * _curvePosition;
+      _nowAmplitude = this->sustainAmplitude;
       grainAmplitude = _nowAmplitude;
-    } else {
-      this->wave->reset();
-      this->windowCounter = 0;
-      this->state = READY;
-      grainFrequency = 0;
-      grainAmplitude = 0;
-      return;
-    }
+    break;
+
+  default:
+    if (this->windowCounter < this->releaseDuration) {
+        float _curvePosition = pow(this->releaseCurveStep * this->windowCounter, this->releaseCurve);
+        _nowFrequency = sustainFrequency + releaseSustainFrequencyDifference * _curvePosition;
+        grainFrequency = _nowFrequency;
+        _nowAmplitude = sustainAmplitude + releaseSustainAmplitudeDifference * _curvePosition;
+        grainAmplitude = _nowAmplitude;
+      } else {
+        this->wave->reset();
+        this->windowCounter = 0;
+        this->state = READY;
+        grainFrequency = 0;
+        grainAmplitude = 0;
+        return;
+      }
+    break;
   }
-  
+
   this->wave->setFrequency(_nowFrequency);
   this->wave->setAmplitude(_nowAmplitude);
 
