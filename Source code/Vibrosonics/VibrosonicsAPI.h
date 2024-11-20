@@ -65,7 +65,7 @@ public:
     // Frequency Width: The width is the duration of time represented by a
     // single window's worth of samples.
     // Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window
-    const float frequencyWidth = 1.0 / frequencyResolution;
+    const float frequencyWidth = float(WINDOW_SIZE) / frequencyResolution;
 
 // ---- Setup ------------------------------------------------------------------
     
