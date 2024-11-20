@@ -148,6 +148,8 @@ public:
     // (0 - 250) Hz, the haptic range.
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
 
+    //Nick's function from randomFFTExample.ino
+    int interpolateAroundPeak(int indexOfPeak);
 };
 
 #endif // Vibrosonics_API_h

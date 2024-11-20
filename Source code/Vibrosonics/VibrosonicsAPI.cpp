@@ -155,3 +155,14 @@ void VibrosonicsAPI::mapFrequenciesExponential(float* freqData, int dataLength, 
         freqData[i] = pow(freqRatio, exp) * 250;    // convert into haptic range along a exp^ curve
     }
 }
+
+//Nick's function from randomFFTExample.ino
+int VibrosonicsAPI::interpolateAroundPeak(int indexOfPeak) {
+    float prePeak = indexOfPeak == 0 ? 0.0 : vReal[indexOfPeak-1];
+    float atPeak = vReal[indexOfPeak];
+    float postPeak = indexOfPeak == WINDOW_SIZE_BY2 ? 0.0 : vReal[indexOfPeak+1];
+    float peakSum = prePeak + atPeak + postPeak;
+    float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1);
+
+    return int(round((float(indexOfPeak)+magnitudeOfChange)*frequencyResolution));
+}
