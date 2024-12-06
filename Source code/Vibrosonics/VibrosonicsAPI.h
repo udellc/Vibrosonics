@@ -1,10 +1,5 @@
 #ifndef Vibrosonics_API_h
 #define Vibrosonics_API_h
-
-// standard library includes
-#include <cmath>
-
-// external dependencies
 #include <arduinoFFT.h>
 #include <AudioLab.h>
 #include <AudioPrism.h>
@@ -13,143 +8,135 @@
 #include "CircularBuffer.h"
 #include "Grain.h"
 
-class VibrosonicsAPI 
-{
-// === PRIVATE DATA ============================================================
-private:
-// --- ArduinoFFT library ------------------------------------------------------
-    
-    // FFT stores the fourier transform engine
-    ArduinoFFT<float> FFT = ArduinoFFT<float>();  
-    
-    // Fast Fourier Transform uses complex numbers
-    // -- vReal: Real component of cosine amplitude of each frequency
-    // -- vImag: Imaginary component of the cosine amplitude of each frequency
-    float vReal[WINDOW_SIZE];       
-    float vImag[WINDOW_SIZE];       
-    
+// Analysis Module Flags
+// NOTE: MOVE TO SEPERATE INCLUDE FILE AND CHANGE NAMES
+#define MAJOR_PEAKS = 0;
+#define SALIENT_FREQS = 1;
+#define PERCUSSION_DETECTION = 2;
+#define TOTAL_AMPLITUDE = 3;
+#define NOISINESS = 4;
+#define MEAN_AMPLITUDE = 5;
+#define MAX_AMPLITUDE = 6;
+#define DELTA_AMPLITUDES = 7;
+#define FORMANTS = 8;
+#define CENTROID = 9;
+#define BREAD_SLICER= 10;
+
+ArduinoFFT<float> FFT = ArduinoFFT<float>();
+
+float vReal[WINDOW_SIZE];
+float vImag[WINDOW_SIZE];
+
 // --- AudioLab Library --------------------------------------------------------
 
-    // VibrosonicsAPI adopts AudioLab's input buffer
-    int* AudioLabInputBuffer = AudioLab.getInputBuffer();
+// VibrosonicsAPI adopts AudioLab's input buffer
+int* InputBuffer = AudioLab.getInputBuffer();
+
 
 // --- AudioPrism Library ------------------------------------------------------
 
-    // AudioPrism modules can be registered with the Vibrosonics API using the
-    // VibrosonicsAPI::addModule() function. This array stores references to all
-    // AudioPrism modules registered with an instance of the API. This allows
-    // automatic synchronization of module's audio context (sample rate and 
-    // window size) and allows performing simultaneous analysis on multiple 
-    // modules with a single call to VibrosonicsAPI::analyze() 
-    
-    AnalysisModule** modules;   // array of references to AudioPrism modules
-    int numModules = 0;         // integer used to track the array size
+// AudioPrism modules can be registered with the Vibrosonics API using the
+// VibrosonicsAPI::addModule() function. This array stores references to all
+// AudioPrism modules registered with an instance of the API. This allows
+// automatic synchronization of module's audio context (sample rate and
+// window size) and allows performing simultaneous analysis on multiple
+// modules with a single call to VibrosonicsAPI::analyze()
 
-// === PUBLIC DATA & INTERFACE =================================================
-public:
+AnalysisModule modules;   // array of references to AudioPrism modules
+int loadedModules = 0;
+
 // --- Constants ---------------------------------------------------------------
-    
-    // Some contants are defined to save repeated calculations
-    // WINDOW_SIZE and SAMPLE_RATE are defined in the AudioLab library
-    
-    // WINDOW_SIZE_BY2: Half the window size. 
-    // This constant is used often, becuase the output of a fast fourier 
-    // transform has half as many values as the input window size.
-    static const int WINDOW_SIZE_BY2 = int(WINDOW_SIZE) >> 1;
 
-    // Frequency Resolution: The resolution is the frequency range, in Hz,
-    // represented by each output bin of the Fast Fourier Transform.
-    // Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin
-    const float frequencyResolution = float(SAMPLE_RATE) / WINDOW_SIZE;
-    
-    // Frequency Width: The width is the duration of time represented by a
-    // single window's worth of samples.
-    // Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window
-    const float frequencyWidth = float(WINDOW_SIZE) / frequencyResolution;
+// Some contants are defined to save repeated calculations
+// WINDOW_SIZE and SAMPLE_RATE are defined in the AudioLab library
 
-// ---- Setup ------------------------------------------------------------------
-    
-    // This is optional
-    void init();
+// WINDOW_SIZE_BY2: Half the window size.
+// This constant is used often, becuase the output of a fast fourier
+// transform has half as many values as the input window size.
+static const int WINDOW_SIZE_BY2 = int(WINDOW_SIZE) >> 1;
+
+// Frequency Resolution: The resolution is the frequency range, in Hz,
+// represented by each output bin of the Fast Fourier Transform.
+// Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin
+const float frequencyResolution = float(SAMPLE_RATE) / WINDOW_SIZE;
+
+// Frequency Width: The width is the duration of time represented by a
+// single window's worth of samples.
+// Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window
+const float frequencyWidth = float(WINDOW_SIZE) / frequencyResolution;
 
 // --- FFT Input & Storage -----------------------------------------------------
 
-    // The circular buffer is used to efficiently store and retrieve multiple
-    // audio spectrums. Pushing new items on the circular buffer overwrites the
-    // oldest items, rather than shifting memory around.
-    // -- The first argument of the constructor is the number of audio spectrums 
-    // to store. This is set to two because none of our analysis requires a
-    // longer history. This value can be increased arbitrarily to store longer
-    // histories.
-    // -- The second argument of the constructor is the number of bins in each
-    // audio spectrum. This will be the result of an FFT operation, so it must
-    // be set to half the window size used for the FFT. 
-    // -- Note: AudioPrism modules take regular 2D float arrays as input. Call
-    // CircularBuffer::unwind to get a flat 2D version of the buffer's content.
-    float staticBuffer[2][WINDOW_SIZE_BY2];
-    CircularBuffer<float> circularBuffer = CircularBuffer((float *) staticBuffer, 2, WINDOW_SIZE_BY2);
+// The circular buffer is used to efficiently store and retrieve multiple
+// audio spectrums. Pushing new items on the circular buffer overwrites the
+// oldest items, rather than shifting memory around.
+// -- The first argument of the constructor is the number of audio spectrums
+// to store. This is set to two because none of our analysis requires a
+// longer history. This value can be increased arbitrarily to store longer
+// histories.
+// -- The second argument of the constructor is the number of bins in each
+// audio spectrum. This will be the result of an FFT operation, so it must
+// be set to half the window size used for the FFT.
+// -- Note: AudioPrism modules take regular 2D float arrays as input. Call
+// CircularBuffer::unwind to get a flat 2D version of the buffer's content.
+float staticBuffer[2][WINDOW_SIZE_BY2];
+CircularBuffer<float> circularBuffer = CircularBuffer((float *) staticBuffer, 2, WINDOW_SIZE_BY2);
 
-    // storeFFTData writes the result of the most recent FFT computation into 
-    // the circular buffer.
-    void storeFFTData();
+// init
+void init()
+{
+    Serial.begin(9600);
+    while (!Serial)
+    {
+        delay(4000);
+    }
+    AudioLab.init();
+}
 
-    // performFFT feeds its input array to the ArduinoFFT fourier transform 
-    // engine and stores the results in private data members vReal and vImag.
-    void performFFT(int* input); 
+//circular buffer operations
 
-    // processInput calls performFFT and storeFFTData to compute and store
-    // the FFT of AudioLab's input buffer.
-    void processInput();
-    
-// --- AudioPrism Management ---------------------------------------------------
+// performFFT feeds its input array to the ArduinoFFT fourier transform
+// engine and stores the results in private data members vReal and vImag.
+void performFFT()
+{
+    // copy samples from input to vReal and set vImag to 0
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        vReal[i] = InputBuffer[i];
+        vImag[i] = 0.0;
+    }
 
-    // add a module to list of submodules
-    void addModule(AnalysisModule* module);
+    // use arduinoFFT, 'FFT' object declared as private member of Vibrosonics
+    FFT.dcRemoval(vReal, WINDOW_SIZE); // DC Removal to reduce noise
+    FFT.windowing(vReal, WINDOW_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD); // Apply windowing function to data
+    FFT.compute(vReal, vImag, WINDOW_SIZE, FFT_FORWARD); // Compute FFT
+    FFT.complexToMagnitude(vReal, vImag, WINDOW_SIZE); // Compute frequency magnitudes
 
-    // runs doAnalysis() for all added submodules
-    void analyze();
+    circularBuffer.pushData((float*)vReal);
+}
 
-// --- AudioLab Interactions ---------------------------------------------------
-    
-    // assignWave creates and adds a wave to a channel for output. The wave is
-    // synthesized from the provided frequency and amplitude.
-    void assignWave(float freq, float amp, int channel);
+// runs doAnalysis on all added modules
+void VibrosonicsAPI::analyze()
+{
+    // TODO: Do an actual loop through modules later
+    modules[MAJOR_PEAKS]->doAnalysis(circularBuffer);
+}
 
-    // assignWaves creates and adds multiple waves to a channel for output. The
-    // waves are synthesized from the frequencies and amplitudes provided as
-    // arguments. Both frequency and amplitude arrays must be equal lengthed,
-    // and their length must be passed as dataLength.
-    void assignWaves(float* freqs, float* amps, int dataLength, int channel);
 
-// --- Wave Manipulation -------------------------------------------------------
-    
-    // returns the mean of some data
-    float getMean(float* data, int dataLength);
+// Nick's function from randomFFTExample.ino
+int interpolateAroundPeak(int indexOfPeak)
+{
+    float prePeak = indexOfPeak == 0 ? 0.0 : vReal[indexOfPeak - 1];
+    float atPeak = vReal[indexOfPeak];
+    float postPeak = indexOfPeak == WINDOW_SIZE_BY2 ? 0.0 : vReal[indexOfPeak + 1];
+    float peakSum = prePeak + atPeak + postPeak;
+    float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1);
 
-    // floors data that is below a certain threshold
-    void noiseFloor(float *data, float threshold);
+    return int(round((float(indexOfPeak) + magnitudeOfChange) * frequencyResolution));
+}
 
-    // maps amplitudes in some data to between 0-127 range
-    void mapAmplitudes(float* ampData, int dataLength, float maxDataSum);
-
-    // mapFrequenciesLinear() and mapFrequencyExponential() map their input 
-    // frequencies to the haptic range (0-250). 
-    // -- These functions help reduce 'R2-D2' noises caused by outputting high 
-    // frequencies.
-    // -- We've found that maintaining certain harmonic relationships between 
-    // frequencies for output on a single driver can greatly improve tactile 
-    // feel, so we recommend scaling down by octaves in these scenarios.
-    
-    // linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
-    // (0 - 250) Hz, the haptic range.
-    void mapFrequenciesLinear(float* freqData, int dataLength);
-
-    // exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
-    // (0 - 250) Hz, the haptic range.
-    void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
-
-    //Nick's function from randomFFTExample.ino
-    int interpolateAroundPeak(int indexOfPeak);
-};
+void createDynamicWave(int channel, float freq, float amp)
+{
+    AudioLab.dynamicWave(channel, freq, amp);
+}
 
 #endif // Vibrosonics_API_h

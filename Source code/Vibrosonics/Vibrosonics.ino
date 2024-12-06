@@ -1,14 +1,6 @@
 //Mirror Mode test example.
 #include "VibrosonicsAPI.h"
 
-/*
-    Instance of the VibroSonicsAPI used to manage:
-    -- FFT operations with ArduinoFFT
-    -- Audio Spectrum storage with the CircularBuffer structure
-    -- Audio input/sampling with AudioLab
-    -- AudioPrism module management and synchronization
-*/
-VibrosonicsAPI vapi = VibrosonicsAPI();
 
 /*
     MajorPeaks module for analysis
@@ -31,7 +23,7 @@ void setup() {
 /*
     Main loop for audio input, synthesis, and output.
     Waits for AudioLab buffer to fill before perfroming
-    FFT operations and module analysis. In this case, 
+    FFT operations and module analysis. In this case,
     the only module applied is MajorPeaks.
     MajorPeak frequencies and amplitudes are mapped
     before AudioLab waves are generated.
@@ -61,10 +53,10 @@ void loop() {
     float **mp_data = mp.getOutput();
     // Map amplitude data
     vapi.mapAmplitudes(mp_data[MP_AMP], 4, 250);
-    // Map frequency data using linear algorithm 
+    // Map frequency data using linear algorithm
     // (idk the difference between this and exponential, test on backpack)
     vapi.mapFrequenciesLinear(mp_data[MP_FREQ], vapi.WINDOW_SIZE_BY2);
-    
+
     // Use output to synthesize waves
     for (int i=0; i < 4; i++){
         int freq = vapi.interpolateAroundPeak(round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)));
