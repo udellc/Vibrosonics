@@ -1,5 +1,10 @@
 #ifndef Vibrosonics_API_h
 #define Vibrosonics_API_h
+
+// Standard library includes
+#include <cmath>
+
+// External Dependencies
 #include <arduinoFFT.h>
 #include <AudioLab.h>
 #include <AudioPrism.h>
@@ -10,17 +15,17 @@
 
 // Analysis Module Flags
 // NOTE: MOVE TO SEPERATE INCLUDE FILE AND CHANGE NAMES
-#define MAJOR_PEAKS = 0;
-#define SALIENT_FREQS = 1;
-#define PERCUSSION_DETECTION = 2;
-#define TOTAL_AMPLITUDE = 3;
-#define NOISINESS = 4;
-#define MEAN_AMPLITUDE = 5;
-#define MAX_AMPLITUDE = 6;
-#define DELTA_AMPLITUDES = 7;
-#define FORMANTS = 8;
-#define CENTROID = 9;
-#define BREAD_SLICER= 10;
+#define MAJOR_PEAKS 0
+#define SALIENT_FREQS 1
+#define PERCUSSION_DETECTION 2
+#define TOTAL_AMPLITUDE 3
+#define NOISINESS 4
+#define MEAN_AMPLITUDE 5
+#define MAX_AMPLITUDE 6
+#define DELTA_AMPLITUDES 7
+#define FORMANTS 8
+#define CENTROID 9
+#define BREAD_SLICER 10
 
 ArduinoFFT<float> FFT = ArduinoFFT<float>();
 
@@ -42,8 +47,16 @@ int* InputBuffer = AudioLab.getInputBuffer();
 // window size) and allows performing simultaneous analysis on multiple
 // modules with a single call to VibrosonicsAPI::analyze()
 
-AnalysisModule modules;   // array of references to AudioPrism modules
-int loadedModules = 0;
+// Ignoring temporarily
+//AnalysisModule modules[11];
+//int loadedModules = 0;
+
+/*
+    MajorPeaks module for analysis
+    Defaults to 4 peaks, user can input
+    an integer to change this.
+*/
+MajorPeaks mp = MajorPeaks();
 
 // --- Constants ---------------------------------------------------------------
 
@@ -77,8 +90,6 @@ const float frequencyWidth = float(WINDOW_SIZE) / frequencyResolution;
 // -- The second argument of the constructor is the number of bins in each
 // audio spectrum. This will be the result of an FFT operation, so it must
 // be set to half the window size used for the FFT.
-// -- Note: AudioPrism modules take regular 2D float arrays as input. Call
-// CircularBuffer::unwind to get a flat 2D version of the buffer's content.
 float staticBuffer[2][WINDOW_SIZE_BY2];
 CircularBuffer<float> circularBuffer = CircularBuffer((float *) staticBuffer, 2, WINDOW_SIZE_BY2);
 
@@ -91,6 +102,7 @@ void init()
         delay(4000);
     }
     AudioLab.init();
+    //modules[0] = mp;
 }
 
 //circular buffer operations
@@ -115,10 +127,12 @@ void performFFT()
 }
 
 // runs doAnalysis on all added modules
-void VibrosonicsAPI::analyze()
+void analyze()
 {
+    const float** data = (const float**)staticBuffer;
     // TODO: Do an actual loop through modules later
-    modules[MAJOR_PEAKS]->doAnalysis(circularBuffer);
+    mp.doAnalysis(data);
+    delete [] data;
 }
 
 

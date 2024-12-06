@@ -1,23 +1,15 @@
 //Mirror Mode test example.
 #include "VibrosonicsAPI.h"
 
-
-/*
-    MajorPeaks module for analysis
-    Defaults to 4 peaks, user can input
-    an integer to change this.
-*/
-MajorPeaks mp = MajorPeaks();
-
 /*
     Run once on ESP32 startup.
     VibrosonicsAPI initializes serial connection
     and AudioLab initialization along with adding
     the MajorPeaks module.
 */
-void setup() {
-    vapi.init();
-    vapi.addModule(&mp);
+void setup()
+{
+   init();
 }
 
 /*
@@ -29,7 +21,8 @@ void setup() {
     before AudioLab waves are generated.
     Lastly, AudioLab outputs waves with synthesize().
 */
-void loop() {
+void loop()
+{
     Serial.printf("---------------------------------------------\n");
     Serial.printf("before audiolab ready loop\n");
     if (!AudioLab.ready()) {
@@ -41,32 +34,30 @@ void loop() {
     // Also pushes data to circular buffer.
     Serial.printf("---------------------------------------------\n");
     Serial.printf("before process input\n");
-    vapi.processInput();
+    performFFT();
     Serial.printf("after process input\n");
     // Runs doAnalysis with each added module.
     Serial.printf("---------------------------------------------\n");
     Serial.printf("before analyze\n");
-    vapi.analyze();
+    analyze();
     Serial.printf("after analyze\n");
 
     // Access analyzed data
     float **mp_data = mp.getOutput();
     // Map amplitude data
-    vapi.mapAmplitudes(mp_data[MP_AMP], 4, 250);
+    //vapi.mapAmplitudes(mp_data[MP_AMP], 4, 250);
     // Map frequency data using linear algorithm
     // (idk the difference between this and exponential, test on backpack)
-    vapi.mapFrequenciesLinear(mp_data[MP_FREQ], vapi.WINDOW_SIZE_BY2);
+    //vapi.mapFrequenciesLinear(mp_data[MP_FREQ], vapi.WINDOW_SIZE_BY2);
 
     // Use output to synthesize waves
     for (int i=0; i < 4; i++){
-        int freq = vapi.interpolateAroundPeak(round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)));
+        int freq = interpolateAroundPeak(round(int(mp_data[MP_FREQ][i] * frequencyWidth)));
         // Mirror mode waves
-        AudioLab.dynamicWave(0, freq, mp_data[MP_AMP][i]);
+        createDynamicWave(0, freq, mp_data[MP_AMP][i]);
     }
     //AudioLab.dynamicWave(0, 100, 200);
 
-    // map amplitudes so that output waveform isn't clipped
-    AudioLab.mapAmplitudes(0, 10000);
     AudioLab.synthesize();
     // For debugging purposes.
     AudioLab.printWaves();
