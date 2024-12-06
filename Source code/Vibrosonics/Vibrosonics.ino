@@ -38,15 +38,24 @@ void setup() {
     Lastly, AudioLab outputs waves with synthesize().
 */
 void loop() {
+    Serial.printf("---------------------------------------------\n");
+    Serial.printf("before audiolab ready loop\n");
     if (!AudioLab.ready()) {
         return;
     }
+    Serial.printf("after audiolab ready loop\n");
 
     // Copies samples from AudioLab buffer to vReal, then performs FFT operations.
     // Also pushes data to circular buffer.
+    Serial.printf("---------------------------------------------\n");
+    Serial.printf("before process input\n");
     vapi.processInput();
+    Serial.printf("after process input\n");
     // Runs doAnalysis with each added module.
+    Serial.printf("---------------------------------------------\n");
+    Serial.printf("before analyze\n");
     vapi.analyze();
+    Serial.printf("after analyze\n");
 
     // Access analyzed data
     float **mp_data = mp.getOutput();
@@ -62,11 +71,13 @@ void loop() {
         // Mirror mode waves
         AudioLab.dynamicWave(0, freq, mp_data[MP_AMP][i]);
     }
+    //AudioLab.dynamicWave(0, 100, 200);
 
     // map amplitudes so that output waveform isn't clipped
     AudioLab.mapAmplitudes(0, 10000);
     AudioLab.synthesize();
     // For debugging purposes.
     AudioLab.printWaves();
+    Serial.printf("TEST\n");
 }
 
