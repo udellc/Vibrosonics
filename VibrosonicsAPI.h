@@ -1,5 +1,5 @@
-#ifndef Vibrosonics_API_h
-#define Vibrosonics_API_h
+#ifndef VIBROSONICS_API_H
+#define VIBROSONICS_API_H
 
 // standard library includes
 #include <cmath>
@@ -8,6 +8,7 @@
 #include <arduinoFFT.h>
 #include <AudioLab.h>
 #include <AudioPrism.h>
+#include "Modules.h"
 
 // internal
 #include "CircularBuffer.h"
