@@ -8,6 +8,7 @@
 #include <AudioLab.h>
 #include <AudioPrism.h>
 #include <arduinoFFT.h>
+#include "Modules.h"
 
 // internal
 #include "CircularBuffer.h"

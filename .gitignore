@@ -1,3 +1,5 @@
 build/
 compile_commands.json
 sketch.yaml
+html/
+latex/

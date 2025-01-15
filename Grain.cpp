@@ -1,3 +1,10 @@
+/**
+ * @file Grain.cpp
+ *
+ * This file is part of the Grain class.
+*/
+
+
 #include "Grain.h"
 #include <math.h>
 
@@ -10,7 +17,7 @@ void Grain::pushGrainNode(void) {
   }
 
   GrainNode *_currentNode = globalGrainList;
-
+  // NOTE: This seems really slow, not sure why they did this
   while (_currentNode->next != NULL) {
     _currentNode = _currentNode->next;
   }
@@ -27,7 +34,7 @@ Grain::Grain() {
   this->attackAmplitude = 0;
   this->attackCurve = 1.0;
   this->attackCurveStep = 1.0;
-  
+
   this->sustainDuration = 0;
   this->sustainFrequency = 0;
   this->sustainAmplitude = 0;
@@ -57,7 +64,7 @@ Grain::Grain(uint8_t aChannel, WaveType aWaveType) {
   this->attackAmplitude = 0;
   this->attackCurve = 1.0;
   this->attackCurveStep = 1.0;
-  
+
   this->sustainDuration = 0;
   this->sustainFrequency = 0;
   this->sustainAmplitude = 0;
@@ -98,8 +105,11 @@ void Grain::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   this->sustainAttackFrequencyDifference = this->sustainFrequency - this->attackFrequency;
   this->sustainAttackAmplitudeDifference = this->sustainAmplitude - this->attackAmplitude;
 
-  if (this->attackDuration > 0) this->attackCurveStep = 1.0 / this->attackDuration;
-  else this->attackCurveStep = 1.0;
+  if (this->attackDuration > 0) {
+    this->attackCurveStep = 1.0 / this->attackDuration;
+  } else {
+    this->attackCurveStep = 1.0;
+  }
 }
 
 void Grain::setAttackCurve(float aCurveValue) {
@@ -126,8 +136,11 @@ void Grain::setRelease(float aFrequency, float anAmplitude, int aDuration) {
   this->releaseSustainFrequencyDifference = this->releaseFrequency - this->sustainFrequency;
   this->releaseSustainAmplitudeDifference = this->releaseAmplitude - this->sustainAmplitude;
 
-  if (this->releaseDuration > 0) this->releaseCurveStep = 1.0 / this->releaseDuration;
-  else this->releaseCurveStep = 1.0;
+  if (this->releaseDuration > 0) {
+    this->releaseCurveStep = 1.0 / this->releaseDuration;
+  } else {
+    this->releaseCurveStep = 1.0;
+  }
 }
 
 void Grain::setReleaseCurve(float aCurveValue) {
@@ -142,55 +155,45 @@ void Grain::setWaveType(WaveType aWaveType) {
   AudioLab.changeWaveType(this->wave, aWaveType);
 }
 
-//Proposed change: use a switch statement for improved efficiency and readability.
+// TODO: Further improvements to this mess of a switch statement
 void Grain::run() {
-  float _nowFrequency = 0;
-  float _nowAmplitude = 0;
-  grainFrequency = _nowFrequency;
-  grainAmplitude = _nowAmplitude;
+  grainFrequency = 0;
+  grainAmplitude = 0;
 
   switch (this->state)
   {
-  case READY:
-    this->windowCounter = 0;
-    return;
-    break;
-
-  case ATTACK:
-    if (this->windowCounter < this->attackDuration) {
-      float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);
-      _nowFrequency = attackFrequency + sustainAttackFrequencyDifference * _curvePosition;
-      grainFrequency = _nowFrequency;
-      _nowAmplitude = attackAmplitude + sustainAttackAmplitudeDifference * _curvePosition;
-      grainAmplitude = _nowAmplitude;
-    } else {
+    case READY:
       this->windowCounter = 0;
-      this->state = SUSTAIN;
-      _nowFrequency = this->sustainFrequency;
-      grainFrequency = _nowFrequency;
-      _nowAmplitude = this->sustainAmplitude;
-      grainAmplitude = _nowAmplitude;
-    }
-    break;
+      return;
+      break;
 
-  case SUSTAIN:
-    if (!(this->windowCounter < this->sustainDuration)) {
-     this->windowCounter = 0;
-     this->state = RELEASE;
-    }
-      _nowFrequency = this->sustainFrequency;
-      grainFrequency = _nowFrequency;
-      _nowAmplitude = this->sustainAmplitude;
-      grainAmplitude = _nowAmplitude;
-    break;
+    case ATTACK:
+      if (this->windowCounter < this->attackDuration) {
+        float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);
+        grainFrequency = attackFrequency + sustainAttackFrequencyDifference * _curvePosition;
+        grainAmplitude = attackAmplitude + sustainAttackAmplitudeDifference * _curvePosition;
+      } else {
+        this->windowCounter = 0;
+        this->state = SUSTAIN;
+        grainFrequency = this->sustainFrequency;
+        grainAmplitude = this->sustainAmplitude;
+      }
+      break;
 
-  default:
-    if (this->windowCounter < this->releaseDuration) {
+    case SUSTAIN:
+      if (!(this->windowCounter < this->sustainDuration)) {
+        this->windowCounter = 0;
+        this->state = RELEASE;
+      }
+      grainFrequency = this->sustainFrequency;
+      grainAmplitude = this->sustainAmplitude;
+      break;
+
+    case RELEASE:
+      if (this->windowCounter < this->releaseDuration) {
         float _curvePosition = pow(this->releaseCurveStep * this->windowCounter, this->releaseCurve);
-        _nowFrequency = sustainFrequency + releaseSustainFrequencyDifference * _curvePosition;
-        grainFrequency = _nowFrequency;
-        _nowAmplitude = sustainAmplitude + releaseSustainAmplitudeDifference * _curvePosition;
-        grainAmplitude = _nowAmplitude;
+        grainFrequency = sustainFrequency + releaseSustainFrequencyDifference * _curvePosition;
+        grainAmplitude = sustainAmplitude + releaseSustainAmplitudeDifference * _curvePosition;
       } else {
         this->wave->reset();
         this->windowCounter = 0;
@@ -199,11 +202,14 @@ void Grain::run() {
         grainAmplitude = 0;
         return;
       }
-    break;
+      break;
+    default:
+      Serial.printf("Error: Invalid Grain State");
+      break;
   }
 
-  this->wave->setFrequency(_nowFrequency);
-  this->wave->setAmplitude(_nowAmplitude);
+  this->wave->setFrequency(grainFrequency);
+  this->wave->setAmplitude(grainAmplitude);
 
   this->windowCounter += 1;
 }
@@ -222,9 +228,9 @@ void Grain::update() {
 }
 
 float Grain::getAmplitude() {
-    return grainAmplitude;
+  return grainAmplitude;
 }
 
 float Grain::getFrequency() {
-    return grainFrequency;
+  return grainFrequency;
 }
