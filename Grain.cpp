@@ -1,3 +1,10 @@
+/**
+ * @file Grain.cpp
+ *
+ * This file is part of the Grain class.
+*/
+
+
 #include "Grain.h"
 #include <math.h>
 
@@ -18,7 +25,6 @@ void Grain::pushGrainNode(void) {
   _currentNode->next = new GrainNode(this);
 }
 
-// NOTE: Default contructor for a grain
 Grain::Grain() {
   pushGrainNode();
   this->wave = AudioLab.staticWave(0, SINE);
@@ -49,7 +55,6 @@ Grain::Grain() {
   this->state = READY;
 }
 
-// NOTE:Create grain on a channel with a specificied type
 Grain::Grain(uint8_t aChannel, WaveType aWaveType) {
   pushGrainNode();
   this->wave = AudioLab.staticWave(aChannel, aWaveType);
@@ -80,13 +85,11 @@ Grain::Grain(uint8_t aChannel, WaveType aWaveType) {
   this->state = READY;
 }
 
-// NOTE: Start a grain by setting its state to attack
 void Grain::start(void) {
   this->state = ATTACK;
   this->windowCounter = 0;
 }
 
-// NOTE: Stop a grain by setting its state back to ready and 0 out the amplitude and frequency
 void Grain::stop(void) {
   this->state = READY;
   this->windowCounter = 0;
@@ -94,7 +97,6 @@ void Grain::stop(void) {
   grainFrequency = 0;
 }
 
-// NOTE: Update grain in attack state with desired freq amp and duration.
 void Grain::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   this->attackFrequency = aFrequency;
   this->attackAmplitude = anAmplitude;
@@ -110,7 +112,6 @@ void Grain::setAttack(float aFrequency, float anAmplitude, int aDuration) {
   }
 }
 
-// NOTE: Updates attack curve value
 void Grain::setAttackCurve(float aCurveValue) {
   this->attackCurve = aCurveValue;
 }
@@ -217,7 +218,6 @@ grainState Grain::getGrainState(void) {
   return this->state;
 }
 
-// NOTE: Runs each grain on the list. The only thing a user will call in the ino/api
 void Grain::update() {
   GrainNode* _currentNode = globalGrainList;
 
