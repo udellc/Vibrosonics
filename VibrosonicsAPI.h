@@ -5,10 +5,10 @@
 #include <cmath>
 
 // external dependencies
+#include "Modules.h"
 #include <AudioLab.h>
 #include <AudioPrism.h>
 #include <arduinoFFT.h>
-#include "Modules.h"
 
 // internal
 #include "CircularBuffer.h"
@@ -120,7 +120,11 @@ public:
 
     // --- AudioPrism Management ---------------------------------------------------
 
-    /** add a module to list of submodules */
+    /**
+     * add a module to list of submodules
+     *
+     * @param module Module to be added to the modules array.
+     */
     void addModule(AnalysisModule* module);
 
     /** runs doAnalysis() for all added submodules */
@@ -131,6 +135,10 @@ public:
     /**
      * assignWave creates and adds a wave to a channel for output. The wave is
      * synthesized from the provided frequency and amplitude.
+     *
+     * @param freq Frequency of the synthesized wave.
+     * @param amp Amplitude of the synthesized wave.
+     * @param channel The output channel to add the wave to.
      */
     void assignWave(float freq, float amp, int channel);
 
@@ -139,23 +147,45 @@ public:
      * waves are synthesized from the frequencies and amplitudes provided as
      * arguments. Both frequency and amplitude arrays must be equal lengthed,
      * and their length must be passed as dataLength.
+     *
+     * @param freqs Frequencies of the synthesized waves.
+     * @param amps Amplitudes of the synthesized waves.
+     * @param dataLength The length of the frequency and amplitude arrays.
+     * @param channel The output channel to add the waves to.
      */
     void assignWaves(float* freqs, float* amps, int dataLength, int channel);
 
     // --- Wave Manipulation -------------------------------------------------------
 
-    /** returns the mean of some data */
+    /**
+     * returns the mean of some data
+     *
+     * @param data The array of data to find the mean of.
+     * @param dataLength The length of the data array.
+     */
     float getMean(float* data, int dataLength);
 
-    /** floors data that is below a certain threshold */
+    /**
+     * floors data that is below a certain threshold
+     *
+     * @param data The array of data to floor.
+     * @param threshold The threshold value to floor the data at.
+     */
     void noiseFloor(float* data, float threshold);
 
-    /** maps amplitudes in some data to between 0-127 range */
-    void mapAmplitudes(float* ampData, int dataLength, float maxDataSum);
+    /**
+     * maps amplitudes in some data to between 0-127 range
+     *
+     * @param ampData The amplitude array to map.
+     * @param dataLength The length of the amplitude array.
+     * @param dataSumFloor The value floor threshold to normalize the amplitudes by.
+     */
+    void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
 
     /**
      * linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
      * (0 - 250) Hz, the haptic range.
+     *
      * mapFrequenciesLinear() and mapFrequencyExponential() map their input
      * frequencies to the haptic range (0-250).
      * -- These functions help reduce 'R2-D2' noises caused by outputting high
@@ -163,12 +193,16 @@ public:
      * -- We've found that maintaining certain harmonic relationships between
      * frequencies for output on a single driver can greatly improve tactile
      * feel, so we recommend scaling down by octaves in these scenarios.
+     *
+     * @param freqData The frequency array to map.
+     * @param dataLength The length of the frequency array.
      */
     void mapFrequenciesLinear(float* freqData, int dataLength);
 
     /**
      * exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
      * (0 - 250) Hz, the haptic range.
+     *
      * mapFrequenciesLinear() and mapFrequencyExponential() map their input
      * frequencies to the haptic range (0-250).
      * -- These functions help reduce 'R2-D2' noises caused by outputting high
@@ -176,6 +210,9 @@ public:
      * -- We've found that maintaining certain harmonic relationships between
      * frequencies for output on a single driver can greatly improve tactile
      * feel, so we recommend scaling down by octaves in these scenarios.
+     *
+     * @param freqData The frequency array to map.
+     * @param dataLength The length of the frequency array.
      */
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
 };
