@@ -1,10 +1,16 @@
+/**
+ * @file
+ * Contains the declaration of the Grain class.
+*/
+
+
 #ifndef Grain_h
 #define Grain_h
 
 #include <AudioLab.h>
 /**
  * @type grainState
- * Enum for managing the state of the current grain
+ * @brief Enum for managing the state of the current grain
 */
 enum grainState {
   READY,
@@ -13,8 +19,28 @@ enum grainState {
   RELEASE
 };
 
+/**
+  * @brief Class for managing the generation of grains
+  *
+  * This class creates and manages the Ready, Attack, Sustain,
+  * and Release states for individual grains. A grain is a very
+  * small segment of an audio segment, allowing for more granular
+  * synthesis and management of the waves that are outputted
+  * through VibroSonics hardware.
+  * More information about grains and Attack Sustain Decay Release
+  * curves can be found at:
+  * https://en.wikipedia.org/wiki/Granular_synthesis
+  * https://en.wikipedia.org/wiki/Envelope_(music)
+*/
+
 class Grain {
 private:
+  /**
+   * @brief Stuct for managing a list of grains.
+   *
+   * Grains are stored in a linked list for constant time read
+   * access when outputting to the speakers.
+  */
   struct GrainNode {
     GrainNode(Grain *object) : reference(object), next(NULL) {}
     Grain *reference;
@@ -23,7 +49,13 @@ private:
 
   static GrainNode *globalGrainList;
 
+  /**
+   * @brief Pushes node to the end of the grain list.
+   *
+   * Pushes current instance of the grain to the end of globalGrainList.
+  */
   void pushGrainNode();
+
   // NOTE: Should these be their own structs?
   int attackDuration;
   float attackFrequency;
@@ -48,10 +80,6 @@ private:
 
   int windowCounter;
 
-  // grainAmplitude and grainFrequency do not affect the output waves
-  // they are only used to report frequency and amplitude values
-  // SEE: getAmplitude() and getFrequency()
-  // NOTE: I have no idea what they are talking about. Those getters tell you nothing.
   float grainAmplitude;
   float grainFrequency;
 
@@ -59,43 +87,124 @@ private:
 
   Wave wave;
 
+  /**
+   * @brief Update frequency and amplitude values based on current grain state.
+   *
+   * Updates wave frequency and amplitude along with the window counter.
+   * Switches grain states based on the window counter and durations for
+   * each state. In essence it progresses the sample along the attack sustain
+   * release curve.
+   */
   void run();
 
 public:
-
+  /**
+   * @brief Default constructor to allocate a new grain
+   *
+   * Creates a grain on channel 0 and sine wave type in
+   * the ready state.
+  */
   Grain();
 
-  // Grain object constructor
+  /**
+   * @brief Overloaded constructor to allocate a new grain
+   * with specified channel and wave type
+   * 
+   * Creates a grain on the specified channel and with the
+   * inputted wave type in the ready state.
+   *
+   * @param aChannel Specified channel for output
+   * @param aWaveType Specified wave type for output
+  */
   Grain(uint8_t aChannel, WaveType aWaveType);
 
-  // Begin pulsing, will do a single grain with set parameters
+  /**
+   * @brief Sets a grain to the attack state and resets
+   * the window counter
+  */
   void start();
 
+  /**
+   * @brief Resets grain to ready state
+  */
   void stop();
 
-  // set Grain attack parameters, will transition to Sustain parameters over a given duration
+  /**
+   * @brief Updates grain parameters in the attack state
+   *
+   * Updates frequency, amplitude, and duration. Also updates sustain
+   * frequency and amplitude difference.
+   *
+   * @param aFrequency Updated frequncy
+   * @param anAmplitude Updated amplitude
+   * @param aDuration Updated duration
+  */
   void setAttack(float aFrequency, float anAmplitude, int aDuration);
-  // set the curve to follow when transitioning from attack parameters to sustain parameters
+
+  /**
+   * @brief Updates attack curve value.
+   *
+   * @param aCurveValue Updated curve value
+  */
   void setAttackCurve(float aCurveValue);
 
-  // set Grain sustain parameters, will sustain the frequency and amplitude over a given duration
+  /**
+   * @brief Updates grain parameters in the sustain state
+   *
+   * Updates frequency, amplitude, and duration. Also updates attack
+   * frequency and amplitude difference.
+   *
+   * @param aFrequency Updated frequncy
+   * @param anAmplitude Updated amplitude
+   * @param aDuration Updated duration
+  */
   void setSustain(float aFrequency, float anAmplitude, int aDuration);
 
-  // set Grain release parameters, will transition from sustain parameters over a given duration
+  /**
+   * @brief Updates grain parameters in the release state
+   *
+   * Updates frequency, amplitude, and duration. Also updates attack
+   * and sustain frequency and amplitude difference.
+   *
+   * @param aFrequency Updated frequncy
+   * @param anAmplitude Updated amplitude
+   * @param aDuration Updated duration
+  */
   void setRelease(float aFrequency, float anAmplitude, int aDuration);
-  // set the curve to follow when transtioning from sustain parameters to release parameters
+
+  /**
+   * @brief Updates release curve value.
+   *
+   * @param aCurveValue Updated curve value
+  */
   void setReleaseCurve(float aCurveValue);
 
-  // set channel of grain
+  /**
+   * @brief Sets the channel of this grain
+   *
+   * @param aChannel The channel on specified integer
+  */
   void setChannel(uint8_t aChannel);
 
-  // set grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
+  /**
+   * @brief Sets grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
+   *
+   * @param aWaveType The wave type
+  */
   void setWaveType(WaveType aWaveType);
 
-  // returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
+  /**
+   * Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
+   *
+   * @return grainState
+  */
   grainState getGrainState();
 
-  // call this function in AudioLab.ready() block
+  /**
+   * @brief Updates grain values and state if necessary
+   *
+   * Performs the run() function on each node in the globalGrainList
+  */
   static void update();
 
   // call these to retrieve the current amplitude or frequency of an executing grain
