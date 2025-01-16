@@ -51,7 +51,7 @@ void VibrosonicsAPI::noiseFloor(float *ampData, float threshold) {
 }
 
 // maps and normalizes amplitudes. Necessary for use with AudioLab.
-void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float maxDataSum) {
+void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float dataSumFloor) {
     // sum amp data
     float dataSum = 0.0;
     for (int i = 0; i < dataLength; i++) {
@@ -65,7 +65,7 @@ void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float maxData
     // a higher maxDataSum may allow more room for contrast.
     // If the sum of amplitudes (dataSum) is larger than maxDataSum, then the dataSum will be used
     // to ensure values are no larger than 1.
-    float divideBy = 1.0 / (dataSum > maxDataSum ? dataSum : maxDataSum);
+    float divideBy = 1.0 / (dataSum > dataSumFloor ? dataSum : dataSumFloor);
 
     // convert amplitudes
     for (int i = 0; i < dataLength; i++) {
