@@ -23,8 +23,8 @@ private:
     ArduinoFFT<float> FFT = ArduinoFFT<float>();
 
     // Fast Fourier Transform uses complex numbers
-    float vReal[WINDOW_SIZE]; /** Real component of cosine amplitude of each frequency */
-    float vImag[WINDOW_SIZE]; /** Imaginary component of the cosine amplitude of each frequency */
+    float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
+    float vImag[WINDOW_SIZE]; //!< Imaginary component of the cosine amplitude of each frequency.
 
     // --- AudioLab Library --------------------------------------------------------
 
@@ -40,8 +40,8 @@ private:
     // window size) and allows performing simultaneous analysis on multiple
     // modules with a single call to VibrosonicsAPI::analyze()
 
-    AnalysisModule** modules; /** array of references to AudioPrism modules */
-    int numModules = 0; /** integer used to track the array size */
+    AnalysisModule** modules; //!< Array of references to AudioPrism modules.
+    int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
 
     // === PUBLIC DATA & INTERFACE =================================================
 public:
@@ -61,15 +61,15 @@ public:
      * Frequency range of an FFT bin in Hz.
      * The resolution is the frequency range, in Hz,
      * represented by each output bin of the Fast Fourier Transform.
-     * Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin
+     * Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
      */
     const float frequencyResolution = float(SAMPLE_RATE) / WINDOW_SIZE;
 
     /**
-     * Duration, in seconds, of a window
-     * * The width is the duration of time represented by a
-     * single window's worth of samples
-     * Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window
+     * Duration of a window, in seconds.
+     * The width is the duration of time represented by a
+     * single window's worth of samples.
+     * Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window.
      */
     const float frequencyWidth = 1.0 / frequencyResolution;
 
@@ -173,47 +173,15 @@ public:
      */
     void noiseFloor(float* data, float threshold);
 
-    /**
-     * maps amplitudes in some data to between 0-127 range
-     *
-     * @param ampData The amplitude array to map.
-     * @param dataLength The length of the amplitude array.
-     * @param dataSumFloor The value floor threshold to normalize the amplitudes by.
-     */
+     //! Maps amplitudes in some data to between 0-127 range.
     void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
 
-    /**
-     * linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
-     * (0 - 250) Hz, the haptic range.
-     *
-     * mapFrequenciesLinear() and mapFrequencyExponential() map their input
-     * frequencies to the haptic range (0-250).
-     * -- These functions help reduce 'R2-D2' noises caused by outputting high
-     * frequencies.
-     * -- We've found that maintaining certain harmonic relationships between
-     * frequencies for output on a single driver can greatly improve tactile
-     * feel, so we recommend scaling down by octaves in these scenarios.
-     *
-     * @param freqData The frequency array to map.
-     * @param dataLength The length of the frequency array.
-     */
+    //! linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
+    //! (0 - 250) Hz, the haptic range.
     void mapFrequenciesLinear(float* freqData, int dataLength);
 
-    /**
-     * exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
-     * (0 - 250) Hz, the haptic range.
-     *
-     * mapFrequenciesLinear() and mapFrequencyExponential() map their input
-     * frequencies to the haptic range (0-250).
-     * -- These functions help reduce 'R2-D2' noises caused by outputting high
-     * frequencies.
-     * -- We've found that maintaining certain harmonic relationships between
-     * frequencies for output on a single driver can greatly improve tactile
-     * feel, so we recommend scaling down by octaves in these scenarios.
-     *
-     * @param freqData The frequency array to map.
-     * @param dataLength The length of the frequency array.
-     */
+    //! Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
+    //! (0 - 250) Hz, the haptic range.
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
 };
 
