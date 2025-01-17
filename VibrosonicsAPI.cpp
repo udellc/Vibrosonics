@@ -2,11 +2,6 @@
 
 void VibrosonicsAPI::init()
 {
-    Serial.begin(9600);
-    while (!Serial)
-        ;
-    delay(4000);
-
     AudioLab.init();
 }
 
