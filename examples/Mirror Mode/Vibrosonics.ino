@@ -1,3 +1,13 @@
+/**
+* @file Vibrosonics.ino
+*
+* @mainpage Vibrosonics Mirror Mode Example
+*
+* @section description 
+* An example of how mirror mode works using the vibrosonics API 
+*
+*/
+
 #include "VibrosonicsAPI.h"
 
 /**
@@ -287,22 +297,22 @@ void loop() {
         snare_amp = min(float(snare_amp * boost), float(1.0));
 
         /**
-        // SNARE FREQUENCY CALCULATION
-        // -- The snare frequency is taken from the bass analysis. The snare is
-        // played on the same haptic driver as the bass, so the snare is set 
-        // an octave (or two) up from the bass to reduce phase disturbances
-        // and create tactile variation. 
-        // -- The snare is transposed up by octaves until it is above 100 Hz to 
-        // keep it in the upper haptic range.
+         * SNARE FREQUENCY CALCULATION
+         * -- The snare frequency is taken from the bass analysis. The snare is
+         * played on the same haptic driver as the bass, so the snare is set 
+         * an octave (or two) up from the bass to reduce phase disturbances
+         * and create tactile variation. 
+         * -- The snare is transposed up by octaves until it is above 100 Hz to 
+         * keep it in the upper haptic range.
         */
         float snare_freq = bass_data[MP_FREQ][0] * 2.0;
         if(snare_freq < 100){ snare_freq *= 2.0; }
         if(snare_freq == 0){ snare_freq = 200; }
         
         /**
-        // TRIGGER GRAINS
-        // -- The snare grain is triggered with the frequency and amplitude found
-        // above.
+         * TRIGGER GRAINS
+         * -- The snare grain is triggered with the frequency and amplitude found
+         * above.
         */
         snare_grain.setSustain(snare_freq, snare_amp, 1);
         snare_grain.setRelease(0, 0, 4);
