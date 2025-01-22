@@ -182,6 +182,24 @@ public:
     //! Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
     //! (0 - 250) Hz, the haptic range.
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
+
+    // --- Grains -----------------------------------------------------------------
+
+    /**
+     * Updates an array of numPeaks grains sustain and release windows if
+     * the data's amplitude is greater than the amplitude stored in the grain.
+     *
+     * @param numPeaks The size of the Grain array.
+     * @param peakData A pointer to a module's amplitude data
+     * @param grains An array of grains to be triggered.
+    */
+    void triggerGrains(int numPeaks, float** peakData, Grain* grains);
+
+    /**
+     * Updates all grains in the globalGrainList
+     */
+    void updateGrains();
+
 };
 
 #endif // VIBROSONICS_API_H
