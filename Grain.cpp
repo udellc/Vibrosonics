@@ -27,195 +27,192 @@ void Grain::pushGrainNode(void) {
 
 Grain::Grain() {
   pushGrainNode();
-  this->wave = AudioLab.staticWave(0, SINE);
+  wave = AudioLab.staticWave(0, SINE);
 
-  this->attackDuration = 0;
-  this->attackFrequency = 0;
-  this->attackAmplitude = 0;
-  this->attackCurve = 1.0;
-  this->attackCurveStep = 1.0;
+  attackDuration = 0;
+  attackFrequency = 0;
+  attackAmplitude = 0;
+  attackCurve = 1.0;
+  attackCurveStep = 1.0;
 
-  this->sustainDuration = 0;
-  this->sustainFrequency = 0;
-  this->sustainAmplitude = 0;
+  sustainDuration = 0;
+  sustainFrequency = 0;
+  sustainAmplitude = 0;
 
-  this->releaseDuration = 0;
-  this->releaseFrequency = 0;
-  this->releaseAmplitude = 0;
-  this->releaseCurve = 1.0;
-  this->releaseCurveStep = 1.0;
+  releaseDuration = 0;
+  releaseFrequency = 0;
+  releaseAmplitude = 0;
+  releaseCurve = 1.0;
+  releaseCurveStep = 1.0;
 
-  this->sustainAttackAmplitudeDifference = 0;
-  this->sustainAttackFrequencyDifference = 0;
-  this->releaseSustainAmplitudeDifference = 0;
-  this->releaseSustainFrequencyDifference = 0;
+  sustainAttackAmplitudeDifference = 0;
+  sustainAttackFrequencyDifference = 0;
+  releaseSustainAmplitudeDifference = 0;
+  releaseSustainFrequencyDifference = 0;
 
-  this->windowCounter = 0;
+  windowCounter = 0;
 
-  this->state = READY;
+  state = READY;
 }
 
 Grain::Grain(uint8_t aChannel, WaveType aWaveType) {
   pushGrainNode();
-  this->wave = AudioLab.staticWave(aChannel, aWaveType);
+  wave = AudioLab.staticWave(aChannel, aWaveType);
 
-  this->attackDuration = 0;
-  this->attackFrequency = 0;
-  this->attackAmplitude = 0;
-  this->attackCurve = 1.0;
-  this->attackCurveStep = 1.0;
+  attackDuration = 0;
+  attackFrequency = 0;
+  attackAmplitude = 0;
+  attackCurve = 1.0;
+  attackCurveStep = 1.0;
 
-  this->sustainDuration = 0;
-  this->sustainFrequency = 0;
-  this->sustainAmplitude = 0;
+  sustainDuration = 0;
+  sustainFrequency = 0;
+  sustainAmplitude = 0;
 
-  this->releaseDuration = 0;
-  this->releaseFrequency = 0;
-  this->releaseAmplitude = 0;
-  this->releaseCurve = 1.0;
-  this->releaseCurveStep = 1.0;
+  releaseDuration = 0;
+  releaseFrequency = 0;
+  releaseAmplitude = 0;
+  releaseCurve = 1.0;
+  releaseCurveStep = 1.0;
 
-  this->sustainAttackAmplitudeDifference = 0;
-  this->sustainAttackFrequencyDifference = 0;
-  this->releaseSustainAmplitudeDifference = 0;
-  this->releaseSustainFrequencyDifference = 0;
+  sustainAttackAmplitudeDifference = 0;
+  sustainAttackFrequencyDifference = 0;
+  releaseSustainAmplitudeDifference = 0;
+  releaseSustainFrequencyDifference = 0;
 
-  this->windowCounter = 0;
+  windowCounter = 0;
 
-  this->state = READY;
+  state = READY;
 }
 
 void Grain::start(void) {
-  this->state = ATTACK;
-  this->windowCounter = 0;
+  state = ATTACK;
+  windowCounter = 0;
 }
 
 void Grain::stop(void) {
-  this->state = READY;
-  this->windowCounter = 0;
+  state = READY;
+  windowCounter = 0;
   grainAmplitude = 0;
   grainFrequency = 0;
 }
 
 void Grain::setAttack(float aFrequency, float anAmplitude, int aDuration) {
-  this->attackFrequency = aFrequency;
-  this->attackAmplitude = anAmplitude;
-  this->attackDuration = aDuration;
+  attackFrequency = aFrequency;
+  attackAmplitude = anAmplitude;
+  attackDuration = aDuration;
 
-  this->sustainAttackFrequencyDifference = this->sustainFrequency - this->attackFrequency;
-  this->sustainAttackAmplitudeDifference = this->sustainAmplitude - this->attackAmplitude;
+  sustainAttackFrequencyDifference = sustainFrequency - attackFrequency;
+  sustainAttackAmplitudeDifference = sustainAmplitude - attackAmplitude;
 
-  if (this->attackDuration > 0) {
-    this->attackCurveStep = 1.0 / this->attackDuration;
+  if (attackDuration > 0) {
+    attackCurveStep = 1.0 / attackDuration;
   } else {
-    this->attackCurveStep = 1.0;
+    attackCurveStep = 1.0;
   }
 }
 
 void Grain::setAttackCurve(float aCurveValue) {
-  this->attackCurve = aCurveValue;
+  attackCurve = aCurveValue;
 }
 
 void Grain::setSustain(float aFrequency, float anAmplitude, int aDuration) {
-  this->sustainFrequency = aFrequency;
-  this->sustainAmplitude = anAmplitude;
-  this->sustainDuration = aDuration;
+  sustainFrequency = aFrequency;
+  sustainAmplitude = anAmplitude;
+  sustainDuration = aDuration;
 
-  this->sustainAttackFrequencyDifference = this->sustainFrequency - this->attackFrequency;
-  this->sustainAttackAmplitudeDifference = this->sustainAmplitude - this->attackAmplitude;
+  sustainAttackFrequencyDifference = sustainFrequency - attackFrequency;
+  sustainAttackAmplitudeDifference = sustainAmplitude - attackAmplitude;
 
-  this->releaseSustainFrequencyDifference = this->releaseFrequency - this->sustainFrequency;
-  this->releaseSustainAmplitudeDifference = this->releaseAmplitude - this->sustainAmplitude;
+  releaseSustainFrequencyDifference = releaseFrequency - sustainFrequency;
+  releaseSustainAmplitudeDifference = releaseAmplitude - sustainAmplitude;
 }
 
 void Grain::setRelease(float aFrequency, float anAmplitude, int aDuration) {
-  this->releaseFrequency = aFrequency;
-  this->releaseAmplitude = anAmplitude;
-  this->releaseDuration = aDuration;
+  releaseFrequency = aFrequency;
+  releaseAmplitude = anAmplitude;
+  releaseDuration = aDuration;
 
-  this->releaseSustainFrequencyDifference = this->releaseFrequency - this->sustainFrequency;
-  this->releaseSustainAmplitudeDifference = this->releaseAmplitude - this->sustainAmplitude;
+  releaseSustainFrequencyDifference = releaseFrequency - sustainFrequency;
+  releaseSustainAmplitudeDifference = releaseAmplitude - sustainAmplitude;
 
-  if (this->releaseDuration > 0) {
-    this->releaseCurveStep = 1.0 / this->releaseDuration;
+  if (releaseDuration > 0) {
+    releaseCurveStep = 1.0 / releaseDuration;
   } else {
-    this->releaseCurveStep = 1.0;
+    releaseCurveStep = 1.0;
   }
 }
 
 void Grain::setReleaseCurve(float aCurveValue) {
-  this->releaseCurve = aCurveValue;
+  releaseCurve = aCurveValue;
 }
 
 void Grain::setChannel(uint8_t aChannel) {
-  this->wave->setChannel(aChannel);
+  wave->setChannel(aChannel);
 }
 
 void Grain::setWaveType(WaveType aWaveType) {
-  AudioLab.changeWaveType(this->wave, aWaveType);
+  AudioLab.changeWaveType(wave, aWaveType);
 }
 
 // TODO: Further improvements to this mess of a switch statement
 void Grain::run() {
-  grainFrequency = 0;
-  grainAmplitude = 0;
-
-  switch (this->state)
+  switch (state)
   {
     case READY:
-      this->windowCounter = 0;
+      windowCounter = 0;
       return;
-      break;
 
     case ATTACK:
-      if (this->windowCounter < this->attackDuration) {
-        float _curvePosition = pow(this->attackCurveStep * this->windowCounter, this->attackCurve);
+      if (windowCounter < attackDuration) {
+        float _curvePosition = pow(attackCurveStep * windowCounter, attackCurve);
         grainFrequency = attackFrequency + sustainAttackFrequencyDifference * _curvePosition;
         grainAmplitude = attackAmplitude + sustainAttackAmplitudeDifference * _curvePosition;
       } else {
-        this->windowCounter = 0;
-        this->state = SUSTAIN;
-        grainFrequency = this->sustainFrequency;
-        grainAmplitude = this->sustainAmplitude;
+        windowCounter = 0;
+        state = SUSTAIN;
+        grainFrequency = sustainFrequency;
+        grainAmplitude = sustainAmplitude;
       }
       break;
 
     case SUSTAIN:
-      if (!(this->windowCounter < this->sustainDuration)) {
-        this->windowCounter = 0;
-        this->state = RELEASE;
+      if (windowCounter >= sustainDuration) {
+        windowCounter = 0;
+        state = RELEASE;
       }
-      grainFrequency = this->sustainFrequency;
-      grainAmplitude = this->sustainAmplitude;
+      grainFrequency = sustainFrequency;
+      grainAmplitude = sustainAmplitude;
       break;
 
     case RELEASE:
-      if (this->windowCounter < this->releaseDuration) {
-        float _curvePosition = pow(this->releaseCurveStep * this->windowCounter, this->releaseCurve);
+      if (windowCounter < releaseDuration) {
+        float _curvePosition = pow(releaseCurveStep * windowCounter, releaseCurve);
         grainFrequency = sustainFrequency + releaseSustainFrequencyDifference * _curvePosition;
         grainAmplitude = sustainAmplitude + releaseSustainAmplitudeDifference * _curvePosition;
       } else {
-        this->wave->reset();
-        this->windowCounter = 0;
-        this->state = READY;
+        wave->reset();
+        windowCounter = 0;
+        state = READY;
         grainFrequency = 0;
         grainAmplitude = 0;
         return;
       }
       break;
+
     default:
       Serial.printf("Error: Invalid Grain State");
       break;
   }
 
-  this->wave->setFrequency(grainFrequency);
-  this->wave->setAmplitude(grainAmplitude);
+  wave->setFrequency(grainFrequency);
+  wave->setAmplitude(grainAmplitude);
 
-  this->windowCounter += 1;
+  windowCounter += 1;
 }
 
-grainState Grain::getGrainState(void) {
-  return this->state;
+grainState Grain::getGrainState() {
+  return state;
 }
 
 void Grain::update() {

@@ -40,6 +40,7 @@ private:
    *
    * Grains are stored in a linked list for constant time read
    * access when outputting to the speakers.
+   * TODO: Move globalGrainList to the api
   */
   struct GrainNode {
     GrainNode(Grain *object) : reference(object), next(NULL) {}
