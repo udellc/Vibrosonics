@@ -1,16 +1,18 @@
 # Vibrosonics
 Welcome to Vibrosonics!
 
-Detailed documentation can be viewed under the [wiki](https://github.com/udellc/Vibrosonics/wiki).
+Detailed documentation can be viewed on the [Doxygen Page](https://udellc.github.io/Vibrosonics/) UNDER CONSTRUCTION!
 
 Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable
 
-Library dependencies (dependencies are contained under "Source code/dependencies", copy the contents of this folder to your local arduino libraries folder):
- - For Vibrosonics-Mozzi: arduinoFFT_FLOAT (copy of arduinoFFT [v1.6.1] with doubles converted to floats), Mozzi [v.1.1.0] (https://github.com/sensorium/Mozzi/tree/1.1.0)
-  
- - For Vibrosonics-Interrupt: arduinoFFT_FLOAT (copy of arduinoFFT [v1.6.1] with doubles converted to floats)
+Library dependencies:
 
- - On versions: There is no apparent reason to believe that the most recent versions (as of writing) of ArduinoFFT (v1.6.1+) and Mozzi (v1.1.0+) wouldn't work given what they change from the prior versions, but they just haven't been tested since their release. Some light experimentation with the newest versions to see if they work the same is optional.
+- [AudioLab](https://github.com/synytsim/AudioLab)
+
+- [AudioPrism](https://github.com/udellc/AudioPrism)
+
+- [ArduinoFFT](https://github.com/udellc/AudioPrism)
+
 
 ## What is it?
 
@@ -26,3 +28,4 @@ Currently, the market for similar devices is highly limited and undeveloped. Thi
  - Dr. Chet Udell (Project leader and manager)
  - Vincent Vaughn (Advised software and hardware development)
  - Alex Synytsia (Participated in hardware development for the project during the 2022-2023 years)
+ - Nick Synytsia (Developed AudioLab and advised software development for 2024-2025)
