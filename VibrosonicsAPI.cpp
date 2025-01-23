@@ -5,8 +5,11 @@ void VibrosonicsAPI::init()
     AudioLab.init();
 }
 
-// performFFT feeds its input array to the ArduinoFFT fourier transform engine
-// and stores the results in private data members vReal and vImag.
+/**
+ * performFFT feeds its input array to the ArduinoFFT fourier transform engine
+ * and stores the results in private data members vReal and vImag.
+ * @param input Array of signals to do FFT on. 
+ */
 void VibrosonicsAPI::performFFT(int* input)
 {
     // copy samples from input to vReal and set vImag to 0
@@ -22,14 +25,20 @@ void VibrosonicsAPI::performFFT(int* input)
     FFT.complexToMagnitude(vReal, vImag, WINDOW_SIZE); // Compute frequency magnitudes
 }
 
-// storeFFTData writes the result of the most recent FFT computation into
-// VibrosonicsAPI's circular buffer.
+/**
+ * storeFFTData writes the result of the most recent FFT computation into
+ * VibrosonicsAPI's circular buffer.
+ */
 inline void VibrosonicsAPI::storeFFTData()
 {
     circularBuffer.pushData((float*)vReal);
 }
 
-// finds and returns the mean amplitude
+/**
+ * finds and returns the mean amplitude 
+ * @param ampData Array of amplitudes. 
+ * @param dataLength Length of amplitude array. 
+*/
 float VibrosonicsAPI::getMean(float* ampData, int dataLength)
 {
     float sum = 0.0;
@@ -39,7 +48,11 @@ float VibrosonicsAPI::getMean(float* ampData, int dataLength)
     return sum > 0.0 ? sum / dataLength : sum;
 }
 
-// sets amplitude of bin to 0 if less than threshold
+/**
+ * sets amplitude of bin to 0 if less than threshold
+ * @param ampData Array of amplitudes. 
+ * @param threshold The threshold value to floor the data at.
+*/
 void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
 {
     for (int i = 0; i < windowSizeBy2; i++) {
@@ -81,13 +94,30 @@ void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float dataSum
     }
 }
 
-// creates and adds a single dynamic wave to a channel with the given freq and amp
+ /**
+ * assignWave creates and adds a wave to a channel for output. The wave is
+ * synthesized from the provided frequency and amplitude.
+ *
+ * @param freq Frequency of the synthesized wave.
+ * @param amp Amplitude of the synthesized wave.
+ * @param channel The output channel to add the wave to.
+*/
 void VibrosonicsAPI::assignWave(float freq, float amp, int channel)
 {
     Wave wave = AudioLab.dynamicWave(channel, freq, amp);
 }
 
-// creates and adds dynamic waves for a list of frequencies and amplitudes
+/**
+ * Creates and adds multiple waves to a channel for output. The
+ * waves are synthesized from the frequencies and amplitudes provided as
+ * arguments. Both frequency and amplitude arrays must be equal lengthed,
+ * and their length must be passed as dataLength.
+ *
+ * @param freqs Frequencies of the synthesized waves.
+ * @param amps Amplitudes of the synthesized waves.
+ * @param dataLength The length of the frequency and amplitude arrays.
+ * @param channel The output channel to add the waves to.
+*/
 void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength, int channel)
 {
     for (int i = 0; i < dataLength; i++) {
@@ -97,15 +127,19 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
     }
 }
 
-// processInput calls performFFT and storeFFTData to compute and store
-// the FFT of AudioLab's input buffer.
+/**
+ * processInput calls performFFT and storeFFT to compute and store
+ * the FFT of AudioLab's input buffer
+*/
 void VibrosonicsAPI::processInput()
 {
     performFFT(AudioLabInputBuffer);
     storeFFTData();
 }
 
-// runs doAnalysis on all added modules
+/**
+ * runs doAnalysis on all added modules
+*/
 void VibrosonicsAPI::analyze()
 {
     // get data from circular buffer as 2D float array
@@ -120,6 +154,10 @@ void VibrosonicsAPI::analyze()
 }
 
 // adds a new module to the Manager list of added modules
+/**
+ * adds a new module to the Manager list of added modules 
+ * @param module Module to be added to the modules array.
+*/
 void VibrosonicsAPI::addModule(AnalysisModule* module)
 {
     module->setWindowSize(WINDOW_SIZE);
