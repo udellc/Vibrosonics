@@ -10,7 +10,7 @@
 #include <cstdint>
 
 /**
-  * @brief Class for the circular buffer 
+  * Class for the circular buffer 
   * This class is used to create and store frequency data into a circular buffer. 
   * This will give us a spectrogram. 
   * Circular Buffer has been changed from being dynamic to being static. 
@@ -29,8 +29,7 @@ private:
 
 public:
     /**
-      * @brief Default constructor to initialize a new circular buffer 
-      *
+      * Default constructor to initialize a new circular buffer.
       * Creates a circular buffer and sets everything to 0 or NULL
     */
     CircularBuffer()
@@ -42,8 +41,7 @@ public:
     };
 
     /**
-      * @brief Overloaded constructor to initialize a new circular buffer 
-      * 
+      * Overloaded constructor to initialize a new circular buffer.
       * Creates a circular buffer that uses the specified values for the 
       * buffer pointer, rows, and columns
       * 
@@ -60,7 +58,7 @@ public:
     };
 
     /**
-      * @brief updates the buffer pointer, number of rows, and number of columns
+      * Updates the buffer pointer, number of rows, and number of columns
       * 
       * @param bufferPtr buffer pointer 
       * @param numRows number of rows in the buffer
@@ -75,41 +73,35 @@ public:
     };
 
     /**
-      * @brief getter function for the buffer pointer 
-      * /return pointer 
+      * Getter function for the buffer pointer 
     */
     T* getBuffer() { return this->bufferPtr; };
 
     /**
-      * @brief getter function for the number of rows 
-      * /return int 
+      * Getter function for the number of rows 
     */
     uint16_t getNumRows() const { return this->numRows; };
 
     /**
-      * @brief getter function for the number of columns 
-      * /return int 
+      * Getter function for the number of columns 
     */
     uint16_t getNumCols() const { return this->numCols; };
 
     /**
-      * @brief getter function for the current index of the buffer 
-      * /return int 
+      * Getter function for the current index of the buffer 
     */
     uint16_t getCurrentIndex() const { return this->bufferIndex; };
 
     /**
-      * @brief gets the frequency data that is stored in a the current 
+      * Gets the frequency data that is stored in a the current 
       * index of the circular buffer 
-      * /return pointer
     */
     T* getCurrentData() { return this->bufferPtr + this->numRows * this->bufferIndex; };
 
     /**
-      * @brief gets the frequency data that is stored in a specified index
+      * Gets the frequency data that is stored in a specified index
       * 
       * @param relativeIndex index to get data for 
-      * /return pointer
     */
     T* getData(int relativeIndex)
     {
@@ -118,7 +110,7 @@ public:
     };
 
     /**
-      * @brief takes new data and adds it to the circular buffer 
+      * Takes new data and adds it to the circular buffer 
       * If the buffer index reaches the maximum column index, it 
       * wraps around and overwrites the oldest data, setting the 
       * index back to 0
@@ -137,7 +129,7 @@ public:
     };
 
     /**
-      * @brief clears the buffer and resets everything back to 0 
+      * Clears the buffer and resets everything back to 0 
     */
     void clearBuffer(void)
     {
