@@ -45,7 +45,7 @@ private:
     AnalysisModule** modules; //!< Array of references to AudioPrism modules.
     int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
 
-    GrainList globalGrainList;
+    GrainList grainList;
 
     // === PUBLIC DATA & INTERFACE =================================================
 public:
@@ -150,28 +150,16 @@ public:
 
     // --- Grains -----------------------------------------------------------------
 
-    /**
-     * Updates all grains in the globalGrainList
-    */
+    //! Updates all grains in the globalGrainList
     void updateGrains();
 
-    /**
-     * Creates and returns an array of grains on desired chanel with specified wave type
-     *
-     * @param numGrains The size of the output Grains array
-     * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
-     * @param waveType The type of wave Audiolab will generate utilizing the grains.
-    */
-    Grain* createGrain(int numGrains, uint8_t channel, WaveType waveType);
+     //! Creates and returns an array of grains on desired chanel with specified wave type.
+    Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
-    /**
-     * Updates an array of numPeaks grains sustain and release windows if
-     * the data's amplitude is greater than the amplitude stored in the grain.
-     *
-     * @param numPeaks The size of the Grain array.
-     * @param peakData A pointer to a module's amplitude data
-     * @param grains An array of grains to be triggered.
-     */
+    //! Creates and returns a singular grain with specified wave and channel.
+    Grain createGrain(uint8_t channel, WaveType waveType);
+
+     //! Updates an array of numPeaks grains sustain and release windows.
     void triggerGrains(int numPeaks, float** peakData, Grain* grains);
 };
 

@@ -3,14 +3,15 @@
  * Contains the declaration of the Grain class.
 */
 
-
 #ifndef Grain_h
 #define Grain_h
 
 #include <AudioLab.h>
+
 /**
  * @type grainState
- * @brief Enum for managing the state of the current grain
+ *
+ * Enum for managing the state of the current grain
 */
 enum grainState {
   READY,
@@ -22,8 +23,6 @@ enum grainState {
 class GrainList;
 
 /**
-  * @brief Class for managing the generation of grains
-  *
   * This class creates and manages the Ready, Attack, Sustain,
   * and Release states for individual grains. A grain is a very
   * small segment of an audio segment, allowing for more granular
@@ -66,142 +65,62 @@ private:
 
   Wave wave;
 
-  /**
-   * @brief Update frequency and amplitude values based on current grain state.
-   *
-   * Updates wave frequency and amplitude along with the window counter.
-   * Switches grain states based on the window counter and durations for
-   * each state. In essence it progresses the sample along the attack sustain
-   * release curve.
-   */
+  //!Update frequency and amplitude values based on current grain state.
   void run();
 
 public:
-  /**
-   * @brief Default constructor to allocate a new grain
-   *
-   * Creates a grain on channel 0 and sine wave type in
-   * the ready state.
-  */
+  //! Default constructor to allocate a new grain
   Grain();
 
-  /**
-   * @brief Overloaded constructor to allocate a new grain
-   * with specified channel and wave type
-   * 
-   * Creates a grain on the specified channel and with the
-   * inputted wave type in the ready state.
-   *
-   * @param aChannel Specified channel for output
-   * @param aWaveType Specified wave type for output
-  */
+   //! Overloaded constructor to allocate a new grain with specified channel 
+   //! and wave type.
   Grain(uint8_t aChannel, WaveType aWaveType);
 
-  /**
-   * @brief Sets a grain to the attack state and resets
-   * the window counter
-  */
-  void start();
-
-  /**
-   * @brief Resets grain to ready state
-  */
-  void stop();
-
-  /**
-   * @brief Updates grain parameters in the attack state
-   *
-   * Updates frequency, amplitude, and duration. Also updates sustain
-   * frequency and amplitude difference.
-   *
-   * @param aFrequency Updated frequncy
-   * @param anAmplitude Updated amplitude
-   * @param aDuration Updated duration
-  */
+  //! Updates grain parameters in the attack state
   void setAttack(float aFrequency, float anAmplitude, int aDuration);
 
-  /**
-   * @brief Updates attack curve value.
-   *
-   * @param aCurveValue Updated curve value
-  */
+  //! Updates attack curve value.
   void setAttackCurve(float aCurveValue);
 
-  /**
-   * @brief Updates grain parameters in the sustain state
-   *
-   * Updates frequency, amplitude, and duration. Also updates attack
-   * frequency and amplitude difference.
-   *
-   * @param aFrequency Updated frequncy
-   * @param anAmplitude Updated amplitude
-   * @param aDuration Updated duration
-  */
+  //! Updates grain parameters in the sustain state
   void setSustain(float aFrequency, float anAmplitude, int aDuration);
 
-  /**
-   * @brief Updates grain parameters in the release state
-   *
-   * Updates frequency, amplitude, and duration. Also updates attack
-   * and sustain frequency and amplitude difference.
-   *
-   * @param aFrequency Updated frequncy
-   * @param anAmplitude Updated amplitude
-   * @param aDuration Updated duration
-  */
+  //! Updates grain parameters in the release state
   void setRelease(float aFrequency, float anAmplitude, int aDuration);
 
-  /**
-   * @brief Updates release curve value.
-   *
-   * @param aCurveValue Updated curve value
-  */
+  //! Updates release curve value.
   void setReleaseCurve(float aCurveValue);
 
-  /**
-   * @brief Sets the channel of this grain
-   *
-   * @param aChannel The channel on specified integer
-  */
+  //! Sets the channel of this grain
   void setChannel(uint8_t aChannel);
 
-  /**
-   * @brief Sets grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
-   *
-   * @param aWaveType The wave type
-  */
+  //! Sets grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
   void setWaveType(WaveType aWaveType);
 
-  /**
-   * Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
-   *
-   * @return grainState
-  */
+  //! Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
   grainState getGrainState();
 
-  /**
-   * @brief Updates grain values and state if necessary
-   *
-   * Performs the run() function on each node in the globalGrainList
-  */
+  //! Updates grain values and state if necessary
   static void update(GrainList *globalGrainList);
 
-  /**
-   * Returns the current amplitude of the grain
-  */
+  //! Returns the current amplitude of the grain
   float getAmplitude();
-  /**
-   * Returns the current frequency of the grain
-  */
+
+  //! Returns the current frequency of the grain
   float getFrequency();
 
 };
 
+/**
+ * Struct for a node in the Grain List
+ */
 struct GrainNode {
+  //! Default constructor.
   GrainNode(Grain *object) : reference(object), next(nullptr) {}
   Grain *reference;
   GrainNode *next;
 };
+
 /**
  * Class for the management of a linked list of grains
  */
@@ -210,9 +129,13 @@ private:
   GrainNode *head;
   GrainNode *tail;
 public:
+  //! Default constructor.
   GrainList() : head(nullptr), tail(nullptr) {}
+  //! Pushes a grain to the tail of the list.
   void pushGrain(Grain *grain);
+  //! Deletes all grains in the list.
   void clearList();
+  //! Returns the head of the list.
   GrainNode* getHead();
 };
 

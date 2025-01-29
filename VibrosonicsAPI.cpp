@@ -246,25 +246,59 @@ void VibrosonicsAPI::mapFrequenciesExponential(float* freqData, int dataLength, 
     }
 }
 
-Grain* VibrosonicsAPI::createGrain(int numGrains, uint8_t channel, WaveType waveType)
+/**
+ * Creates an array of grains with specified length, channel, and wave type and then
+ * pushes the newly created grain array to the global grain list.
+ *
+ * @param numGrains The size of the output Grains array
+ * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
+ * @param waveType The type of wave Audiolab will generate utilizing the grains.
+ */
+Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType waveType)
 {
-    Grain grains[numGrains];
+    Grain* newGrains = new Grain[numGrains];
 
     for (int i = 0; i < numGrains; i++) {
-        grains[i].setChannel(channel);
-        grains[i].setWaveType(waveType);
-        globalGrainList.pushGrain(&grains[i]);
+        newGrains[i].setChannel(channel);
+        newGrains[i].setWaveType(waveType);
+        grainList.pushGrain(&newGrains[i]);
     }
 
-    return grains;
-
+    return newGrains;
 }
 
-void VibrosonicsAPI::updateGrains(){
-    Grain::update(&globalGrainList);
+/**
+ * Creates a singular grain with specified channel and wave type and then pushes the 
+ * newly created grain to the global grain list.
+ *
+ * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
+ * @param waveType The type of wave Audiolab will generate utilizing the grains.
+ */
+
+Grain VibrosonicsAPI::createGrain(uint8_t channel, WaveType waveType)
+{
+    Grain newGrain(channel, waveType);
+    grainList.pushGrain(&newGrain);
+    return newGrain;
+}
+/**
+ * Calls update for every grain in the grain list
+ */
+void VibrosonicsAPI::updateGrains()
+{
+    Grain::update(&grainList);
 }
 
-void VibrosonicsAPI::triggerGrains(int numPeaks, float** peakData, Grain* grains) {
+/**
+ * Updates an array of numPeaks grains sustain and release windows if
+ * the data's amplitude is greater than the amplitude stored in the grain.
+ *
+ * @param numPeaks The size of the Grain array.
+ * @param peakData A pointer to a module's amplitude data
+ * @param grains An array of grains to be triggered.
+ */
+void VibrosonicsAPI::triggerGrains(int numPeaks, float** peakData, Grain* grains)
+{
     for(int i=0; i < numPeaks; i++) {
         if (peakData[MP_AMP][i] >= grains[i].getAmplitude()) {
             grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], 1);
