@@ -38,12 +38,12 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
  *  $1 - numPeaks tells the module how many peaks (freq, amp) to find
 */
 MajorPeaks bass_peaks = MajorPeaks(NUM_BASS_PEAKS);
-Grain bass_grains[NUM_BASS_PEAKS];
+Grain* bass_grains = vapi.createGrainArray(NUM_BASS_PEAKS, 0, SINE);
 
 // create major peaks module and reserve grains for mid range
 MajorPeaks mid_peaks = MajorPeaks(NUM_MID_PEAKS);
-Grain mid_grains[NUM_MID_PEAKS];
-Grain mid_low_grains[NUM_MID_PEAKS];
+Grain* mid_grains = vapi.createGrainArray(NUM_MID_PEAKS, 1, SINE);
+Grain* mid_low_grains = vapi.createGrainArray(NUM_MID_PEAKS, 1, SINE);
 
 // create a Noisiness module to reject percussion
 Noisiness noisiness = Noisiness();
@@ -58,7 +58,7 @@ MeanAmplitude meanAmp = MeanAmplitude();
  *  $3 - noise threshold is the minimum noisiness required for a window to be considered percussive (0-1)
 */
 PercussionDetection snare_detector = PercussionDetection(200, 150, 0.8);
-Grain snare_grain;
+Grain snare_grain = vapi.createGrain(0, SINE);
 
 float mid_last_freq = 0;
 
@@ -77,7 +77,7 @@ float mid_last_freq = 0;
  * grains is an array of Grains. This array should be num_peaks length.
  * Grains will be triggered with the frequency and amplitude data from peak_data.
  * Grains will only be triggered if the amplitude data exceeds the currently running grain's amplitude
-*/
+
 void trigger_grains(int num_peaks, float **peak_data, Grain *grains) {
     // attempt to trigger all grains based on peak_data
     for(int i=0; i<num_peaks; i++) {
@@ -86,10 +86,10 @@ void trigger_grains(int num_peaks, float **peak_data, Grain *grains) {
             // trigger grains
             grains[i].setSustain(peak_data[MP_FREQ][i], peak_data[MP_AMP][i], 1);
             grains[i].setRelease(peak_data[MP_FREQ][i], 0, 4);
-            grains[i].start();
         }
     }
 }
+*/
 
 /**
  * setup() runs once at the beginning of execution.
@@ -113,54 +113,23 @@ void setup() {
      *  $2 - upperFreq is the upper frequency bound of the analysis module
     */
     bass_peaks.setAnalysisRangeByFreq(0, 100);
-    
+
     // Vibrosonics::addModule(AnalysisModule* module)
     //  $1 - module is the address of the module to be added
     vapi.addModule(&bass_peaks);
 
-    // configure bass grains    
-    for(int i=0; i<NUM_BASS_PEAKS; i++) {
-        // grain::setchannel(uint8_t achannel)
-        //  $1 - aChannel is the channel the grain wave will be added to
-        bass_grains[i].setChannel(0);      // output on channel 0
-        // Grain::setAttack(float aFrequency, float anAmplitude, int aDuration)
-        //  $1 - aFrequency is the start frequency of the attack
-        //  $2 - anAmplitude is the amplitude of the attack
-        //  $3 - aDuration is the number of windows the attack will last. 0 for no attack
-        bass_grains[i].setAttack(0, 0, 0); // skip attack phase
-    }
-    
     // set up midrange peaks analysis
     vapi.addModule(&mid_peaks);
     noisiness.setAnalysisRangeByFreq(300, 800);
     mid_peaks.setAnalysisRangeByFreq(300, 800);
-    
-    // configure mid range grains
-    for(int i=0; i<NUM_MID_PEAKS; i++) {
-        mid_grains[i].setChannel(1);          // output on channel 1
-        mid_grains[i].setAttack(0, 0, 0);     // skip attack phase
-        mid_low_grains[i].setChannel(1);      // output on channel 1
-        mid_low_grains[i].setAttack(0, 0, 0); // skip attack phase
-    }
 
     // set up snare detector and grain
     vapi.addModule(&snare_detector);
     snare_detector.setAnalysisRangeByFreq(2000, 4000);
-    
+
     // set up meanAmp (used for snare_grain amplitude)
     vapi.addModule(&meanAmp);
     meanAmp.setAnalysisRangeByFreq(2000, 4000);
-
-    // configure snare grain
-    snare_grain.setChannel(0);
-    snare_grain.setAttack(0, 0, 0);
-    // Grain::setSustain(float aFrequency, float anAmplitude, int aDuration)
-    //  $1 - aFrequency is the frequency of the sustain phase
-    //  $2 - anAmplitude is the amplitude of the sustain phase
-    //  $3 - aDuration is the number of windows the sustain will last
-    snare_grain.setSustain(0, 0, 0);
-    snare_grain.setRelease(0, 0, 0);
-    snare_grain.stop();
 
     Serial.printf("SETUP COMPLETE\n");
 }
@@ -217,7 +186,7 @@ void loop() {
     float **bass_data = bass_peaks.getOutput();
     vapi.mapAmplitudes(bass_data[MP_AMP], NUM_BASS_PEAKS, 250);
     // -- Trigger grains with frequencies and grains
-    trigger_grains(NUM_BASS_PEAKS, bass_data, bass_grains);
+    vapi.triggerGrains(NUM_BASS_PEAKS, bass_data, bass_grains);
 
     /**
      * GENERATE MIDRANGE OUTPUT
@@ -253,7 +222,7 @@ void loop() {
         }
 
         // Trigger the mid-range grains
-        trigger_grains(NUM_MID_PEAKS, mid_data, mid_grains);
+        vapi.triggerGrains(NUM_MID_PEAKS, mid_data, mid_grains);
 
         // Transpose notes down another octave
         for(int i=0; i<NUM_MID_PEAKS; i++) {
@@ -261,7 +230,7 @@ void loop() {
         }
 
         // Trigger second set of mid-range grains to "fill out" the output
-        trigger_grains(NUM_MID_PEAKS, mid_data, mid_low_grains);
+        vapi.triggerGrains(NUM_MID_PEAKS, mid_data, mid_low_grains);
     }
     
     /**
@@ -316,7 +285,6 @@ void loop() {
         */
         snare_grain.setSustain(snare_freq, snare_amp, 1);
         snare_grain.setRelease(0, 0, 4);
-        snare_grain.start();
         
         /**
          * BASS DUCKING
@@ -331,14 +299,13 @@ void loop() {
         */
         for(int i=0; i<NUM_BASS_PEAKS; i++) {
             // Stop the grain (if running)
-            bass_grains[i].stop();
             // Retrigger the grains with reduced amplitude (minimum 0);
             bass_data[MP_AMP][i] = max(float(0), float(bass_data[MP_AMP][i] - snare_amp));
         }
-        trigger_grains(NUM_BASS_PEAKS, bass_data, bass_grains);
+        vapi.triggerGrains(NUM_BASS_PEAKS, bass_data, bass_grains);
     }
 
-    Grain::update();
-    AudioLab.synthesize();    
+    vapi.updateGrains();
+    AudioLab.synthesize();
     AudioLab.printWaves(); // Optionally print synthesized waves every window
 }
