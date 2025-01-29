@@ -74,28 +74,28 @@ public:
 
    //! Overloaded constructor to allocate a new grain with specified channel 
    //! and wave type.
-  Grain(uint8_t aChannel, WaveType aWaveType);
+  Grain(uint8_t channel, WaveType waveType);
 
   //! Updates grain parameters in the attack state
-  void setAttack(float aFrequency, float anAmplitude, int aDuration);
+  void setAttack(float frequency, float amplitude, int duration);
 
   //! Updates attack curve value.
-  void setAttackCurve(float aCurveValue);
+  void setAttackCurve(float curveValue);
 
   //! Updates grain parameters in the sustain state
-  void setSustain(float aFrequency, float anAmplitude, int aDuration);
+  void setSustain(float frequency, float amplitude, int duration);
 
   //! Updates grain parameters in the release state
-  void setRelease(float aFrequency, float anAmplitude, int aDuration);
+  void setRelease(float frequency, float amplitude, int duration);
 
   //! Updates release curve value.
-  void setReleaseCurve(float aCurveValue);
+  void setReleaseCurve(float curveValue);
 
   //! Sets the channel of this grain
-  void setChannel(uint8_t aChannel);
+  void setChannel(uint8_t channel);
 
   //! Sets grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
-  void setWaveType(WaveType aWaveType);
+  void setWaveType(WaveType waveType);
 
   //! Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
   grainState getGrainState();
