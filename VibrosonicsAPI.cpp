@@ -1,14 +1,18 @@
 #include "VibrosonicsAPI.h"
 
+/**
+ * Initializes all necessary api variables and dependencies.
+ */
 void VibrosonicsAPI::init()
 {
     AudioLab.init();
 }
 
 /**
- * performFFT feeds its input array to the ArduinoFFT fourier transform engine
+ * Feeds its input array to the ArduinoFFT fourier transform engine
  * and stores the results in private data members vReal and vImag.
- * @param input Array of signals to do FFT on. 
+ *
+ * @param input Array of signals to do FFT on.
  */
 void VibrosonicsAPI::performFFT(int* input)
 {
@@ -26,7 +30,7 @@ void VibrosonicsAPI::performFFT(int* input)
 }
 
 /**
- * storeFFTData writes the result of the most recent FFT computation into
+ * Writes the result of the most recent FFT computation into
  * VibrosonicsAPI's circular buffer.
  */
 inline void VibrosonicsAPI::storeFFTData()
@@ -35,24 +39,26 @@ inline void VibrosonicsAPI::storeFFTData()
 }
 
 /**
- * finds and returns the mean amplitude 
- * @param ampData Array of amplitudes. 
- * @param dataLength Length of amplitude array. 
-*/
-float VibrosonicsAPI::getMean(float* ampData, int dataLength)
+ * Finds and returns the mean value of data.
+ *
+ * @param ampData Array of amplitudes.
+ * @param dataLength Length of amplitude array.
+ */
+float VibrosonicsAPI::getMean(float* data, int dataLength)
 {
     float sum = 0.0;
     for (int i = 0; i < dataLength; i++) {
-        sum += ampData[i];
+        sum += data[i];
     }
     return sum > 0.0 ? sum / dataLength : sum;
 }
 
 /**
- * sets amplitude of bin to 0 if less than threshold
- * @param ampData Array of amplitudes. 
+ * Sets the amplitude of a bin to 0 if it is less than threshold.
+ *
+ * @param data The array of data to floor.
  * @param threshold The threshold value to floor the data at.
-*/
+ */
 void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
 {
     for (int i = 0; i < windowSizeBy2; i++) {
@@ -80,12 +86,14 @@ void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float dataSum
     if (dataSum == 0.0)
         return; // return early if sum of amplitudes is 0
 
-    // dataSumFloor is a special parameter that will need to be adjusted to find the max
-    // dynamic contrast for a given set of ampllitudes. In general, a lower dataSumFloor will
-    // proivde less dynamic contrast (i.e. the range of amplitudes will be compressed), whereas
-    // a higher dataSumFloor may allow more room for contrast.
-    // If the sum of amplitudes (dataSum) is larger than dataSumFloor then the dataSum will be used
-    // to ensure values are no larger than 1.
+    // dataSumFloor is a special parameter that will need to be adjusted to
+    // find the max dynamic contrast for a given set of ampllitudes. In
+    // general, a lower dataSumFloor will proivde less dynamic contrast (i.e.
+    // the range of amplitudes will be compressed), whereas a higher
+    // dataSumFloor may allow more room for contrast. If the sum of amplitudes
+    // (dataSum) is larger than dataSumFloor then the dataSum will be used to
+    // ensure values are no larger than 1.
+
     float divideBy = 1.0 / (dataSum > dataSumFloor ? dataSum : dataSumFloor);
 
     // convert amplitudes
@@ -94,14 +102,14 @@ void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float dataSum
     }
 }
 
- /**
- * assignWave creates and adds a wave to a channel for output. The wave is
+/**
+ * Creates and adds a wave to a channel for output. The wave is
  * synthesized from the provided frequency and amplitude.
  *
  * @param freq Frequency of the synthesized wave.
  * @param amp Amplitude of the synthesized wave.
  * @param channel The output channel to add the wave to.
-*/
+ */
 void VibrosonicsAPI::assignWave(float freq, float amp, int channel)
 {
     Wave wave = AudioLab.dynamicWave(channel, freq, amp);
@@ -117,7 +125,7 @@ void VibrosonicsAPI::assignWave(float freq, float amp, int channel)
  * @param amps Amplitudes of the synthesized waves.
  * @param dataLength The length of the frequency and amplitude arrays.
  * @param channel The output channel to add the waves to.
-*/
+ */
 void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength, int channel)
 {
     for (int i = 0; i < dataLength; i++) {
@@ -128,9 +136,9 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
 }
 
 /**
- * processInput calls performFFT and storeFFT to compute and store
- * the FFT of AudioLab's input buffer
-*/
+ * Calls performFFT and storeFFT to compute and store the FFT of AudioLab's
+ * input buffer. Should be called each time AudioLab is ready.
+ */
 void VibrosonicsAPI::processInput()
 {
     performFFT(AudioLabInputBuffer);
@@ -138,8 +146,8 @@ void VibrosonicsAPI::processInput()
 }
 
 /**
- * runs doAnalysis on all added modules
-*/
+ * Calls the doAnalysis function for each loaded module in the modules array.
+ */
 void VibrosonicsAPI::analyze()
 {
     // get data from circular buffer as 2D float array
@@ -153,11 +161,11 @@ void VibrosonicsAPI::analyze()
     delete[] data;
 }
 
-// adds a new module to the Manager list of added modules
-/**
- * adds a new module to the Manager list of added modules 
+/** Adds a new module to the modules array. The module must be created and
+ * passed by the caller.
+ *
  * @param module Module to be added to the modules array.
-*/
+ */
 void VibrosonicsAPI::addModule(AnalysisModule* module)
 {
     module->setWindowSize(WINDOW_SIZE);
