@@ -19,6 +19,8 @@ enum grainState {
   RELEASE
 };
 
+class GrainList;
+
 /**
   * @brief Class for managing the generation of grains
   *
@@ -27,52 +29,28 @@ enum grainState {
   * small segment of an audio segment, allowing for more granular
   * synthesis and management of the waves that are outputted
   * through VibroSonics hardware.
+  *
   * More information about grains and Attack Sustain Decay Release
   * curves can be found at:
+  *
   * https://en.wikipedia.org/wiki/Granular_synthesis
+  *
   * https://en.wikipedia.org/wiki/Envelope_(music)
 */
 
 class Grain {
 private:
-  /**
-   * @brief Stuct for managing a list of grains.
-   *
-   * Grains are stored in a linked list for constant time read
-   * access when outputting to the speakers.
-   * TODO: Move globalGrainList to the api
-  */
-  struct GrainNode {
-    GrainNode(Grain *object) : reference(object), next(NULL) {}
-    Grain *reference;
-    GrainNode *next;
+  struct Phase {
+    int duration = 0;
+    float frequency = 0;
+    float amplitude = 0;
+    float curve = 1.0f; // Default: linear
+    float curveStep = 0.0f; // Default: no curve step
   };
 
-  static GrainNode *globalGrainList;
-
-  /**
-   * @brief Pushes node to the end of the grain list.
-   *
-   * Pushes current instance of the grain to the end of globalGrainList.
-  */
-  void pushGrainNode();
-
-  // NOTE: Should these be their own structs?
-  int attackDuration;
-  float attackFrequency;
-  float attackAmplitude;
-  float attackCurve;
-  float attackCurveStep;
-
-  int sustainDuration;
-  float sustainFrequency;
-  float sustainAmplitude;
-
-  int releaseDuration;
-  float releaseFrequency;
-  float releaseAmplitude;
-  float releaseCurve;
-  float releaseCurveStep;
+  Phase attack;
+  Phase sustain;
+  Phase release;
 
   float sustainAttackAmplitudeDifference;
   float sustainAttackFrequencyDifference;
@@ -206,12 +184,36 @@ public:
    *
    * Performs the run() function on each node in the globalGrainList
   */
-  static void update();
+  static void update(GrainList *globalGrainList);
 
-  // call these to retrieve the current amplitude or frequency of an executing grain
+  /**
+   * Returns the current amplitude of the grain
+  */
   float getAmplitude();
+  /**
+   * Returns the current frequency of the grain
+  */
   float getFrequency();
 
+};
+
+struct GrainNode {
+  GrainNode(Grain *object) : reference(object), next(nullptr) {}
+  Grain *reference;
+  GrainNode *next;
+};
+/**
+ * Class for the management of a linked list of grains
+ */
+class GrainList {
+private:
+  GrainNode *head;
+  GrainNode *tail;
+public:
+  GrainList() : head(nullptr), tail(nullptr) {}
+  void pushGrain(Grain *grain);
+  void clearList();
+  GrainNode* getHead();
 };
 
 #endif

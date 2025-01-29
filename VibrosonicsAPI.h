@@ -9,10 +9,12 @@
 #include <AudioLab.h>
 #include <AudioPrism.h>
 #include <arduinoFFT.h>
+#include <cstdint>
 
 // internal
 #include "CircularBuffer.h"
 #include "Grain.h"
+#include "Wave.h"
 
 class VibrosonicsAPI {
     // === PRIVATE DATA ============================================================
@@ -42,6 +44,8 @@ private:
 
     AnalysisModule** modules; //!< Array of references to AudioPrism modules.
     int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
+
+    GrainList globalGrainList;
 
     // === PUBLIC DATA & INTERFACE =================================================
 public:
@@ -147,6 +151,20 @@ public:
     // --- Grains -----------------------------------------------------------------
 
     /**
+     * Updates all grains in the globalGrainList
+    */
+    void updateGrains();
+
+    /**
+     * Creates and returns an array of grains on desired chanel with specified wave type
+     *
+     * @param numGrains The size of the output Grains array
+     * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
+     * @param waveType The type of wave Audiolab will generate utilizing the grains.
+    */
+    Grain* createGrain(int numGrains, uint8_t channel, WaveType waveType);
+
+    /**
      * Updates an array of numPeaks grains sustain and release windows if
      * the data's amplitude is greater than the amplitude stored in the grain.
      *
@@ -155,11 +173,6 @@ public:
      * @param grains An array of grains to be triggered.
      */
     void triggerGrains(int numPeaks, float** peakData, Grain* grains);
-
-    /**
-     * Updates all grains in the globalGrainList
-     */
-    void updateGrains();
 };
 
 #endif // VIBROSONICS_API_H

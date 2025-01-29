@@ -1,4 +1,7 @@
 #include "VibrosonicsAPI.h"
+#include "Wave.h"
+#include "modules/MajorPeaks.h"
+#include <sys/types.h>
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -240,5 +243,32 @@ void VibrosonicsAPI::mapFrequenciesExponential(float* freqData, int dataLength, 
         } // freq already within haptic range
         freqRatio = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
         freqData[i] = pow(freqRatio, exp) * 250; // convert into haptic range along a exp^ curve
+    }
+}
+
+Grain* VibrosonicsAPI::createGrain(int numGrains, uint8_t channel, WaveType waveType)
+{
+    Grain grains[numGrains];
+
+    for (int i = 0; i < numGrains; i++) {
+        grains[i].setChannel(channel);
+        grains[i].setWaveType(waveType);
+        globalGrainList.pushGrain(&grains[i]);
+    }
+
+    return grains;
+
+}
+
+void VibrosonicsAPI::updateGrains(){
+    Grain::update(&globalGrainList);
+}
+
+void VibrosonicsAPI::triggerGrains(int numPeaks, float** peakData, Grain* grains) {
+    for(int i=0; i < numPeaks; i++) {
+        if (peakData[MP_AMP][i] >= grains[i].getAmplitude()) {
+            grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], 1);
+            grains[i].setRelease(peakData[MP_FREQ][i], 0, 4);
+        }
     }
 }
