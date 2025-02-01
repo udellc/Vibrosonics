@@ -157,7 +157,7 @@ public:
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
     //! Creates and returns a singular grain with specified wave and channel.
-    Grain createGrain(uint8_t channel, WaveType waveType);
+    Grain* createGrain(uint8_t channel, WaveType waveType);
 
      //! Updates an array of numPeaks grains sustain and release windows.
     void triggerGrains(int numPeaks, float** peakData, Grain* grains);

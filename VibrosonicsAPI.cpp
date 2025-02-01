@@ -1,4 +1,5 @@
 #include "VibrosonicsAPI.h"
+#include "HardwareSerial.h"
 #include "Wave.h"
 #include "modules/MajorPeaks.h"
 #include <sys/types.h>
@@ -78,6 +79,8 @@ void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
  * @param dataLength The length of the amplitude array.
  * @param dataSumFloor The minimum value to normalize the amplitudes by (if
  * their sum is not greater than it).
+ *
+ * TODO: Rename mapping functions, they normalize data
  */
 void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float dataSumFloor)
 {
@@ -154,14 +157,18 @@ void VibrosonicsAPI::processInput()
 void VibrosonicsAPI::analyze()
 {
     // get data from circular buffer as 2D float array
-    const float** data = (const float**)staticBuffer;
-
+    float data[2][windowSizeBy2];
+    
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < windowSizeBy2; j++) {
+            data[i][j] = staticBuffer[i][j];
+        }
+    }
+    const float* dataPtrs[2] = { data[0], data[1] };
     // loop through added modules
     for (int i = 0; i < numModules; i++) {
-        modules[i]->doAnalysis(data);
+        modules[i]->doAnalysis(dataPtrs);
     }
-
-    delete[] data;
 }
 
 /** Adds a new module to the modules array. The module must be created and
@@ -275,12 +282,12 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
  * @param waveType The type of wave Audiolab will generate utilizing the grains.
  */
 
-Grain VibrosonicsAPI::createGrain(uint8_t channel, WaveType waveType)
+Grain* VibrosonicsAPI::createGrain(uint8_t channel, WaveType waveType)
 {
-    Grain newGrain(channel, waveType);
-    grainList.pushGrain(&newGrain);
+    Grain* newGrain = createGrainArray(1, channel, waveType);
     return newGrain;
 }
+
 /**
  * Calls update for every grain in the grain list
  */
