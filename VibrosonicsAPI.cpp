@@ -156,18 +156,11 @@ void VibrosonicsAPI::processInput()
  */
 void VibrosonicsAPI::analyze()
 {
-    // get data from circular buffer as 2D float array
-    float data[2][windowSizeBy2];
-    
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < windowSizeBy2; j++) {
-            data[i][j] = staticBuffer[i][j];
-        }
-    }
-    const float* dataPtrs[2] = { data[0], data[1] };
     // loop through added modules
     for (int i = 0; i < numModules; i++) {
-        modules[i]->doAnalysis(dataPtrs);
+        const float* curr = circularBuffer.getData(0);
+        const float* prev = circularBuffer.getData(-1);
+        modules[i]->doAnalysis(curr, prev);
     }
 }
 
@@ -275,7 +268,7 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 }
 
 /**
- * Creates a singular grain with specified channel and wave type and then pushes the 
+ * Creates a singular grain with specified channel and wave type and then pushes the
  * newly created grain to the global grain list.
  *
  * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
@@ -284,8 +277,7 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 
 Grain* VibrosonicsAPI::createGrain(uint8_t channel, WaveType waveType)
 {
-    Grain* newGrain = createGrainArray(1, channel, waveType);
-    return newGrain;
+    return createGrainArray(1, channel, waveType); 
 }
 
 /**
@@ -306,7 +298,7 @@ void VibrosonicsAPI::updateGrains()
  */
 void VibrosonicsAPI::triggerGrains(int numPeaks, float** peakData, Grain* grains)
 {
-    for(int i=0; i < numPeaks; i++) {
+    for (int i = 0; i < numPeaks; i++) {
         if (peakData[MP_AMP][i] >= grains[i].getAmplitude()) {
             grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], 1);
             grains[i].setRelease(peakData[MP_FREQ][i], 0, 4);

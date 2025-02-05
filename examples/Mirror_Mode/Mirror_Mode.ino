@@ -58,38 +58,9 @@ MeanAmplitude meanAmp = MeanAmplitude();
  *  $3 - noise threshold is the minimum noisiness required for a window to be considered percussive (0-1)
 */
 PercussionDetection snare_detector = PercussionDetection(200, 150, 0.8);
-Grain snare_grain = vapi.createGrain(0, SINE);
+Grain snare_grain = *vapi.createGrain(0, SINE);
 
 float mid_last_freq = 0;
-
-/**
- * trigger_grains combines MajorPeaks with an array of Grains to generate output 
- * 
- * num_peaks is the number of voices to try to synthesize.
- * This value is the number of peaks MajorPeaks finds and the number of grains available to be triggered
- * In general, one peak produces cleaner output. Multiple voices creates dissonance unless carefully managed
- *
- * peak_data is the result of calling .getOutput on a MajorPeaks module set to find num_peaks peaks
- * This is a 2D float array containing frequency and amplitude values for peaks found in the input audio.
- * Access frequencies with the MP_FREQ macro, e.g. peak_data[MP_FREQ][peak_index]
- * Access amplitudes with the MP_AMP macro, e.g. peak_data[MP_AMP][peak_index] 
- *
- * grains is an array of Grains. This array should be num_peaks length.
- * Grains will be triggered with the frequency and amplitude data from peak_data.
- * Grains will only be triggered if the amplitude data exceeds the currently running grain's amplitude
-
-void trigger_grains(int num_peaks, float **peak_data, Grain *grains) {
-    // attempt to trigger all grains based on peak_data
-    for(int i=0; i<num_peaks; i++) {
-        // trigger the grain if it's amplitude is greater than the previous grain
-        if (peak_data[MP_AMP][i] >= grains[i].getAmplitude()) {
-            // trigger grains
-            grains[i].setSustain(peak_data[MP_FREQ][i], peak_data[MP_AMP][i], 1);
-            grains[i].setRelease(peak_data[MP_FREQ][i], 0, 4);
-        }
-    }
-}
-*/
 
 /**
  * setup() runs once at the beginning of execution.
@@ -104,6 +75,7 @@ void trigger_grains(int num_peaks, float **peak_data, Grain *grains) {
  * the snare_detector is configured to analyze 1500-3000 Hz
 */
 void setup() {
+    Serial.begin(9600);
     vapi.init();
 
     /**
@@ -158,14 +130,14 @@ void setup() {
  * used to trigger a grain reserved for snare output.
 */
 void loop() {
-    
+
     // AudioLab.ready() returns True when AudioLab's input buffer is full.
     // This gaurd protects analysis and synthesis logic, which is run only when
     // a new window of audio is ready to be processed.
     if (!AudioLab.ready()) {
         return;
     }
-    
+
     /**
      * PERFORM FFT 
      * To translate and synthesize bass, retrieve the major peaks data for
@@ -175,6 +147,7 @@ void loop() {
     */
     vapi.processInput();
     vapi.analyze();
+    Serial.printf("1: Input analyzed\n");
 
     /**
      * GENERATE BASS OUTPUT
@@ -187,6 +160,7 @@ void loop() {
     vapi.mapAmplitudes(bass_data[MP_AMP], NUM_BASS_PEAKS, 250);
     // -- Trigger grains with frequencies and grains
     vapi.triggerGrains(NUM_BASS_PEAKS, bass_data, bass_grains);
+    Serial.printf("2: Bass triggered\n");
 
     /**
      * GENERATE MIDRANGE OUTPUT
@@ -206,7 +180,7 @@ void loop() {
      * "fill out" the haptic output.
     */
     if (noisiness.getOutput() < 0.1) {
-        
+
         // Retrieve the MajorPeaks data for the mid range
         float **mid_data = mid_peaks.getOutput();
         vapi.mapAmplitudes(mid_data[MP_AMP], NUM_MID_PEAKS, 550);
@@ -231,8 +205,9 @@ void loop() {
 
         // Trigger second set of mid-range grains to "fill out" the output
         vapi.triggerGrains(NUM_MID_PEAKS, mid_data, mid_low_grains);
+        Serial.printf("3: Mid-range triggered\n");
     }
-    
+
     /**
      * GENERATE SNARE OUTPUT
      * A haptic snare response is synthesized when 2 conditions are satisfied:
@@ -253,7 +228,7 @@ void loop() {
      * - the amplitude of the bass is lowered in proportion to the amplitude of the snare grain
     */
     if(snare_detector.getOutput() && snare_grain.getGrainState() == READY){
-        
+
         // SNARE AMPLITUDE CALCULATION
         // Mean amplitude in the 2000 - 4000 Hz range is taken as a heuristic
         // for the volume of the percussion that triggered the snare_detector.
@@ -277,7 +252,7 @@ void loop() {
         float snare_freq = bass_data[MP_FREQ][0] * 2.0;
         if(snare_freq < 100){ snare_freq *= 2.0; }
         if(snare_freq == 0){ snare_freq = 200; }
-        
+
         /**
          * TRIGGER GRAINS
          * -- The snare grain is triggered with the frequency and amplitude found
@@ -285,7 +260,7 @@ void loop() {
         */
         snare_grain.setSustain(snare_freq, snare_amp, 1);
         snare_grain.setRelease(0, 0, 4);
-        
+
         /**
          * BASS DUCKING
          * -- The snare amplitude is used to duck the volume of the bass, 
@@ -303,9 +278,12 @@ void loop() {
             bass_data[MP_AMP][i] = max(float(0), float(bass_data[MP_AMP][i] - snare_amp));
         }
         vapi.triggerGrains(NUM_BASS_PEAKS, bass_data, bass_grains);
+
+        Serial.printf("4: Snare triggered\n");
     }
 
     vapi.updateGrains();
+    Serial.printf("4: Grains updated\n");
     AudioLab.synthesize();
     AudioLab.printWaves(); // Optionally print synthesized waves every window
 }

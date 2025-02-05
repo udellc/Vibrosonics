@@ -31,7 +31,7 @@ private:
     // --- AudioLab Library --------------------------------------------------------
 
     //! VibrosonicsAPI adopts AudioLab's input buffer.
-    int* AudioLabInputBuffer = AudioLab.getInputBuffer();
+    int* AudioLabInputBuffer = AudioLab.getInputBuffer(0);
 
     // --- AudioPrism Library ------------------------------------------------------
 

@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 
-/** 
+/**
  * Class for the circular buffer.
  *
  * This class is used to create and store frequency data into a circular
@@ -17,7 +17,10 @@
  * from being dynamic to being static. This change allows for imporvements in
  * performance and memory usage.
  */
-template <typename T> class CircularBuffer { private: T* bufferPtr;
+template <typename T>
+class CircularBuffer {
+private:
+    T* bufferPtr;
 
     uint16_t bufferIndex;
 
@@ -118,7 +121,7 @@ public:
      */
     void pushData(T* data)
     {
-        this->bufferIndex += 1;
+        this->bufferIndex++;
         if (this->bufferIndex == this->numCols)
             this->bufferIndex = 0;
 
