@@ -60,10 +60,9 @@ void loop() {
     // Use output to synthesize waves
     for (int i=0; i < 4; i++){
         if (mp_data[MP_AMP][i] < 10) {
-            continue;
+            //continue;
         }
         int freq = interpolateAroundPeak(vapi.circularBuffer.getData(0), round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)), SAMPLE_RATE, WINDOW_SIZE);
-        //Serial.printf("Found peak: %d %f\n", freq, mp_data[MP_AMP][i]);
         // Mirror mode waves
         AudioLab.dynamicWave(0, freq, mp_data[MP_AMP][i]);
     }

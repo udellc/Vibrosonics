@@ -31,7 +31,7 @@ private:
     // --- AudioLab Library --------------------------------------------------------
 
     //! VibrosonicsAPI adopts AudioLab's input buffer.
-    int* AudioLabInputBuffer = AudioLab.getInputBuffer(0);
+    int* AudioLabInputBuffer = AudioLab.getInputBuffer();
 
     // --- AudioPrism Library ------------------------------------------------------
 
@@ -100,7 +100,7 @@ public:
     //!
     //! Note: AudioPrism modules take regular 2D float arrays as input. Call
     //! CircularBuffer::unwind to get a flat 2D version of the buffer's content.
-    CircularBuffer<float> circularBuffer = CircularBuffer((float*)staticBuffer, 2, windowSizeBy2);
+    CircularBuffer<float> circularBuffer = CircularBuffer((float*)staticBuffer, windowSizeBy2, 2);
 
     //! Stores the most recent FFT result in circularBuffer.
     void storeFFTData();

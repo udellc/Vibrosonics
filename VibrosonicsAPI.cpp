@@ -39,7 +39,7 @@ void VibrosonicsAPI::performFFT(int* input)
  */
 inline void VibrosonicsAPI::storeFFTData()
 {
-    circularBuffer.pushData((float*)vReal);
+    circularBuffer.pushData(vReal);
 }
 
 /**
