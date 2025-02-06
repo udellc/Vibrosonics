@@ -62,7 +62,7 @@ void loop() {
         if (mp_data[MP_AMP][i] < 10) {
             //continue;
         }
-        int freq = interpolateAroundPeak(vapi.circularBuffer.getData(0), round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)), SAMPLE_RATE, WINDOW_SIZE);
+        int freq = interpolateAroundPeak(vapi.spectrogram.getWindow(0), round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)), SAMPLE_RATE, WINDOW_SIZE);
         // Mirror mode waves
         AudioLab.dynamicWave(0, freq, mp_data[MP_AMP][i]);
     }

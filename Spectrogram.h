@@ -3,8 +3,8 @@
  * Contains the declaration of the CircularBuffer class
  */
 
-#ifndef Circular_Buffer_h
-#define Circular_Buffer_h
+#ifndef SPECTROGRAM_H
+#define SPECTROGRAM_H
 
 #include <cstddef>
 #include <cstdint>
@@ -18,14 +18,12 @@
  * performance and memory usage.
  */
 template <typename T>
-class CircularBuffer {
+class Spectrogram {
 private:
-    T* bufferPtr;
-
-    uint16_t bufferIndex;
-
-    uint16_t numRows;
-    uint16_t numCols;
+    T* buffer;
+    uint16_t numWindows;
+    uint16_t numBins;
+    uint16_t currIndex;
 
 public:
     /**
@@ -33,12 +31,12 @@ public:
      *
      * Creates a circular buffer and sets everything to 0 or NULL.
      */
-    CircularBuffer()
+    Spectrogram()
     {
-        this->bufferPtr = NULL;
-        this->numRows = 0;
-        this->numCols = 0;
-        this->bufferIndex = 0;
+        this->buffer = NULL;
+        this->numWindows = 0;
+        this->numBins = 0;
+        this->currIndex = 0;
     };
 
     /**
@@ -51,12 +49,12 @@ public:
      * @param numRows number of rows in the buffer
      * @param numCols number of columns in the buffer
      */
-    CircularBuffer(T* bufferPtr, uint16_t numRows, uint16_t numCols)
+    Spectrogram(T* buffer, uint16_t numWindows, uint16_t numBins)
     {
-        this->bufferPtr = bufferPtr;
-        this->numRows = numRows;
-        this->numCols = numCols;
-        this->bufferIndex = 0;
+        this->buffer = buffer;
+        this->numWindows = numWindows;
+        this->numBins = numBins;
+        this->currIndex = 0;
     };
 
     /**
@@ -66,49 +64,52 @@ public:
      * @param numRows number of rows in the buffer
      * @param numCols number of columns in the buffer
      */
-    void setBuffer(T* bufferPtr, uint16_t numRows, uint16_t numCols)
+    void setBuffer(T* buffer, uint16_t numWindows, uint16_t numBins)
     {
-        this->bufferPtr = bufferPtr;
-
-        this->numRows = numRows;
-        this->numCols = numCols;
+        this->buffer = buffer;
+        this->numWindows = numWindows;
+        this->numBins = numBins;
     };
 
     /**
      * Getter function for the buffer pointer.
      */
-    T* getBuffer() { return this->bufferPtr; };
+    T* getBuffer() { return this->buffer; };
 
     /**
      * Getter function for the number of rows.
      */
-    uint16_t getNumRows() const { return this->numRows; };
+    uint16_t getNumBins() const { return this->numBins; };
 
     /**
      * Getter function for the number of columns.
      */
-    uint16_t getNumCols() const { return this->numCols; };
+    uint16_t getNumWindows() const { return this->numWindows; };
 
     /**
      * Getter function for the current index of the buffer.
      */
-    uint16_t getCurrentIndex() const { return this->bufferIndex; };
+    uint16_t getCurrentIndex() const { return this->currIndex; };
 
     /**
      * Gets the frequency data that is stored at the current
      * index of the circular buffer.
      */
-    T* getCurrentData() { return this->bufferPtr + this->numRows * this->bufferIndex; };
+    T* getCurrentWindow()
+    {
+        return this->buffer + (this->currIndex * this->numBins);
+    };
 
     /**
      * Gets the frequency data that is stored in a specified index
      *
      * @param relativeIndex index to get data for
      */
-    T* getData(int relativeIndex)
+    T* getWindow(int relativeIndex)
     {
-        uint16_t _index = (this->bufferIndex + this->numCols + relativeIndex) % this->numCols;
-        return this->bufferPtr + _index * this->numRows;
+        uint16_t index = this->currIndex + relativeIndex;
+        index = (index + this->numWindows) % this->numWindows;
+        return this->buffer + (index * this->numBins);
     };
 
     /**
@@ -119,14 +120,15 @@ public:
      *
      * @param data buffer pointer to data
      */
-    void pushData(T* data)
+    void pushWindow(T* data)
     {
-        this->bufferIndex++;
-        if (this->bufferIndex == this->numCols)
-            this->bufferIndex = 0;
+        this->currIndex++;
+        if (this->currIndex == this->numWindows)
+            this->currIndex = 0;
 
-        for (int i = 0; i < this->numRows; i++) {
-            *((this->bufferPtr + i) + this->numRows * this->bufferIndex) = data[i];
+        T* windowBuffer = this->buffer + (this->currIndex * this->numBins);
+        for (int i = 0; i < this->numBins; i++) {
+            windowBuffer[i] = data[i];
         }
     };
 
@@ -135,13 +137,11 @@ public:
      */
     void clearBuffer(void)
     {
-        for (int t = 0; t < this->numCols; t++) {
-            for (int f = 0; f < this->numRows; f++) {
-                *((this->bufferPtr + f) + t * this->numRows) = 0;
-            }
+        for (int i = 0; i < numWindows * numBins; i++) {
+            buffer[i] = 0;
         }
-        this->bufferIndex = 0;
+        this->currIndex = 0;
     };
 };
 
-#endif
+#endif // SPECTROGRAM

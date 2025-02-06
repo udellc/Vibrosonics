@@ -12,7 +12,7 @@
 #include <cstdint>
 
 // internal
-#include "CircularBuffer.h"
+#include "Spectrogram.h"
 #include "Grain.h"
 #include "Wave.h"
 
@@ -81,7 +81,7 @@ public:
     // --- FFT Input & Storage -----------------------------------------------------
 
     //! Static memory allocation for our circular buffer which stores FFT result data.
-    float staticBuffer[2][windowSizeBy2];
+    float spectrogramBuffer[2][windowSizeBy2];
 
     //! The circular buffer is used to efficiently store and retrieve multiple
     //! audio spectrums.
@@ -100,7 +100,7 @@ public:
     //!
     //! Note: AudioPrism modules take regular 2D float arrays as input. Call
     //! CircularBuffer::unwind to get a flat 2D version of the buffer's content.
-    CircularBuffer<float> circularBuffer = CircularBuffer((float*)staticBuffer, windowSizeBy2, 2);
+    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, 2, windowSizeBy2);
 
     //! Stores the most recent FFT result in circularBuffer.
     void storeFFTData();

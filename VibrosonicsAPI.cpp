@@ -39,7 +39,7 @@ void VibrosonicsAPI::performFFT(int* input)
  */
 inline void VibrosonicsAPI::storeFFTData()
 {
-    circularBuffer.pushData(vReal);
+    spectrogram.pushWindow(vReal);
 }
 
 /**
@@ -158,8 +158,8 @@ void VibrosonicsAPI::analyze()
 {
     // loop through added modules
     for (int i = 0; i < numModules; i++) {
-        const float* curr = circularBuffer.getData(0);
-        const float* prev = circularBuffer.getData(-1);
+        const float* curr = spectrogram.getWindow(0);
+        const float* prev = spectrogram.getWindow(-1);
         modules[i]->doAnalysis(curr, prev);
     }
 }
