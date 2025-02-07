@@ -16,6 +16,7 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
     an integer to change this.
 */
 MajorPeaks mp = MajorPeaks();
+Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
 
 /*
     Run once on ESP32 startup.
@@ -51,6 +52,7 @@ void loop() {
 
     // Access analyzed data
     float **mp_data = mp.getOutput();
+    vapi.triggerGrains(4, mp_data, mpGrains);
     // Map amplitude data
     //vapi.mapAmplitudes(mp_data[MP_AMP], 4, 250);
     // Map frequency data using linear algorithm 
@@ -69,9 +71,10 @@ void loop() {
 
     // map amplitudes so that output waveform isn't clipped
     AudioLab.mapAmplitudes(0, 10000);
+    vapi.updateGrains();
     AudioLab.synthesize();
     // For debugging purposes.
-    //AudioLab.printWaves();
+    AudioLab.printWaves();
 }
 
 int interpolateAroundPeak(float *data, int indexOfPeak, int sampleRate, int windowSize) {

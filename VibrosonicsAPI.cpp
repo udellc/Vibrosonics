@@ -1,5 +1,4 @@
 #include "VibrosonicsAPI.h"
-#include "HardwareSerial.h"
 #include "Wave.h"
 #include "modules/MajorPeaks.h"
 #include <sys/types.h>
@@ -295,6 +294,11 @@ void VibrosonicsAPI::updateGrains()
  * @param numPeaks The size of the Grain array.
  * @param peakData A pointer to a module's amplitude data
  * @param grains An array of grains to be triggered.
+ *
+ *  NOTE: Only works for modules with frequency and amplitude data!
+ *  Will not work for modules that only output a 1d array
+ *  Question: Is there any situation a 1d output should be triggered?
+ *  What would the amplitude target be set to?
  */
 void VibrosonicsAPI::triggerGrains(int numPeaks, float** peakData, Grain* grains)
 {

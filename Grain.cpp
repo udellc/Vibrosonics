@@ -12,7 +12,9 @@
  * Creates a grain on channel 0 and sine wave type in
  * the ready state.
  */
-Grain::Grain() {
+Grain::Grain()
+{
+  // ISSUE: I think something is wrong with wave generation...
   wave = AudioLab.staticWave(0, SINE);
 
   attack.curveStep = 1.0;
@@ -36,7 +38,8 @@ Grain::Grain() {
  * @param channel Specified channel for output
  * @param waveType Specified wave type for output
  */
-Grain::Grain(uint8_t channel, WaveType waveType) {
+Grain::Grain(uint8_t channel, WaveType waveType)
+{
   wave = AudioLab.staticWave(channel, waveType);
 
   attack.curveStep = 1.0;
@@ -61,7 +64,8 @@ Grain::Grain(uint8_t channel, WaveType waveType) {
  * @param amplitude Updated amplitude
  * @param duration Updated duration
  */
-void Grain::setAttack(float frequency, float amplitude, int duration) {
+void Grain::setAttack(float frequency, float amplitude, int duration)
+{
   attack.frequency = frequency;
   attack.amplitude = amplitude;
   attack.duration = duration;
@@ -81,7 +85,8 @@ void Grain::setAttack(float frequency, float amplitude, int duration) {
  *
  * @param curveValue Updated curve value
  */
-void Grain::setAttackCurve(float curveValue) {
+void Grain::setAttackCurve(float curveValue)
+{
   attack.curve = curveValue;
 }
 
@@ -93,7 +98,8 @@ void Grain::setAttackCurve(float curveValue) {
  * @param amplitude Updated amplitude
  * @param duration Updated duration
  */
-void Grain::setSustain(float frequency, float amplitude, int duration) {
+void Grain::setSustain(float frequency, float amplitude, int duration)
+{
   sustain.frequency = frequency;
   sustain.amplitude = amplitude;
   sustain.duration = duration;
@@ -113,7 +119,8 @@ void Grain::setSustain(float frequency, float amplitude, int duration) {
  * @param amplitude Updated amplitude
  * @param duration Updated duration
  */
-void Grain::setRelease(float frequency, float amplitude, int duration) {
+void Grain::setRelease(float frequency, float amplitude, int duration)
+{
   release.frequency = frequency;
   release.amplitude = amplitude;
   release.duration = duration;
@@ -133,7 +140,8 @@ void Grain::setRelease(float frequency, float amplitude, int duration) {
  *
  * @param curveValue Updated curve value
  */
-void Grain::setReleaseCurve(float curveValue) {
+void Grain::setReleaseCurve(float curveValue)
+{
   release.curve = curveValue;
 }
 
@@ -142,7 +150,8 @@ void Grain::setReleaseCurve(float curveValue) {
  *
  * @param channel The channel on specified integer
  */
-void Grain::setChannel(uint8_t channel) {
+void Grain::setChannel(uint8_t channel)
+{
   wave->setChannel(channel);
 }
 
@@ -151,7 +160,8 @@ void Grain::setChannel(uint8_t channel) {
  *
  * @param waveType The wave type
  */
-void Grain::setWaveType(WaveType waveType) {
+void Grain::setWaveType(WaveType waveType)
+{
   AudioLab.changeWaveType(wave, waveType);
 }
 
@@ -161,7 +171,8 @@ void Grain::setWaveType(WaveType waveType) {
  * each state. In essence it progresses the sample along the attack sustain
  * release curve.
  */
-void Grain::run() {
+void Grain::run()
+{
   switch (state)
   {
     case READY:
@@ -212,9 +223,9 @@ void Grain::run() {
       break;
   }
 
-  wave->setFrequency(grainFrequency);
-  wave->setAmplitude(grainAmplitude);
-
+//  wave->setFrequency(grainFrequency);
+//  wave->setAmplitude(grainAmplitude);
+  wave = AudioLab.dynamicWave(0, grainFrequency, grainAmplitude);
   windowCounter += 1;
 }
 
@@ -224,14 +235,16 @@ void Grain::run() {
  *
  * @return grainState
  */
-grainState Grain::getGrainState() {
+grainState Grain::getGrainState()
+{
   return state;
 }
 
 /**
  * Performs the run() function on each node in the globalGrainList
  */
-void Grain::update(GrainList *globalGrainList) {
+void Grain::update(GrainList *globalGrainList)
+{
   GrainNode *current = globalGrainList->getHead();
   while (current != NULL) {
     current->reference->run();
@@ -244,7 +257,8 @@ void Grain::update(GrainList *globalGrainList) {
  *
  * @return float
  */
-float Grain::getAmplitude() {
+float Grain::getAmplitude()
+{
   return grainAmplitude;
 }
 
@@ -253,7 +267,8 @@ float Grain::getAmplitude() {
  *
  * @return float
  */
-float Grain::getFrequency() {
+float Grain::getFrequency()
+{
   return grainFrequency;
 }
 
@@ -262,7 +277,8 @@ float Grain::getFrequency() {
  *
  * @param grain the grain to be pushed
  */
-void GrainList::pushGrain(Grain* grain) {
+void GrainList::pushGrain(Grain* grain)
+{
   GrainNode *newGrain = new GrainNode(grain);
   if (!head) {
     head = tail = newGrain;
@@ -275,7 +291,8 @@ void GrainList::pushGrain(Grain* grain) {
 /**
  * Deletes all grains in the GrainList.
  */
-void GrainList::clearList() {
+void GrainList::clearList()
+{
   GrainNode *current = head;
   while (current) {
     GrainNode *next = current->next;
@@ -291,6 +308,7 @@ void GrainList::clearList() {
  *
  * @return GrainNode*
  */
-GrainNode* GrainList::getHead() {
+GrainNode* GrainList::getHead()
+{
   return head;
 }
