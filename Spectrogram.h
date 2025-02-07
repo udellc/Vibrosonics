@@ -107,8 +107,11 @@ public:
      */
     T* getWindow(int relativeIndex)
     {
-        uint16_t index = this->currIndex + relativeIndex;
-        index = (index + this->numWindows) % this->numWindows;
+        // make sure that modulus math will work for negative values:
+        while (relativeIndex < 0) {
+            relativeIndex += this->numWindows;
+        }
+        uint16_t index = (this->currIndex + relativeIndex) % this->numWindows;
         return this->buffer + (index * this->numBins);
     };
 
@@ -135,7 +138,7 @@ public:
     /**
      * Clears the buffer and resets everything back to 0
      */
-    void clearBuffer(void)
+    void clearBuffer()
     {
         for (int i = 0; i < numWindows * numBins; i++) {
             buffer[i] = 0;
