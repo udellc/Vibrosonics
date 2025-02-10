@@ -147,7 +147,6 @@ void loop() {
     */
     vapi.processInput();
     vapi.analyze();
-    Serial.printf("1: Input analyzed\n");
 
     /**
      * GENERATE BASS OUTPUT
@@ -160,7 +159,6 @@ void loop() {
     vapi.mapAmplitudes(bass_data[MP_AMP], NUM_BASS_PEAKS, 250);
     // -- Trigger grains with frequencies and grains
     vapi.triggerGrains(NUM_BASS_PEAKS, bass_data, bass_grains);
-    Serial.printf("2: Bass triggered\n");
 
     /**
      * GENERATE MIDRANGE OUTPUT
@@ -205,7 +203,6 @@ void loop() {
 
         // Trigger second set of mid-range grains to "fill out" the output
         vapi.triggerGrains(NUM_MID_PEAKS, mid_data, mid_low_grains);
-        Serial.printf("3: Mid-range triggered\n");
     }
 
     /**
@@ -278,12 +275,9 @@ void loop() {
             bass_data[MP_AMP][i] = max(float(0), float(bass_data[MP_AMP][i] - snare_amp));
         }
         vapi.triggerGrains(NUM_BASS_PEAKS, bass_data, bass_grains);
-
-        Serial.printf("4: Snare triggered\n");
     }
 
     vapi.updateGrains();
-    Serial.printf("4: Grains updated\n");
     AudioLab.synthesize();
     AudioLab.printWaves(); // Optionally print synthesized waves every window
 }
