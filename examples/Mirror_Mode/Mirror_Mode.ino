@@ -85,15 +85,13 @@ void setup() {
      *  $2 - upperFreq is the upper frequency bound of the analysis module
     */
     bass_peaks.setAnalysisRangeByFreq(0, 100);
-
-    // Vibrosonics::addModule(AnalysisModule* module)
-    //  $1 - module is the address of the module to be added
     vapi.addModule(&bass_peaks);
 
     // set up midrange peaks analysis
-    vapi.addModule(&mid_peaks);
     noisiness.setAnalysisRangeByFreq(300, 800);
+    vapi.addModule(&noisiness);
     mid_peaks.setAnalysisRangeByFreq(300, 800);
+    vapi.addModule(&mid_peaks);
 
     // set up snare detector and grain
     vapi.addModule(&snare_detector);
@@ -177,7 +175,7 @@ void loop() {
      * 4. Trigger a second set of grains an octave beneath the first. This helps
      * "fill out" the haptic output.
     */
-    if (noisiness.getOutput() < 0.1) {
+    if (noisiness.getOutput() < 0.5) {
 
         // Retrieve the MajorPeaks data for the mid range
         float **mid_data = mid_peaks.getOutput();
