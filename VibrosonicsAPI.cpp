@@ -76,34 +76,36 @@ void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
  *
  * @param ampData The amplitude array to map.
  * @param dataLength The length of the amplitude array.
- * @param dataSumFloor The minimum value to normalize the amplitudes by (if
+ * @param minDataSum The minimum value to normalize the amplitudes by (if
  * their sum is not greater than it).
  *
  * TODO: Rename mapping functions, they normalize data
  */
-void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float dataSumFloor)
+void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float minDataSum = 0)
 {
     // sum amp data
     float dataSum = 0.0;
     for (int i = 0; i < dataLength; i++) {
         dataSum += ampData[i];
     }
-    if (dataSum == 0.0)
+    if (dataSum == 0.0) {
         return; // return early if sum of amplitudes is 0
+    }
+    if (minDataSum != 0 && dataSum < minDataSum) {
+        dataSum = minDataSum;
+    }
 
-    // dataSumFloor is a special parameter that will need to be adjusted to
+    // minDataSum is a special parameter that will need to be adjusted to
     // find the max dynamic contrast for a given set of ampllitudes. In
-    // general, a lower dataSumFloor will proivde less dynamic contrast (i.e.
+    // general, a lower minDataSum will proivde less dynamic contrast (i.e.
     // the range of amplitudes will be compressed), whereas a higher
-    // dataSumFloor may allow more room for contrast. If the sum of amplitudes
-    // (dataSum) is larger than dataSumFloor then the dataSum will be used to
+    // minDataSum may allow more room for contrast. If the sum of amplitudes
+    // (dataSum) is larger than minDataSum then the dataSum will be used to
     // ensure values are no larger than 1.
-
-    float divideBy = 1.0 / (dataSum > dataSumFloor ? dataSum : dataSumFloor);
 
     // convert amplitudes
     for (int i = 0; i < dataLength; i++) {
-        ampData[i] = (ampData[i] * divideBy);
+        ampData[i] = (ampData[i] / dataSum);
     }
 }
 
@@ -276,7 +278,7 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 
 Grain* VibrosonicsAPI::createGrain(uint8_t channel, WaveType waveType)
 {
-    return createGrainArray(1, channel, waveType); 
+    return createGrainArray(1, channel, waveType);
 }
 
 /**

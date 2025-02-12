@@ -10,6 +10,10 @@
 */
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
+Noisiness noisiness = Noisiness();
+MaxAmplitude maxAmp = MaxAmplitude();
+MeanAmplitude meanAmp = MeanAmplitude();
+
 /*
     MajorPeaks module for analysis
     Defaults to 4 peaks, user can input
@@ -27,7 +31,12 @@ Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
 void setup() {
     Serial.begin(9600);
     vapi.init();
+    //mp.setDebugMode(DEBUG_ENABLE);
+    //noisiness.setDebugMode(DEBUG_ENABLE | DEBUG_VERBOSE);
     vapi.addModule(&mp);
+    vapi.addModule(&noisiness);
+    vapi.addModule(&maxAmp);
+    vapi.addModule(&meanAmp);
 }
 
 /*
@@ -44,6 +53,8 @@ void loop() {
         return;
     }
 
+    //Serial.printf("!!!Start of Window!!!\n");
+
     // Copies samples from AudioLab buffer to vReal, then performs FFT operations.
     // Also pushes data to circular buffer.
     vapi.processInput();
@@ -52,7 +63,7 @@ void loop() {
 
     // Access analyzed data
     float **mp_data = mp.getOutput();
-    vapi.triggerGrains(4, mp_data, mpGrains);
+    //vapi.triggerGrains(4, mp_data, mpGrains);
     // Map amplitude data
     //vapi.mapAmplitudes(mp_data[MP_AMP], 4, 250);
     // Map frequency data using linear algorithm 
@@ -60,21 +71,42 @@ void loop() {
     //vapi.mapFrequenciesLinear(mp_data[MP_FREQ], vapi.windowSizeBy2);
 
     // Use output to synthesize waves
+    float energyRatio = maxAmp.getOutput() / meanAmp.getOutput();
+    //Serial.printf("maxAmp: %f\n", maxAmp.getOutput());
+    //Serial.printf("meanAmp: %f\n", meanAmp.getOutput());
+    float entropy = noisiness.getOutput();
+    int isNoise = 0;
+    if (entropy > 0.965 && energyRatio < 3.1) {
+        // likely to be isNoise
+        //Serial.printf("-- likely to be noise --\n");
+        isNoise = 1;
+    }
+    if (entropy <= 0.965 && entropy > 9.4 && energyRatio < 2.6) {
+        // likely to be noise
+        //Serial.printf("-- likely to be noise --\n");
+        isNoise = 1;
+    }
+
     for (int i=0; i < 4; i++){
-        if (mp_data[MP_AMP][i] < 10) {
-            //continue;
+        //continue;
+        if (isNoise) {
+            continue;
         }
+        //Serial.printf("-- cont --\n");
+        //Serial.printf("maxEnergyRatio: %f\n", energyRatio);
+        //Serial.printf("energyRatio%u: %f\n", i, mp_data[MP_AMP][i] / meanAmp.getOutput());
+        //Serial.printf("noisiness: %f\n", noisiness.getOutput());
         int freq = interpolateAroundPeak(vapi.spectrogram.getWindow(0), round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)), SAMPLE_RATE, WINDOW_SIZE);
         // Mirror mode waves
         AudioLab.dynamicWave(0, freq, mp_data[MP_AMP][i]);
     }
 
     // map amplitudes so that output waveform isn't clipped
+    //vapi.updateGrains();
     AudioLab.mapAmplitudes(0, 10000);
-    vapi.updateGrains();
     AudioLab.synthesize();
     // For debugging purposes.
-    AudioLab.printWaves();
+    //AudioLab.printWaves();
 }
 
 int interpolateAroundPeak(float *data, int indexOfPeak, int sampleRate, int windowSize) {
