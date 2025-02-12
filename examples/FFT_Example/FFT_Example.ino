@@ -29,7 +29,7 @@ Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
     the MajorPeaks module.
 */
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     vapi.init();
     //mp.setDebugMode(DEBUG_ENABLE);
     //noisiness.setDebugMode(DEBUG_ENABLE | DEBUG_VERBOSE);
@@ -92,10 +92,10 @@ void loop() {
         if (isNoise) {
             continue;
         }
-        //Serial.printf("-- cont --\n");
-        //Serial.printf("maxEnergyRatio: %f\n", energyRatio);
-        //Serial.printf("energyRatio%u: %f\n", i, mp_data[MP_AMP][i] / meanAmp.getOutput());
-        //Serial.printf("noisiness: %f\n", noisiness.getOutput());
+        Serial.printf("-- cont --\n");
+        Serial.printf("maxEnergyRatio: %f\n", energyRatio);
+        Serial.printf("energyRatio%u: %f\n", i, mp_data[MP_AMP][i] / meanAmp.getOutput());
+        Serial.printf("noisiness: %f\n", noisiness.getOutput());
         int freq = interpolateAroundPeak(vapi.spectrogram.getWindow(0), round(int(mp_data[MP_FREQ][i] * vapi.frequencyWidth)), SAMPLE_RATE, WINDOW_SIZE);
         // Mirror mode waves
         AudioLab.dynamicWave(0, freq, mp_data[MP_AMP][i]);

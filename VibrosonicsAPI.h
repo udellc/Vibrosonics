@@ -108,9 +108,13 @@ public:
     //! Perform fast fourier transform on the AudioLab input buffer.
     void performFFT(int* input);
 
-    //! Process the AudioLab input into FFT data, stored in our circular
+    //! Process the AudioLab input into FFT data and store in the spectrogram
     //! buffer.
     void processInput();
+
+    //! Process the AudioLab input into FFT data and minimize noise before
+    //! storing in the spectrogram
+    void processInput(float noiseThreshold);
 
     // --- AudioPrism Management ---------------------------------------------------
 

@@ -146,7 +146,19 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
 void VibrosonicsAPI::processInput()
 {
     performFFT(AudioLabInputBuffer);
-    storeFFTData();
+    spectrogram.pushWindow(vReal);
+}
+
+
+/**
+ * Calls performFFT and storeFFT to compute and store the FFT of AudioLab's
+ * input buffer. Should be called each time AudioLab is ready.
+ */
+void VibrosonicsAPI::processInput(float noiseThreshold)
+{
+    performFFT(AudioLabInputBuffer);
+    noiseFloor(vReal, noiseThreshold);
+    spectrogram.pushWindow(vReal);
 }
 
 /**
@@ -162,7 +174,8 @@ void VibrosonicsAPI::analyze()
     }
 }
 
-/** Adds a new module to the modules array. The module must be created and
+/** 
+ * Adds a new module to the modules array. The module must be created and
  * passed by the caller.
  *
  * @param module Module to be added to the modules array.
@@ -186,6 +199,32 @@ void VibrosonicsAPI::addModule(AnalysisModule* module)
     delete[] modules;
     modules = newModules;
 }
+
+/** 
+ * Adds a new module to the modules array. The module must be created and
+ * passed by the caller.
+ *
+ * @param module Module to be added to the modules array.
+ */
+//void VibrosonicsAPI::addModule(AnalysisModule* module)
+//{
+//    module->setWindowSize(WINDOW_SIZE);
+//    module->setSampleRate(SAMPLE_RATE);
+//
+//    // create new larger array for modules
+//    numModules++;
+//    AnalysisModule** newModules = new AnalysisModule*[numModules];
+//
+//    // copy modules over and add new module
+//    for (int i = 0; i < numModules - 1; i++) {
+//        newModules[i] = modules[i];
+//    }
+//    newModules[numModules - 1] = module;
+//
+//    // free old modules array and store reference to new modules array
+//    delete[] modules;
+//    modules = newModules;
+//}
 
 /**
  * mapFrequenciesLinear() and mapFrequenciesExponential() map their input

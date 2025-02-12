@@ -25,7 +25,7 @@ void loop() {
 
     Serial.printf("New Window:\n");
 
-    vapi.processInput();
+    vapi.processInput(1000);
     vapi.analyze();
 
     float energyRatio = maxAmp.getOutput() / meanAmp.getOutput();
