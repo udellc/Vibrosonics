@@ -14,9 +14,6 @@
  */
 Grain::Grain()
 {
-  // ISSUE: I think something is wrong with wave generation...
-  wave = AudioLab.staticWave(0, SINE);
-
   attack.curveStep = 1.0;
 
   release.curveStep = 1.0f;
@@ -40,8 +37,6 @@ Grain::Grain()
  */
 Grain::Grain(uint8_t channel, WaveType waveType)
 {
-  wave = AudioLab.staticWave(channel, waveType);
-
   attack.curveStep = 1.0;
 
   release.curveStep = 1.0f;
@@ -223,8 +218,7 @@ void Grain::run()
       break;
   }
 
-//  wave->setFrequency(grainFrequency);
-//  wave->setAmplitude(grainAmplitude);
+  // Create a wave
   wave = AudioLab.dynamicWave(0, grainFrequency, grainAmplitude);
   windowCounter += 1;
 }
@@ -270,6 +264,36 @@ float Grain::getAmplitude()
 float Grain::getFrequency()
 {
   return grainFrequency;
+}
+
+/**
+ * Returns the attack window duration
+ *
+ * @return int
+ */
+int Grain::getAttackDuration()
+{
+  return attack.duration;
+}
+
+/**
+ * Returns the sustain window duration
+ *
+ * @return int
+ */
+int Grain::getSustainDuration()
+{
+  return sustain.duration;
+}
+
+/**
+ * Returns the release window duration
+ *
+ * @return int
+ */
+int Grain::getReleaseDuration()
+{
+  return release.duration;
 }
 
 /**

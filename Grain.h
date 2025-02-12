@@ -109,6 +109,12 @@ public:
   //! Returns the current frequency of the grain
   float getFrequency();
 
+  //! Returns the attack duration
+  int getAttackDuration();
+  //! Returns the sustain duration
+  int getSustainDuration();
+  //! Returns the release duration
+  int getReleaseDuration();
 };
 
 /**
