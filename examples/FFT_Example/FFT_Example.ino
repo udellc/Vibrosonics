@@ -29,7 +29,7 @@ Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
     the MajorPeaks module.
 */
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     vapi.init();
     //mp.setDebugMode(DEBUG_ENABLE);
     //noisiness.setDebugMode(DEBUG_ENABLE | DEBUG_VERBOSE);

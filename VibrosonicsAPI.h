@@ -169,8 +169,7 @@ public:
     void setGrainSustain(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
 
     //! Sets grains attack parameters
-    void setGrainDecay(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
-
+    void setGrainRelease(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
 };
 
 #endif // VIBROSONICS_API_H

@@ -301,8 +301,10 @@ void VibrosonicsAPI::triggerGrains(Grain* grains, int numPeaks, float** peakData
 {
     for (int i = 0; i < numPeaks; i++) {
         if (peakData[MP_AMP][i] >= grains[i].getAmplitude()) {
-            grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], 1);
-            grains[i].setRelease(peakData[MP_FREQ][i], 0, 4);
+            grains[i].setAttack(peakData[MP_FREQ][i], peakData[MP_AMP][i], grains[i].getAttackDuration());
+            // NOTE: sustain amplitude should be different from attack, need to test for good values
+            grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], grains[i].getSustainDuration());
+            grains[i].setRelease(peakData[MP_FREQ][i], 0, grains[i].getReleaseDuration());
         }
     }
 }

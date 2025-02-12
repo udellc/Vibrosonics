@@ -25,7 +25,7 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 // Creates major peaks module to analyze 4 peaks
 MajorPeaks mp = MajorPeaks();
 //Creates a grain array with 4 grains on channel 0 with the SINE wave type
-Grain* mpGrains = vapi.createGrainArray(4, 0, SINE)
+Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
 
 /**
  * Runs once on ESP32 startup.

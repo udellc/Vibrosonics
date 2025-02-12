@@ -267,6 +267,36 @@ float Grain::getFrequency()
 }
 
 /**
+ * Returns the attack window duration
+ *
+ * @return int
+ */
+int Grain::getAttackDuration()
+{
+  return attack.duration;
+}
+
+/**
+ * Returns the sustain window duration
+ *
+ * @return int
+ */
+int Grain::getSustainDuration()
+{
+  return sustain.duration;
+}
+
+/**
+ * Returns the release window duration
+ *
+ * @return int
+ */
+int Grain::getReleaseDuration()
+{
+  return release.duration;
+}
+
+/**
  * Pushes a grain to the tail of the GrainList.
  *
  * @param grain the grain to be pushed
