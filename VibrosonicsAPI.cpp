@@ -1,7 +1,4 @@
 #include "VibrosonicsAPI.h"
-#include "Wave.h"
-#include "modules/MajorPeaks.h"
-#include <sys/types.h>
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -91,7 +88,7 @@ void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float minData
     if (dataSum == 0.0) {
         return; // return early if sum of amplitudes is 0
     }
-    if (minDataSum != 0 && dataSum < minDataSum) {
+    if (minDataSum > 0 && dataSum < minDataSum) {
         dataSum = minDataSum;
     }
 
