@@ -294,18 +294,35 @@ void VibrosonicsAPI::updateGrains()
  * @param numPeaks The size of the Grain array.
  * @param peakData A pointer to a module's amplitude data
  * @param grains An array of grains to be triggered.
- *
- *  NOTE: Only works for modules with frequency and amplitude data!
- *  Will not work for modules that only output a 1d array
- *  Question: Is there any situation a 1d output should be triggered?
- *  What would the amplitude target be set to?
  */
-void VibrosonicsAPI::triggerGrains(int numPeaks, float** peakData, Grain* grains)
+void VibrosonicsAPI::triggerGrains(Grain* grains, int numPeaks, float** peakData)
 {
     for (int i = 0; i < numPeaks; i++) {
         if (peakData[MP_AMP][i] >= grains[i].getAmplitude()) {
             grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], 1);
             grains[i].setRelease(peakData[MP_FREQ][i], 0, 4);
         }
+    }
+}
+
+void VibrosonicsAPI::setGrainAttack(Grain* grains, int numGrains, float frequency, float amplitude, int duration)
+{
+    for (int i = 0; i < numGrains; i++) {
+        grains[i].setAttack(frequency, amplitude, duration);
+    }
+}
+
+void VibrosonicsAPI::setGrainSustain(Grain* grains, int numGrains, float frequency, float amplitude, int duration)
+{
+    for (int i = 0; i < numGrains; i++) {
+        grains[i].setSustain(frequency, amplitude, duration);
+    }
+}
+
+
+void VibrosonicsAPI::setGrainRelease(Grain* grains, int numGrains, float frequency, float amplitude, int duration)
+{
+    for (int i = 0; i < numGrains; i++) {
+        grains[i].setRelease(frequency, amplitude, duration);
     }
 }

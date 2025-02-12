@@ -160,7 +160,17 @@ public:
     Grain* createGrain(uint8_t channel, WaveType waveType);
 
      //! Updates an array of numPeaks grains sustain and release windows.
-    void triggerGrains(int numPeaks, float** peakData, Grain* grains);
+    void triggerGrains(Grain* grains, int numPeaks, float** peakData);
+
+    //! Sets grains attack parameters
+    void setGrainAttack(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+
+    //! Sets grains attack parameters
+    void setGrainSustain(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+
+    //! Sets grains attack parameters
+    void setGrainDecay(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+
 };
 
 #endif // VIBROSONICS_API_H
