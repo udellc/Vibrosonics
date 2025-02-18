@@ -166,11 +166,14 @@ void VibrosonicsAPI::processInput(float noiseThreshold)
  */
 void VibrosonicsAPI::analyze()
 {
+    // rebuild windows in order
+    const float* rebuiltWindows[analysisWindows];
+    for (int i = 1 - analysisWindows; i < 1; i++){
+        rebuiltWindows[i + analysisWindows - 1] = spectrogram.getWindow(i);
+    }
     // loop through added modules
     for (int i = 0; i < numModules; i++) {
-        const float* curr = spectrogram.getWindow(0);
-        const float* prev = spectrogram.getWindow(-1);
-        modules[i]->doAnalysis(curr, prev);
+        modules[i]->doAnalysis(rebuiltWindows);
     }
 }
 

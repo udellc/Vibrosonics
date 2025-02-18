@@ -44,7 +44,7 @@ private:
 
     AnalysisModule** modules; //!< Array of references to AudioPrism modules.
     int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
-
+    
     GrainList grainList;
 
     // === PUBLIC DATA & INTERFACE =================================================
@@ -79,9 +79,10 @@ public:
     void init();
 
     // --- FFT Input & Storage -----------------------------------------------------
-
+    //! Number of previous windows to be stored and used by modules
+    const static int analysisWindows = 8;
     //! Static memory allocation for our circular buffer which stores FFT result data.
-    float spectrogramBuffer[2][windowSizeBy2];
+    float spectrogramBuffer[analysisWindows][windowSizeBy2];
 
     //! The circular buffer is used to efficiently store and retrieve multiple
     //! audio spectrums.
@@ -100,7 +101,7 @@ public:
     //!
     //! Note: AudioPrism modules take regular 2D float arrays as input. Call
     //! CircularBuffer::unwind to get a flat 2D version of the buffer's content.
-    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, 2, windowSizeBy2);
+    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, analysisWindows, windowSizeBy2);
 
     //! Stores the most recent FFT result in circularBuffer.
     void storeFFTData();
