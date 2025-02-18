@@ -14,6 +14,8 @@
  */
 Grain::Grain()
 {
+  wave = AudioLab.staticWave(0, SINE);
+
   attack.curveStep = 1.0;
 
   release.curveStep = 1.0f;
@@ -37,6 +39,8 @@ Grain::Grain()
  */
 Grain::Grain(uint8_t channel, WaveType waveType)
 {
+  wave = AudioLab.staticWave(channel, waveType);
+
   attack.curveStep = 1.0;
 
   release.curveStep = 1.0f;
