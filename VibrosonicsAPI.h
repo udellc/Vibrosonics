@@ -44,7 +44,7 @@ private:
 
     AnalysisModule** modules; //!< Array of references to AudioPrism modules.
     int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
-    
+
     GrainList grainList;
 
     // === PUBLIC DATA & INTERFACE =================================================
@@ -142,7 +142,7 @@ public:
     //! Floors data that is below a certain threshold.
     void noiseFloor(float* data, float threshold);
 
-    //! Maps amplitudes in some data to between 0-127 range.
+    //! Maps amplitudes in some data to between 0.0-1.0 range.
     void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
 
     //! linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
