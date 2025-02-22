@@ -10,7 +10,7 @@ MajorPeaks majorPeaks = MajorPeaks();
 Grain* grains = vapi.createGrainArray(4, 0, SINE);
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     vapi.init();
     vapi.addModule(&noisiness);
     vapi.addModule(&maxAmp);
@@ -20,6 +20,11 @@ void setup() {
     maxAmp.setAnalysisRangeByFreq(300, 1000);
     meanAmp.setAnalysisRangeByFreq(300, 1000);
     majorPeaks.setAnalysisRangeByFreq(300, 1000);
+    // Shape the MajorPeaks grains
+    // Params are GrainArray, size, freq, amp, duration
+    //vapi.setGrainAttack(grains, 4, 0, 0, 2);
+    //vapi.setGrainSustain(grains, 4, 0, 0, 1);
+    //vapi.setGrainRelease(grains, 4, 0, 0, 4);
 }
 
 void loop() {
@@ -34,6 +39,7 @@ void loop() {
         synthesizePeaks(&majorPeaks);
     }
 
+    //vapi.updateGrains();
     AudioLab.synthesize();
     //AudioLab.printWaves();
 }
@@ -53,4 +59,5 @@ void synthesizePeaks(MajorPeaks* peaks) {
     float** peaksData = peaks->getOutput();
     vapi.mapAmplitudes(peaksData[MP_AMP], 4, 10000);
     vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], 4, 0);
+    //vapi.triggerGrains(grains, 4, peaksData);
 }

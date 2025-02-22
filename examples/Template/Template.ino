@@ -39,6 +39,7 @@ void setup()
   // Add any AudioPrism modules to the API here
   vapi.addModule(&mp);
   // Shape the MajorPeaks grains
+  // Params are GrainArray, size, freq, amp, duration
   vapi.setGrainAttack(mpGrains, 4, 0, 0, 2);
   vapi.setGrainSustain(mpGrains, 4, 0, 0, 1);
   vapi.setGrainRelease(mpGrains, 4, 0, 0, 4);
@@ -69,7 +70,7 @@ void loop()
   // Perfroms FFT operations on vReal
   // Pushes vReal to the spectrogram
   vapi.processInput();
-  
+
   // Third, analyze the data with the added AudioPrism modules
   vapi.analyze();
 
@@ -85,7 +86,8 @@ void loop()
   vapi.triggerGrains(mpGrains, 4, mpData);
 
   // Direct wave creation
-  vapi.assignWaves(mpData[0], mpData[1], 4, 0);
+  // Frequency array, amp array, number of waves, channel
+  //vapi.assignWaves(mpData[0], mpData[1], 4, 0);
   // Perform any additional manipulation that you want here
 
   // Update grains if you are using them

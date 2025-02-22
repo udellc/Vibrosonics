@@ -61,11 +61,14 @@ private:
   float grainAmplitude;
   float grainFrequency;
 
+  // Wave parameters
+  WaveType waveType;
+
+  uint8_t grainChannel;
+
   grainState state;
 
-  Wave wave;
-
-  //!Update frequency and amplitude values based on current grain state.
+  //! Update frequency and amplitude values based on current grain state.
   void run();
 
 public:
@@ -111,8 +114,10 @@ public:
 
   //! Returns the attack duration
   int getAttackDuration();
+
   //! Returns the sustain duration
   int getSustainDuration();
+
   //! Returns the release duration
   int getReleaseDuration();
 };

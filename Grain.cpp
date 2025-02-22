@@ -14,8 +14,6 @@
  */
 Grain::Grain()
 {
-  wave = AudioLab.staticWave(0, SINE);
-
   attack.curveStep = 1.0;
 
   release.curveStep = 1.0f;
@@ -39,8 +37,6 @@ Grain::Grain()
  */
 Grain::Grain(uint8_t channel, WaveType waveType)
 {
-  wave = AudioLab.staticWave(channel, waveType);
-
   attack.curveStep = 1.0;
 
   release.curveStep = 1.0f;
@@ -151,7 +147,7 @@ void Grain::setReleaseCurve(float curveValue)
  */
 void Grain::setChannel(uint8_t channel)
 {
-  wave->setChannel(channel);
+  grainChannel = channel;
 }
 
 /**
@@ -161,7 +157,7 @@ void Grain::setChannel(uint8_t channel)
  */
 void Grain::setWaveType(WaveType waveType)
 {
-  AudioLab.changeWaveType(wave, waveType);
+  this->waveType = waveType;
 }
 
 /**
@@ -208,7 +204,6 @@ void Grain::run()
         grainFrequency = sustain.frequency + releaseSustainFrequencyDifference * curvePosition;
         grainAmplitude = sustain.amplitude + releaseSustainAmplitudeDifference * curvePosition;
       } else {
-        wave->reset();
         windowCounter = 0;
         state = READY;
         grainFrequency = 0;
@@ -223,7 +218,7 @@ void Grain::run()
   }
 
   // Create a wave
-  wave = AudioLab.dynamicWave(0, grainFrequency, grainAmplitude);
+  Wave wave = AudioLab.dynamicWave(grainChannel, grainFrequency, grainAmplitude);
   windowCounter += 1;
 }
 
