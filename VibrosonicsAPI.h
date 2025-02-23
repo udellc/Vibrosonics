@@ -167,14 +167,13 @@ public:
      //! Updates an array of numPeaks grains sustain and release windows.
     void triggerGrains(Grain* grains, int numPeaks, float** peakData);
 
-    //! Sets grains attack parameters
-    void setGrainAttack(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+    // GRAIN SHAPING
 
-    //! Sets grains attack parameters
-    void setGrainSustain(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+    void shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
 
-    //! Sets grains attack parameters
-    void setGrainRelease(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+    void shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod);
+
+    void shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
 };
 
 #endif // VIBROSONICS_API_H

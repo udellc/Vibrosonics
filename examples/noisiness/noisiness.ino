@@ -10,7 +10,7 @@ MajorPeaks majorPeaks = MajorPeaks();
 Grain* grains = vapi.createGrainArray(4, 0, SINE);
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     vapi.init();
     vapi.addModule(&noisiness);
     vapi.addModule(&maxAmp);
