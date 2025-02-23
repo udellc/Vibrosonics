@@ -14,10 +14,8 @@
  */
 Grain::Grain()
 {
-  attack.curveStep = 1.0;
-
-  release.curveStep = 1.0f;
-
+  grainChannel = 0;
+  waveType = SINE;
   sustainAttackAmplitudeDifference = 0;
   sustainAttackFrequencyDifference = 0;
   releaseSustainAmplitudeDifference = 0;
@@ -37,10 +35,8 @@ Grain::Grain()
  */
 Grain::Grain(uint8_t channel, WaveType waveType)
 {
-  attack.curveStep = 1.0;
-
-  release.curveStep = 1.0f;
-
+  grainChannel = channel;
+  this->waveType = waveType;
   sustainAttackAmplitudeDifference = 0;
   sustainAttackFrequencyDifference = 0;
   releaseSustainAmplitudeDifference = 0;
@@ -61,18 +57,14 @@ Grain::Grain(uint8_t channel, WaveType waveType)
  */
 void Grain::setAttack(float frequency, float amplitude, int duration)
 {
-  attack.frequency = frequency;
-  attack.amplitude = amplitude;
+  attack.frequency = frequency * attack.frequencyModulator;
+  attack.amplitude = amplitude * attack.amplitudeModulator;
   attack.duration = duration;
 
   sustainAttackFrequencyDifference = sustain.frequency - attack.frequency;
   sustainAttackAmplitudeDifference = sustain.amplitude - attack.amplitude;
 
-  if (attack.duration > 0) {
-    attack.curveStep = 1.0 / attack.duration;
-  } else {
-    attack.curveStep = 1.0;
-  }
+  attack.curveStep = (duration > 0) ? 1.0 / duration : 1.0;
 }
 
 /**
@@ -83,6 +75,7 @@ void Grain::setAttack(float frequency, float amplitude, int duration)
 void Grain::setAttackCurve(float curveValue)
 {
   attack.curve = curveValue;
+  attack.incrementFactor = pow(1.0 - attack.curveStep, attack.curve);
 }
 
 /**
@@ -95,8 +88,8 @@ void Grain::setAttackCurve(float curveValue)
  */
 void Grain::setSustain(float frequency, float amplitude, int duration)
 {
-  sustain.frequency = frequency;
-  sustain.amplitude = amplitude;
+  sustain.frequency = frequency * sustain.frequencyModulator;
+  sustain.amplitude = amplitude * sustain.amplitudeModulator;
   sustain.duration = duration;
 
   sustainAttackFrequencyDifference = sustain.frequency - attack.frequency;
@@ -116,18 +109,14 @@ void Grain::setSustain(float frequency, float amplitude, int duration)
  */
 void Grain::setRelease(float frequency, float amplitude, int duration)
 {
-  release.frequency = frequency;
-  release.amplitude = amplitude;
+  release.frequency = frequency * release.frequencyModulator;
+  release.amplitude = amplitude * release.amplitudeModulator;
   release.duration = duration;
 
   releaseSustainFrequencyDifference = release.frequency - sustain.frequency;
   releaseSustainAmplitudeDifference = release.amplitude - sustain.amplitude;
 
-  if (release.duration > 0) {
-    release.curveStep = 1.0 / release.duration;
-  } else {
-    release.curveStep = 1.0;
-  }
+  release.curveStep = (duration > 0) ? 1.0 / duration : 1.0;
 }
 
 /**
@@ -138,6 +127,7 @@ void Grain::setRelease(float frequency, float amplitude, int duration)
 void Grain::setReleaseCurve(float curveValue)
 {
   release.curve = curveValue;
+  release.incrementFactor = pow(1.0 - release.curveStep, release.curve);
 }
 
 /**
@@ -171,44 +161,40 @@ void Grain::run()
   switch (state)
   {
     case READY:
-      windowCounter = 0;
-      state = ATTACK;
-      return;
+      transitionTo(ATTACK);
+      break;
 
     case ATTACK:
       if (windowCounter < attack.duration) {
-        float curvePosition = pow(attack.curveStep * windowCounter, attack.curve);
-        grainFrequency = attack.frequency + sustainAttackFrequencyDifference * curvePosition;
-        grainAmplitude = attack.amplitude + sustainAttackAmplitudeDifference * curvePosition;
+        // Compute and update frequncy and amplitude with incremental curve position
+        grainFrequency = attack.frequency + sustainAttackFrequencyDifference * attack.curvePosition;
+        grainAmplitude = attack.amplitude + sustainAttackAmplitudeDifference * attack.curvePosition;
+
+        // Update curve position incrementally
+        // nextCurvePosition = previousCurvePosition * incrementFactor
+        attack.curvePosition *= attack.incrementFactor;
       } else {
-        windowCounter = 0;
-        state = SUSTAIN;
-        grainFrequency = sustain.frequency;
-        grainAmplitude = sustain.amplitude;
+        transitionTo(SUSTAIN);
       }
       break;
 
     case SUSTAIN:
-      if (windowCounter < sustain.duration) {
-        grainFrequency = sustain.frequency;
-        grainAmplitude = sustain.amplitude;
-      } else {
-        windowCounter = 0;
-        state = RELEASE;
+      if (windowCounter >= sustain.duration) {
+        transitionTo(RELEASE);
       }
       break;
 
     case RELEASE:
       if (windowCounter < release.duration) {
-        float curvePosition = pow(release.curveStep * windowCounter, release.curve);
-        grainFrequency = sustain.frequency + releaseSustainFrequencyDifference * curvePosition;
-        grainAmplitude = sustain.amplitude + releaseSustainAmplitudeDifference * curvePosition;
+        // Compute and update frequncy and amplitude with incremental curve position
+        grainFrequency = sustain.frequency + releaseSustainFrequencyDifference * release.curvePosition;
+        grainAmplitude = sustain.amplitude + releaseSustainAmplitudeDifference * release.curvePosition;
+
+        // Update curve position incrementally
+        // nextCurvePosition = previousCurvePosition * incrementFactor
+        release.curvePosition *= release.incrementFactor;
       } else {
-        windowCounter = 0;
-        state = READY;
-        grainFrequency = 0;
-        grainAmplitude = 0;
-        return;
+        transitionTo(READY);
       }
       break;
 
@@ -217,11 +203,28 @@ void Grain::run()
       break;
   }
 
-  // Create a wave
-  Wave wave = AudioLab.dynamicWave(grainChannel, grainFrequency, grainAmplitude);
-  windowCounter += 1;
+  // Create a wave if grain is active
+  if(state != READY) {
+    Wave wave = AudioLab.dynamicWave(grainChannel, grainFrequency, grainAmplitude, 0.0, waveType);
+    windowCounter++;
+  }
 }
 
+void Grain::transitionTo(grainState newState) {
+  windowCounter = 0;
+  state = newState;
+
+  if (newState == READY) {
+    grainFrequency = 0.0f;
+    grainAmplitude = 0.0f;
+  } else if (newState == ATTACK) {
+    attack.curvePosition = 1.0f; // Reset attack curve progression
+    release.curvePosition = 1.0f; // Reset release curve progression
+  } else if (newState == SUSTAIN) {
+    grainFrequency = sustain.frequency;
+    grainAmplitude = sustain.amplitude;
+  }
+}
 
 /**
  * Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
@@ -293,6 +296,28 @@ int Grain::getSustainDuration()
 int Grain::getReleaseDuration()
 {
   return release.duration;
+}
+
+void Grain::shapeAttack(int duration, float freqMod, float ampMod, float curve)
+{
+  attack.duration = duration;
+  attack.frequencyModulator = freqMod;
+  attack.amplitudeModulator = ampMod;
+  attack.curve = curve;
+}
+
+void Grain::shapeSustain(int duration, float freqMod, float ampMod)
+{
+  sustain.duration = duration;
+  sustain.frequencyModulator = freqMod;
+  sustain.amplitudeModulator = ampMod;
+}
+void Grain::shapeRelease(int duration, float freqMod, float ampMod, float curve)
+{
+  release.duration = duration;
+  release.frequencyModulator = freqMod;
+  release.amplitudeModulator = ampMod;
+  release.curve = curve;
 }
 
 /**
