@@ -65,9 +65,9 @@ float VibrosonicsAPI::getMean(float* data, int dataLength)
  * @param data The array of data to floor.
  * @param threshold The threshold value to floor the data at.
  */
-void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
+void VibrosonicsAPI::noiseFloor(float* ampData, int dataLength, float threshold)
 {
-    for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
+    for (int i = 0; i < dataLength; i++) {
         if (ampData[i] < threshold) {
             ampData[i] = 0.0;
         }
@@ -160,7 +160,7 @@ void VibrosonicsAPI::processInput()
 void VibrosonicsAPI::processInput(float noiseThreshold)
 {
     performFFT(AudioLabInputBuffer);
-    noiseFloor(vReal, noiseThreshold);
+    noiseFloor(vReal, WINDOW_SIZE_BY_2, noiseThreshold);
     spectrogram.pushWindow(vReal);
 }
 

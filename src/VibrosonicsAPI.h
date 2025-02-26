@@ -98,7 +98,7 @@ public:
     float getMean(float* data, int dataLength);
 
     //! Floors data that is below a certain threshold.
-    void noiseFloor(float* data, float threshold);
+    void noiseFloor(float* data, int dataLength, float threshold);
 
     //! Maps amplitudes in some data to between 0.0-1.0 range.
     void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
