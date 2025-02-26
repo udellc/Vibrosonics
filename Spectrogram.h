@@ -1,6 +1,6 @@
 /**
  * @file
- * Contains the declaration of the CircularBuffer class
+ * Contains the Spectrogram class definition.
  */
 
 #ifndef SPECTROGRAM_H
@@ -8,14 +8,14 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 
 /**
- * Class for the circular buffer.
+ * Spectrogram holds the frequency domain data over multiple time windows.
  *
- * This class is used to create and store frequency data into a circular
- * buffer. This will give us a spectrogram. Circular Buffer has been changed
- * from being dynamic to being static. This change allows for imporvements in
- * performance and memory usage.
+ * This class implements a circular buffer to store multiple windows of
+ * frequency domain data. Pushing new windows of data will overwrite the oldest
+ * window stored. It requires the buffer data to be allocated by the user.
  */
 template <typename T>
 class Spectrogram {
@@ -27,9 +27,9 @@ private:
 
 public:
     /**
-     * Default constructor to initialize a new circular buffer.
+     * Default constructor to initialize a new empty Spectrogram.
      *
-     * Creates a circular buffer and sets everything to 0 or NULL.
+     * Creates a Spectrogram and sets everything to 0/NULL.
      */
     Spectrogram()
     {
@@ -40,14 +40,14 @@ public:
     };
 
     /**
-     * Overloaded constructor to initialize a new circular buffer.
+     * Overloaded constructor to initialize a new Spectrogram.
      *
-     * Creates a circular buffer that uses the specified values for the
-     * buffer pointer, rows, and columns.
+     * Creates a Spectrogram that uses the specified values for the buffer
+     * pointer, rows, and columns.
      *
-     * @param bufferPtr buffer pointer
-     * @param numRows number of rows in the buffer
-     * @param numCols number of columns in the buffer
+     * @param buffer Pointer to the Spectrogram's data buffer.
+     * @param numWindows The number of time windows the Spectrogram holds.
+     * @param numBin The number of frequency bins in each window.
      */
     Spectrogram(T* buffer, uint16_t numWindows, uint16_t numBins)
     {
@@ -60,9 +60,9 @@ public:
     /**
      * Updates the buffer pointer, number of rows, and number of columns.
      *
-     * @param bufferPtr buffer pointer
-     * @param numRows number of rows in the buffer
-     * @param numCols number of columns in the buffer
+     * @param buffer Pointer to the Spectrogram's data buffer.
+     * @param numWindows The number of time windows the Spectrogram holds.
+     * @param numBin The number of frequency bins in each window.
      */
     void setBuffer(T* buffer, uint16_t numWindows, uint16_t numBins)
     {
@@ -71,43 +71,22 @@ public:
         this->numBins = numBins;
     };
 
-    /**
-     * Getter function for the buffer pointer.
-     */
-    T* getBuffer() { return this->buffer; };
-
-    /**
-     * Getter function for the number of rows.
-     */
+    T* getBuffer() const { return this->buffer; };
     uint16_t getNumBins() const { return this->numBins; };
-
-    /**
-     * Getter function for the number of columns.
-     */
     uint16_t getNumWindows() const { return this->numWindows; };
-
-    /**
-     * Getter function for the current index of the buffer.
-     */
     uint16_t getCurrentIndex() const { return this->currIndex; };
 
     /**
-     * Gets the frequency data that is stored at the current
-     * index of the circular buffer.
-     */
-    T* getCurrentWindow()
-    {
-        return this->buffer + (this->currIndex * this->numBins);
-    };
-
-    /**
-     * Gets the frequency data that is stored in a specified index
+     * Gets the window data at an index relative to the current.
      *
-     * @param relativeIndex index to get data for
+     * A negative relative index searches backwards in time, a positive index
+     * wraps around to the 'tail' of the Spectrogram.
+     *
+     * @param relativeIndex Index relative to the current.
      */
-    T* getWindow(int relativeIndex)
+    T* getWindowAt(int relativeIndex) const
     {
-        // make sure that modulus math will work for negative values:
+        // ensure that modulus math will work for negative values:
         while (relativeIndex < 0) {
             relativeIndex += this->numWindows;
         }
@@ -116,27 +95,42 @@ public:
     };
 
     /**
-     * Takes new data and adds it to the circular buffer
-     * If the buffer index reaches the maximum column index, it
-     * wraps around and overwrites the oldest data, setting the
-     * index back to 0
-     *
-     * @param data buffer pointer to data
+     * Gets the most recent Spectrogram window data.
      */
-    void pushWindow(T* data)
+    T* getCurrentWindow() const
+    {
+        return this->buffer + (this->currIndex * this->numBins);
+    };
+
+    /**
+     * Gets the previous Spectrogram window data.
+     */
+    T* getPreviousWindow() const
+    {
+        return this->buffer + ((this->currIndex - 1) * this->numBins);
+    };
+
+    /**
+     * Pushes a new window to the Spectrogram.
+     *
+     * Takes new window data and adds it to the circular buffer If the buffer
+     * index reaches the maximum column index, it wraps around and overwrites
+     * the oldest data, setting the index back to 0
+     *
+     * @param data Pointer to the window's frequency domain data.
+     */
+    void pushWindow(const T* data)
     {
         this->currIndex++;
         if (this->currIndex == this->numWindows)
             this->currIndex = 0;
 
         T* windowBuffer = this->buffer + (this->currIndex * this->numBins);
-        for (int i = 0; i < this->numBins; i++) {
-            windowBuffer[i] = data[i];
-        }
+        memcpy(windowBuffer, data, this->numBins * sizeof(T));
     };
 
     /**
-     * Clears the buffer and resets everything back to 0
+     * Clears the Spectrogram's data buffer and resets the current index.
      */
     void clearBuffer()
     {
