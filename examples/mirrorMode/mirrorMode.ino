@@ -12,14 +12,12 @@ Grain* grains = vapi.createGrainArray(4, 0, SINE);
 void setup() {
     Serial.begin(115200);
     vapi.init();
-    vapi.addModule(&noisiness);
-    vapi.addModule(&maxAmp);
-    vapi.addModule(&meanAmp);
-    vapi.addModule(&majorPeaks);
-    noisiness.setAnalysisRangeByFreq(300, 4000);
-    maxAmp.setAnalysisRangeByFreq(300, 4000);
-    meanAmp.setAnalysisRangeByFreq(300, 4000);
-    majorPeaks.setAnalysisRangeByFreq(300, 4000);
+    int lowerFreq = 300;
+    int upperFreq = 4000;
+    vapi.addModule(&noisiness, lowerFreq, upperFreq);
+    vapi.addModule(&maxAmp, lowerFreq, upperFreq);
+    vapi.addModule(&meanAmp, lowerFreq, upperFreq);
+    vapi.addModule(&majorPeaks, lowerFreq, upperFreq);
     // Shape the MajorPeaks grains
     vapi.shapeGrainAttack(grains, 4, 1, 1.0, 1.0, 1.0);
     vapi.shapeGrainSustain(grains, 4, 1, 1.0, 0.6);

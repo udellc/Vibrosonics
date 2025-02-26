@@ -207,6 +207,33 @@ void VibrosonicsAPI::addModule(AnalysisModule* module)
 }
 
 /**
+ * Adds a new module to the modules array. The module must be created and
+ * passed by the caller.
+ *
+ * @param module Module to be added to the modules array.
+ */
+void VibrosonicsAPI::addModule(AnalysisModule* module, int lowerFreq, int upperFreq)
+{
+    module->setWindowSize(WINDOW_SIZE);
+    module->setSampleRate(SAMPLE_RATE);
+    module->setAnalysisRangeByFreq(lowerFreq, upperFreq);
+
+    // create new larger array for modules
+    numModules++;
+    AnalysisModule** newModules = new AnalysisModule*[numModules];
+
+    // copy modules over and add new module
+    for (int i = 0; i < numModules - 1; i++) {
+        newModules[i] = modules[i];
+    }
+    newModules[numModules - 1] = module;
+
+    // free old modules array and store reference to new modules array
+    delete[] modules;
+    modules = newModules;
+}
+
+/**
  * mapFrequenciesLinear() and mapFrequenciesExponential() map their input
  * frequencies to the haptic range (0-250Hz).
  *

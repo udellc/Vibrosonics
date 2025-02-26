@@ -80,6 +80,10 @@ public:
     //! Add an AudioPrism module to our loaded modules.
     void addModule(AnalysisModule* module);
 
+    //! Add an AudioPrism module to our loaded modules and bind it to a
+    //! frequency range.
+    void addModule(AnalysisModule* module, int lowerFreq, int upperFreq);
+
     //! Runs doAnalysis() for all added AudioPrism modules.
     void analyze();
 
