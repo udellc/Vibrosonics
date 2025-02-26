@@ -5,6 +5,7 @@
 #include <cmath>
 
 // external dependencies
+#include "Arduino.h"
 #include "Modules.h"
 #include <AudioLab.h>
 #include <AudioPrism.h>
@@ -12,41 +13,11 @@
 #include <cstdint>
 
 // internal
-#include "Spectrogram.h"
 #include "Grain.h"
+#include "Spectrogram.h"
 #include "Wave.h"
 
 class VibrosonicsAPI {
-    // === PRIVATE DATA ============================================================
-private:
-    // --- ArduinoFFT library ------------------------------------------------------
-
-    //! FFT stores the fourier transform engine.
-    ArduinoFFT<float> FFT = ArduinoFFT<float>();
-
-    // Fast Fourier Transform uses complex numbers
-    float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
-    float vImag[WINDOW_SIZE]; //!< Imaginary component of the cosine amplitude of each frequency.
-
-    // --- AudioLab Library --------------------------------------------------------
-
-    //! VibrosonicsAPI adopts AudioLab's input buffer.
-    int* AudioLabInputBuffer = AudioLab.getInputBuffer();
-
-    // --- AudioPrism Library ------------------------------------------------------
-
-    // AudioPrism modules can be registered with the Vibrosonics API using the
-    // VibrosonicsAPI::addModule() function. This array stores references to all
-    // AudioPrism modules registered with an instance of the API. This allows
-    // automatic synchronization of module's audio context (sample rate and
-    // window size) and allows performing simultaneous analysis on multiple
-    // modules with a single call to VibrosonicsAPI::analyze()
-
-    AnalysisModule** modules; //!< Array of references to AudioPrism modules.
-    int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
-
-    GrainList grainList;
-
     // === PUBLIC DATA & INTERFACE =================================================
 public:
     // --- Constants ---------------------------------------------------------------
@@ -58,53 +29,31 @@ public:
     //!
     //! This constant is used often, becuase the output of a fast fourier
     //! transform has half as many values as the input window size.
-    static const int windowSizeBy2 = int(WINDOW_SIZE) >> 1;
+    static const int WINDOW_SIZE_BY_2 = int(WINDOW_SIZE) >> 1;
 
     //! Frequency range of an FFT bin in Hz.
     //!
-    //! The resolution is the frequency range, in Hz,
-    //! represented by each output bin of the Fast Fourier Transform.
+    //! The resolution is the frequency range, in Hz, represented by each
+    //! output bin of the Fast Fourier Transform.
+    //!
     //! Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
-    const float frequencyResolution = float(SAMPLE_RATE) / WINDOW_SIZE;
+    const float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE;
 
     //! Duration of a window, in seconds.
     //!
     //! The width is the duration of time represented by a
     //! single window's worth of samples.
     //! Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window.
-    const float frequencyWidth = 1.0 / frequencyResolution;
+    const float FREQ_WIDTH = 1.0 / FREQ_RES;
+
+    //! Number of previous windows to be stored and used by modules
+    const static int NUM_WINDOWS = 8;
 
     // ---- Setup ------------------------------------------------------------------
 
     void init();
 
     // --- FFT Input & Storage -----------------------------------------------------
-    //! Number of previous windows to be stored and used by modules
-    const static int analysisWindows = 8;
-    //! Static memory allocation for our circular buffer which stores FFT result data.
-    float spectrogramBuffer[analysisWindows][windowSizeBy2];
-
-    //! The circular buffer is used to efficiently store and retrieve multiple
-    //! audio spectrums.
-    //!
-    //! Pushing new items on the circular buffer overwrites the
-    //! oldest items, rather than shifting memory around.
-    //!
-    //! The first argument of the constructor is the number of audio spectrums
-    //! to store. This is set to two because none of our analysis requires a
-    //! longer history. This value can be increased arbitrarily to store longer
-    //! histories.
-    //!
-    //! The second argument of the constructor is the number of bins in each
-    //! audio spectrum. This will be the result of an FFT operation, so it must
-    //! be set to half the window size used for the FFT.
-    //!
-    //! Note: AudioPrism modules take regular 2D float arrays as input. Call
-    //! CircularBuffer::unwind to get a flat 2D version of the buffer's content.
-    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, analysisWindows, windowSizeBy2);
-
-    //! Stores the most recent FFT result in circularBuffer.
-    void storeFFTData();
 
     //! Perform fast fourier transform on the AudioLab input buffer.
     void performFFT(int* input);
@@ -114,8 +63,17 @@ public:
     void processInput();
 
     //! Process the AudioLab input into FFT data and minimize noise before
-    //! storing in the spectrogram
+    //! storing in the spectrogram.
     void processInput(float noiseThreshold);
+
+    //! Get the current spectrogram window data.
+    float* getCurrentWindow() const;
+
+    //! Get the previous spectrogram window data.
+    float* getPreviousWindow() const;
+
+    //! Get a spectrogram window at a relative index.
+    float* getWindowAt(int relativeIndex) const;
 
     // --- AudioPrism Management ---------------------------------------------------
 
@@ -158,13 +116,13 @@ public:
     //! Updates all grains in the globalGrainList
     void updateGrains();
 
-     //! Creates and returns an array of grains on desired chanel with specified wave type.
+    //! Creates and returns an array of grains on desired chanel with specified wave type.
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
     //! Creates and returns a singular grain with specified wave and channel.
     Grain* createGrain(uint8_t channel, WaveType waveType);
 
-     //! Updates an array of numPeaks grains sustain and release windows.
+    //! Updates an array of numPeaks grains sustain and release windows.
     void triggerGrains(Grain* grains, int numPeaks, float** peakData);
 
     // GRAIN SHAPING
@@ -174,6 +132,43 @@ public:
     void shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod);
 
     void shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
+
+    // === PRIVATE DATA ============================================================
+private:
+    //! Static memory allocation for our Spectrogram which stores FFT result
+    //! data.
+    float spectrogramBuffer[NUM_WINDOWS][WINDOW_SIZE_BY_2];
+
+    //! The spectrogram holds frequency domain data over multiple windows of time.
+    Spectrogram<float> spectrogram = Spectrogram(
+        (float*)spectrogramBuffer,
+        NUM_WINDOWS,
+        WINDOW_SIZE_BY_2);
+
+    // --- ArduinoFFT library ------------------------------------------------------
+
+    //! FFT stores the fourier transform engine.
+    ArduinoFFT<float> FFT = ArduinoFFT<float>();
+
+    // Fast Fourier Transform uses complex numbers
+    float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
+    float vImag[WINDOW_SIZE]; //!< Imaginary component of the cosine amplitude of each frequency.
+
+    // --- AudioLab Library --------------------------------------------------------
+
+    //! VibrosonicsAPI adopts AudioLab's input buffer.
+    int* AudioLabInputBuffer = AudioLab.getInputBuffer();
+
+    // --- AudioPrism Library ------------------------------------------------------
+
+    // This library integrates AudioPrism by storing an array of analysis
+    // modules to keep updated. Users are expected to instance modules and use
+    // their results on their own.
+
+    AnalysisModule** modules; //!< Array of references to AudioPrism modules.
+    int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
+
+    GrainList grainList;
 };
 
 #endif // VIBROSONICS_API_H

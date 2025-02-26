@@ -55,11 +55,11 @@ int isWindowNoise() {
 }
 
 void synthesizePeaks(MajorPeaks* peaks) {
-    float* windowData = vapi.spectrogram.getCurrentWindow();
-    float freqData[vapi.windowSizeBy2]; 
-    float ampData[vapi.windowSizeBy2]; 
-    for (int i = 0; i < vapi.windowSizeBy2; i++) {
-        freqData[i] = i * vapi.frequencyResolution;
+    float* windowData = vapi.getCurrentWindow();
+    float freqData[vapi.WINDOW_SIZE_BY_2]; 
+    float ampData[vapi.WINDOW_SIZE_BY_2]; 
+    for (int i = 0; i < vapi.WINDOW_SIZE_BY_2; i++) {
+        freqData[i] = i * vapi.FREQ_RES;
         ampData[i] = windowData[i];
     }
     float** peaksData = peaks->getOutput();

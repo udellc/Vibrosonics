@@ -29,13 +29,19 @@ void VibrosonicsAPI::performFFT(int* input)
     FFT.complexToMagnitude(vReal, vImag, WINDOW_SIZE); // Compute frequency magnitudes
 }
 
-/**
- * Writes the result of the most recent FFT computation into
- * VibrosonicsAPI's circular buffer.
- */
-inline void VibrosonicsAPI::storeFFTData()
+float* VibrosonicsAPI::getCurrentWindow() const
 {
-    spectrogram.pushWindow(vReal);
+    return spectrogram.getCurrentWindow();
+}
+
+float* VibrosonicsAPI::getPreviousWindow() const
+{
+    return spectrogram.getPreviousWindow();
+}
+
+float* VibrosonicsAPI::getWindowAt(int relativeIndex) const
+{
+    return spectrogram.getWindowAt(relativeIndex);
 }
 
 /**
@@ -61,7 +67,7 @@ float VibrosonicsAPI::getMean(float* data, int dataLength)
  */
 void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
 {
-    for (int i = 0; i < windowSizeBy2; i++) {
+    for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
         if (ampData[i] < threshold) {
             ampData[i] = 0.0;
         }
@@ -147,7 +153,6 @@ void VibrosonicsAPI::processInput()
     spectrogram.pushWindow(vReal);
 }
 
-
 /**
  * Calls performFFT and storeFFT to compute and store the FFT of AudioLab's
  * input buffer. Should be called each time AudioLab is ready.
@@ -165,9 +170,9 @@ void VibrosonicsAPI::processInput(float noiseThreshold)
 void VibrosonicsAPI::analyze()
 {
     // rebuild windows in order
-    const float* rebuiltWindows[analysisWindows];
-    for (int i = 1 - analysisWindows; i < 1; i++){
-        rebuiltWindows[i + analysisWindows - 1] = spectrogram.getWindow(i);
+    const float* rebuiltWindows[NUM_WINDOWS];
+    for (int i = 1 - NUM_WINDOWS; i < 1; i++) {
+        rebuiltWindows[i + NUM_WINDOWS - 1] = spectrogram.getWindowAt(i);
     }
     // loop through added modules
     for (int i = 0; i < numModules; i++) {
@@ -175,7 +180,7 @@ void VibrosonicsAPI::analyze()
     }
 }
 
-/** 
+/**
  * Adds a new module to the modules array. The module must be created and
  * passed by the caller.
  *
@@ -312,7 +317,7 @@ void VibrosonicsAPI::updateGrains()
 void VibrosonicsAPI::triggerGrains(Grain* grains, int numPeaks, float** peakData)
 {
     // NOTE: ADD FREQUENCY MATCHING
-    // Plan: First pass, check to see if incoming peakData frequencies match previous grain frequencies. 
+    // Plan: First pass, check to see if incoming peakData frequencies match previous grain frequencies.
     // So if previous grains are [200hz, 400hz, 800hz, 1600hz], and incoming data is [400hz, 800hz, 1600hz, 320hz]
     // the grain mapping will be [320hz, 400hz, 800hz, 1600hz]. Basically make sure that each grain is actually keeping as similair a frequency as possible
     // Keep the data in sync
@@ -328,24 +333,24 @@ void VibrosonicsAPI::triggerGrains(Grain* grains, int numPeaks, float** peakData
 
     for (int i = 0; i < numPeaks - 1; i++) {
         for (int j = 0; j < numPeaks - i - 1; j++) {
-            if (sortedFreqs[j] > sortedFreqs[j+1]) {
+            if (sortedFreqs[j] > sortedFreqs[j + 1]) {
                 float tempFreq = sortedFreqs[j];
-                sortedFreqs[j] = sortedFreqs[j+1];
-                sortedFreqs[j+1] = tempFreq;
+                sortedFreqs[j] = sortedFreqs[j + 1];
+                sortedFreqs[j + 1] = tempFreq;
 
                 float tempAmp = sortedAmps[j];
-                sortedAmps[j] = sortedAmps[j+1];
-                sortedAmps[j+1] = tempAmp;
+                sortedAmps[j] = sortedAmps[j + 1];
+                sortedAmps[j + 1] = tempAmp;
             }
         }
     }
 
     for (int i = 0; i < numPeaks - 1; i++) {
         for (int j = 0; j < numPeaks - i - 1; j++) {
-            if (grains[j].getFrequency() > grains[j+1].getFrequency()) {
+            if (grains[j].getFrequency() > grains[j + 1].getFrequency()) {
                 Grain temp = grains[j];
-                grains[j] = grains[j+1];
-                grains[j+1] = temp;
+                grains[j] = grains[j + 1];
+                grains[j + 1] = temp;
             }
         }
     }

@@ -49,7 +49,7 @@ public:
      * @param numWindows The number of time windows the Spectrogram holds.
      * @param numBin The number of frequency bins in each window.
      */
-    Spectrogram(T* buffer, uint16_t numWindows, uint16_t numBins)
+    Spectrogram(T* buffer, const uint16_t numWindows, const uint16_t numBins)
     {
         this->buffer = buffer;
         this->numWindows = numWindows;
@@ -58,13 +58,13 @@ public:
     };
 
     /**
-     * Updates the buffer pointer, number of rows, and number of columns.
+     * Updates the Spectrogram's data buffer, number of windows, and number of bins.
      *
      * @param buffer Pointer to the Spectrogram's data buffer.
      * @param numWindows The number of time windows the Spectrogram holds.
      * @param numBin The number of frequency bins in each window.
      */
-    void setBuffer(T* buffer, uint16_t numWindows, uint16_t numBins)
+    void setBuffer(T* buffer, const uint16_t numWindows, const uint16_t numBins)
     {
         this->buffer = buffer;
         this->numWindows = numWindows;
