@@ -75,6 +75,58 @@ void VibrosonicsAPI::noiseFloor(float* ampData, int dataLength, float threshold)
 }
 
 /**
+ * Uses a sliding window to compute the average value of a number of reference
+ * cells for each cell under test (CUT). If the CUT's value is less than the
+ * average * a bias, then the cell is floored.
+ *
+ * @param numRefs The number of reference cells for CFAR.
+ * @param numGuards The number of guard cells for CFAR.
+ * @param bias The bias factor to use for CFAR.
+ */
+
+void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, int numGuards, float bias)
+{
+    int i, j, numCells;
+    int left_start, left_end, right_start, right_end;
+    float noiseLevel;
+
+    // copy data to sample from
+    float dataCopy[dataLength];
+    memcpy(dataCopy, data, dataLength * sizeof(float));
+
+    for (i = 0; i < dataLength; i++) {
+        // calculate bounds for cell under test (CUT)
+        left_start = max(0, i - numGuards - numRefs);
+        left_end = max(0, i - numGuards);
+        right_start = min(dataLength, i + numGuards);
+        right_end = min(dataLength, i + numGuards + numRefs);
+
+        numCells = 0;
+        noiseLevel = 0;
+
+        // compute sum of cells within bounds
+        for (j = left_start; j < left_end; j++) {
+            noiseLevel += dataCopy[j];
+            numCells++;
+        }
+        for (j = right_start; j < right_end; j++) {
+            noiseLevel += dataCopy[j];
+            numCells++;
+        }
+
+        // compute average (noise level) of cells within bounds
+        noiseLevel /= numCells > 0 ? numCells : 1;
+
+        // copy original data if above noiseLevel, otherwise floor the CUT
+        if (dataCopy[i] > noiseLevel * bias) {
+            data[i] = dataCopy[i];
+        } else {
+            data[i] = 0;
+        }
+    }
+}
+
+/**
  * Maps amplitudes in the input array to between 0-127 range.
  *
  * @param ampData The amplitude array to map.
@@ -144,8 +196,8 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
 }
 
 /**
- * Calls performFFT and storeFFT to compute and store the FFT of AudioLab's
- * input buffer. Should be called each time AudioLab is ready.
+ * Calls performFFT to compute the FFT of AudioLab's input buffer. Stores the
+ * result in the spectrogram. Should be called each time AudioLab is ready.
  */
 void VibrosonicsAPI::processInput()
 {
@@ -154,13 +206,32 @@ void VibrosonicsAPI::processInput()
 }
 
 /**
- * Calls performFFT and storeFFT to compute and store the FFT of AudioLab's
- * input buffer. Should be called each time AudioLab is ready.
+ * Calls performFFT to compute the FFT of AudioLab's input buffer. Floors
+ * noise with a constant threshold and stores the result in the spectrogram.
+ * Should be called each time AudioLab is ready.
+ *
+ * @param noiseThreshold The amplitude cutoff value.
  */
 void VibrosonicsAPI::processInput(float noiseThreshold)
 {
     performFFT(AudioLabInputBuffer);
     noiseFloor(vReal, WINDOW_SIZE_BY_2, noiseThreshold);
+    spectrogram.pushWindow(vReal);
+}
+
+/**
+ * Calls performFFT to compute the FFT of AudioLab's input buffer. Floors
+ * noise using the constant false alarm rate (CFAR) and stores the result in
+ * the spectrogram. Should be called each time AudioLab is ready.
+ *
+ * @param numRefs The number of reference cells for CFAR.
+ * @param numGuards The number of guard cells for CFAR.
+ * @param bias The bias factor to use for CFAR.
+ */
+void VibrosonicsAPI::processInput(int numRefs, int numGuards, float bias)
+{
+    performFFT(AudioLabInputBuffer);
+    noiseFloorCFAR(vReal, WINDOW_SIZE_BY_2, numRefs, numGuards, bias);
     spectrogram.pushWindow(vReal);
 }
 

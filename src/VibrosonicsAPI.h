@@ -66,6 +66,16 @@ public:
     //! storing in the spectrogram.
     void processInput(float noiseThreshold);
 
+    //! Process the AudioLab input into FFT data and minimize noise with CFAR
+    //! before storing in the spectrogram.
+    void processInput(int numRefs, int numGuards, float bias);
+
+    //! Floors data that is below a certain threshold.
+    void noiseFloor(float* data, int dataLength, float threshold);
+
+    //! Floors data using the CFAR algorithm.
+    void noiseFloorCFAR(float* data, int dataLength, int numRefs, int numGuards, float bias);
+
     //! Get the current spectrogram window data.
     float* getCurrentWindow() const;
 
@@ -100,9 +110,6 @@ public:
 
     //! Returns the mean of some data.
     float getMean(float* data, int dataLength);
-
-    //! Floors data that is below a certain threshold.
-    void noiseFloor(float* data, int dataLength, float threshold);
 
     //! Maps amplitudes in some data to between 0.0-1.0 range.
     void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
@@ -144,10 +151,7 @@ private:
     float spectrogramBuffer[NUM_WINDOWS][WINDOW_SIZE_BY_2];
 
     //! The spectrogram holds frequency domain data over multiple windows of time.
-    Spectrogram<float> spectrogram = Spectrogram(
-        (float*)spectrogramBuffer,
-        NUM_WINDOWS,
-        WINDOW_SIZE_BY_2);
+    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, NUM_WINDOWS, WINDOW_SIZE_BY_2);
 
     // --- ArduinoFFT library ------------------------------------------------------
 
