@@ -40,11 +40,25 @@ class GrainList;
 class Grain {
 private:
   struct Phase {
+    // Number of windows each phase runs for
     int duration = 0;
-    float frequency = 0;
-    float amplitude = 0;
+    // Targeted frequency for the phase
+    float frequency = 0.0f;
+    // Targeted amplitude for the phase
+    float amplitude = 0.0f;
+    // Modulates frequency by multiplying frequencyModulator to frequency
+    float frequencyModulator = 1.0f; // Default: no modulation
+    // Modulates amplitude by multiplying amplitudeModulator to amplitude
+    float amplitudeModulator = 1.0f; // Default: no modulation
+
+    // Shapes the curve by raising curveStep*windowCounter to the degree of the curve value
     float curve = 1.0f; // Default: linear
-    float curveStep = 0.0f; // Default: no curve step
+    // Speed that grain steps through each phase of the wave. Calculated as 1.0/duration
+    float curveStep = 1.0f; // Default: no curve step
+    // Current progression through the phase (1.0-0.0)
+    float curvePosition = 1.0f;
+    // Factor to multiplicatively increment the curvePosition
+    float incrementFactor = 1.0f;
   };
 
   Phase attack;
@@ -61,12 +75,17 @@ private:
   float grainAmplitude;
   float grainFrequency;
 
+  // Wave parameters
+  WaveType waveType;
+
+  uint8_t grainChannel;
+
   grainState state;
 
-  Wave wave;
-
-  //!Update frequency and amplitude values based on current grain state.
+  //! Update frequency and amplitude values based on current grain state.
   void run();
+
+  void transitionTo(grainState newState);
 
 public:
   //! Default constructor to allocate a new grain
@@ -111,10 +130,19 @@ public:
 
   //! Returns the attack duration
   int getAttackDuration();
+
   //! Returns the sustain duration
   int getSustainDuration();
+
   //! Returns the release duration
   int getReleaseDuration();
+
+  // Shaper functions
+  void shapeAttack(int duration, float freqMod, float ampMod, float curve);
+
+  void shapeSustain(int duration, float freqMod, float ampMod);
+
+  void shapeRelease(int duration, float freqMod, float ampMod, float curve);
 };
 
 /**

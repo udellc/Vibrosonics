@@ -44,7 +44,7 @@ private:
 
     AnalysisModule** modules; //!< Array of references to AudioPrism modules.
     int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
-    
+
     GrainList grainList;
 
     // === PUBLIC DATA & INTERFACE =================================================
@@ -142,7 +142,7 @@ public:
     //! Floors data that is below a certain threshold.
     void noiseFloor(float* data, float threshold);
 
-    //! Maps amplitudes in some data to between 0-127 range.
+    //! Maps amplitudes in some data to between 0.0-1.0 range.
     void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
 
     //! linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
@@ -167,14 +167,13 @@ public:
      //! Updates an array of numPeaks grains sustain and release windows.
     void triggerGrains(Grain* grains, int numPeaks, float** peakData);
 
-    //! Sets grains attack parameters
-    void setGrainAttack(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+    // GRAIN SHAPING
 
-    //! Sets grains attack parameters
-    void setGrainSustain(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+    void shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
 
-    //! Sets grains attack parameters
-    void setGrainRelease(Grain* grains, int numGrains, float frequency, float amplitude, int duration);
+    void shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod);
+
+    void shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
 };
 
 #endif // VIBROSONICS_API_H

@@ -16,10 +16,14 @@ void setup() {
     vapi.addModule(&maxAmp);
     vapi.addModule(&meanAmp);
     vapi.addModule(&majorPeaks);
-    //noisiness.setAnalysisRangeByFreq(300, 1000);
-    //maxAmp.setAnalysisRangeByFreq(300, 1000);
-    //meanAmp.setAnalysisRangeByFreq(300, 1000);
-    //majorPeaks.setAnalysisRangeByFreq(300, 1000);
+    noisiness.setAnalysisRangeByFreq(300, 4000);
+    maxAmp.setAnalysisRangeByFreq(300, 4000);
+    meanAmp.setAnalysisRangeByFreq(300, 4000);
+    majorPeaks.setAnalysisRangeByFreq(300, 4000);
+    // Shape the MajorPeaks grains
+    vapi.shapeGrainAttack(grains, 4, 1, 1.0, 1.0, 1.0);
+    vapi.shapeGrainSustain(grains, 4, 1, 1.0, 0.6);
+    vapi.shapeGrainRelease(grains, 4, 1, 1.0, 0.2, 1.0);
 }
 
 void loop() {
@@ -34,6 +38,7 @@ void loop() {
         synthesizePeaks(&majorPeaks);
     }
 
+    vapi.updateGrains();
     AudioLab.synthesize();
     //AudioLab.printWaves();
 }
@@ -58,8 +63,7 @@ void synthesizePeaks(MajorPeaks* peaks) {
         ampData[i] = windowData[i];
     }
     float** peaksData = peaks->getOutput();
-    //vapi.mapAmplitudes(peaksData[MP_AMP], 16, 10000);
-    vapi.mapAmplitudes(ampData, vapi.windowSizeBy2, 10000);
-    vapi.assignWaves(freqData, ampData, vapi.windowSizeBy2, 0);
-    //vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], 16, 0);
+    vapi.mapAmplitudes(peaksData[MP_AMP], 4, 10000);
+    //vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], 4, 0);
+    vapi.triggerGrains(grains, 4, peaksData);
 }

@@ -75,8 +75,6 @@ void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
  * @param dataLength The length of the amplitude array.
  * @param minDataSum The minimum value to normalize the amplitudes by (if
  * their sum is not greater than it).
- *
- * TODO: Rename mapping functions, they normalize data
  */
 void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float minDataSum = 0)
 {
@@ -203,32 +201,6 @@ void VibrosonicsAPI::addModule(AnalysisModule* module)
     modules = newModules;
 }
 
-/** 
- * Adds a new module to the modules array. The module must be created and
- * passed by the caller.
- *
- * @param module Module to be added to the modules array.
- */
-//void VibrosonicsAPI::addModule(AnalysisModule* module)
-//{
-//    module->setWindowSize(WINDOW_SIZE);
-//    module->setSampleRate(SAMPLE_RATE);
-//
-//    // create new larger array for modules
-//    numModules++;
-//    AnalysisModule** newModules = new AnalysisModule*[numModules];
-//
-//    // copy modules over and add new module
-//    for (int i = 0; i < numModules - 1; i++) {
-//        newModules[i] = modules[i];
-//    }
-//    newModules[numModules - 1] = module;
-//
-//    // free old modules array and store reference to new modules array
-//    delete[] modules;
-//    modules = newModules;
-//}
-
 /**
  * mapFrequenciesLinear() and mapFrequenciesExponential() map their input
  * frequencies to the haptic range (0-250Hz).
@@ -336,36 +308,77 @@ void VibrosonicsAPI::updateGrains()
  * @param peakData A pointer to a module's amplitude data
  * @param grains An array of grains to be triggered.
  */
+
 void VibrosonicsAPI::triggerGrains(Grain* grains, int numPeaks, float** peakData)
 {
+    // NOTE: ADD FREQUENCY MATCHING
+    // Plan: First pass, check to see if incoming peakData frequencies match previous grain frequencies. 
+    // So if previous grains are [200hz, 400hz, 800hz, 1600hz], and incoming data is [400hz, 800hz, 1600hz, 320hz]
+    // the grain mapping will be [320hz, 400hz, 800hz, 1600hz]. Basically make sure that each grain is actually keeping as similair a frequency as possible
+    // Keep the data in sync
+    // issue: the Just noticeable difference for people in this frequency range is 1hz. gonna have to match basically exactly.
+
+    float sortedFreqs[numPeaks];
+    float sortedAmps[numPeaks];
+
     for (int i = 0; i < numPeaks; i++) {
-        if (peakData[MP_AMP][i] >= grains[i].getAmplitude()) {
-            grains[i].setAttack(peakData[MP_FREQ][i], peakData[MP_AMP][i], grains[i].getAttackDuration());
-            // NOTE: sustain amplitude should be different from attack, need to test for good values
-            grains[i].setSustain(peakData[MP_FREQ][i], peakData[MP_AMP][i], grains[i].getSustainDuration());
-            grains[i].setRelease(peakData[MP_FREQ][i], 0, grains[i].getReleaseDuration());
+        sortedFreqs[i] = peakData[MP_FREQ][i];
+        sortedAmps[i] = peakData[MP_AMP][i];
+    }
+
+    for (int i = 0; i < numPeaks - 1; i++) {
+        for (int j = 0; j < numPeaks - i - 1; j++) {
+            if (sortedFreqs[j] > sortedFreqs[j+1]) {
+                float tempFreq = sortedFreqs[j];
+                sortedFreqs[j] = sortedFreqs[j+1];
+                sortedFreqs[j+1] = tempFreq;
+
+                float tempAmp = sortedAmps[j];
+                sortedAmps[j] = sortedAmps[j+1];
+                sortedAmps[j+1] = tempAmp;
+            }
+        }
+    }
+
+    for (int i = 0; i < numPeaks - 1; i++) {
+        for (int j = 0; j < numPeaks - i - 1; j++) {
+            if (grains[j].getFrequency() > grains[j+1].getFrequency()) {
+                Grain temp = grains[j];
+                grains[j] = grains[j+1];
+                grains[j+1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < numPeaks; i++) {
+        float closestFreq = sortedFreqs[i];
+        float closestAmp = sortedAmps[i];
+
+        if (closestAmp >= grains[i].getAmplitude()) {
+            grains[i].setAttack(closestFreq, closestAmp, grains[i].getAttackDuration());
+            grains[i].setSustain(closestFreq, closestAmp, grains[i].getSustainDuration());
+            grains[i].setRelease(closestFreq, 0, grains[i].getReleaseDuration());
         }
     }
 }
 
-void VibrosonicsAPI::setGrainAttack(Grain* grains, int numGrains, float frequency, float amplitude, int duration)
+void VibrosonicsAPI::shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
 {
     for (int i = 0; i < numGrains; i++) {
-        grains[i].setAttack(frequency, amplitude, duration);
+        grains[i].shapeAttack(duration, freqMod, ampMod, curve);
     }
 }
 
-void VibrosonicsAPI::setGrainSustain(Grain* grains, int numGrains, float frequency, float amplitude, int duration)
+void VibrosonicsAPI::shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod)
 {
     for (int i = 0; i < numGrains; i++) {
-        grains[i].setSustain(frequency, amplitude, duration);
+        grains[i].shapeSustain(duration, freqMod, ampMod);
     }
 }
 
-
-void VibrosonicsAPI::setGrainRelease(Grain* grains, int numGrains, float frequency, float amplitude, int duration)
+void VibrosonicsAPI::shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
 {
     for (int i = 0; i < numGrains; i++) {
-        grains[i].setRelease(frequency, amplitude, duration);
+        grains[i].shapeAttack(duration, freqMod, ampMod, curve);
     }
 }
