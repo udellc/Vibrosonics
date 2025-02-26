@@ -482,6 +482,6 @@ void VibrosonicsAPI::shapeGrainSustain(Grain* grains, int numGrains, int duratio
 void VibrosonicsAPI::shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
 {
     for (int i = 0; i < numGrains; i++) {
-        grains[i].shapeAttack(duration, freqMod, ampMod, curve);
+        grains[i].shapeRelease(duration, freqMod, ampMod, curve);
     }
 }
