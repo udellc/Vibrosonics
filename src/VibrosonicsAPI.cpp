@@ -1,4 +1,6 @@
 #include "VibrosonicsAPI.h"
+#include <complex>
+#include <cstdint>
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -18,15 +20,51 @@ void VibrosonicsAPI::performFFT(int* input)
 {
     // copy samples from input to vReal and set vImag to 0
     for (int i = 0; i < WINDOW_SIZE; i++) {
-        vReal[i] = input[i];
-        vImag[i] = 0.0;
+        vData[i] = input[i];
     }
 
-    // use arduinoFFT, 'FFT' object declared as private member of Vibrosonics
-    FFT.dcRemoval(vReal, WINDOW_SIZE); // DC Removal to reduce noise
-    FFT.windowing(vReal, WINDOW_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD); // Apply windowing function to data
-    FFT.compute(vReal, vImag, WINDOW_SIZE, FFT_FORWARD); // Compute FFT
-    FFT.complexToMagnitude(vReal, vImag, WINDOW_SIZE); // Compute frequency magnitudes
+    // Use Fast4ier combined with Vibrosonics FFT functions
+    this->dcRemoval();
+    this->fftWindowing();
+    Fast4::FFT(vData, WINDOW_SIZE);
+    //complexToMagnitude (For our purposes this is optional)
+
+    // Copy complex data to float arrays
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        vReal[i] = vData[i].re();
+        vImag[i] = 0.0; // Still 0 out imaginary data, not used
+    }
+}
+
+void VibrosonicsAPI::dcRemoval()
+{
+    float mean = this->getMean(vData, WINDOW_SIZE);
+    for (uint_fast16_t i = 0; i < WINDOW_SIZE; i++) {
+        vData[i] = (vData[i].re() - mean);
+    }
+}
+
+void VibrosonicsAPI::fftWindowing()
+{
+    int windowSizeMinusOne = WINDOW_SIZE - 1;
+    float twoPi = 6.28318531;
+    for (uint_fast16_t i = 0; i < WINDOW_SIZE_BY_2; i++) {
+        float ratio = ((i - 1) / windowSizeMinusOne);
+        // Hamming window type (math taken from arduinoFFT windowing)
+        float weighingFactor = 0.54 - (0.46 * cos(twoPi * ratio));
+        vData[i] = (vData[i].re() * weighingFactor);
+        vData[WINDOW_SIZE - (i+1)] = (vData[WINDOW_SIZE - (i+1)].re() * weighingFactor);
+    }
+}
+
+// Hold up do we actually need complex to magnitude? vImag is always 0 so this 
+// is pointless...
+// If we do need this I want to make a fast sqrt helper function
+void VibrosonicsAPI::complexToMagnitude()
+{
+    for (uint_fast16_t i = 0; i < WINDOW_SIZE; i++) {
+        vReal[i] = /*sqrt((vReal[i] * vReal[i]) + (vImag[i] * vImag[i]))*/0;
+    }
 }
 
 float* VibrosonicsAPI::getCurrentWindow() const
@@ -55,6 +93,21 @@ float VibrosonicsAPI::getMean(float* data, int dataLength)
     float sum = 0.0;
     for (int i = 0; i < dataLength; i++) {
         sum += data[i];
+    }
+    return sum > 0.0 ? sum / dataLength : sum;
+}
+
+/**
+ * Finds and returns the mean value of data.
+ *
+ * @param ampData Array of amplitudes.
+ * @param dataLength Length of amplitude array.
+ */
+float VibrosonicsAPI::getMean(complex* data, int dataLength)
+{
+    float sum = 0.0;
+    for (int i = 0; i < dataLength; i++) {
+        sum += (float)data[i].re();
     }
     return sum > 0.0 ? sum / dataLength : sum;
 }
