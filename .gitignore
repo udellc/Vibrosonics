@@ -1,0 +1,8 @@
+build/
+compile_commands.json
+sketch.yaml
+html/
+latex/
+tags
+.cache/
+.DS_Store

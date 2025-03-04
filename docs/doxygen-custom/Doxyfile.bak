@@ -245,7 +245,7 @@ QT_AUTOBRIEF           = NO
 # not recognized any more.
 # The default value is: NO.
 
-MULTILINE_CPP_IS_BRIEF = YES
+MULTILINE_CPP_IS_BRIEF = NO
 
 # By default Python docstrings are displayed as preformatted text and Doxygen's
 # special commands cannot be used. By setting PYTHON_DOCSTRING to NO the
@@ -1418,8 +1418,7 @@ HTML_STYLESHEET        =
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
 HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css \
-                         docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
-                         docs/doxygen-awesome-css/doxygen-custom/custom.css
+                         docs/doxygen-awesome-css/doxygen-custom/custom.css \
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
