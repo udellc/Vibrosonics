@@ -16,6 +16,7 @@ void setup() {
     // add the major peaks analysis module
     int lowerFreq = 20;
     int upperFreq = 1800;
+    majorPeaks.setSpectrogram(vapi.getSpectrogram());
     vapi.addModule(&majorPeaks, lowerFreq, upperFreq);
 }
 

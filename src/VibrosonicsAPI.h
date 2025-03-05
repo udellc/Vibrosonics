@@ -76,6 +76,8 @@ public:
     //! Floors data using the CFAR algorithm.
     void noiseFloorCFAR(float* data, int dataLength, int numRefs, int numGuards, float bias);
 
+    Spectrogram<float> newSpectrogram(int numWindows);
+
     //! Get the current spectrogram window data.
     float* getCurrentWindow() const;
 
@@ -84,6 +86,8 @@ public:
 
     //! Get a spectrogram window at a relative index.
     float* getWindowAt(int relativeIndex) const;
+
+    Spectrogram<float>* getSpectrogram() { return &this->spectrogram; }
 
     // --- AudioPrism Management ---------------------------------------------------
 
@@ -146,12 +150,8 @@ public:
 
     // === PRIVATE DATA ============================================================
 private:
-    //! Static memory allocation for our Spectrogram which stores FFT result
-    //! data.
-    float spectrogramBuffer[NUM_WINDOWS][WINDOW_SIZE_BY_2];
-
     //! The spectrogram holds frequency domain data over multiple windows of time.
-    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, NUM_WINDOWS, WINDOW_SIZE_BY_2);
+    Spectrogram<float> spectrogram = Spectrogram<float>(NUM_WINDOWS, WINDOW_SIZE_BY_2);
 
     // --- ArduinoFFT library ------------------------------------------------------
 

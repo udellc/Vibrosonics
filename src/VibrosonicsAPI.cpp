@@ -240,14 +240,9 @@ void VibrosonicsAPI::processInput(int numRefs, int numGuards, float bias)
  */
 void VibrosonicsAPI::analyze()
 {
-    // rebuild windows in order
-    const float* rebuiltWindows[NUM_WINDOWS];
-    for (int i = 1 - NUM_WINDOWS; i < 1; i++) {
-        rebuiltWindows[i + NUM_WINDOWS - 1] = spectrogram.getWindowAt(i);
-    }
     // loop through added modules
     for (int i = 0; i < numModules; i++) {
-        modules[i]->doAnalysis(rebuiltWindows);
+        modules[i]->doAnalysis();
     }
 }
 
