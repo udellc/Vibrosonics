@@ -27,7 +27,7 @@ void VibrosonicsAPI::performFFT(int* input)
     this->dcRemoval();
     this->fftWindowing();
     Fast4::FFT(vData, WINDOW_SIZE);
-    //complexToMagnitude (For our purposes this is optional)
+    this->complexToMagnitude();
 
     // Copy complex data to float arrays
     for (int i = 0; i < WINDOW_SIZE; i++) {
@@ -63,7 +63,7 @@ void VibrosonicsAPI::fftWindowing()
 void VibrosonicsAPI::complexToMagnitude()
 {
     for (uint_fast16_t i = 0; i < WINDOW_SIZE; i++) {
-        vReal[i] = /*sqrt((vReal[i] * vReal[i]) + (vImag[i] * vImag[i]))*/0;
+        vReal[i] = sqrt((vReal[i] * vReal[i]) + (vImag[i] * vImag[i]));
     }
 }
 
