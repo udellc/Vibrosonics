@@ -3,7 +3,7 @@
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
 // set a number of peaks for the major peaks module to find
-#define NUM_PEAKS 8
+#define NUM_PEAKS 4
 
 MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
@@ -26,7 +26,7 @@ void loop() {
     }
 
     // process the audio signal, filtering noise with CFAR algorithm
-    vapi.processInput(4, 4, 1.4);
+    vapi.processInput(4, 2, 1.7);
 
     // have analysis modules analyze the processed input
     vapi.analyze();

@@ -32,7 +32,7 @@ void VibrosonicsAPI::performFFT(int* input)
     // Copy complex data to float arrays
     for (int i = 0; i < WINDOW_SIZE; i++) {
         vReal[i] = vData[i].re();
-        vImag[i] = 0.0; // Still 0 out imaginary data, not used
+        vImag[i] = vData[i].im(); // Still 0 out imaginary data, not used
     }
 }
 
@@ -63,7 +63,7 @@ void VibrosonicsAPI::fftWindowing()
 void VibrosonicsAPI::complexToMagnitude()
 {
     for (uint_fast16_t i = 0; i < WINDOW_SIZE; i++) {
-        vReal[i] = sqrt((vReal[i] * vReal[i]) + (vImag[i] * vImag[i]));
+        vData[i] = sqrt((vData[i].re() * vData[i].re()) + (vData[i].im() * vData[i].im()));
     }
 }
 
