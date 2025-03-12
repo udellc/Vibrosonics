@@ -1,10 +1,15 @@
 #include "VibrosonicsAPI.h"
 
-VibrosonicsAPI vapi = VibrosonicsAPI();
-
 // set a number of peaks for the major peaks module to find
 #define NUM_PEAKS 8
 
+VibrosonicsAPI vapi = VibrosonicsAPI();
+
+float windowData[WINDOW_SIZE_BY_2];
+Spectrogram<float> rawSpectrogram = Spectrogram<float>(2);
+Spectrogram<float> processedSpectrogram = Spectrogram<float>(2);
+
+ModuleGroup modules = ModuleGroup(&processedSpectrogram);
 MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
 void setup() {
@@ -14,10 +19,7 @@ void setup() {
     vapi.init();
 
     // add the major peaks analysis module
-    int lowerFreq = 20;
-    int upperFreq = 1800;
-    majorPeaks.setSpectrogram(vapi.getSpectrogram());
-    vapi.addModule(&majorPeaks, lowerFreq, upperFreq);
+    modules.addModule(&majorPeaks, 20, 3000);
 }
 
 void loop() {
@@ -26,11 +28,16 @@ void loop() {
         return;
     }
 
-    // process the audio signal, filtering noise with CFAR algorithm
-    vapi.processInput(4, 4, 1.4);
+    // process the raw audio signal into frequency domain data
+    vapi.processAudioInput(windowData);
+    rawSpectrogram.pushWindow(windowData);
 
-    // have analysis modules analyze the processed input
-    vapi.analyze();
+    // process the freqeuncy domain data
+    vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.6);
+    processedSpectrogram.pushWindow(windowData);
+
+    // have analysis modules analyze the frequency domain data
+    modules.runAnalysis();
 
     // create audio waves according the the output of the major peaks module
     synthesizePeaks(&majorPeaks); 
