@@ -48,8 +48,11 @@ void loop() {
     //AudioLab.printWaves();
 }
 
+// synthesizing should generally take from raw spectrum
 void synthesizePeaks(MajorPeaks* peaks) {
     float** peaksData = peaks->getOutput();
+    // interpolate around peaks
     vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS, 10000);
     vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], NUM_PEAKS, 0);
+    vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], NUM_PEAKS, 1);
 }
