@@ -36,7 +36,6 @@ constexpr float FREQ_WIDTH = 1.0 / FREQ_RES;
 const int NUM_WINDOWS = 8;
 
 class VibrosonicsAPI {
-    // === PUBLIC DATA & INTERFACE =================================================
 public:
     // ---- Setup ------------------------------------------------------------------
 
@@ -53,7 +52,8 @@ public:
     void noiseFloor(float data[], int dataLength, float threshold);
 
     //! Floors data using the CFAR algorithm.
-    void noiseFloorCFAR(float data[], int dataLength, int numRefs, int numGuards, float bias);
+    void noiseFloorCFAR(float data[], int dataLength, int numRefs,
+        int numGuards, float bias);
 
     // --- AudioLab Interactions ---------------------------------------------------
 
@@ -85,7 +85,8 @@ public:
     //! Updates all grains in the globalGrainList
     void updateGrains();
 
-    //! Creates and returns an array of grains on desired chanel with specified wave type.
+    //! Creates and returns an array of grains on desired chanel with specified
+    //! wave type.
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
     //! Creates and returns a singular grain with specified wave and channel.
@@ -96,13 +97,15 @@ public:
 
     // GRAIN SHAPING
 
-    void shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
+    void shapeGrainAttack(Grain* grains, int numGrains, int duration,
+        float freqMod, float ampMod, float curve);
 
-    void shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod);
+    void shapeGrainSustain(Grain* grains, int numGrains, int duration,
+        float freqMod, float ampMod);
 
-    void shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
+    void shapeGrainRelease(Grain* grains, int numGrains, int duration,
+        float freqMod, float ampMod, float curve);
 
-    // === PRIVATE DATA ============================================================
 private:
     // --- ArduinoFFT library ------------------------------------------------------
 
