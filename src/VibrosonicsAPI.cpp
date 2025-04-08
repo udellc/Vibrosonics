@@ -1,4 +1,6 @@
 #include "VibrosonicsAPI.h"
+#include "Config.h"
+#include "Spectrogram.h"
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -14,11 +16,11 @@ void VibrosonicsAPI::init()
  *
  * @param input Array of signals to do FFT on.
  */
-void VibrosonicsAPI::performFFT(int* input)
+void VibrosonicsAPI::processAudioInput(float output[])
 {
     // copy samples from input to vReal and set vImag to 0
     for (int i = 0; i < WINDOW_SIZE; i++) {
-        vReal[i] = input[i];
+        vReal[i] = audioLabInputBuffer[i];
         vImag[i] = 0.0;
     }
 
@@ -27,21 +29,10 @@ void VibrosonicsAPI::performFFT(int* input)
     FFT.windowing(vReal, WINDOW_SIZE, FFT_WIN_TYP_HAMMING, FFT_FORWARD); // Apply windowing function to data
     FFT.compute(vReal, vImag, WINDOW_SIZE, FFT_FORWARD); // Compute FFT
     FFT.complexToMagnitude(vReal, vImag, WINDOW_SIZE); // Compute frequency magnitudes
-}
 
-float* VibrosonicsAPI::getCurrentWindow() const
-{
-    return spectrogram.getCurrentWindow();
-}
-
-float* VibrosonicsAPI::getPreviousWindow() const
-{
-    return spectrogram.getPreviousWindow();
-}
-
-float* VibrosonicsAPI::getWindowAt(int relativeIndex) const
-{
-    return spectrogram.getWindowAt(relativeIndex);
+    for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
+        output[i] = vReal[i];
+    }
 }
 
 /**
@@ -90,7 +81,7 @@ void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, in
     int left_start, left_end, right_start, right_end;
     float noiseLevel;
 
-    // copy data to sample from
+    // copy data for output
     float dataCopy[dataLength];
     memcpy(dataCopy, data, dataLength * sizeof(float));
 
@@ -193,115 +184,6 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
             continue; // skip storing if ampData is 0, or freqData is 0
         Wave wave = AudioLab.dynamicWave(channel, round(freqData[i]), ampData[i]); // create wave
     }
-}
-
-/**
- * Calls performFFT to compute the FFT of AudioLab's input buffer. Stores the
- * result in the spectrogram. Should be called each time AudioLab is ready.
- */
-void VibrosonicsAPI::processInput()
-{
-    performFFT(AudioLabInputBuffer);
-    spectrogram.pushWindow(vReal);
-}
-
-/**
- * Calls performFFT to compute the FFT of AudioLab's input buffer. Floors
- * noise with a constant threshold and stores the result in the spectrogram.
- * Should be called each time AudioLab is ready.
- *
- * @param noiseThreshold The amplitude cutoff value.
- */
-void VibrosonicsAPI::processInput(float noiseThreshold)
-{
-    performFFT(AudioLabInputBuffer);
-    noiseFloor(vReal, WINDOW_SIZE_BY_2, noiseThreshold);
-    spectrogram.pushWindow(vReal);
-}
-
-/**
- * Calls performFFT to compute the FFT of AudioLab's input buffer. Floors
- * noise using the constant false alarm rate (CFAR) and stores the result in
- * the spectrogram. Should be called each time AudioLab is ready.
- *
- * @param numRefs The number of reference cells for CFAR.
- * @param numGuards The number of guard cells for CFAR.
- * @param bias The bias factor to use for CFAR.
- */
-void VibrosonicsAPI::processInput(int numRefs, int numGuards, float bias)
-{
-    performFFT(AudioLabInputBuffer);
-    noiseFloorCFAR(vReal, WINDOW_SIZE_BY_2, numRefs, numGuards, bias);
-    spectrogram.pushWindow(vReal);
-}
-
-/**
- * Calls the doAnalysis function for each loaded module in the modules array.
- */
-void VibrosonicsAPI::analyze()
-{
-    // rebuild windows in order
-    const float* rebuiltWindows[NUM_WINDOWS];
-    for (int i = 1 - NUM_WINDOWS; i < 1; i++) {
-        rebuiltWindows[i + NUM_WINDOWS - 1] = spectrogram.getWindowAt(i);
-    }
-    // loop through added modules
-    for (int i = 0; i < numModules; i++) {
-        modules[i]->doAnalysis(rebuiltWindows);
-    }
-}
-
-/**
- * Adds a new module to the modules array. The module must be created and
- * passed by the caller.
- *
- * @param module Module to be added to the modules array.
- */
-void VibrosonicsAPI::addModule(AnalysisModule* module)
-{
-    module->setWindowSize(WINDOW_SIZE);
-    module->setSampleRate(SAMPLE_RATE);
-
-    // create new larger array for modules
-    numModules++;
-    AnalysisModule** newModules = new AnalysisModule*[numModules];
-
-    // copy modules over and add new module
-    for (int i = 0; i < numModules - 1; i++) {
-        newModules[i] = modules[i];
-    }
-    newModules[numModules - 1] = module;
-
-    // free old modules array and store reference to new modules array
-    delete[] modules;
-    modules = newModules;
-}
-
-/**
- * Adds a new module to the modules array. The module must be created and
- * passed by the caller.
- *
- * @param module Module to be added to the modules array.
- */
-void VibrosonicsAPI::addModule(AnalysisModule* module, int lowerFreq, int upperFreq)
-{
-    module->setWindowSize(WINDOW_SIZE);
-    module->setSampleRate(SAMPLE_RATE);
-    module->setAnalysisRangeByFreq(lowerFreq, upperFreq);
-
-    // create new larger array for modules
-    numModules++;
-    AnalysisModule** newModules = new AnalysisModule*[numModules];
-
-    // copy modules over and add new module
-    for (int i = 0; i < numModules - 1; i++) {
-        newModules[i] = modules[i];
-    }
-    newModules[numModules - 1] = module;
-
-    // free old modules array and store reference to new modules array
-    delete[] modules;
-    modules = newModules;
 }
 
 /**
