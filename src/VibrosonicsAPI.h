@@ -59,6 +59,9 @@ public:
     //! Perform fast fourier transform on the AudioLab input buffer.
     void performFFT(int* input);
 
+    //! Pre compute hamming windows for FFT operations
+    void computeHammingWindow();
+
     //! Perform DC Removal to reduce noise in vReal.
     void dcRemoval();
 
@@ -170,7 +173,7 @@ private:
 
     // Fast Fourier Transform uses complex numbers
     float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
-    float vImag[WINDOW_SIZE]; //!< Imaginary component of the cosine amplitude of each frequency.
+    float hamming[WINDOW_SIZE]; //!< Pre computed hamming window data
     complex vData[WINDOW_SIZE];
 
     // --- AudioLab Library --------------------------------------------------------

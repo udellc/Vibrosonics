@@ -8,62 +8,69 @@
 void VibrosonicsAPI::init()
 {
     AudioLab.init();
+    this->computeHammingWindow();
 }
 
 /**
- * Feeds its input array to the ArduinoFFT fourier transform engine
- * and stores the results in private data members vReal and vImag.
+ * Feeds its input array to the Fast4ier fourier transform engine
+ * and stores the results in private data members vData and vReal.
  *
  * @param input Array of signals to do FFT on.
  */
 void VibrosonicsAPI::performFFT(int* input)
 {
-    // copy samples from input to vReal and set vImag to 0
+    // copy samples from input to vData and set imaginary component to 0
     for (int i = 0; i < WINDOW_SIZE; i++) {
         vData[i] = input[i];
     }
-
     // Use Fast4ier combined with Vibrosonics FFT functions
     this->dcRemoval();
     this->fftWindowing();
     Fast4::FFT(vData, WINDOW_SIZE);
     this->complexToMagnitude();
-
     // Copy complex data to float arrays
     for (int i = 0; i < WINDOW_SIZE; i++) {
         vReal[i] = vData[i].re();
-        vImag[i] = vData[i].im(); // Still 0 out imaginary data, not used
     }
 }
 
+/**
+ * Removes the mean of the data from each bin to reduce noise.
+ */
 void VibrosonicsAPI::dcRemoval()
 {
     float mean = this->getMean(vData, WINDOW_SIZE);
-    for (uint_fast16_t i = 0; i < WINDOW_SIZE; i++) {
-        vData[i] = (vData[i].re() - mean);
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        vData[i] -= mean;
     }
 }
 
+void VibrosonicsAPI::computeHammingWindow() {
+    float step = 2 * PI / (WINDOW_SIZE - 1);
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        hamming[i] = 0.54 - 0.46 * cos(step * i);
+    }
+}
+
+/**
+ * Applies a precomputed hamming windowing factor to the data.
+ * This is done to reduce spectral leakage between bins.
+ */
 void VibrosonicsAPI::fftWindowing()
 {
-    int windowSizeMinusOne = WINDOW_SIZE - 1;
-    float twoPi = 6.28318531;
-    for (uint_fast16_t i = 0; i < WINDOW_SIZE_BY_2; i++) {
-        float ratio = ((i - 1) / windowSizeMinusOne);
-        // Hamming window type (math taken from arduinoFFT windowing)
-        float weighingFactor = 0.54 - (0.46 * cos(twoPi * ratio));
-        vData[i] = (vData[i].re() * weighingFactor);
-        vData[WINDOW_SIZE - (i+1)] = (vData[WINDOW_SIZE - (i+1)].re() * weighingFactor);
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        // Use precomputed hamming window for better efficiency. Thanks Nick!
+        vData[i] *= hamming[i];
     }
 }
 
-// Hold up do we actually need complex to magnitude? vImag is always 0 so this 
-// is pointless...
-// If we do need this I want to make a fast sqrt helper function
+/**
+ * Converts raw FFT output to a readable frequency spectrogram.
+ */
 void VibrosonicsAPI::complexToMagnitude()
 {
-    for (uint_fast16_t i = 0; i < WINDOW_SIZE; i++) {
-        vData[i] = sqrt((vData[i].re() * vData[i].re()) + (vData[i].im() * vData[i].im()));
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        vData[i] = sqrt(pow(vData[i].re(), 2) + pow(vData[i].im(), 2));
     }
 }
 
