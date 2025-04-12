@@ -1,5 +1,4 @@
 #include "VibrosonicsAPI.h"
-#include <complex>
 #include <cstdint>
 
 /**
@@ -90,9 +89,9 @@ float* VibrosonicsAPI::getWindowAt(int relativeIndex) const
 }
 
 /**
- * Finds and returns the mean value of data.
+ * Finds and returns the mean value of float data.
  *
- * @param ampData Array of amplitudes.
+ * @param data Array of amplitudes.
  * @param dataLength Length of amplitude array.
  */
 float VibrosonicsAPI::getMean(float* data, int dataLength)
@@ -105,16 +104,16 @@ float VibrosonicsAPI::getMean(float* data, int dataLength)
 }
 
 /**
- * Finds and returns the mean value of data.
+ * Finds and returns the mean value of complex data.
  *
- * @param ampData Array of amplitudes.
+ * @param data Array of amplitudes.
  * @param dataLength Length of amplitude array.
  */
 float VibrosonicsAPI::getMean(complex* data, int dataLength)
 {
     float sum = 0.0;
     for (int i = 0; i < dataLength; i++) {
-        sum += (float)data[i].re();
+        sum += data[i].re();
     }
     return sum > 0.0 ? sum / dataLength : sum;
 }

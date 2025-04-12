@@ -10,7 +10,7 @@
 #include <AudioLab.h>
 #include <AudioPrism.h>
 #include <Fast4ier.h>
-#include <complex.h>
+#include <complex>
 #include <cstdint>
 
 // internal
