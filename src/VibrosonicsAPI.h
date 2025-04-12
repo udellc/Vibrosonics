@@ -8,7 +8,8 @@
 #include <Arduino.h>
 #include <AudioLab.h>
 #include <AudioPrism.h>
-#include <arduinoFFT.h>
+#include <Fast4ier.h>
+#include <complex>
 #include <cstdint>
 
 // internal
@@ -48,6 +49,18 @@ public:
     //! Perform fast fourier transform on the AudioLab input buffer.
     void processAudioInput(float output[]);
 
+    //! Pre compute hamming windows for FFT operations
+    void computeHammingWindow();
+
+    //! Perform DC Removal to reduce noise in vReal.
+    void dcRemoval();
+
+    //! Applies windowing function to vReal data.
+    void fftWindowing();
+
+    //! Computes frequency magnitudes in vReal data.
+    void complexToMagnitude();
+
     //! Floors data that is below a certain threshold.
     void noiseFloor(float data[], int dataLength, float threshold);
 
@@ -66,8 +79,11 @@ public:
 
     // --- Wave Manipulation -------------------------------------------------------
 
-    //! Returns the mean of some data.
+    //! Returns the mean of some float data.
     float getMean(float* data, int dataLength);
+
+    //! Retruns the mean of some complex data.
+    float getMean(complex* data, int dataLength);
 
     //! Maps amplitudes in some data to between 0.0-1.0 range.
     void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
@@ -109,12 +125,10 @@ public:
 private:
     // --- ArduinoFFT library ------------------------------------------------------
 
-    //! FFT stores the fourier transform engine.
-    ArduinoFFT<float> FFT = ArduinoFFT<float>();
-
     // Fast Fourier Transform uses complex numbers
     float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
-    float vImag[WINDOW_SIZE]; //!< Imaginary component of the cosine amplitude of each frequency.
+    float hamming[WINDOW_SIZE]; //!< Pre computed hamming window data
+    complex vData[WINDOW_SIZE];
 
     // --- AudioLab Library --------------------------------------------------------
 
