@@ -5,8 +5,7 @@
 #include <cmath>
 
 // external dependencies
-#include "Arduino.h"
-#include "Modules.h"
+#include <Arduino.h>
 #include <AudioLab.h>
 #include <AudioPrism.h>
 #include <Fast4ier.h>
@@ -15,49 +14,40 @@
 
 // internal
 #include "Grain.h"
-#include "Spectrogram.h"
 #include "Wave.h"
 
+constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE >> 1;
+
+//! Frequency range of an FFT bin in Hz.
+//!
+//! The resolution is the frequency range, in Hz, represented by each
+//! output bin of the Fast Fourier Transform.
+//!
+//! Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
+constexpr float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE;
+
+//! Duration of a window, in seconds.
+//!
+//! The width is the duration of time represented by a
+//! single window's worth of samples.
+//! Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window.
+constexpr float FREQ_WIDTH = 1.0 / FREQ_RES;
+
+//! Number of previous windows to be stored and used by modules
+const int NUM_WINDOWS = 8;
+
 class VibrosonicsAPI {
-    // === PUBLIC DATA & INTERFACE =================================================
 public:
-    // --- Constants ---------------------------------------------------------------
-
-    // Some contants are defined to save repeated calculations
-    // WINDOW_SIZE and SAMPLE_RATE are defined in the AudioLab library
-
-    //! Half the window size.
-    //!
-    //! This constant is used often, becuase the output of a fast fourier
-    //! transform has half as many values as the input window size.
-    static const int WINDOW_SIZE_BY_2 = int(WINDOW_SIZE) >> 1;
-
-    //! Frequency range of an FFT bin in Hz.
-    //!
-    //! The resolution is the frequency range, in Hz, represented by each
-    //! output bin of the Fast Fourier Transform.
-    //!
-    //! Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
-    const float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE;
-
-    //! Duration of a window, in seconds.
-    //!
-    //! The width is the duration of time represented by a
-    //! single window's worth of samples.
-    //! Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window.
-    const float FREQ_WIDTH = 1.0 / FREQ_RES;
-
-    //! Number of previous windows to be stored and used by modules
-    const static int NUM_WINDOWS = 8;
-
     // ---- Setup ------------------------------------------------------------------
 
     void init();
 
     // --- FFT Input & Storage -----------------------------------------------------
 
+    // we will need more processAudioInput functionality to handle stereo input
+
     //! Perform fast fourier transform on the AudioLab input buffer.
-    void performFFT(int* input);
+    void processAudioInput(float output[]);
 
     //! Pre compute hamming windows for FFT operations
     void computeHammingWindow();
@@ -71,44 +61,12 @@ public:
     //! Computes frequency magnitudes in vReal data.
     void complexToMagnitude();
 
-    //! Process the AudioLab input into FFT data and store in the spectrogram
-    //! buffer.
-    void processInput();
-
-    //! Process the AudioLab input into FFT data and minimize noise before
-    //! storing in the spectrogram.
-    void processInput(float noiseThreshold);
-
-    //! Process the AudioLab input into FFT data and minimize noise with CFAR
-    //! before storing in the spectrogram.
-    void processInput(int numRefs, int numGuards, float bias);
-
     //! Floors data that is below a certain threshold.
-    void noiseFloor(float* data, int dataLength, float threshold);
+    void noiseFloor(float data[], int dataLength, float threshold);
 
     //! Floors data using the CFAR algorithm.
-    void noiseFloorCFAR(float* data, int dataLength, int numRefs, int numGuards, float bias);
-
-    //! Get the current spectrogram window data.
-    float* getCurrentWindow() const;
-
-    //! Get the previous spectrogram window data.
-    float* getPreviousWindow() const;
-
-    //! Get a spectrogram window at a relative index.
-    float* getWindowAt(int relativeIndex) const;
-
-    // --- AudioPrism Management ---------------------------------------------------
-
-    //! Add an AudioPrism module to our loaded modules.
-    void addModule(AnalysisModule* module);
-
-    //! Add an AudioPrism module to our loaded modules and bind it to a
-    //! frequency range.
-    void addModule(AnalysisModule* module, int lowerFreq, int upperFreq);
-
-    //! Runs doAnalysis() for all added AudioPrism modules.
-    void analyze();
+    void noiseFloorCFAR(float data[], int dataLength, int numRefs,
+        int numGuards, float bias);
 
     // --- AudioLab Interactions ---------------------------------------------------
 
@@ -143,7 +101,8 @@ public:
     //! Updates all grains in the globalGrainList
     void updateGrains();
 
-    //! Creates and returns an array of grains on desired chanel with specified wave type.
+    //! Creates and returns an array of grains on desired chanel with specified
+    //! wave type.
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
     //! Creates and returns a singular grain with specified wave and channel.
@@ -154,21 +113,16 @@ public:
 
     // GRAIN SHAPING
 
-    void shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
+    void shapeGrainAttack(Grain* grains, int numGrains, int duration,
+        float freqMod, float ampMod, float curve);
 
-    void shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod);
+    void shapeGrainSustain(Grain* grains, int numGrains, int duration,
+        float freqMod, float ampMod);
 
-    void shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve);
+    void shapeGrainRelease(Grain* grains, int numGrains, int duration,
+        float freqMod, float ampMod, float curve);
 
-    // === PRIVATE DATA ============================================================
 private:
-    //! Static memory allocation for our Spectrogram which stores FFT result
-    //! data.
-    float spectrogramBuffer[NUM_WINDOWS][WINDOW_SIZE_BY_2];
-
-    //! The spectrogram holds frequency domain data over multiple windows of time.
-    Spectrogram<float> spectrogram = Spectrogram((float*)spectrogramBuffer, NUM_WINDOWS, WINDOW_SIZE_BY_2);
-
     // --- ArduinoFFT library ------------------------------------------------------
 
     // Fast Fourier Transform uses complex numbers
@@ -179,16 +133,7 @@ private:
     // --- AudioLab Library --------------------------------------------------------
 
     //! VibrosonicsAPI adopts AudioLab's input buffer.
-    int* AudioLabInputBuffer = AudioLab.getInputBuffer();
-
-    // --- AudioPrism Library ------------------------------------------------------
-
-    // This library integrates AudioPrism by storing an array of analysis
-    // modules to keep updated. Users are expected to instance modules and use
-    // their results on their own.
-
-    AnalysisModule** modules; //!< Array of references to AudioPrism modules.
-    int numModules = 0; //!< Used to track the number of loaded AudioPrism modules.
+    int* audioLabInputBuffer = AudioLab.getInputBuffer();
 
     GrainList grainList;
 };
