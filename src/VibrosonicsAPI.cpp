@@ -1,5 +1,4 @@
 #include "VibrosonicsAPI.h"
-#include <cstdint>
 
 /**
  * Initializes all necessary api variables and dependencies.
