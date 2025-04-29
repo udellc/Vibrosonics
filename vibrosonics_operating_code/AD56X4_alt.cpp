@@ -1,3 +1,8 @@
+/* This code was originally created by Feja Nordsiek and has been optimized for the purpose of Vibrosonics by Fiona Pendergraft. O
+   Original GitHub page: https://github.com/frejanordsiek/arduino_library_AD56X4
+*/ 
+
+
 /* Copyright (c) 2013, Freja Nordsiek
    All rights reserved.
    

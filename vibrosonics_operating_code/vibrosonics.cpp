@@ -23,23 +23,26 @@ void initialize(void (*DAC_OUT)())
   delay(3000);
   Serial.println("\nSerial connection initiated.");
 
+  Serial.println("Initializing SPI communication...")
   pinMode(33, OUTPUT);
   pinMode(SS_PIN, OUTPUT);
   SPI.setClockDivider(SPI_CLOCK_DIV2);
   SPI.begin();
 
+  Serial.println("Initializing AD5644 DAC...")
   dac.reset(SS_PIN, true);
   dac.useInternalReference(SS_PIN, true);
 
+  Serial.println("Configuring analog input...")
   pinMode(A2, INPUT);
   analogReadResolution(12);
   analogSetPinAttenuation(A2, ADC_0db);
 
   Serial.println("Starting interrupt setup...");
-  SAMPLING_TIMER = timerBegin(1000000);                  // setting clock prescaler 1MHz (80MHz / 80)
-  timerAttachInterrupt(SAMPLING_TIMER, DAC_OUT);        // attach interrupt function
-  timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0);  // trigger interrupt every sampleDelayTime microseconds
-  Serial.println("Interrupts initialized. Outputting wave to DAC...");
+  SAMPLING_TIMER = timerBegin(1000000); // setting clock prescaler 1MHz (80MHz / 80)
+  timerAttachInterrupt(SAMPLING_TIMER, DAC_OUT); // attach interrupt function
+  timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0); // trigger interrupt every sampleDelayTime microseconds
+  Serial.println("Interrupts initialized. Setup is complete.");
 }
 
 void generateWave(int waveFrequency, uint16_t sinusoid[SAMPLE_RATE], double volume) 
@@ -146,10 +149,10 @@ void obtain_raw_analog()
   Serial.println(lowest);
 }
 
-void speakerMode()
+void speakerMode(byte channel)
 {
-  int val = (analogRead(A2) - 1852) * 10 + 8192;
-  dac.setChannel(SS_PIN, AD56X4_SETMODE_INPUT_DAC, channel[0], (word)val);
+  int val = (analogRead(A2) - 1852) * 10 + 8192; // The board's DC offset results in a raw value of about 1852. We normalize, incrase the magnitude, and then center at 8192 instead.
+  dac.setChannel(SS_PIN, AD56X4_SETMODE_INPUT_DAC, channel, (word)val);
 }
 
 void FFTMode()
@@ -166,7 +169,7 @@ void FFTMode()
   }
 }
 
-void FFTMode_loop()
+void FFTMode_loop(double volume)
 {
   if(updateWave)
   {
@@ -175,7 +178,7 @@ void FFTMode_loop()
   }
   if(abs(current_wave - frequency) > 10)
   {
-    generateWave(frequency, sinusoid, 0.5);
+    generateWave(frequency, sinusoid, volume);
     current_wave = frequency;
   }
 }

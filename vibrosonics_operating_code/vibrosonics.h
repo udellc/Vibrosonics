@@ -32,8 +32,8 @@ void generateWave(int, uint16_t[SAMPLE_RATE], double);
 void analyzeWave();
 void obtain_raw_analog();
 double mapFrequency(double);
-void speakerMode();
+void speakerMode(byte);
 void FFTMode();
-void FFTMode_loop();
+void FFTMode_loop(double);
 
 #endif

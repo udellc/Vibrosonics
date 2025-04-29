@@ -16,5 +16,5 @@ void setup()
 
 void loop() 
 {
-  FFTMode_loop();
+  FFTMode_loop(0.5);
 }
