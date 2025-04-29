@@ -18,4 +18,6 @@ Here is the original AD56X4 library GitHub page: https://github.com/frejanordsie
 
 To those who work on this project in the future, I wish you the best.
 
-Fiona Pendergraft
+Fiona Pendergraft 
+
+[Updated April 29th, 2025]
