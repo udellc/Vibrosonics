@@ -1,3 +1,5 @@
+## Vibrosonics ECE Team Operating Code
+
 For those who utilize this branch in the future:
 
 This ece_dev branch was created for the 2024-2025 Vibrosonics capstone cycle. During this cycle, the CS and ECE teams worked on separate goals in software and hardware. As such, the CS team's code did not include implementation for the newly implemented hardware. This "operating code" has little relation to the primary Vibrosonics codebase; instead, it is a fairly primitive version of Vibrosonics which is meant soley to demonstrate the operating of new hardware.
