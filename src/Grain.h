@@ -35,56 +35,59 @@ class GrainList;
   * https://en.wikipedia.org/wiki/Granular_synthesis
   *
   * https://en.wikipedia.org/wiki/Envelope_(music)
-*/
-
+  */
 class Grain {
 private:
   struct Phase {
-    // Number of windows each phase runs for
+    //! Number of windows each phase runs for
     int duration = 0;
-    // Targeted frequency for the phase
+    //! Targeted frequency for the phase
     float frequency = 0.0f;
-    // Targeted amplitude for the phase
+    //! Targeted amplitude for the phase
     float amplitude = 0.0f;
-    // Modulates frequency by multiplying frequencyModulator to frequency
+    //! Modulates frequency by multiplying frequencyModulator to frequency
     float frequencyModulator = 1.0f; // Default: no modulation
-    // Modulates amplitude by multiplying amplitudeModulator to amplitude
+    //! Modulates amplitude by multiplying amplitudeModulator to amplitude
     float amplitudeModulator = 1.0f; // Default: no modulation
 
-    // Shapes the curve by raising curveStep*windowCounter to the degree of the curve value
+    //! Shapes the curve by raising curveStep*windowCounter to the degree of the curve value
     float curve = 1.0f; // Default: linear
-    // Speed that grain steps through each phase of the wave. Calculated as 1.0/duration
-    float curveStep = 1.0f; // Default: no curve step
-    // Current progression through the phase (1.0-0.0)
-    float curvePosition = 1.0f;
-    // Factor to multiplicatively increment the curvePosition
-    float incrementFactor = 1.0f;
   };
 
+  //! Struct containing attack parameters
   Phase attack;
+  //! Struct containing sustain parameters
   Phase sustain;
+  //! Struct containing release parameters
   Phase release;
 
-  float sustainAttackAmplitudeDifference;
+  //! The difference in frequency between sustain and attack
   float sustainAttackFrequencyDifference;
-  float releaseSustainAmplitudeDifference;
+  //! The difference in frequency between release and sustain
   float releaseSustainFrequencyDifference;
 
+  //! The counter for how many windows a state has run for
   int windowCounter;
 
+  //! The current amplitude of the grain
   float grainAmplitude;
+  //! The current frequency of the grain
   float grainFrequency;
 
-  // Wave parameters
+  //! The wave shape of outputted grain waves
   WaveType waveType;
 
+  //! The output channel for generated grain waves
   uint8_t grainChannel;
 
+  //! The current envelope state of the grain
   grainState state;
 
   //! Update frequency and amplitude values based on current grain state.
   void run();
 
+  //! Helper function to perform necessary operations on grain parameters
+  //! when transitioning between run states
   void transitionTo(grainState newState);
 
 public:
@@ -98,17 +101,11 @@ public:
   //! Updates grain parameters in the attack state
   void setAttack(float frequency, float amplitude, int duration);
 
-  //! Updates attack curve value.
-  void setAttackCurve(float curveValue);
-
   //! Updates grain parameters in the sustain state
   void setSustain(float frequency, float amplitude, int duration);
 
   //! Updates grain parameters in the release state
   void setRelease(float frequency, float amplitude, int duration);
-
-  //! Updates release curve value.
-  void setReleaseCurve(float curveValue);
 
   //! Sets the channel of this grain
   void setChannel(uint8_t channel);
@@ -137,11 +134,13 @@ public:
   //! Returns the release duration
   int getReleaseDuration();
 
-  // Shaper functions
+  //! Sets parameters for the attack state
   void shapeAttack(int duration, float freqMod, float ampMod, float curve);
 
+  //! Sets parameters for the sustain state
   void shapeSustain(int duration, float freqMod, float ampMod);
 
+  //! Sets parameters for the release state
   void shapeRelease(int duration, float freqMod, float ampMod, float curve);
 };
 
@@ -151,7 +150,9 @@ public:
 struct GrainNode {
   //! Default constructor.
   GrainNode(Grain *object) : reference(object), next(nullptr) {}
+  //! Reference containing grain data
   Grain *reference;
+  //! Pointer to the next grain in the list
   GrainNode *next;
 };
 
@@ -160,7 +161,9 @@ struct GrainNode {
  */
 class GrainList {
 private:
+  //! Grain at the front of the list
   GrainNode *head;
+  //! Grain at the back of the list
   GrainNode *tail;
 public:
   //! Default constructor.

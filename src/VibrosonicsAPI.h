@@ -121,8 +121,6 @@ public:
         float freqMod, float ampMod, float curve);
 
 private:
-    // --- ArduinoFFT library ------------------------------------------------------
-
     // Fast Fourier Transform uses complex numbers
     float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
     float hamming[WINDOW_SIZE]; //!< Pre computed hamming window data
