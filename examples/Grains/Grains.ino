@@ -1,4 +1,3 @@
-
 /**
  * @file Grains.ino
  *
@@ -20,6 +19,10 @@
  * fine tuned nature of granular synthesis, applying generalizations will
  * often create "glitchy" sounds, so users will likely need to play around
  * and experiment to achieve desired results.
+ * Grains last for 15.6 * total duration milliseconds
+ * This is due to the default sample rate of 8192 and window size of 128
+ * 128/8192 = 15.6ms
+ * Note that this will vary if you have messed with these settings in AudioLab
  *
  * In Vibrosonics, grains are a layer on top of AudioLab waves to provide
  * some additional features. These features are as follows:
@@ -39,8 +42,6 @@
  * example of an ideal situation for using grains are snare drums.
  * Any instrument/vocal/tone with a long lifetime is a good canidate
  * for using Grains.
- * This functionality is demoed in
- * examples/AdvancedGrains/AdvancedGrains.ino
  */
 
 /**
@@ -53,12 +54,9 @@
  */
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
-// Creates major peaks module to analyze 4 peaks
-MajorPeaks mp = MajorPeaks();
-//Creates a grain array with 4 grains on channel 0 with the SINE wave type
-Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
-Grain* freqSweepGrains = vapi.createGrain(1, 0, SINE);
+Grain* sweepGrain = vapi.createGrainArray(1, 0, SINE);
 
+float targetFreq = 100.0;
 /**
  * Runs once on ESP32 startup.
  * VibrosonicsAPI initializes AudioLab and adds modules to be managed
@@ -68,47 +66,43 @@ void setup()
 {
   Serial.begin(115200);
   vapi.init();
-  // Add any AudioPrism modules to the API here
-  vapi.addModule(&mp);
-  // Shape the MajorPeaks grains
-  vapi.setGrainAttack(mpGrains, 4, 0, 0, 2);
-  vapi.setGrainSustain(mpGrains, 4, 0, 0, 1);
-  vapi.setGrainRelease(mpGrains, 4, 0, 0, 4);
-
+  /* Shape the frequency sweep grain
+   * @param grains An array of grains
+   * @param numGrains The size of a grain array
+   * @param duration The number of windows the attack state will last for
+   * @param freqMod The multiplicative modulation factor for the frequency of the attack state
+   * @param ampMod The multiplicative modulation factor for the frequency of the attack state
+   * @param curve Factor to influence the shave of the progression curve of the grain
+   */
+  vapi.shapeGrainAttack(sweepGrain, 1, 10, 1.0, 1.0, 1.0);
+  vapi.shapeGrainSustain(sweepGrain, 1, 3, 1.0, 1.0);
+  vapi.shapeGrainRelease(sweepGrain, 1, 8, 1.0, 1.0, 1.0);
+  sweepGrain[0].setAttack(targetFreq, 0.5, sweepGrain[0].getAttackDuration());
+  sweepGrain[0].setSustain(targetFreq, 0.5, sweepGrain[0].getSustainDuration());
+  sweepGrain[0].setRelease(targetFreq, 0.0, sweepGrain[0].getReleaseDuration());
 }
 
 /**
  * Main loop for analysis and synthesis.
- * Has 5 key steps:
- * 1. Check if AudioLab is ready
- * 2. Process input
- * 3. Analyze processed data
- * 4. Generate waves with grains or through the API
- * 5. Synthesize and output waves through AudioLab
  */
 void loop()
 {
   if (!AudioLab.ready()) {
     return;
   }
-
-  // process the input buffer
-  //vapi.processInput();
-
-  // Run module analysis
-  //vapi.analyze();
-
-  // For modules you will need to get their output to perform further manipulation
-  //float** mpData = mp.getOutput();
-
-  // Grains method
-  // With frequency and amplitude data you will want to trigger the grains
-  //vapi.triggerGrains(mpGrains, 4, mpData);
-
-  // Update grains if you are using them
+  // Outside of frequency range, reset
+  if(sweepGrain[0].getFrequency() >= 4000) targetFreq = 100.0;
+  // Previous frequency has finished playing, increase grain frequency
+  if(sweepGrain[0].getGrainState() == READY){
+    targetFreq = targetFreq*1.05;
+    sweepGrain[0].setAttack(targetFreq, 0.5, sweepGrain[0].getAttackDuration());
+    sweepGrain[0].setSustain(targetFreq, 0.5, sweepGrain[0].getSustainDuration());
+    sweepGrain[0].setRelease(targetFreq, 0.0, sweepGrain[0].getReleaseDuration());
+  }
+  // Progress the grain through its curve
   vapi.updateGrains();
-  // Lastly, synthesize all created waves through AudioLab
+  // Use AudioLab to synthesize waves for output
   AudioLab.synthesize();
   // Uncomment for debugging:
-  // AudioLab.printWaves();
+  Serial.printf("State: %i, Frequency: %f, Amplitude: %f\n", sweepGrain[0].getGrainState(), sweepGrain[0].getFrequency(), sweepGrain[0].getAmplitude());
 }
