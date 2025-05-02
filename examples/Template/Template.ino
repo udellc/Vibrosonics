@@ -25,11 +25,6 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 // After FFT processing it becomes the current window's spectrogram data
 float windowData[WINDOW_SIZE_BY_2];
 
-// Stores 2 windows of raw unprocessed data
-// You may want to use raw spectrogram data if you are using the
-// noisiness module
-Spectrogram rawSpectrogram = Spectrogram(2);
-
 // Stores 2 windows of processed data
 // Most of the time you will be using processed data for analysis
 Spectrogram processedSpectrogram = Spectrogram(2);
@@ -79,13 +74,11 @@ void loop()
   // Copies samples from the AudioLab buffer to the vReal array
   // Perfroms FFT operations on vReal
   vapi.processAudioInput(windowData);
-  // Push the FFT data to the raw spectrogram
-  rawSpectrogram.pushWindow(windowData);
 
   // Using this noise flooring function helps with getting a clear
   // sounding output. This is more useful on the original prototype.
   // You may not need this if you are using the latest hardware.
-  vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.6);
+  // vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.6);
   // Push the processed data to the processed spectrogram
   processedSpectrogram.pushWindow(windowData);
 
