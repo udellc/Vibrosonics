@@ -181,9 +181,10 @@ void Grain::transitionTo(grainState newState) {
     grainFrequency = 0.0f;
     grainAmplitude = 0.0f;
   } else if (newState == ATTACK) {
-    attack.curvePosition *= attack.incrementFactor;
+    float pos  = (float)(windowCounter + 1) / (float)attack.duration;
+    float curvedProgress = powf(pos, attack.curve);
     grainFrequency = attack.frequency + sustainAttackFrequencyDifference * attack.frequencyModulator;
-    grainAmplitude = attack.amplitude * (1.0f - powf(attack.curvePosition, attack.curve));
+    grainAmplitude = attack.amplitude * curvedProgress;
   } else if (newState == SUSTAIN) {
     grainFrequency = sustain.frequency * sustain.frequencyModulator;
     grainAmplitude = sustain.amplitude * sustain.amplitudeModulator;
