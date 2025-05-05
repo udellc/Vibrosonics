@@ -86,7 +86,7 @@ void loop()
   // Print out peak data
   Serial.printf("Major Peaks:\n");
   for (int i = 0; i < NUM_PEAKS; i++){
-    Serial.printf("Peak: %i Frequency: %fHz Amplitude: %f\n", i, vapi.FREQ_RES * peaksData[MP_FREQ][i], peaksData[MP_AMP][i]);
+    Serial.printf("Peak: %i Frequency: %fHz Amplitude: %f\n", i, FREQ_RES * peaksData[MP_FREQ][i], peaksData[MP_AMP][i]);
   }
 
   // Generate waves to be outputted on the hardware on channel 0

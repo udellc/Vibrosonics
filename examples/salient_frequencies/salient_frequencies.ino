@@ -9,12 +9,25 @@
 
 /**
  * Instance of the Vibrosonics API. Core to all operations including:
- * -- FFT operations with ArduinoFFT
+ * -- FFT operations with Fast4ier
  * -- Audio spectrum storage with the spectrogram
  * -- Audio input and synthesis through AudioLab
  * -- AudioPrism module management and analysis
  */
 VibrosonicsAPI vapi = VibrosonicsAPI();
+
+// DATA
+// Array that stores the AudioLab input buffer time domain data
+// After FFT processing it becomes the current window's spectrogram data
+float windowData[WINDOW_SIZE_BY_2];
+
+// Stores 2 windows of processed data
+// Most of the time you will be using processed data for analysis
+Spectrogram processedSpectrogram = Spectrogram(2);
+
+// MODULES
+// Create the ModuleGroup to store initialized modules
+ModuleGroup modules = ModuleGroup(&processedSpectrogram);
 
 /**
  * Here is where we declare the analysis modules to use
@@ -33,14 +46,13 @@ SalientFreqs deltas = SalientFreqs();
 void setup() {
     Serial.begin(115200);
     vapi.init();
-    vapi.addModule(&deltas);
+    modules.addModule(&deltas, 20, 3000);
 }
 
 /**
  * This main loop is the iteration that is constantly occuring when our arduino is running
  * All of the main anylysis is here
  */
-
 void loop() {
     // AudioLab.ready() returns true when synthesis should occur/input buffer fills 
     // (this returns true at (SAMPLE_RATE / WINDOW_SIZE) times per second)
@@ -49,10 +61,12 @@ void loop() {
     }
     // processInput runs an FFT on the complex audio data captured from audioLab
     // this turns it into usable frequency-amplitude data
-    vapi.processInput();
+    vapi.processAudioInput(windowData);
+
+    processedSpectrogram.pushWindow(windowData);
 
     // analyze will pass the audio data to every module you loaded to run in vapi
-    vapi.analyze();
+    modules.runAnalysis();
 
     // getOutput is used for any module to retrieve the analyzed data of the module
     // in the case, the module will return a 1D array of indexes
@@ -60,14 +74,14 @@ void loop() {
     int* salient = deltas.getOutput();
 
     // salient frequencies module returns indexs so we need the audio windows to see what the change is
-    float* previous_window = vapi.getPreviousWindow();
-    float* current_window = vapi.getCurrentWindow();
+    float* previous_window = processedSpectrogram.getPreviousWindow();
+    float* current_window = processedSpectrogram.getCurrentWindow();
 
     // We print out the two amplitude changes as well as the frequency bin in which this occured
     Serial.printf("Salient Frequencies: ");
     for (int i=0; i < 3; i++){
         // each bin of a window corresponds to a frequency range given by FREQ_RES
-        Serial.printf("Freq: %iHz Delta: %f-%f ", vapi.FREQ_RES * salient[i], previous_window[salient[i]], current_window[salient[i]]);
+        Serial.printf("Freq: %iHz Delta: %f-%f ", FREQ_RES * salient[i], previous_window[salient[i]], current_window[salient[i]]);
     }
     Serial.printf("\n");
 
