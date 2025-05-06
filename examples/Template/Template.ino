@@ -7,43 +7,49 @@
 
 #include "VibrosonicsAPI.h"
 
+// Set the number of peaks for the major peaks module to find
+// Currently set to the default amount of 4
+#define NUM_PEAKS 4
+
 /**
  * Instance of the Vibrosonics API. Core to all operations including:
- * -- FFT operations with ArduinoFFT
+ * -- FFT operations with Fast4ier
  * -- Audio spectrum storage with the spectrogram
  * -- Audio input and synthesis through AudioLab
  * -- AudioPrism module management and analysis
  */
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
-/**
- * It is recommended to create AudioPrism modules here, along with their
- * corresponding grains if applicable.
- *
- * For example:
- */
-// Creates major peaks module to analyze 4 peaks
-MajorPeaks mp = MajorPeaks();
-//Creates a grain array with 4 grains on channel 0 with the SINE wave type
-Grain* mpGrains = vapi.createGrainArray(4, 0, SINE);
+// DATA
+// Array that stores the AudioLab input buffer time domain data
+// After FFT processing it becomes the current window's spectrogram data
+float windowData[WINDOW_SIZE_BY_2];
+
+// Stores 2 windows of processed data
+// Most of the time you will be using processed data for analysis
+Spectrogram processedSpectrogram = Spectrogram(2);
+
+// MODULES
+// Create the ModuleGroup to store initialized modules
+ModuleGroup modules = ModuleGroup(&processedSpectrogram);
+
+// Creates major peaks module to analyze defined amount of peaks
+MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
 /**
  * Runs once on ESP32 startup.
- * VibrosonicsAPI initializes AudioLab and adds modules to be managed
- * Grain shaping should also be configured here.
+ * VibrosonicsAPI initializes AudioLab
+ * User defined modules are added to the ModuleGroup
+ * Grain shaping needs to be configured here.
  */
 void setup()
 {
   Serial.begin(115200);
   vapi.init();
-  // Add any AudioPrism modules to the API here
-  vapi.addModule(&mp);
-  // Shape the MajorPeaks grains
-  // Params are GrainArray, size, freq, amp, duration
-  vapi.setGrainAttack(mpGrains, 4, 0, 0, 2);
-  vapi.setGrainSustain(mpGrains, 4, 0, 0, 1);
-  vapi.setGrainRelease(mpGrains, 4, 0, 0, 4);
-
+  // Add any AudioPrism modules to the ModuleGroup here
+  // Here, majorPeaks is added with a frequency analysis range of
+  // 20hz-3000hz
+  modules.addModule(&majorPeaks, 20, 3000);
 }
 
 /**
@@ -51,11 +57,10 @@ void setup()
  * Has 5 key steps:
  * 1. Check if AudioLab is ready
  * 2. Process input
- * 3. Analyze processed data
- * 4. Generate waves with grains or through the API
+ * 3. Analyze processed data with modules
+ * 4. Generate waves with through the API
  * 5. Synthesize and output waves through AudioLab
  */
-
 void loop()
 {
   // First check to make sure that the AudioLab input buffer has 
@@ -65,33 +70,32 @@ void loop()
   }
 
   // Second, the input must be processed for analysis
-  // Steps:
+  // Vibrosonics API performs these steps:
   // Copies samples from the AudioLab buffer to the vReal array
   // Perfroms FFT operations on vReal
-  // Pushes vReal to the spectrogram
-  vapi.processInput();
+  vapi.processAudioInput(windowData);
+
+  // Using this noise flooring function helps with getting a clear
+  // sounding output. This is more useful on the original prototype.
+  // You may not need this if you are using the latest hardware.
+  // vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.6);
+  // Push the processed data to the processed spectrogram
+  processedSpectrogram.pushWindow(windowData);
 
   // Third, analyze the data with the added AudioPrism modules
-  vapi.analyze();
+  modules.runAnalysis();
 
   // Fourth, generate waves
-  // NOTE: This can be done through grains or by assigning waves with
-  //       the API. Both are demonstrated below
+  // Get the analyzed data from MajorPeaks module
+  float** peaksData = majorPeaks.getOutput();
+  // Map the amplitudes for a clearer output
+  vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS, 10000);
+  // Assign frequency and amplitude data to be outputted on both output channels.
+  vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], NUM_PEAKS, 0);
+  vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], NUM_PEAKS, 1);
 
-  // For modules you will need to get their output to perform further manipulation
-  float** mpData = mp.getOutput();
-
-  // Grains method
-  // With frequency and amplitude data you will want to trigger the grains
-  vapi.triggerGrains(mpGrains, 4, mpData);
-
-  // Direct wave creation
-  // Frequency array, amp array, number of waves, channel
-  //vapi.assignWaves(mpData[0], mpData[1], 4, 0);
   // Perform any additional manipulation that you want here
 
-  // Update grains if you are using them
-  vapi.updateGrains();
   // Lastly, synthesize all created waves through AudioLab
   AudioLab.synthesize();
   // Uncomment for debugging:

@@ -106,26 +106,22 @@ public:
     //! wave type.
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
-    //! Creates and returns a singular grain with specified wave and channel.
-    Grain* createGrain(uint8_t channel, WaveType waveType);
-
     //! Updates an array of numPeaks grains sustain and release windows.
     void triggerGrains(Grain* grains, int numPeaks, float** peakData);
 
-    // GRAIN SHAPING
-
+    //! Sets the attack state parameters for an array of grains
     void shapeGrainAttack(Grain* grains, int numGrains, int duration,
         float freqMod, float ampMod, float curve);
 
+    //! Sets the sustain state parameters for an array of grains
     void shapeGrainSustain(Grain* grains, int numGrains, int duration,
         float freqMod, float ampMod);
 
+    //! Sets the release state parameters for an array of grains
     void shapeGrainRelease(Grain* grains, int numGrains, int duration,
         float freqMod, float ampMod, float curve);
 
 private:
-    // --- ArduinoFFT library ------------------------------------------------------
-
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.
     float   hamming[WINDOW_SIZE]; //!< Pre computed hamming window data

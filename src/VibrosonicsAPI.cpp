@@ -333,19 +333,6 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 }
 
 /**
- * Creates a singular grain with specified channel and wave type and then pushes the
- * newly created grain to the global grain list.
- *
- * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
- * @param waveType The type of wave Audiolab will generate utilizing the grains.
- */
-
-Grain* VibrosonicsAPI::createGrain(uint8_t channel, WaveType waveType)
-{
-    return createGrainArray(1, channel, waveType);
-}
-
-/**
  * Calls update for every grain in the grain list
  */
 void VibrosonicsAPI::updateGrains()
@@ -354,74 +341,57 @@ void VibrosonicsAPI::updateGrains()
 }
 
 /**
- * Updates an array of numPeaks grains sustain and release windows if
+ * Updates an array of grains attack, sustain, and release windows if
  * the data's amplitude is greater than the amplitude stored in the grain.
  *
- * @param numPeaks The size of the Grain array.
- * @param peakData A pointer to a module's amplitude data
  * @param grains An array of grains to be triggered.
+ * @param numGrains The size of the Grain array.
+ * @param moduleData A pointer to a module's frequency and amplitude data
  */
-
-void VibrosonicsAPI::triggerGrains(Grain* grains, int numPeaks, float** peakData)
+void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, float** moduleData)
 {
-    // NOTE: ADD FREQUENCY MATCHING
-    // Plan: First pass, check to see if incoming peakData frequencies match previous grain frequencies.
-    // So if previous grains are [200hz, 400hz, 800hz, 1600hz], and incoming data is [400hz, 800hz, 1600hz, 320hz]
-    // the grain mapping will be [320hz, 400hz, 800hz, 1600hz]. Basically make sure that each grain is actually keeping as similair a frequency as possible
-    // Keep the data in sync
-    // issue: the Just noticeable difference for people in this frequency range is 1hz. gonna have to match basically exactly.
-
-    float sortedFreqs[numPeaks];
-    float sortedAmps[numPeaks];
-
-    for (int i = 0; i < numPeaks; i++) {
-        sortedFreqs[i] = peakData[MP_FREQ][i];
-        sortedAmps[i]  = peakData[MP_AMP][i];
-    }
-
-    for (int i = 0; i < numPeaks - 1; i++) {
-        for (int j = 0; j < numPeaks - i - 1; j++) {
-            if (sortedFreqs[j] > sortedFreqs[j + 1]) {
-                float tempFreq     = sortedFreqs[j];
-                sortedFreqs[j]     = sortedFreqs[j + 1];
-                sortedFreqs[j + 1] = tempFreq;
-
-                float tempAmp     = sortedAmps[j];
-                sortedAmps[j]     = sortedAmps[j + 1];
-                sortedAmps[j + 1] = tempAmp;
-            }
-        }
-    }
-
-    for (int i = 0; i < numPeaks - 1; i++) {
-        for (int j = 0; j < numPeaks - i - 1; j++) {
-            if (grains[j].getFrequency() > grains[j + 1].getFrequency()) {
-                Grain temp    = grains[j];
-                grains[j]     = grains[j + 1];
-                grains[j + 1] = temp;
-            }
-        }
-    }
-
-    for (int i = 0; i < numPeaks; i++) {
-        float closestFreq = sortedFreqs[i];
-        float closestAmp  = sortedAmps[i];
-
-        if (closestAmp >= grains[i].getAmplitude()) {
-            grains[i].setAttack(closestFreq, closestAmp, grains[i].getAttackDuration());
-            grains[i].setSustain(closestFreq, closestAmp, grains[i].getSustainDuration());
-            grains[i].setRelease(closestFreq, 0, grains[i].getReleaseDuration());
+    for (int i = 0; i < numGrains; i++) {
+        float currentAmp = moduleData[MP_AMP][i];
+        float currentFreq = moduleData[MP_FREQ][i];
+        if(currentAmp > grains[i].getAmplitude()){
+            grains[i].setAttack(currentFreq, currentAmp, grains[i].getAttackDuration());
+            grains[i].setSustain(currentFreq, currentAmp, grains[i].getSustainDuration());
+            grains[i].setRelease(currentFreq, 0, grains[i].getReleaseDuration());
         }
     }
 }
 
+/**
+ * Updates an array of grains parameters in the attack state.
+ *
+ * @param grains An array of grains
+ * @param numGrains The size of a grain array
+ * @param duration The number of windows the attack state will last for
+ * @param freqMod The multiplicative modulation factor for the frequency of the attack state
+ * @param ampMod The multiplicative modulation factor for the frequency of the attack state
+ * @param curve Factor to influence the shave of the progression curve of the grain
+ */
 void VibrosonicsAPI::shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
 {
     for (int i = 0; i < numGrains; i++) {
         grains[i].shapeAttack(duration, freqMod, ampMod, curve);
-    }
+    } 0.0
+
+entropy: nan
+flatness: nan
+flux: nan
+loudness: 0.0
 }
 
+/**
+ * Updates an array of grains parameters in the sustain state.
+ *
+ * @param grains An array of grains
+ * @param numGrains The size of a grain array
+ * @param duration The number of windows the sustain state will last for
+ * @param freqMod The multiplicative modulation factor for the frequency of the sustain state
+ * @param ampMod The multiplicative modulation factor for the frequency of the sustain state
+ */
 void VibrosonicsAPI::shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod)
 {
     for (int i = 0; i < numGrains; i++) {
@@ -429,6 +399,16 @@ void VibrosonicsAPI::shapeGrainSustain(Grain* grains, int numGrains, int duratio
     }
 }
 
+/**
+ * Updates an array of grains parameters in the release state.
+ *
+ * @param grains An array of grains
+ * @param numGrains The size of a grain array
+ * @param duration The number of windows the release state will last for
+ * @param freqMod The multiplicative modulation factor for the frequency of the release state
+ * @param ampMod The multiplicative modulation factor for the frequency of the release state
+ * @param curve Factor to influence the shave of the progression curve of the grain
+ */
 void VibrosonicsAPI::shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
 {
     for (int i = 0; i < numGrains; i++) {
