@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['breadslicerslicelocations_0',['breadslicerSliceLocations',['../esp32-_f_f_tto_bins_to_add_synth_8ino.html#a5cbceb3da06e376adf8ff4d2bb852929',1,'esp32-FFTtoBinsToAddSynth.ino']]],
-  ['breadslicersliceweights_1',['breadslicerSliceWeights',['../esp32-_f_f_tto_bins_to_add_synth_8ino.html#adf2c164b9c94ab8d1f74b04695856aa8',1,'esp32-FFTtoBinsToAddSynth.ino']]]
+  ['next_0',['next',['../struct_grain_node.html#aa2de7ec3288741eaf1e466310319995c',1,'GrainNode']]],
+  ['num_5fwindows_1',['NUM_WINDOWS',['../_vibrosonics_a_p_i_8h.html#a15e4ca772adfd1fe71e8f50dc6722d23',1,'VibrosonicsAPI.h']]]
 ];

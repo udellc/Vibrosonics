@@ -24,14 +24,29 @@
 */
 var NAVTREE =
 [
-  [ "Vibrosonics", "index.html", [
+  [ "VibroSonics", "index.html", [
+    [ "What is it?", "index.html#autotoc_md1", null ],
+    [ "Installation and Flashing", "index.html#autotoc_md2", [
+      [ "Arduino IDE", "index.html#autotoc_md3", null ]
+    ] ],
+    [ "Library Architecture", "index.html#autotoc_md4", null ],
+    [ "Special thanks to:", "index.html#autotoc_md5", null ],
+    [ "Classes", "annotated.html", [
+      [ "Class List", "annotated.html", "annotated_dup" ],
+      [ "Class Index", "classes.html", null ],
+      [ "Class Members", "functions.html", [
+        [ "All", "functions.html", null ],
+        [ "Functions", "functions_func.html", null ],
+        [ "Variables", "functions_vars.html", null ]
+      ] ]
+    ] ],
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
       [ "File Members", "globals.html", [
         [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ],
         [ "Variables", "globals_vars.html", null ],
-        [ "Macros", "globals_defs.html", null ]
+        [ "Enumerations", "globals_enum.html", null ],
+        [ "Enumerator", "globals_eval.html", null ]
       ] ]
     ] ]
   ] ]
@@ -39,7 +54,7 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"esp32-_f_f_tto_bins_to_add_synth_8ino.html"
+"_grain_8cpp.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['maxampchange_0',['maxAmpChange',['../esp32-_f_f_tto_bins_to_add_synth_8ino.html#afe24551053b7358016540fbebdf40079',1,'esp32-FFTtoBinsToAddSynth.ino']]],
-  ['maxampchangeamp_1',['maxAmpChangeAmp',['../esp32-_f_f_tto_bins_to_add_synth_8ino.html#a0a92a07bde565e55068e6576de189513',1,'esp32-FFTtoBinsToAddSynth.ino']]]
+  ['window_5fsize_5fby_5f2_0',['WINDOW_SIZE_BY_2',['../_vibrosonics_a_p_i_8h.html#ac03078e75fb605280c11d7502c86ee1b',1,'VibrosonicsAPI.h']]]
 ];

@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['default_5fbreadslicer_5fmax_5favg_5fbin_0',['DEFAULT_BREADSLICER_MAX_AVG_BIN',['../esp32-_f_f_tto_bins_to_add_synth_8ino.html#a749d9a2dd3e81512a6ffde758d0bffbe',1,'esp32-FFTtoBinsToAddSynth.ino']]],
-  ['default_5fnum_5fwaves_1',['DEFAULT_NUM_WAVES',['../esp32-_f_f_tto_bins_to_add_synth_8ino.html#a95abe9e2bdbf853a25283df915bf6289',1,'esp32-FFTtoBinsToAddSynth.ino']]]
+  ['fftwindowing_0',['fftWindowing',['../class_vibrosonics_a_p_i.html#a85b0b94f10a808c0605f30aafe300ad7',1,'VibrosonicsAPI']]],
+  ['flashing_1',['Installation and Flashing',['../index.html#autotoc_md2',1,'']]],
+  ['freq_5fres_2',['FREQ_RES',['../_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df',1,'VibrosonicsAPI.h']]],
+  ['freq_5fwidth_3',['FREQ_WIDTH',['../_vibrosonics_a_p_i_8h.html#aafc60f8ba1f97829e954fc46c5f5aafa',1,'VibrosonicsAPI.h']]]
 ];
