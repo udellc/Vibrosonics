@@ -375,12 +375,7 @@ void VibrosonicsAPI::shapeGrainAttack(Grain* grains, int numGrains, int duration
 {
     for (int i = 0; i < numGrains; i++) {
         grains[i].shapeAttack(duration, freqMod, ampMod, curve);
-    } 0.0
-
-entropy: nan
-flatness: nan
-flux: nan
-loudness: 0.0
+    }
 }
 
 /**
