@@ -29,15 +29,24 @@ Currently, the market for similar devices is highly limited and undeveloped. Thi
 ### Arduino IDE
 ---
 First, install the Arduino IDE for your operating system.
-Second, install the ESP32 board to the Arduino IDE by navigating to Tools > Board > Boards Manager. Then search for ESP32 and install the esp32 board library by Expressif.
-Then download the zip files for Vibrosonics, AudioLab, AudioPrsim, and Fast4ier
+
+Second, install the ESP32 board to the Arduino IDE by navigating to Tools > Board > Boards Manager.
+
+Then search for ESP32 and install the esp32 board library by Expressif.
+
+Next, download the zip files for Vibrosonics, AudioLab, AudioPrsim, and Fast4ier
 Once all of the zip files are finished downloading, go back to the Arduino IDE.
+
 Navigate to Sketch > Include Library > Add .ZIP library
+
 Do this for each library.
 
 Once the ESP32 boards and libraries are installed in the Arduino IDE, you will need to upload your sketch (.ino file) to the Vibrosonics hardware.
+
 First, ensure the ESP32 microcontroller in the Vibrosonics hardware is plugged in via USB to the computer you want to upload your sketch from.
+
 Then, to upload your sketch from the Arduino IDE, go to the top drop down menu and click "Select other board and port..."
+
 In the pop up window, search for Adafruit ESP32 Feather and select it along with the port listed.
 
 Once that is finished, you can click the arrow in the top left of the Arduino IDE to compile and upload your sketch to the Vibrosonics hardware.
