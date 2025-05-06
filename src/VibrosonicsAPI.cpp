@@ -31,7 +31,7 @@ void VibrosonicsAPI::processAudioInput(float output[])
 
     // Copy complex data to float arrays
     for (int i = 0; i < WINDOW_SIZE; i++) {
-        vReal[i] = vData[i].re();
+        vReal[i]  = vData[i].re();
         output[i] = vReal[i];
     }
 }
@@ -47,7 +47,8 @@ void VibrosonicsAPI::dcRemoval()
     }
 }
 
-void VibrosonicsAPI::computeHammingWindow() {
+void VibrosonicsAPI::computeHammingWindow()
+{
     float step = 2 * PI / (WINDOW_SIZE - 1);
     for (int i = 0; i < WINDOW_SIZE; i++) {
         hamming[i] = 0.54 - 0.46 * cos(step * i);
@@ -133,8 +134,8 @@ void VibrosonicsAPI::noiseFloor(float* ampData, int dataLength, float threshold)
 
 void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, int numGuards, float bias)
 {
-    int i, j, numCells;
-    int left_start, left_end, right_start, right_end;
+    int   i, j, numCells;
+    int   left_start, left_end, right_start, right_end;
     float noiseLevel;
 
     // copy data for output
@@ -143,12 +144,12 @@ void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, in
 
     for (i = 0; i < dataLength; i++) {
         // calculate bounds for cell under test (CUT)
-        left_start = max(0, i - numGuards - numRefs);
-        left_end = max(0, i - numGuards);
+        left_start  = max(0, i - numGuards - numRefs);
+        left_end    = max(0, i - numGuards);
         right_start = min(dataLength, i + numGuards);
-        right_end = min(dataLength, i + numGuards + numRefs);
+        right_end   = min(dataLength, i + numGuards + numRefs);
 
-        numCells = 0;
+        numCells   = 0;
         noiseLevel = 0;
 
         // compute sum of cells within bounds
@@ -174,15 +175,26 @@ void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, in
 }
 
 /**
- * Maps amplitudes in the input array to between 0-127 range.
+ * Maps amplitudes to the range [0, 1] by normalizing them by the sum of
+ * the amplitudes. This sum is smoothed by the previous data to ensure a
+ * consistent amplitude output and contrast.
  *
  * @param ampData The amplitude array to map.
  * @param dataLength The length of the amplitude array.
- * @param minDataSum The minimum value to normalize the amplitudes by (if
+ * @param minAmpSum The minimum value to normalize the amplitudes by (if
  * their sum is not greater than it).
+ * @param smoothFactor The factor to smooth the amplitudes by.
  */
-void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float minDataSum = 0)
+void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength,
+    float minAmpSum, float smoothFactor)
 {
+    if (smoothFactor < 0.0 || smoothFactor > 1.0) {
+        Serial.printf("Error: smoothFactor must be between 0 and 1.\n");
+        return;
+    }
+
+    static float runningSum = minAmpSum;
+
     // sum amp data
     float dataSum = 0.0;
     for (int i = 0; i < dataLength; i++) {
@@ -191,21 +203,21 @@ void VibrosonicsAPI::mapAmplitudes(float* ampData, int dataLength, float minData
     if (dataSum == 0.0) {
         return; // return early if sum of amplitudes is 0
     }
-    if (minDataSum > 0 && dataSum < minDataSum) {
-        dataSum = minDataSum;
-    }
 
-    // minDataSum is a special parameter that will need to be adjusted to
-    // find the max dynamic contrast for a given set of ampllitudes. In
-    // general, a lower minDataSum will proivde less dynamic contrast (i.e.
-    // the range of amplitudes will be compressed), whereas a higher
-    // minDataSum may allow more room for contrast. If the sum of amplitudes
-    // (dataSum) is larger than minDataSum then the dataSum will be used to
-    // ensure values are no larger than 1.
+    // smooth the sum of amplitudes with previous data unless it is greater
+    if (dataSum < runningSum) {
+        runningSum = runningSum * (1 - smoothFactor) + dataSum * smoothFactor;
+        // dampen noise by clamping to minAmpSum
+        if (runningSum < minAmpSum) {
+            runningSum = minAmpSum;
+        }
+    } else {
+        runningSum = dataSum;
+    }
 
     // convert amplitudes
     for (int i = 0; i < dataLength; i++) {
-        ampData[i] = (ampData[i] / dataSum);
+        ampData[i] = (ampData[i] / runningSum);
     }
 }
 
@@ -237,7 +249,7 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
 {
     for (int i = 0; i < dataLength; i++) {
         if (ampData[i] == 0.0 || freqData[i] == 0)
-            continue; // skip storing if ampData is 0, or freqData is 0
+            continue;                                                              // skip storing if ampData is 0, or freqData is 0
         Wave wave = AudioLab.dynamicWave(channel, round(freqData[i]), ampData[i]); // create wave
     }
 }
@@ -264,8 +276,8 @@ void VibrosonicsAPI::mapFrequenciesLinear(float* freqData, int dataLength)
     float freqRatio;
     // loop through frequency data
     for (int i = 0; i < dataLength; i++) {
-        freqRatio = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
-        freqData[i] = round(freqRatio * 250) + 20; // convert into to haptic range linearly
+        freqRatio   = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
+        freqData[i] = round(freqRatio * 250) + 20;      // convert into to haptic range linearly
     }
 }
 
@@ -294,8 +306,8 @@ void VibrosonicsAPI::mapFrequenciesExponential(float* freqData, int dataLength, 
         if (freqData[i] <= 50) {
             continue;
         } // freq already within haptic range
-        freqRatio = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
-        freqData[i] = pow(freqRatio, exp) * 250; // convert into haptic range along a exp^ curve
+        freqRatio   = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
+        freqData[i] = pow(freqRatio, exp) * 250;        // convert into haptic range along a exp^ curve
     }
 }
 

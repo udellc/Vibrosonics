@@ -86,7 +86,8 @@ public:
     float getMean(complex* data, int dataLength);
 
     //! Maps amplitudes in some data to between 0.0-1.0 range.
-    void mapAmplitudes(float* ampData, int dataLength, float dataSumFloor);
+    void mapAmplitudes(float* ampData, int dataLength,
+        float minAmpSum = 10000, float smoothFactor = 0.05);
 
     //! linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
     //! (0 - 250) Hz, the haptic range.
@@ -122,8 +123,8 @@ public:
 
 private:
     // Fast Fourier Transform uses complex numbers
-    float vReal[WINDOW_SIZE]; //!< Real component of cosine amplitude of each frequency.
-    float hamming[WINDOW_SIZE]; //!< Pre computed hamming window data
+    float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.
+    float   hamming[WINDOW_SIZE]; //!< Pre computed hamming window data
     complex vData[WINDOW_SIZE];
 
     // --- AudioLab Library --------------------------------------------------------
