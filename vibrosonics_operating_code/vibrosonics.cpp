@@ -69,7 +69,7 @@ void generateWave(int waveFrequency, uint16_t sinusoid[SAMPLE_RATE / 4], double 
   for (int i = 0; i < out_rate; i++)
   {
     float phase = (2 * M_PI * i) / actualSamplesPerCycle;
-    sinusoid[i] = (uint16_t)(volume * (out_rate * (1 + sin(phase))));
+    sinusoid[i] = (uint16_t)(volume * (8192 * (1 + sin(phase))));
   }
 }
 
