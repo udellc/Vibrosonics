@@ -3,14 +3,18 @@
 AD56X4Class dac;
 byte channel[] = { AD56X4_CHANNEL_A, AD56X4_CHANNEL_B, AD56X4_CHANNEL_C, AD56X4_CHANNEL_D };
 hw_timer_t *SAMPLING_TIMER = NULL;
-uint16_t sinusoid[SAMPLE_RATE] = {0};
+uint16_t midsWave[SAMPLE_RATE / 4] = {0};
+uint16_t highsWave[SAMPLE_RATE / 4] = {0};
 double samples[FFT_SAMPLES]= {0};
 double vReal[FFT_SAMPLES]= {0};
 double vImag[FFT_SAMPLES]= {0};
-volatile int frequency = 440;
+volatile int midsFrequency = 0;
+volatile int highsFrequency = 0;
 volatile int FFTtimer = 0;
 volatile int iterator = 0;
-volatile int current_wave = 0;
+volatile int wave_iterator = 0;
+volatile int current_mids = 0;
+volatile int current_highs = 0;
 volatile bool updateWave = false;
 
 extern ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, FFT_SAMPLES, SAMPLE_RATE);
@@ -23,17 +27,17 @@ void initialize(void (*DAC_OUT)())
   delay(3000);
   Serial.println("\nSerial connection initiated.");
 
-  Serial.println("Initializing SPI communication...")
+  Serial.println("Initializing SPI communication...");
   pinMode(33, OUTPUT);
   pinMode(SS_PIN, OUTPUT);
   SPI.setClockDivider(SPI_CLOCK_DIV2);
   SPI.begin();
 
-  Serial.println("Initializing AD5644 DAC...")
+  Serial.println("Initializing AD5644 DAC...");
   dac.reset(SS_PIN, true);
   dac.useInternalReference(SS_PIN, true);
 
-  Serial.println("Configuring analog input...")
+  Serial.println("Configuring analog input...");
   pinMode(A2, INPUT);
   analogReadResolution(12);
   analogSetPinAttenuation(A2, ADC_0db);
@@ -45,22 +49,27 @@ void initialize(void (*DAC_OUT)())
   Serial.println("Interrupts initialized. Setup is complete.");
 }
 
-void generateWave(int waveFrequency, uint16_t sinusoid[SAMPLE_RATE], double volume) 
+void generateWave(int waveFrequency, uint16_t sinusoid[SAMPLE_RATE / 4], double volume) 
 {
+  int out_rate = SAMPLE_RATE / 4;
+
+  if (waveFrequency > out_rate / 2) // nyquist frequency
+    waveFrequency = 0;
+
   if(waveFrequency == 0)
   {
-    for(int i = 0 ; i < SAMPLE_RATE; i++)
+    for(int i = 0 ; i < out_rate / 4; i++)
       sinusoid[i] = 0;
   }
 
-  float samplesPerCycle = (float)SAMPLE_RATE / waveFrequency;
-  int totalCycles = round(SAMPLE_RATE / samplesPerCycle);
-  float actualSamplesPerCycle = (float)SAMPLE_RATE / totalCycles;
+  float samplesPerCycle = (float)out_rate / waveFrequency;
+  int totalCycles = round(out_rate / samplesPerCycle);
+  float actualSamplesPerCycle = (float)out_rate / totalCycles;
 
-  for (int i = 0; i < SAMPLE_RATE; i++)
+  for (int i = 0; i < out_rate; i++)
   {
     float phase = (2 * M_PI * i) / actualSamplesPerCycle;
-    sinusoid[i] = (uint16_t)(8192 * volume * (1 + sin(phase)));
+    sinusoid[i] = (uint16_t)(volume * (out_rate * (1 + sin(phase))));
   }
 }
 
@@ -77,53 +86,67 @@ void analyzeWave()
   FFT.compute(FFTDirection::Forward); /* Compute FFT */
   FFT.complexToMagnitude(); /* Compute magnitudes */
 
-  int cutoff = 100;
-  int cutoff_bin = cutoff * FFT_SAMPLES / SAMPLE_RATE;
-  double maxVal = NOISE_THRESHOLD;
-  int maxIndex = -1;
+  double maxMids = NOISE_THRESHOLD;
+  double maxHighs = NOISE_THRESHOLD;
 
-  for (int i = cutoff_bin; i < FFT_SAMPLES / 2; i++) {
-    if (vReal[i] > maxVal) 
+  int maxMids_index = -1;
+  int maxHighs_index = -1;
+
+  for(int i = getBin(MIDS_INPUT_MIN); i < FFT_SAMPLES / 2; i++)
+  {
+    double value = vReal[i];
+
+    if(i <= getBin(MIDS_INPUT_MAX) && value > maxMids)
     {
-      maxVal = vReal[i];
-      maxIndex = i;
+      maxMids = value;
+      maxMids_index = i;
+    }
+    else if (i >= getBin(HIGHS_INPUT_MIN) && i <= getBin(HIGHS_INPUT_MAX) && value > maxHighs)
+    {
+      maxHighs = value;
+      maxHighs_index = i;
     }
   }
 
-  if(maxIndex >= 0)
+  if(maxMids_index >= 0)
   {
-    double domFrequency = (maxIndex * SAMPLE_RATE) / FFT_SAMPLES;
-    if(!isnan(domFrequency))
-    {
-      Serial.print((int)domFrequency); //Print out what frequency is the most dominant.
-      Serial.print (" Hz | Magnitude: ");
-      Serial.print(maxVal);
-      Serial.print(" | Mapped to: ");
-      domFrequency = mapFrequency(domFrequency);
-      frequency = domFrequency;
-      Serial.print(frequency);
-      Serial.println(" Hz");
-    } 
+    double domMids = (maxMids_index * SAMPLE_RATE) / FFT_SAMPLES;
+    Serial.print ("Mids: ");
+    Serial.print((int)domMids);
+    Serial.print (" Hz | Magnitude: ");
+    Serial.print(maxMids);
+    Serial.print(" | Mapped to: ");
+    midsFrequency = mapFrequency(domMids, MIDS_INPUT_MIN, MIDS_INPUT_MAX, MIDS_OUTPUT_MIN, MIDS_OUTPUT_MAX);
+    Serial.print(midsFrequency);
+    Serial.println(" Hz\n");
+
     FFTtimer = millis();
   }
+
+  if(maxHighs_index >= 0)
+  {
+    double domHighs = (maxHighs_index * SAMPLE_RATE) / FFT_SAMPLES;
+
+    Serial.print ("Highs: ");
+    Serial.print((int)domHighs);
+    Serial.print (" Hz | Magnitude: ");
+    Serial.print(maxHighs);
+    Serial.print(" | Mapped to: ");
+    domHighs = mapFrequency(domHighs, HIGHS_INPUT_MIN, HIGHS_INPUT_MAX, HIGHS_OUTPUT_MIN, HIGHS_OUTPUT_MAX);
+    highsFrequency = domHighs;
+    Serial.print(highsFrequency);
+    Serial.println(" Hz\n");
+
+    FFTtimer = millis();
+  }
+
   if(millis() - FFTtimer > 500)
-    frequency = 0;
+  {
+    midsFrequency = 0;
+    highsFrequency = 0;
+  }
 }
 
-double mapFrequency(double inputFreq)
-{
-    const double input_min = 100.0;
-    const double input_max = 2000.0;
-    const double output_min = 20.0;
-    const double output_max = 500.0;
-
-    if (inputFreq < input_min) inputFreq = input_min;
-    if (inputFreq > input_max) inputFreq = input_max;
-
-    double outputFreq = output_min + (inputFreq - input_min) * (output_max - output_min) / (input_max - input_min);
-
-    return outputFreq;
-}
 
 void obtain_raw_analog()
 {
@@ -149,6 +172,21 @@ void obtain_raw_analog()
   Serial.println(lowest);
 }
 
+double mapFrequency(double inputFreq, double input_min, double input_max, double output_min, double output_max)
+{
+    if (inputFreq < input_min) inputFreq = input_min;
+    if (inputFreq > input_max) inputFreq = input_max;
+
+    double outputFreq = output_min + (inputFreq - input_min) * (output_max - output_min) / (input_max - input_min);
+
+    return outputFreq;
+}
+
+int getBin(double frequency)
+{
+  return frequency * FFT_SAMPLES / SAMPLE_RATE;
+}
+
 void speakerMode(byte channel)
 {
   int val = (analogRead(A2) - 1852) * 10 + 8192; // The board's DC offset results in a raw value of about 1852. We normalize, incrase the magnitude, and then center at 8192 instead.
@@ -157,16 +195,23 @@ void speakerMode(byte channel)
 
 void FFTMode()
 {
-  if(iterator < FFT_SAMPLES)
-  {
-    samples[iterator] = analogRead(A2);
-    dac.setChannel(SS_PIN, AD56X4_SETMODE_INPUT_DAC, AD56X4_CHANNEL_A, (word)(sinusoid[iterator++]));
-  }
+  if(iterator < 512)
+    samples[iterator++] = analogRead(A2);
   else
   {
     iterator = 0;
     updateWave = true;
   }
+  static uint16_t current_channel = 0;
+
+  uint16_t value = (current_channel < 2) ? midsWave[wave_iterator] : highsWave[wave_iterator];
+
+  dac.setChannel(SS_PIN, AD56X4_SETMODE_INPUT_DAC, channel[current_channel], (word)(value));
+
+  current_channel = (current_channel + 1) % 4;
+
+  if(current_channel == 0)
+    wave_iterator = (wave_iterator + 1) % 2048;
 }
 
 void FFTMode_loop(double volume)
@@ -176,9 +221,14 @@ void FFTMode_loop(double volume)
     analyzeWave();
     updateWave = false;
   }
-  if(abs(current_wave - frequency) > 10)
+  if(abs(current_mids - midsFrequency) > 10)
   {
-    generateWave(frequency, sinusoid, volume);
-    current_wave = frequency;
+    generateWave(midsFrequency, midsWave, volume);
+    current_mids = midsFrequency;
+  }
+  if(abs(current_highs - highsFrequency) > 10)
+  {
+    generateWave(highsFrequency, highsWave, volume);
+    current_highs = highsFrequency;
   }
 }
