@@ -1,5 +1,8 @@
 #include "VibrosonicsAPI.h"
 
+#define REF_CELLS 6
+#define GUARD_CELLS 2
+#define BIAS 1.4
 #define NUM_PEAKS 4
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
@@ -47,7 +50,7 @@ void loop() {
   vapi.processAudioInput(windowData);
   rawSpectrogram.pushWindow(windowData);
 
-  vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.8);
+  vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, REF_CELLS, GUARD_CELLS, BIAS);
   filteredSpectrogram.pushWindow(windowData);
 
   // have the analysis modules analyze the processed signal

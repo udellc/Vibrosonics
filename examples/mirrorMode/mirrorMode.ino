@@ -1,7 +1,7 @@
 #include "VibrosonicsAPI.h"
 
 // set a number of peaks for the major peaks module to find
-#define NUM_PEAKS 8
+#define NUM_PEAKS 4
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
@@ -33,7 +33,7 @@ void loop() {
   rawSpectrogram.pushWindow(windowData);
 
   // process the freqeuncy domain data
-  vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.8);
+  vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 6, 2, 1.4);
   processedSpectrogram.pushWindow(windowData);
 
   // have analysis modules analyze the frequency domain data
