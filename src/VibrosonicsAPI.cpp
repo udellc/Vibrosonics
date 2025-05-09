@@ -341,7 +341,7 @@ void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, float** moduleD
     for (int i = 0; i < numGrains; i++) {
         float currentAmp = moduleData[MP_AMP][i];
         float currentFreq = moduleData[MP_FREQ][i];
-        if(currentAmp > grains[i].getAmplitude()){
+        if(grains[i].getGrainState() == READY){
             grains[i].setAttack(currentFreq, currentAmp, grains[i].getAttackDuration());
             grains[i].setSustain(currentFreq, currentAmp, grains[i].getSustainDuration());
             grains[i].setRelease(currentFreq, 0, grains[i].getReleaseDuration());
