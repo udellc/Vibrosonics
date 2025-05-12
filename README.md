@@ -32,9 +32,12 @@ To set up the Arduino IDE for the Vibrosonics project, follow these steps:
 2. Install the ESP32 board to the Arduino IDE:
     - Navigate to `Tools` > `Board` > `Boards Manager`.
     - Search for `ESP32` and install the esp32 board library by Expressif.
-3. Next, download the zip files for Vibrosonics, AudioLab, AudioPrsim, and Fast4ier
-4. Once all of the zip files are finished downloading, go back to the Arduino IDE.
-5. Navigate to `Sketch` > `Include Library` > `Add .ZIP library`
+3. In the top left, click the dropdown and choose `Adafruit ESP32 Feather` for board and `COMX` for port where `X` is a number 0-6.
+    - Board needs to be plugged in for this to work.
+    - May need to download drivers in order to detect the port.
+4. Next, download the zip files for Vibrosonics, AudioLab, AudioPrsim, and Fast4ier
+5. Once all of the zip files are finished downloading, go back to the Arduino IDE.
+6. Navigate to `Sketch` > `Include Library` > `Add .ZIP library`
     - Do this for each library.
 
 You should be ready to use the example sketches or create your own! To upload a
