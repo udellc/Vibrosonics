@@ -55,6 +55,8 @@
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
 Grain* sweepGrain = vapi.createGrainArray(1, 0, SINE);
+FreqEnv sweepFreqEnv = {};
+AmpEnv sweepAmpEnv = {};
 
 float targetFreq = 100.0;
 /**
@@ -70,16 +72,10 @@ void setup()
    * @param grains An array of grains
    * @param numGrains The size of a grain array
    * @param duration The number of windows the attack state will last for
-   * @param freqMod The multiplicative modulation factor for the frequency of the attack state
-   * @param ampMod The multiplicative modulation factor for the frequency of the attack state
    * @param curve Factor to influence the shave of the progression curve of the grain
    */
-  vapi.shapeGrainAttack(sweepGrain, 1, 10, 1.0, 1.0, 1.0);
-  vapi.shapeGrainSustain(sweepGrain, 1, 3, 1.0, 1.0);
-  vapi.shapeGrainRelease(sweepGrain, 1, 8, 1.0, 1.0, 1.0);
-  sweepGrain[0].setAttack(targetFreq, 0.5, sweepGrain[0].getAttackDuration());
-  sweepGrain[0].setSustain(targetFreq, 0.5, sweepGrain[0].getSustainDuration());
-  sweepGrain[0].setRelease(targetFreq, 0.0, sweepGrain[0].getReleaseDuration());
+  sweepFreqEnv = vapi.createFreqEnv(targetFreq, targetFreq, 10, 2, 3, 8, 1.0);
+  sweepAmpEnv = vapi.createAmpEnv(0.5, 0.0, 10, 2, 3, 8, 1.0);
 }
 
 /**
@@ -94,10 +90,9 @@ void loop()
   if(sweepGrain[0].getFrequency() >= 4000) targetFreq = 100.0;
   // Previous frequency has finished playing, increase grain frequency
   if(sweepGrain[0].getGrainState() == READY){
-    targetFreq = targetFreq*1.05;
-    sweepGrain[0].setAttack(targetFreq, 0.5, sweepGrain[0].getAttackDuration());
-    sweepGrain[0].setSustain(targetFreq, 0.5, sweepGrain[0].getSustainDuration());
-    sweepGrain[0].setRelease(targetFreq, 0.0, sweepGrain[0].getReleaseDuration());
+    targetFreq = targetFreq*1.0595;
+    sweepFreqEnv.targetFrequency = targetFreq;
+    vapi.triggerGrains(sweepGrain, 1, sweepFreqEnv, sweepAmpEnv);
   }
   // Progress the grain through its curve
   vapi.updateGrains();

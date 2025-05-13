@@ -107,20 +107,12 @@ public:
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
     //! Updates an array of numPeaks grains sustain and release windows.
-    void triggerGrains(Grain* grains, int numPeaks, float** peakData);
+    void triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv);
 
-    //! Sets the attack state parameters for an array of grains
-    void shapeGrainAttack(Grain* grains, int numGrains, int duration,
-        float freqMod, float ampMod, float curve);
-
-    //! Sets the sustain state parameters for an array of grains
-    void shapeGrainSustain(Grain* grains, int numGrains, int duration,
-        float freqMod, float ampMod);
-
-    //! Sets the release state parameters for an array of grains
-    void shapeGrainRelease(Grain* grains, int numGrains, int duration,
-        float freqMod, float ampMod, float curve);
-
+    FreqEnv createFreqEnv(float targetFreq, float minFreq, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
+    FreqEnv createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
+    void setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv);
+    void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv);
 private:
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.

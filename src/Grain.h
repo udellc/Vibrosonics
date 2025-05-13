@@ -16,8 +16,29 @@
 enum grainState {
   READY,
   ATTACK,
+  DECAY,
   SUSTAIN,
   RELEASE
+};
+
+struct FreqEnv {
+  float targetFrequency = 100.0;
+  float minFrequency = 0.0;
+  int attackDuration = 1;
+  int decayDuration = 1;
+  int sustainDuration = 1;
+  int releaseDuration = 1;
+  float curve = 1.0f;
+};
+
+struct AmpEnv {
+  float targetAmplitude = 0.5;
+  float minAmplitude = 0.0;
+  int attackDuration = 1;
+  int decayDuration = 1;
+  int sustainDuration = 1;
+  int releaseDuration = 1;
+  float curve = 1.0f;
 };
 
 class GrainList;
@@ -45,17 +66,14 @@ private:
     float frequency = 0.0f;
     //! Targeted amplitude for the phase
     float amplitude = 0.0f;
-    //! Modulates frequency by multiplying frequencyModulator to frequency
-    float frequencyModulator = 1.0f; // Default: no modulation
-    //! Modulates amplitude by multiplying amplitudeModulator to amplitude
-    float amplitudeModulator = 1.0f; // Default: no modulation
-
     //! Shapes the curve by raising curveStep*windowCounter to the degree of the curve value
     float curve = 1.0f; // Default: linear
   };
 
   //! Struct containing attack parameters
   Phase attack;
+  //! Struct containing decay parameters
+  Phase decay;
   //! Struct containing sustain parameters
   Phase sustain;
   //! Struct containing release parameters
@@ -85,11 +103,6 @@ private:
 
   //! Update frequency and amplitude values based on current grain state.
   void run();
-
-  //! Helper function to perform necessary operations on grain parameters
-  //! when transitioning between run states
-  void transitionTo(grainState newState);
-
 public:
   //! Default constructor to allocate a new grain
   Grain();
@@ -100,6 +113,9 @@ public:
 
   //! Updates grain parameters in the attack state
   void setAttack(float frequency, float amplitude, int duration);
+
+  //! Updates grain parameters in the decay state
+  void setDecay(float frequency, float amplitude, int duration);
 
   //! Updates grain parameters in the sustain state
   void setSustain(float frequency, float amplitude, int duration);
@@ -113,11 +129,15 @@ public:
   //! Sets grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
   void setWaveType(WaveType waveType);
 
-  //! Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
+  //! Returns the state of a grain (READY, ATTACK, DECAY, SUSTAIN, RELEASE)
   grainState getGrainState();
 
   //! Updates grain values and state if necessary
   static void update(GrainList *globalGrainList);
+
+  //! Helper function to perform necessary operations on grain parameters
+  //! when transitioning between run states
+  void transitionTo(grainState newState);
 
   //! Returns the current amplitude of the grain
   float getAmplitude();
@@ -128,20 +148,27 @@ public:
   //! Returns the attack duration
   int getAttackDuration();
 
+  //! Returns the decay duration
+  int getDecayDuration();
+
   //! Returns the sustain duration
   int getSustainDuration();
 
   //! Returns the release duration
   int getReleaseDuration();
 
-  //! Sets parameters for the attack state
-  void shapeAttack(int duration, float freqMod, float ampMod, float curve);
+  //! Sets grain parameters for the frequency envelope
+  void setFreqEnv(FreqEnv freqEnv);
 
-  //! Sets parameters for the sustain state
-  void shapeSustain(int duration, float freqMod, float ampMod);
+  //! Sets grain parameters for the amplitude envelope
+  void setAmpEnv(AmpEnv ampEnv);
 
-  //! Sets parameters for the release state
-  void shapeRelease(int duration, float freqMod, float ampMod, float curve);
+  //! Returns the frequncy envelope struct containing state data
+  FreqEnv getFreqEnv();
+
+  //! Returns the amplitude envelope struct containing state data
+  AmpEnv getAmpEnv();
+
 };
 
 /**
@@ -175,5 +202,4 @@ public:
   //! Returns the head of the list.
   GrainNode* getHead();
 };
-
 #endif

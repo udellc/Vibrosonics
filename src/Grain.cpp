@@ -4,7 +4,6 @@
  * This file is part of the Grain class.
 */
 
-
 #include "Grain.h"
 #include <math.h>
 
@@ -53,11 +52,25 @@ Grain::Grain(uint8_t channel, WaveType waveType)
  */
 void Grain::setAttack(float frequency, float amplitude, int duration)
 {
-  attack.frequency = frequency * attack.frequencyModulator;
-  attack.amplitude = amplitude * attack.amplitudeModulator;
+  attack.frequency = frequency;
+  attack.amplitude = amplitude;
   attack.duration = duration;
 
   sustainAttackFrequencyDifference = sustain.frequency - attack.frequency;
+}
+
+/**
+ * Updates frequency, amplitude, and duration for DECAY.
+ *
+ * @param frequency Updated frequncy
+ * @param amplitude Updated amplitude
+ * @param duration Updated duration
+ */
+void Grain::setDecay(float frequency, float amplitude, int duration)
+{
+  decay.frequency = frequency;
+  decay.amplitude = amplitude;
+  decay.duration = duration;
 }
 
 /**
@@ -70,8 +83,8 @@ void Grain::setAttack(float frequency, float amplitude, int duration)
  */
 void Grain::setSustain(float frequency, float amplitude, int duration)
 {
-  sustain.frequency = frequency * sustain.frequencyModulator;
-  sustain.amplitude = amplitude * sustain.amplitudeModulator;
+  sustain.frequency = frequency;
+  sustain.amplitude = amplitude;
   sustain.duration = duration;
 
   sustainAttackFrequencyDifference = sustain.frequency - attack.frequency;
@@ -89,8 +102,8 @@ void Grain::setSustain(float frequency, float amplitude, int duration)
  */
 void Grain::setRelease(float frequency, float amplitude, int duration)
 {
-  release.frequency = frequency * release.frequencyModulator;
-  release.amplitude = amplitude * release.amplitudeModulator;
+  release.frequency = frequency;
+  release.amplitude = amplitude;
   release.duration = duration;
 
   releaseSustainFrequencyDifference = release.frequency - sustain.frequency;
@@ -122,12 +135,12 @@ void Grain::setWaveType(WaveType waveType)
  * each state. In essence it progresses the sample along the attack sustain
  * release curve.
  */
+// TODO: TEST AND IMPLEMENT 0 WINDOW DURATION CASES
 void Grain::run()
 {
   switch (state)
   {
     case READY:
-      transitionTo(ATTACK);
       break;
 
     case ATTACK:
@@ -135,9 +148,21 @@ void Grain::run()
         float pos  = (float)(windowCounter + 1) / (float)attack.duration;
         float curvedProgress = powf(pos, attack.curve);
         // Compute and update frequncy and amplitude with incremental curve position
-        grainFrequency = attack.frequency + sustainAttackFrequencyDifference * attack.frequencyModulator;
+        grainFrequency = attack.frequency + sustainAttackFrequencyDifference;
         grainAmplitude = attack.amplitude * curvedProgress;
 
+      } else {
+        transitionTo(DECAY);
+      }
+      break;
+
+    case DECAY:
+      if (windowCounter < decay.duration) {
+        float pos  = (float)(windowCounter + 1) / (float)decay.duration;
+        float curvedProgress = powf(pos, decay.curve);
+
+        grainFrequency = decay.frequency;
+        grainAmplitude = decay.amplitude * curvedProgress;
       } else {
         transitionTo(SUSTAIN);
       }
@@ -154,7 +179,7 @@ void Grain::run()
         float pos = (float)(windowCounter + 1) / (float)release.duration;
         float curvedProgress = powf(pos, release.curve);
         // Compute and update frequncy and amplitude with incremental curve position
-        grainFrequency = sustain.frequency + releaseSustainFrequencyDifference * release.frequencyModulator;
+        grainFrequency = sustain.frequency + releaseSustainFrequencyDifference;
         grainAmplitude = sustain.amplitude + (release.amplitude - sustain.amplitude) * curvedProgress;
       } else {
         transitionTo(READY);
@@ -162,6 +187,7 @@ void Grain::run()
       break;
 
     default:
+      // If you're seeing this, you've done something wrong
       Serial.printf("Error: Invalid Grain State");
       break;
   }
@@ -183,11 +209,16 @@ void Grain::transitionTo(grainState newState) {
   } else if (newState == ATTACK) {
     float pos  = (float)(windowCounter + 1) / (float)attack.duration;
     float curvedProgress = powf(pos, attack.curve);
-    grainFrequency = attack.frequency + sustainAttackFrequencyDifference * attack.frequencyModulator;
+    grainFrequency = attack.frequency + sustainAttackFrequencyDifference;
     grainAmplitude = attack.amplitude * curvedProgress;
+  } else if (newState == DECAY) {
+    float pos  = (float)(windowCounter + 1) / (float)decay.duration;
+    float curvedProgress = powf(pos, decay.curve);
+    grainFrequency = decay.frequency;
+    grainAmplitude = decay.amplitude * curvedProgress;
   } else if (newState == SUSTAIN) {
-    grainFrequency = sustain.frequency * sustain.frequencyModulator;
-    grainAmplitude = sustain.amplitude * sustain.amplitudeModulator;
+    grainFrequency = sustain.frequency;
+    grainAmplitude = sustain.amplitude;
   }
 }
 
@@ -244,6 +275,16 @@ int Grain::getAttackDuration()
 }
 
 /**
+ * Returns the decay window duration
+ *
+ * @return int
+ */
+int Grain::getDecayDuration()
+{
+  return attack.duration;
+}
+
+/**
  * Returns the sustain window duration
  *
  * @return int
@@ -263,26 +304,36 @@ int Grain::getReleaseDuration()
   return release.duration;
 }
 
-void Grain::shapeAttack(int duration, float freqMod, float ampMod, float curve)
+void Grain::setFreqEnv(FreqEnv freqEnv)
 {
-  attack.duration = duration;
-  attack.frequencyModulator = freqMod;
-  attack.amplitudeModulator = ampMod;
-  attack.curve = curve;
+  attack.frequency = freqEnv.targetFrequency;
+  attack.duration = freqEnv.attackDuration;
+  attack.curve = freqEnv.curve;
+  decay.frequency = freqEnv.targetFrequency;
+  decay.duration = freqEnv.decayDuration;
+  decay.curve = freqEnv.curve;
+  sustain.frequency = freqEnv.targetFrequency;
+  sustain.duration = freqEnv.sustainDuration;
+  sustain.curve = freqEnv.curve;
+  release.frequency = freqEnv.minFrequency;
+  release.duration = freqEnv.releaseDuration;
+  release.curve = freqEnv.curve;
 }
 
-void Grain::shapeSustain(int duration, float freqMod, float ampMod)
+void Grain::setAmpEnv(AmpEnv ampEnv)
 {
-  sustain.duration = duration;
-  sustain.frequencyModulator = freqMod;
-  sustain.amplitudeModulator = ampMod;
-}
-void Grain::shapeRelease(int duration, float freqMod, float ampMod, float curve)
-{
-  release.duration = duration;
-  release.frequencyModulator = freqMod;
-  release.amplitudeModulator = ampMod;
-  release.curve = curve;
+  attack.frequency = ampEnv.targetAmplitude;
+  attack.duration = ampEnv.attackDuration;
+  attack.curve = ampEnv.curve;
+  decay.frequency = ampEnv.targetAmplitude;
+  decay.duration = ampEnv.decayDuration;
+  decay.curve = ampEnv.curve;
+  sustain.frequency = ampEnv.targetAmplitude;
+  sustain.duration = ampEnv.sustainDuration;
+  sustain.curve = ampEnv.curve;
+  release.frequency = ampEnv.minAmplitude;
+  release.duration = ampEnv.releaseDuration;
+  release.curve = ampEnv.curve;
 }
 
 /**
