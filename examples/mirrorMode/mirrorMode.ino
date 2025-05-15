@@ -84,8 +84,8 @@ void loop() {
   if (percussionDetection.getOutput()) {
     Serial.printf("Percussion detected\n");
 
-    percussionGrain[0].setAttack(110, 0.5, percussionGrain[0].getAttackDuration());
-    percussionGrain[0].setSustain(110, 0.5, percussionGrain[0].getSustainDuration());
+    percussionGrain[0].setAttack(110, 0.8, percussionGrain[0].getAttackDuration());
+    percussionGrain[0].setSustain(110, 0.8, percussionGrain[0].getSustainDuration());
     percussionGrain[0].setRelease(110, 0.0, percussionGrain[0].getReleaseDuration());
     percussionGrain[0].transitionTo(ATTACK);
   } else {
@@ -129,9 +129,9 @@ void synthesizePeaks(MajorPeaks* peaks, int percussion) {
     if (i == 0) {
       vapi.assignWave(freq, peaksData[MP_AMP][i], 1);
     } else if (percussion) {
-      vapi.assignWave(freq, peaksData[MP_AMP][i] / 2, 0);
+      // vapi.assignWave(freq, peaksData[MP_AMP][i] / 2, 0);
     } else {
-      vapi.assignWave(freq, peaksData[MP_AMP][i], 0);
+      // vapi.assignWave(freq, peaksData[MP_AMP][i], 0);
     }
   }
 }
