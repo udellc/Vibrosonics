@@ -46,7 +46,7 @@ void loop() {
 
   // process the freqeuncy domain data
   vapi.noiseFloor(windowData, WINDOW_SIZE_BY_2, 220);
-  
+
   // save the raw data for synthesis
   rawSpectrogram.pushWindow(windowData);
 
@@ -79,7 +79,7 @@ void loop() {
   percussive.runAnalysis();
 
   // create audio waves according the the output of the major peaks module
-  synthesizePeaks(&majorPeaks, percussionDetection.getOutput());
+  // synthesizePeaks(&majorPeaks, percussionDetection.getOutput());
 
   if (percussionDetection.getOutput()) {
     Serial.printf("Percussion detected\n");

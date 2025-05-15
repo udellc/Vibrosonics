@@ -5,6 +5,7 @@
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
 float windowData[WINDOW_SIZE_BY_2];
+float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
 Spectrogram spectrogram = Spectrogram(1);
 MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
@@ -31,8 +32,9 @@ void loop() {
       windowData[i] = 0;
     }
   }
+  AudioPrism::smooth_window_over_time(windowData, smoothedData, 0.1);
 
-  spectrogram.pushWindow(windowData);
+  spectrogram.pushWindow(smoothedData);
 
   majorPeaks.doAnalysis();
 
@@ -61,7 +63,7 @@ int interpolateAroundPeak(float* data, int indexOfPeak, int sampleRate, int wind
 void synthesizePeaks(MajorPeaks* peaks) {
   float** peaksData = peaks->getOutput();
   // interpolate around peaks
-  vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS);
+  vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS, 10000);
 
   for (int i = 0; i < NUM_PEAKS; i++) {
     int freq = interpolateAroundPeak(spectrogram.getCurrentWindow(), round(int(peaksData[MP_FREQ][i] * FREQ_WIDTH)), SAMPLE_RATE, WINDOW_SIZE);
@@ -69,29 +71,3 @@ void synthesizePeaks(MajorPeaks* peaks) {
     vapi.assignWave(freq, peaksData[MP_AMP][i], 1);
   }
 }
-
-
-
-
-    
-
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
- 
-
