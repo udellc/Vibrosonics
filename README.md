@@ -25,9 +25,9 @@ Currently, the market for similar devices is highly limited and undeveloped. Thi
 - Go to **Tools > Boards > Boards Manager**
 - Search and install `esp32` by **Espressif Systems**
 
-![Installing the board manager](/docs/images/ESP32_board_library.png)
+![Installing the board manager](/docs/images/Board_library.png)
 
-### 2. Set Board and Port
+### 2. Set Board and Ports
 - Plug in the board (you may need to install USB drivers)
 - Go to the top drop down menu and click `Select other board and port...` 
 - In the pop up window, search for `Adafruit ESP32 Feather` and select it along
