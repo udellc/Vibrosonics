@@ -18,7 +18,9 @@ Spectrogram percussionSpectrogram = Spectrogram(2);
 ModuleGroup modules = ModuleGroup(&rawSpectrogram);
 
 PercussionDetection percussionDetection = PercussionDetection(0.5, 1800000, 0.75);
-Grain* percussionGrain = vapi.createGrainArray(1, 0, SINE);
+
+FreqEnv dynamicFreqEnv = {};
+AmpEnv dynamicAmpEnv = {};
 
 int count = 0;
 
@@ -29,9 +31,8 @@ void setup() {
   percussionDetection.setDebugMode(0x01);
   modules.addModule(&percussionDetection, 1800, 4000);
 
-  vapi.shapeGrainAttack(percussionGrain, 1, 1, 1.0, 1.0, 1.0);
-  vapi.shapeGrainSustain(percussionGrain, 1, 1, 1.0, 1.0);
-  vapi.shapeGrainRelease(percussionGrain, 1, 3, 1.0, 1.0, 1.0);
+  dynamicFreqEnv = vapi.createFreqEnv(110, 110);
+  dynamicAmpEnv = vapi.createAmpEnv(0.5, 0.0, 1, 0, 1, 3, 1.0);
 }
 
 void loop() {
@@ -72,11 +73,7 @@ void loop() {
 
   if (percussionDetection.getOutput()) {
     Serial.printf("Percussion detected\n");
-
-    percussionGrain[0].setAttack(100, 0.5, percussionGrain[0].getAttackDuration());
-    percussionGrain[0].setSustain(100, 0.5, percussionGrain[0].getSustainDuration());
-    percussionGrain[0].setRelease(100, 0.0, percussionGrain[0].getReleaseDuration());
-    percussionGrain[0].transitionTo(ATTACK);
+    vapi.createDynamicGrain(1, SINE, dynamicFreqEnv, dynamicAmpEnv);
   } else {
     Serial.printf("---\n");
   }

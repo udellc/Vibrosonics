@@ -334,7 +334,12 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 }
 
 /**
- * TODO: add documentation
+ * Creates a grain that runs once and is then deleted.
+ *
+ * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
+ * @param waveType The type of wave Audiolab will generate utilizing the grains.
+ * @param FreqEnv The frequency data used to shape the grain.
+ * @param AmpEnv The amplitude data, duration lengths, and curve used to shape the grain.
  */
 Grain* VibrosonicsAPI::createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv)
 {

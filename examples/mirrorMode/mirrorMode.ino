@@ -19,7 +19,9 @@ MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 Spectrogram percussiveSpectrogram = Spectrogram(2);
 ModuleGroup percussive = ModuleGroup(&percussiveSpectrogram);
 PercussionDetection percussionDetection = PercussionDetection();
-Grain* percussionGrain = vapi.createGrainArray(1, 0, SINE);
+
+FreqEnv dynamicFreqEnv = {};
+AmpEnv dynamicAmpEnv = {};
 
 void setup() {
   Serial.begin(115200);
@@ -30,9 +32,8 @@ void setup() {
   melodic.addModule(&majorPeaks, 220, 1400);
   percussive.addModule(&percussionDetection, 1800, 4000);
 
-  vapi.shapeGrainAttack(percussionGrain, 1, 1, 1.0, 1.0, 1.0);
-  vapi.shapeGrainSustain(percussionGrain, 1, 1, 1.0, 1.0);
-  vapi.shapeGrainRelease(percussionGrain, 1, 3, 1.0, 1.0, 1.0);
+  dynamicFreqEnv = vapi.createFreqEnv(110, 110);
+  dynamicAmpEnv = vapi.createAmpEnv(0.5, 0.0, 3, 2, 1, 3, 1.0);
 }
 
 void loop() {
@@ -83,11 +84,7 @@ void loop() {
 
   if (percussionDetection.getOutput()) {
     Serial.printf("Percussion detected\n");
-
-    percussionGrain[0].setAttack(110, 0.8, percussionGrain[0].getAttackDuration());
-    percussionGrain[0].setSustain(110, 0.8, percussionGrain[0].getSustainDuration());
-    percussionGrain[0].setRelease(110, 0.0, percussionGrain[0].getReleaseDuration());
-    percussionGrain[0].transitionTo(ATTACK);
+    vapi.createDynamicGrain(1, SINE, dynamicFreqEnv, dynamicAmpEnv);
   } else {
     Serial.printf("\n");
   }
