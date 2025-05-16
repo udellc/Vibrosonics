@@ -162,7 +162,7 @@ void Grain::run()
         float curvedProgress = powf(pos, decay.curve);
 
         grainFrequency = decay.frequency;
-        grainAmplitude = decay.amplitude * curvedProgress;
+        grainAmplitude = decay.amplitude + (sustain.amplitude - attack.amplitude) * curvedProgress;
       } else {
         transitionTo(SUSTAIN);
       }
@@ -202,24 +202,63 @@ void Grain::run()
 void Grain::transitionTo(grainState newState) {
   windowCounter = 0;
   state = newState;
+  bool stateSkipped;
 
-  if (newState == READY) {
-    grainFrequency = 0.0f;
-    grainAmplitude = 0.0f;
-  } else if (newState == ATTACK) {
-    float pos  = (float)(windowCounter + 1) / (float)attack.duration;
-    float curvedProgress = powf(pos, attack.curve);
-    grainFrequency = attack.frequency + sustainAttackFrequencyDifference;
-    grainAmplitude = attack.amplitude * curvedProgress;
-  } else if (newState == DECAY) {
-    float pos  = (float)(windowCounter + 1) / (float)decay.duration;
-    float curvedProgress = powf(pos, decay.curve);
-    grainFrequency = decay.frequency;
-    grainAmplitude = decay.amplitude * curvedProgress;
-  } else if (newState == SUSTAIN) {
-    grainFrequency = sustain.frequency;
-    grainAmplitude = sustain.amplitude;
-  }
+  do {
+    stateSkipped = false;
+    switch (state) {
+      case READY:
+        grainFrequency = 0.0f;
+        grainAmplitude = 0.0f;
+        break;
+      case ATTACK:
+        if (attack.duration == 0) {
+          state = DECAY;
+          stateSkipped = true;
+        } else {
+          float pos  = (float)(windowCounter + 1) / (float)attack.duration;
+          float curvedProgress = powf(pos, attack.curve);
+          grainFrequency = attack.frequency + sustainAttackFrequencyDifference;
+          grainAmplitude = attack.amplitude * curvedProgress;
+        }
+        break;
+      case DECAY:
+        if (decay.duration == 0) {
+          state = SUSTAIN;
+          stateSkipped = true;
+        } else {
+          float pos  = (float)(windowCounter + 1) / (float)decay.duration;
+          float curvedProgress = powf(pos, decay.curve);
+          grainFrequency = decay.frequency;
+          grainAmplitude = decay.amplitude + (sustain.amplitude - attack.amplitude) * curvedProgress;
+        }
+        break;
+      case SUSTAIN:
+        if (sustain.duration == 0) {
+          state = RELEASE;
+          stateSkipped = true;
+        } else {
+          grainFrequency = sustain.frequency;
+          grainAmplitude = sustain.amplitude;
+        }
+        break;
+      case RELEASE:
+        if (release.duration == 0) {
+          state = READY;
+          stateSkipped = true;
+        } else {
+          float pos = (float)(windowCounter + 1) / (float)release.duration;
+          float curvedProgress = powf(pos, release.curve);
+          // Compute and update frequncy and amplitude with incremental curve position
+          grainFrequency = sustain.frequency + releaseSustainFrequencyDifference;
+          grainAmplitude = sustain.amplitude + (release.amplitude - sustain.amplitude) * curvedProgress;
+        }
+        break;
+      default:
+        Serial.printf("Error: Invalid GrainState to transition to\n");
+        break;
+    }
+  } while(stateSkipped);
 }
 
 /**
@@ -322,16 +361,16 @@ void Grain::setFreqEnv(FreqEnv freqEnv)
 
 void Grain::setAmpEnv(AmpEnv ampEnv)
 {
-  attack.frequency = ampEnv.targetAmplitude;
+  attack.amplitude = ampEnv.targetAmplitude;
   attack.duration = ampEnv.attackDuration;
   attack.curve = ampEnv.curve;
-  decay.frequency = ampEnv.targetAmplitude;
+  decay.amplitude = ampEnv.targetAmplitude;
   decay.duration = ampEnv.decayDuration;
   decay.curve = ampEnv.curve;
-  sustain.frequency = ampEnv.targetAmplitude;
+  sustain.amplitude = ampEnv.targetAmplitude * .8;
   sustain.duration = ampEnv.sustainDuration;
   sustain.curve = ampEnv.curve;
-  release.frequency = ampEnv.minAmplitude;
+  release.amplitude = ampEnv.minAmplitude;
   release.duration = ampEnv.releaseDuration;
   release.curve = ampEnv.curve;
 }

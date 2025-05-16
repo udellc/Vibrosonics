@@ -361,26 +361,26 @@ void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, struct FreqEnv 
     }
 }
 
-FreqEnv createFreqEnv(float targetFreq, float minFreq, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)
+FreqEnv VibrosonicsAPI::createFreqEnv(float targetFreq, float minFreq, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)
 {
     FreqEnv newFreqEnv = {targetFreq, minFreq, attackDuration, decayDuration, sustainDuration, releaseDuration, curve};
     return newFreqEnv;
 }
 
-AmpEnv createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)
+AmpEnv VibrosonicsAPI::createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)
 {
     AmpEnv newAmpEnv = {targetAmp, minAmp, attackDuration, decayDuration, sustainDuration, releaseDuration, curve};
     return newAmpEnv;
 }
 
-void setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv)
+void VibrosonicsAPI::setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv)
 {
     for(int i = 0; i < numGrains; i++) {
         grains[i].setFreqEnv(freqEnv);
     }
 }
 
-void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv)
+void VibrosonicsAPI::setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv)
 {
     for(int i = 0; i < numGrains; i++) {
         grains[i].setAmpEnv(ampEnv);

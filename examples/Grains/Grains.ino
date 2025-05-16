@@ -74,8 +74,8 @@ void setup()
    * @param duration The number of windows the attack state will last for
    * @param curve Factor to influence the shave of the progression curve of the grain
    */
-  sweepFreqEnv = vapi.createFreqEnv(targetFreq, targetFreq, 10, 2, 3, 8, 1.0);
-  sweepAmpEnv = vapi.createAmpEnv(0.5, 0.0, 10, 2, 3, 8, 1.0);
+  sweepFreqEnv = vapi.createFreqEnv(targetFreq, targetFreq, 10, 0, 0, 8, 1.0);
+  sweepAmpEnv = vapi.createAmpEnv(0.5, 0.0, 10, 0, 0, 8, 1.0);
 }
 
 /**

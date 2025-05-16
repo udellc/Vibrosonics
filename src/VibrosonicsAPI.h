@@ -110,7 +110,7 @@ public:
     void triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv);
 
     FreqEnv createFreqEnv(float targetFreq, float minFreq, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
-    FreqEnv createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
+    AmpEnv createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
     void setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv);
     void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv);
 private:
