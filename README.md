@@ -1,21 +1,20 @@
 # Vibrosonics
 
-Welcome to Vibrosonics!
+Experience audio through vibration.
 
-Detailed documentation can be viewed on the [Doxygen Page](https://udellc.github.io/Vibrosonics/)
+Vibrosonics is an Arduino library that enables you to translate audio into
+tactile vibrations in real-time.
 
-Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable
+[Documentation (Doxygen)](https://udellc.github.io/Vibrosonics/)
 
-Library dependencies:
+Hardware: Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck
+transducer, 3.5mm audio jack cable
 
-- [AudioLab](https://github.com/synytsim/AudioLab)
+Dependencies: [AudioLab](https://github.com/synytsim/AudioLab) 
+· [AudioPrism](https://github.com/udellc/AudioPrism) 
+· [Fast4ier](https://github.com/jmerc77/Fast4ier)
 
-- [AudioPrism](https://github.com/udellc/AudioPrism)
-
-- [Fast4ier](https://github.com/jmerc77/Fast4ier)
-
-
-## What is it?
+## Overview
 
 The goal of the Vibrosonics project is to enable those who struggle with or cannot hear to enjoy audio-based entertainment in a different way as well as potentially enhance audio-related experiences for enthusiasts by adding the sensation of touch. 
 
@@ -25,31 +24,34 @@ The majority of initial adoption would likely be from users for whom the product
 
 Currently, the market for similar devices is highly limited and undeveloped. This project seeks to expound upon what little exists by incorporating a higher range of translated audio frequencies along with more detailed audio-to-haptic translation into the final tactile experience. Ideally, this product would progressively gain new users by becoming a serious consideration for the aforementioned groups that require an alternative to pure audio. However, this is a relatively niche customer base. The biggest growth in adoption would come from making this product potentially appeal to everyone by adding the element of touch to some forms of digital entertainment. However, this concept would need to be developed much further past the scope of a single capstone term before it could even have the potential break into being any kind of mainstream entertainment device.
 
-## Installation and Flashing
-### Arduino IDE
-To set up the Arduino IDE for the Vibrosonics project, follow these steps:
-1. Install the Arduino IDE for your operating system.
-2. Install the ESP32 board to the Arduino IDE:
-    - Navigate to `Tools` > `Board` > `Boards Manager`.
-    - Search for `ESP32` and install the esp32 board library by Expressif.
-3. In the top left, click the dropdown and choose `Adafruit ESP32 Feather` for board and `COMX` for port where `X` is a number 0-6.
-    - Board needs to be plugged in for this to work.
-    - May need to download drivers in order to detect the port.
-4. Next, download the zip files for Vibrosonics, AudioLab, AudioPrsim, and Fast4ier
-5. Once all of the zip files are finished downloading, go back to the Arduino IDE.
-6. Navigate to `Sketch` > `Include Library` > `Add .ZIP library`
-    - Do this for each library.
+## Installation (Arduino IDE)
+### 1. Install Arduino IDE and ESP32 Board Support
+- Download [Arduino IDE](https://www.arduino.cc/en/software/)
+- Go to **Tools > Boards > Boards Manager**
+- Search and install `esp32` by **Espressif Systems**
 
+### 2. Set Board and Port
+- Plug in the board (you may need to install USB drivers)
+- Go to the top drop down menu and click `Select other board and port...` 
+- In the pop up window, search for `Adafruit ESP32 Feather` and select it along
+with `COMX` for port where `X` is a number 0-6
+
+### 3. Add Libraries
+Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP**):
+- [AudioLab](https://github.com/synytsim/AudioLab)
+- [AudioPrism](https://github.com/udellc/AudioPrism) 
+- [Fast4ier](https://github.com/jmerc77/Fast4ier)
+Import into Arduino via:
+
+**Sketch > Include Library> Add .ZIP library (repeat for each zip)
+
+### 4. Upload a Sketch
 You should be ready to use the example sketches or create your own! To upload a
 sketch to the Vibrosonics hardware:
-1. Ensure the ESP32 microcontroller in the Vibrosonics hardware is plugged in
-   via USB to the computer you want to upload your sketch from.
-2. To upload your sketch from the Arduino IDE, go to the top drop down menu and
-   click `Select other board and port...` 
-3. In the pop up window, search for `Adafruit ESP32 Feather` and select it
-   along with the port listed.
-4. Once that is finished, you can click the arrow in the top left of the
-   Arduino IDE to compile and upload your sketch to the Vibrosonics hardware.
+- Plug in the ESP32 via USB
+- Open your own sketch or one of our examples from **File > Examples >
+Vibrosonics > \[Example Name]**
+- Press the upload (➜) to compile and upload your sketch
 
 ## Library Architecture
 The Vibrosonics library aims to streamline three processes to enable
@@ -68,7 +70,7 @@ granular synthesis, allowing for sound wave shaping through envelopes. There
 are the \ref GrainList and \ref GrainNode classes that help you manage a
 linked-list of grains.
 
-## Special thanks to:
+## Contributors
  - Dr. Chet Udell (Project leader and manager)
  - Vincent Vaughn (Advised software and hardware development)
  - Alex Synytsia (Participated in hardware development for the project during the 2022-2023 years)
