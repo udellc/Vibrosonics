@@ -3,7 +3,7 @@
 **Vibrosonics** is an Arduino library that enables you to translate audio into
 tactile vibrations in real-time.
 
-**[Documentation (Doxygen)]**(https://udellc.github.io/Vibrosonics/) \
+[**Documentation (Doxygen)**](https://udellc.github.io/Vibrosonics/) \
 **Hardware:** Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck
 transducer, 3.5mm audio jack cable \
 **Dependencies:** [AudioLab](https://github.com/synytsim/AudioLab) 
