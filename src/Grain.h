@@ -44,9 +44,9 @@ struct AmpEnv {
 class GrainList;
 
 /**
-  * This class creates and manages the Ready, Attack, Sustain,
+  * This class creates and manages the Ready, Attack, Decay, Sustain,
   * and Release states for individual grains. A grain is a very
-  * small segment of an audio segment, allowing for more granular
+  * small segment of an audio sample, allowing for more granular
   * synthesis and management of the waves that are outputted
   * through VibroSonics hardware.
   *
@@ -104,6 +104,11 @@ private:
   //! Update frequency and amplitude values based on current grain state.
   void run();
 public:
+  //! Flag to check if a grain is dynamic or static.
+  bool isDynamic;
+  //! Flag to check if a dynamic grain has finished triggering.
+  bool markedForDeletion;
+
   //! Default constructor to allocate a new grain
   Grain();
 
@@ -131,9 +136,6 @@ public:
 
   //! Returns the state of a grain (READY, ATTACK, DECAY, SUSTAIN, RELEASE)
   grainState getGrainState();
-
-  //! Updates grain values and state if necessary
-  static void update(GrainList *globalGrainList);
 
   //! Helper function to perform necessary operations on grain parameters
   //! when transitioning between run states
@@ -169,6 +171,10 @@ public:
   //! Returns the amplitude envelope struct containing state data
   AmpEnv getAmpEnv();
 
+  //! For debugging: Prints a grain's state, frequency, and amplitude.
+  void printGrain();
+
+  friend class GrainList;
 };
 
 /**
@@ -201,5 +207,7 @@ public:
   void clearList();
   //! Returns the head of the list.
   GrainNode* getHead();
+  //! Updates grains and deletes finished dynamic grains.
+  void updateAndReap();
 };
 #endif

@@ -334,11 +334,25 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 }
 
 /**
+ * TODO: add documentation
+ */
+Grain* VibrosonicsAPI::createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv)
+{
+    Grain* newGrain = new Grain(channel, waveType);
+    newGrain->isDynamic = true;
+    grainList.pushGrain(newGrain);
+    newGrain->setFreqEnv(freqEnv);
+    newGrain->setAmpEnv(ampEnv);
+    newGrain->transitionTo(ATTACK);
+    return newGrain;
+}
+
+/**
  * Calls update for every grain in the grain list
  */
 void VibrosonicsAPI::updateGrains()
 {
-    Grain::update(&grainList);
+    grainList.updateAndReap();
 }
 
 /**

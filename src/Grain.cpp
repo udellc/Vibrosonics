@@ -19,6 +19,8 @@ Grain::Grain()
   releaseSustainFrequencyDifference = 0;
 
   windowCounter = 0;
+  isDynamic = false;
+  markedForDeletion = false;
 
   state = READY;
 }
@@ -38,6 +40,9 @@ Grain::Grain(uint8_t channel, WaveType waveType)
   releaseSustainFrequencyDifference = 0;
 
   windowCounter = 0;
+
+  this->isDynamic = false;
+  markedForDeletion = false;
 
   state = READY;
 }
@@ -135,7 +140,6 @@ void Grain::setWaveType(WaveType waveType)
  * each state. In essence it progresses the sample along the attack sustain
  * release curve.
  */
-// TODO: TEST AND IMPLEMENT 0 WINDOW DURATION CASES
 void Grain::run()
 {
   switch (state)
@@ -148,7 +152,7 @@ void Grain::run()
         float pos  = (float)(windowCounter + 1) / (float)attack.duration;
         float curvedProgress = powf(pos, attack.curve);
         // Compute and update frequncy and amplitude with incremental curve position
-        grainFrequency = attack.frequency + sustainAttackFrequencyDifference;
+        grainFrequency = attack.frequency * curvedProgress;
         grainAmplitude = attack.amplitude * curvedProgress;
 
       } else {
@@ -160,8 +164,7 @@ void Grain::run()
       if (windowCounter < decay.duration) {
         float pos  = (float)(windowCounter + 1) / (float)decay.duration;
         float curvedProgress = powf(pos, decay.curve);
-
-        grainFrequency = decay.frequency;
+        grainFrequency = decay.frequency + (sustain.frequency - attack.frequency) * curvedProgress;
         grainAmplitude = decay.amplitude + (sustain.amplitude - attack.amplitude) * curvedProgress;
       } else {
         transitionTo(SUSTAIN);
@@ -179,7 +182,7 @@ void Grain::run()
         float pos = (float)(windowCounter + 1) / (float)release.duration;
         float curvedProgress = powf(pos, release.curve);
         // Compute and update frequncy and amplitude with incremental curve position
-        grainFrequency = sustain.frequency + releaseSustainFrequencyDifference;
+        grainFrequency = sustain.frequency + (release.frequency - sustain.frequency) * curvedProgress;
         grainAmplitude = sustain.amplitude + (release.amplitude - sustain.amplitude) * curvedProgress;
       } else {
         transitionTo(READY);
@@ -194,7 +197,7 @@ void Grain::run()
 
   // Create a wave if grain is active
   if(state != READY) {
-    Wave wave = AudioLab.dynamicWave(grainChannel, grainFrequency, grainAmplitude, 0.0, waveType);
+    AudioLab.dynamicWave(grainChannel, grainFrequency, grainAmplitude, 0.0, waveType);
     windowCounter++;
   }
 }
@@ -208,8 +211,12 @@ void Grain::transitionTo(grainState newState) {
     stateSkipped = false;
     switch (state) {
       case READY:
+        if (isDynamic) {
+          markedForDeletion = true;
+        }
         grainFrequency = 0.0f;
         grainAmplitude = 0.0f;
+        //stateSkipped = true;
         break;
       case ATTACK:
         if (attack.duration == 0) {
@@ -218,7 +225,7 @@ void Grain::transitionTo(grainState newState) {
         } else {
           float pos  = (float)(windowCounter + 1) / (float)attack.duration;
           float curvedProgress = powf(pos, attack.curve);
-          grainFrequency = attack.frequency + sustainAttackFrequencyDifference;
+          grainFrequency = attack.frequency * curvedProgress;
           grainAmplitude = attack.amplitude * curvedProgress;
         }
         break;
@@ -229,7 +236,7 @@ void Grain::transitionTo(grainState newState) {
         } else {
           float pos  = (float)(windowCounter + 1) / (float)decay.duration;
           float curvedProgress = powf(pos, decay.curve);
-          grainFrequency = decay.frequency;
+          grainFrequency = decay.frequency + (sustain.frequency - attack.frequency) * curvedProgress;
           grainAmplitude = decay.amplitude + (sustain.amplitude - attack.amplitude) * curvedProgress;
         }
         break;
@@ -250,7 +257,7 @@ void Grain::transitionTo(grainState newState) {
           float pos = (float)(windowCounter + 1) / (float)release.duration;
           float curvedProgress = powf(pos, release.curve);
           // Compute and update frequncy and amplitude with incremental curve position
-          grainFrequency = sustain.frequency + releaseSustainFrequencyDifference;
+          grainFrequency = sustain.frequency + (release.frequency - sustain.frequency) * curvedProgress;
           grainAmplitude = sustain.amplitude + (release.amplitude - sustain.amplitude) * curvedProgress;
         }
         break;
@@ -269,18 +276,6 @@ void Grain::transitionTo(grainState newState) {
 grainState Grain::getGrainState()
 {
   return state;
-}
-
-/**
- * Performs the run() function on each node in the globalGrainList
- */
-void Grain::update(GrainList *globalGrainList)
-{
-  GrainNode *current = globalGrainList->getHead();
-  while (current != NULL) {
-    current->reference->run();
-    current = current->next;
-  }
 }
 
 /**
@@ -375,6 +370,11 @@ void Grain::setAmpEnv(AmpEnv ampEnv)
   release.curve = ampEnv.curve;
 }
 
+void Grain::printGrain()
+{
+  Serial.printf("State: %i, Frequency: %f, Amplitude: %f\n", state, grainFrequency, grainAmplitude);
+}
+
 /**
  * Pushes a grain to the tail of the GrainList.
  *
@@ -406,6 +406,37 @@ void GrainList::clearList()
   head = tail = nullptr;
 }
 
+void GrainList::updateAndReap()
+{
+  GrainNode *current = head;
+  GrainNode *prev = nullptr;
+
+  while (current != nullptr) {
+    GrainNode *nextNode = current->next;
+    current->reference->run();
+    if (current->reference->isDynamic &&
+      current->reference->markedForDeletion &&
+      current->reference->getGrainState() == READY
+    ) {
+      if (prev == nullptr) {
+        head = nextNode;
+      } else {
+        prev->next = nextNode;
+      }
+      if (nextNode == nullptr) {
+        tail = prev;
+      }
+
+      delete current->reference;
+      delete current;
+
+      current = nextNode;
+    } else {
+      prev = current;
+      current = nextNode;
+    }
+  }
+}
 /**
  * Returns the head of the GrainList.
  *
