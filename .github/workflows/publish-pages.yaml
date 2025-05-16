@@ -2,6 +2,9 @@ name: Publish Documentation to Github Pages
 on:
   release:
     types: [released]
+  push:
+    branches:
+      - main
   workflow_dispatch:
 jobs:
   deploy:
