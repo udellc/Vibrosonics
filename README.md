@@ -1,6 +1,5 @@
 # Vibrosonics
-
-**Experience audio through vibration.** \
+#### Experience audio through vibration
 **Vibrosonics** is an Arduino library that enables you to translate audio into
 tactile vibrations in real-time.
 
@@ -12,7 +11,6 @@ Dependencies: [AudioLab](https://github.com/synytsim/AudioLab)
 · [Fast4ier](https://github.com/jmerc77/Fast4ier)
 
 ## Overview
-
 The goal of the Vibrosonics project is to enable those who struggle with or cannot hear to enjoy audio-based entertainment in a different way as well as potentially enhance audio-related experiences for enthusiasts by adding the sensation of touch. 
 
 To that end, the aim is to create an easily wearable portable device than can take in audio signals and convert them to vibrations reflective of the intensity and pitch of the initial sound.
