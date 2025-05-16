@@ -52,7 +52,7 @@ sketch to the Vibrosonics hardware:
 - Open your own sketch or one of our examples from **File > Examples >
 Vibrosonics > \[Example Name]**
 - Press the upload (➜) in the top left to compile and upload your sketch
-![Uploading a sketch to the arduino](/docs/images/Upload.png)
+![Uploading a sketch to the arduino](/docs/images/Upload_sketch.png)
 
 ## Library Architecture
 The Vibrosonics library aims to streamline three processes to enable
