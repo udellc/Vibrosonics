@@ -24,6 +24,7 @@ Currently, the market for similar devices is highly limited and undeveloped. Thi
 - Download [Arduino IDE](https://www.arduino.cc/en/software/)
 - Go to **Tools > Boards > Boards Manager**
 - Search and install `esp32` by **Espressif Systems**
+
 ![Installing the board manager](/docs/images/ESP32_board_library.png)
 
 ### 2. Set Board and Port
@@ -31,7 +32,8 @@ Currently, the market for similar devices is highly limited and undeveloped. Thi
 - Go to the top drop down menu and click `Select other board and port...` 
 - In the pop up window, search for `Adafruit ESP32 Feather` and select it along
 with `COMX` for port where `X` is a number 0-6
-![The other board and port drop down](/docs/images/Select_board.png)
+
+![The other board and port drop down](/docs/images/Confirm_board.png)
 
 ### 3. Add Libraries
 Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP**):
