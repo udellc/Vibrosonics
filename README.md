@@ -10,6 +10,12 @@ transducer, 3.5mm audio jack cable \
 · [AudioPrism](https://github.com/udellc/AudioPrism) 
 · [Fast4ier](https://github.com/jmerc77/Fast4ier)
 
+## Table of Contents
+- [Overview](#overview)
+- [Installation](#installation-arduino-ide)
+- [Library Architecture](#library-architecture)
+- [Contributors](#contributors)
+
 ## Overview
 The goal of the Vibrosonics project is to enable those who struggle with or
 cannot hear to enjoy audio-based entertainment in a different way as well as
@@ -98,7 +104,7 @@ linked-list of grains.
 - [Ashton Tilton](https://github.com/amputee20000)
 - [Julia Yang](https://github.com/jjuliayang)
 
-[LinkedIn pages](https://dot.cards/vibrosonicscs)
+[LinkedIn Pages](https://dot.cards/vibrosonicscs)
 
 ### Special Thanks
  - Dr. Chet Udell (Project leader and manager)
