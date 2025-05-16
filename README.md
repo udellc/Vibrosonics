@@ -96,7 +96,8 @@ linked-list of grains.
 - [Ben Kahl](https://github.com/ben-kahl)
 - [Keith Reinhardt](https://github.com/reinhake)
 - [Ashton Tilton](https://github.com/amputee20000)
-- [Julia Yang](https://github.com/jjuliayang) \
+- [Julia Yang](https://github.com/jjuliayang)
+
 [LinkedIn pages](https://dot.cards/vibrosonicscs)
 
 ### Special Thanks
