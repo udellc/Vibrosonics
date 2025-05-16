@@ -15,13 +15,9 @@ Grain::Grain()
 {
   grainChannel = 0;
   waveType = SINE;
-  sustainAttackFrequencyDifference = 0;
-  releaseSustainFrequencyDifference = 0;
-
   windowCounter = 0;
   isDynamic = false;
   markedForDeletion = false;
-
   state = READY;
 }
 
@@ -36,14 +32,9 @@ Grain::Grain(uint8_t channel, WaveType waveType)
 {
   grainChannel = channel;
   this->waveType = waveType;
-  sustainAttackFrequencyDifference = 0;
-  releaseSustainFrequencyDifference = 0;
-
   windowCounter = 0;
-
   this->isDynamic = false;
   markedForDeletion = false;
-
   state = READY;
 }
 
@@ -60,8 +51,6 @@ void Grain::setAttack(float frequency, float amplitude, int duration)
   attack.frequency = frequency;
   attack.amplitude = amplitude;
   attack.duration = duration;
-
-  sustainAttackFrequencyDifference = sustain.frequency - attack.frequency;
 }
 
 /**
@@ -91,10 +80,6 @@ void Grain::setSustain(float frequency, float amplitude, int duration)
   sustain.frequency = frequency;
   sustain.amplitude = amplitude;
   sustain.duration = duration;
-
-  sustainAttackFrequencyDifference = sustain.frequency - attack.frequency;
-
-  releaseSustainFrequencyDifference = release.frequency - sustain.frequency;
 }
 
 /**
@@ -110,8 +95,6 @@ void Grain::setRelease(float frequency, float amplitude, int duration)
   release.frequency = frequency;
   release.amplitude = amplitude;
   release.duration = duration;
-
-  releaseSustainFrequencyDifference = release.frequency - sustain.frequency;
 }
 
 /**
@@ -200,8 +183,15 @@ void Grain::run()
     AudioLab.dynamicWave(grainChannel, grainFrequency, grainAmplitude, 0.0, waveType);
     windowCounter++;
   }
+  this->printGrain();
 }
 
+/**
+ * Helper function for run. Handles skipped states and prepares Grain
+ * for the current window without leaving a 1 window gap between grain states.
+ *
+ * @param newState State to transition to.
+ */
 void Grain::transitionTo(grainState newState) {
   windowCounter = 0;
   state = newState;
@@ -216,10 +206,9 @@ void Grain::transitionTo(grainState newState) {
         }
         grainFrequency = 0.0f;
         grainAmplitude = 0.0f;
-        //stateSkipped = true;
         break;
       case ATTACK:
-        if (attack.duration == 0) {
+        if (attack.duration <= 0) {
           state = DECAY;
           stateSkipped = true;
         } else {
@@ -230,7 +219,7 @@ void Grain::transitionTo(grainState newState) {
         }
         break;
       case DECAY:
-        if (decay.duration == 0) {
+        if (decay.duration <= 0) {
           state = SUSTAIN;
           stateSkipped = true;
         } else {
@@ -241,7 +230,7 @@ void Grain::transitionTo(grainState newState) {
         }
         break;
       case SUSTAIN:
-        if (sustain.duration == 0) {
+        if (sustain.duration <= 0) {
           state = RELEASE;
           stateSkipped = true;
         } else {
@@ -250,7 +239,7 @@ void Grain::transitionTo(grainState newState) {
         }
         break;
       case RELEASE:
-        if (release.duration == 0) {
+        if (release.duration <= 0) {
           state = READY;
           stateSkipped = true;
         } else {
@@ -269,7 +258,7 @@ void Grain::transitionTo(grainState newState) {
 }
 
 /**
- * Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
+ * Returns the state of a grain (READY, ATTACK, DECAY, SUSTAIN, RELEASE)
  *
  * @return grainState
  */
@@ -338,22 +327,24 @@ int Grain::getReleaseDuration()
   return release.duration;
 }
 
+/**
+ * Sets state parameters based on the frequency envelope passed in.
+ *
+ * @param freqEnv Frequency envelope containing new data to update state parameters with.
+ */
 void Grain::setFreqEnv(FreqEnv freqEnv)
 {
   attack.frequency = freqEnv.targetFrequency;
-  attack.duration = freqEnv.attackDuration;
-  attack.curve = freqEnv.curve;
   decay.frequency = freqEnv.targetFrequency;
-  decay.duration = freqEnv.decayDuration;
-  decay.curve = freqEnv.curve;
   sustain.frequency = freqEnv.targetFrequency;
-  sustain.duration = freqEnv.sustainDuration;
-  sustain.curve = freqEnv.curve;
   release.frequency = freqEnv.minFrequency;
-  release.duration = freqEnv.releaseDuration;
-  release.curve = freqEnv.curve;
 }
 
+/**
+ * Sets state parameters based on the amplitude envelope passed in.
+ *
+ * @param freqEnv Amplitude envelope containing new data to update state parameters with.
+ */
 void Grain::setAmpEnv(AmpEnv ampEnv)
 {
   attack.amplitude = ampEnv.targetAmplitude;
@@ -370,6 +361,9 @@ void Grain::setAmpEnv(AmpEnv ampEnv)
   release.curve = ampEnv.curve;
 }
 
+/**
+ * Prints grain debug info.
+ */
 void Grain::printGrain()
 {
   Serial.printf("State: %i, Frequency: %f, Amplitude: %f\n", state, grainFrequency, grainAmplitude);
@@ -406,6 +400,10 @@ void GrainList::clearList()
   head = tail = nullptr;
 }
 
+/**
+ * Runs update on all grains in the list. Deletes dynamic grains if they have
+ * finished their lifespan and are ready to be "reaped".
+ */
 void GrainList::updateAndReap()
 {
   GrainNode *current = head;
@@ -437,6 +435,7 @@ void GrainList::updateAndReap()
     }
   }
 }
+
 /**
  * Returns the head of the GrainList.
  *

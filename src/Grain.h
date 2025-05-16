@@ -21,16 +21,42 @@ enum grainState {
   RELEASE
 };
 
+/**
+ * @struct FreqEnv
+ *
+ * Struct containing target frequency data for a grain
+ *
+ * @var FreqEnv::targetFrequency
+ * The maximum frequency the grain will reach in it's lifetime.
+ * @var FreqEnv::minFrequency
+ * The minimum frequency the grain will reach in it's lifetime.
+ */
 struct FreqEnv {
   float targetFrequency = 100.0;
   float minFrequency = 0.0;
-  int attackDuration = 1;
-  int decayDuration = 1;
-  int sustainDuration = 1;
-  int releaseDuration = 1;
-  float curve = 1.0f;
 };
 
+/**
+ * @struct AmpEnv
+ *
+ * Struct containing target amplitude data for a grain, its state
+ * duration parameters, and the curve shape.
+ *
+ * @var AmpEnv::targetAmplitude
+ * The maximum amplitude the grain will reach in it's lifetime.
+ * @var AmpEnv::minAmplitude
+ * The minimum amplitude the grain will reach in it's lifetime.
+ * @var AmpEnv::attackDuration
+ * The number of windows the attack state will run for.
+ * @var AmpEnv::decayDuration
+ * The number of windows the decay state will run for.
+ * @var AmpEnv::sustainDuration
+ * The number of windows the sustain state will run for.
+ * @var AmpEnv::releaseDuration
+ * The number of windows the release state will run for.
+ * @var AmpEnv::curve
+ * The shape of the progression through the ADSR curve.
+ */
 struct AmpEnv {
   float targetAmplitude = 0.5;
   float minAmplitude = 0.0;
@@ -78,11 +104,6 @@ private:
   Phase sustain;
   //! Struct containing release parameters
   Phase release;
-
-  //! The difference in frequency between sustain and attack
-  float sustainAttackFrequencyDifference;
-  //! The difference in frequency between release and sustain
-  float releaseSustainFrequencyDifference;
 
   //! The counter for how many windows a state has run for
   int windowCounter;
