@@ -44,7 +44,7 @@ well. Our product is also compatible for use on Windows, Linux, and Mac.
 - Go to **Tools > Boards > Boards Manager**
 - Search and install `esp32` by **Espressif Systems**
 
-![Installing the board manager](/docs/images/Board_library.png){width=60%}
+![Installing the board manager](/docs/images/Board_library.png)
 
 ### 2. Set Board and Ports
 - Plug in the board (you may need to install USB drivers)
@@ -52,7 +52,7 @@ well. Our product is also compatible for use on Windows, Linux, and Mac.
 - In the pop up window, search for `Adafruit ESP32 Feather` and select it along
 with `COMX` for port where `X` is a number 0-6
 
-![The other board and port drop down](/docs/images/Confirm_board.png){width=60%}
+![The other board and port drop down](/docs/images/Confirm_board.png)
 
 ### 3. Add Libraries
 Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP**):
@@ -62,7 +62,7 @@ Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP
 
 Import into Arduino via: \
 **Sketch > Include Library> Add .ZIP library (repeat for each zip)**
-![Adding personal libraries](/docs/images/Add_library.png){width=40%}
+![Adding personal libraries](/docs/images/Add_library.png)
 
 ### 4. Upload a Sketch
 You should be ready to use the example sketches or create your own! To upload a
@@ -71,7 +71,7 @@ sketch to the Vibrosonics hardware:
 - Open your own sketch or one of our examples from **File > Examples >
 Vibrosonics > \[Example Name]**
 - Press the upload (➜) in the top left to compile and upload your sketch
-![Uploading a sketch to the arduino](/docs/images/Upload_sketch.png){width=60%}
+![Uploading a sketch to the arduino](/docs/images/Upload_sketch.png)
 
 ## Library Architecture
 The Vibrosonics library aims to streamline three processes to enable
