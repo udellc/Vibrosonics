@@ -11,13 +11,32 @@ transducer, 3.5mm audio jack cable \
 · [Fast4ier](https://github.com/jmerc77/Fast4ier)
 
 ## Overview
-The goal of the Vibrosonics project is to enable those who struggle with or cannot hear to enjoy audio-based entertainment in a different way as well as potentially enhance audio-related experiences for enthusiasts by adding the sensation of touch. 
+The goal of the Vibrosonics project is to enable those who struggle with or
+cannot hear to enjoy audio-based entertainment in a different way as well as
+potentially enhance audio-related experiences for enthusiasts by adding the
+sensation of touch.
 
-To that end, the aim is to create an easily wearable portable device than can take in audio signals and convert them to vibrations reflective of the intensity and pitch of the initial sound.
+The aim is to create an easily wearable, portable device that can take in audio
+signals and convert them to vibrations in the haptic range. These vibrations
+should accurately portray different pitches and intensities of sound. 
 
-The majority of initial adoption would likely be from users for whom the product directly fills an unmet need. Within the context of this device, this will be clients who require haptic feedback as a replacement for audio. Examples may include those who are deaf or hard of hearing, or employers whose work environments make pure audio based communication difficult and require alternatives. Subsequent adopters are likely to be enthusiasts who will use the product to enhance events or activities they already partake in by adding a tactile aspect, such as in silent raves or virtual and alternate reality gaming. 
+We have partnered with Cymaspace, an organization whose goal is to make culture
+and arts accessible for the deaf and hard of hearing community. This group of
+people makes up our primary audience, as haptic feedback can be used to replace
+or enhance audio. Some secondary users would be employers whose work
+environments make pure audio based communication difficult. They could instead
+receive important audio cues through haptics. Lastly, events such as silent
+raves, or games that use alternate reality could be interested in using this
+product to add a new sense. In all these scenarios, the use of haptic
+vibrations can be used to enhance user experiences in an accessible and
+interactive way. 
 
-Currently, the market for similar devices is highly limited and undeveloped. This project seeks to expound upon what little exists by incorporating a higher range of translated audio frequencies along with more detailed audio-to-haptic translation into the final tactile experience. Ideally, this product would progressively gain new users by becoming a serious consideration for the aforementioned groups that require an alternative to pure audio. However, this is a relatively niche customer base. The biggest growth in adoption would come from making this product potentially appeal to everyone by adding the element of touch to some forms of digital entertainment. However, this concept would need to be developed much further past the scope of a single capstone term before it could even have the potential break into being any kind of mainstream entertainment device.
+Currently, Apple has a feature called “music haptics”. Similarly to
+Vibrosonics, this provides a way for users to experience music through tactile
+vibrations. You can only use this feature with an Apple iPhone with iOS 18 or
+higher, and it only works for music. While our product is currently also
+focused on music, we hope that this will someday be used in everyday life as
+well. Our product is also compatible for use on Windows, Linux, and Mac. 
 
 ## Installation (Arduino IDE)
 ### 1. Install Arduino IDE and ESP32 Board Support
@@ -53,7 +72,7 @@ The Vibrosonics library aims to streamline three processes to enable
 translating audio into the haptic range: audio signal processing, audio
 analysis and finally audio synthesis. We utilize a few libraries to achieve
 this. The first is AudioLab, which helps in signal processing and additive
-synthesis. The second is Fast4ierwhich is used to perform the Fast Fourier
+synthesis. The second is Fast4ier, which is used to perform the Fast Fourier
 Transform (FFT). Finally, we use the AudioPrism library to analyze the
 frequency spectrum obtained from the FFT result.
 
@@ -66,7 +85,15 @@ are the \ref GrainList and \ref GrainNode classes that help you manage a
 linked-list of grains.
 
 ## Contributors
+### 2024-25 Software Team
+- [Walt Bringenberg](https://github.com/wwaltb)
+- [Ben Kahl](https://github.com/ben-kahl)
+- [Keith Reinhardt](https://github.com/reinhake)
+- [Ashton Tilton](https://github.com/amputee20000)
+- [Julia Yang](https://github.com/jjuliayang)
+
+### Special Thanks
  - Dr. Chet Udell (Project leader and manager)
+ - Nick Synytsia (Developed AudioLab and advised software development for 2024-25)
+ - Alex Synytsia (Participated in hardware development during 2022-23)
  - Vincent Vaughn (Advised software and hardware development)
- - Alex Synytsia (Participated in hardware development for the project during the 2022-2023 years)
- - Nick Synytsia (Developed AudioLab and advised software development for 2024-2025)
