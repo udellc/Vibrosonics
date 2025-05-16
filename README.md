@@ -1,8 +1,8 @@
 # Vibrosonics
 
-Experience audio through vibration.
+**Experience audio through vibration.**
 
-Vibrosonics is an Arduino library that enables you to translate audio into
+**Vibrosonics** is an Arduino library that enables you to translate audio into
 tactile vibrations in real-time.
 
 [Documentation (Doxygen)](https://udellc.github.io/Vibrosonics/)
@@ -41,9 +41,10 @@ Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP
 - [AudioLab](https://github.com/synytsim/AudioLab)
 - [AudioPrism](https://github.com/udellc/AudioPrism) 
 - [Fast4ier](https://github.com/jmerc77/Fast4ier)
+
 Import into Arduino via:
 
-**Sketch > Include Library> Add .ZIP library (repeat for each zip)
+**Sketch > Include Library> Add .ZIP library (repeat for each zip)**
 
 ### 4. Upload a Sketch
 You should be ready to use the example sketches or create your own! To upload a
