@@ -1,5 +1,5 @@
 # Vibrosonics
-### Experience audio through vibration
+### Experience audio through vibration.
 **Vibrosonics** is an Arduino library that enables you to translate audio into
 tactile vibrations in real-time.
 
@@ -14,6 +14,7 @@ transducer, 3.5mm audio jack cable \
 - [Overview](#overview)
 - [Installation](#installation-arduino-ide)
 - [Library Architecture](#library-architecture)
+- [Examples](#examples)
 - [Contributors](#contributors)
 
 ## Overview
@@ -26,16 +27,16 @@ The aim is to create an easily wearable, portable device that can take in audio
 signals and convert them to vibrations in the haptic range. These vibrations
 should accurately portray different pitches and intensities of sound. 
 
-We have partnered with Cymaspace, an organization whose goal is to make culture
-and arts accessible for the deaf and hard of hearing community. This group of
-people makes up our primary audience, as haptic feedback can be used to replace
-or enhance audio. Some secondary users would be employers whose work
-environments make pure audio based communication difficult. They could instead
-receive important audio cues through haptics. Lastly, events such as silent
-raves, or games that use alternate reality could be interested in using this
-product to add a new sense. In all these scenarios, the use of haptic
-vibrations can be used to enhance user experiences in an accessible and
-interactive way. 
+We have partnered with [Cymaspace](https://www.cymaspace.org/), an organization
+whose goal is to make culture and arts accessible for the deaf and hard of
+hearing community. This group of people makes up our primary audience, as
+haptic feedback can be used to replace or enhance audio. Some secondary users
+would be employers whose work environments make pure audio based communication
+difficult. They could instead receive important audio cues through haptics.
+Lastly, events such as silent raves, or games that use alternate reality could
+be interested in using this product to add a new sense. In all these scenarios,
+the use of haptic vibrations can be used to enhance user experiences in an
+accessible and interactive way. 
 
 Currently, Apple has a feature called “music haptics”. Similarly to
 Vibrosonics, this provides a way for users to experience music through tactile
@@ -67,7 +68,7 @@ Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP
 - [Fast4ier](https://github.com/jmerc77/Fast4ier)
 
 Import into Arduino via: \
-**Sketch > Include Library> Add .ZIP library (repeat for each zip)**
+**Sketch > Include Library > Add .ZIP library (repeat for each zip)**
 ![Adding personal libraries](/docs/images/Add_library.png)
 
 ### 4. Upload a Sketch
@@ -83,10 +84,29 @@ Vibrosonics > \[Example Name]**
 The Vibrosonics library aims to streamline three processes to enable
 translating audio into the haptic range: audio signal processing, audio
 analysis and finally audio synthesis. We utilize a few libraries to achieve
-this. The first is AudioLab, which helps in signal processing and additive
-synthesis. The second is Fast4ier, which is used to perform the Fast Fourier
-Transform (FFT). Finally, we use the AudioPrism library to analyze the
-frequency spectrum obtained from the FFT result.
+this. 
+
+The first is AudioLab, which handles the audio signals between the external
+hardware and the processor. It reads audio from the analog-to-digital
+converters (ADC) and writes signals to the digital-to-analog converters (DAC)
+for synthesis. The captured audio signals from the ADC are analyzed using the
+other two library dependencies. 
+
+Fast4ier is used to perform the Fast Fourier Transform (FFT) on the signal
+data, which converts it from a representation of the signal over time (time
+domain) to a representation of how the signal is distributed over a range of
+frequency bands (frequency domain). The bandwidth of the frequency domain, or
+the max frequency, is equal to half of the sample rate of the ADC. Similarly,
+the number of different frequency bands is equal to half of the window size of
+the ADC.
+
+AudioPrism is a library which analyzes the frequency domain data using various
+algorithms. By filtering this data for different AudioPrism analysis modules,
+we can detect certain elements of the audio signal. With music, this allows us
+to detect percussion, isolate prominent vocals and melodies, and more. With
+this analysis, distinct vibrations can be made to model elements of music by
+re-synthesizing these findings through AudioLab translated down into the haptic
+frequency range (0-230Hz).
 
 We have created an API, \ref VibrosonicsAPI, that combines these libraries to
 provide a simple interface for audio processing, analysis and synthesis.
@@ -95,6 +115,22 @@ Additionally, there is the \ref Grain class which provides a way to implement
 granular synthesis, allowing for sound wave shaping through envelopes. There
 are the \ref GrainList and \ref GrainNode classes that help you manage a
 linked-list of grains.
+
+## Examples
+
+We have an `examples/` folder which contains individual programs that each
+showcase a different feature or technique possible using Vibrosonics and
+AudioPrism. 
+- Start with the `Template` example to see basic use of the API and
+for a starting point for your own program
+- The `Grains` example demonstrates using the provided classes for granular
+synthesis with a frequency and amplitude sweep, duration changes and wave shape
+variations
+- `Percussion` showcases our current percussion detection method, which uses a specially filtered frequency domain representation as input for an AudioPrism percussion module
+- `Mirror mode` is our example demonstrating a combination of multiple
+techniques to provide a real-time translation of music to tactile feedback.
+Look here for an in-depth example utilizing the full capabilities of our
+library
 
 ## Contributors
 ### 2024-25 Software Team
