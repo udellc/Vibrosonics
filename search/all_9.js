@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['ready_0',['READY',['../_grain_8h.html#a05122a67715192f0564d8ea597d4d68ca6564f2f3e15be06b670547bbcaaf0798',1,'Grain.h']]],
-  ['reference_1',['reference',['../struct_grain_node.html#a34c26441fb6ee172c096f42d1dbcc328',1,'GrainNode']]],
-  ['release_2',['RELEASE',['../_grain_8h.html#a05122a67715192f0564d8ea597d4d68cad590443978dc58d64aed5001f56efcdf',1,'Grain.h']]]
+  ['fftwindowing_0',['fftWindowing',['../class_vibrosonics_a_p_i.html#a85b0b94f10a808c0605f30aafe300ad7',1,'VibrosonicsAPI']]],
+  ['freq_5fres_1',['FREQ_RES',['../_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df',1,'VibrosonicsAPI.h']]],
+  ['freq_5fwidth_2',['FREQ_WIDTH',['../_vibrosonics_a_p_i_8h.html#aafc60f8ba1f97829e954fc46c5f5aafa',1,'VibrosonicsAPI.h']]]
 ];

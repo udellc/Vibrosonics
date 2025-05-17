@@ -1,6 +1,9 @@
 var searchData=
 [
-  ['mapamplitudes_0',['mapAmplitudes',['../class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b',1,'VibrosonicsAPI']]],
-  ['mapfrequenciesexponential_1',['mapFrequenciesExponential',['../class_vibrosonics_a_p_i.html#ab354c4d31e544968ec249315929327fd',1,'VibrosonicsAPI']]],
-  ['mapfrequencieslinear_2',['mapFrequenciesLinear',['../class_vibrosonics_a_p_i.html#a21d912211eeb3a5b55cd61bf0b788dde',1,'VibrosonicsAPI']]]
+  ['classes_0',['API Classes',['../index.html#autotoc_md9',1,'']]],
+  ['clearlist_1',['clearList',['../class_grain_list.html#a89b0a083c70f526d152f584cfac49ffb',1,'GrainList']]],
+  ['complextomagnitude_2',['complexToMagnitude',['../class_vibrosonics_a_p_i.html#a5398e8e78814c2472b595d5b53fc549c',1,'VibrosonicsAPI']]],
+  ['computehammingwindow_3',['computeHammingWindow',['../class_vibrosonics_a_p_i.html#ae68dc34037c3f3f50ad1e815c1434ab7',1,'VibrosonicsAPI']]],
+  ['contributors_4',['Contributors',['../index.html#autotoc_md11',1,'']]],
+  ['creategrainarray_5',['createGrainArray',['../class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f',1,'VibrosonicsAPI']]]
 ];

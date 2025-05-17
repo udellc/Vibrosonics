@@ -15,7 +15,7 @@
     <meta name="twitter:title" content="VibroSonics" />
     <meta name="twitter:description" content="An Arduino library with the goal of enabling deaf and hard of hearing individuals to be able to experience audio media through haptic vibrations." />
     <!-- END twitter metadata -->
-    <title>VibroSonics: Main Page</title>
+    <title>VibroSonics: Vibrosonics</title>
     <link href="tabs.css" rel="stylesheet" type="text/css"/>
     <link rel="icon" type="image/svg+xml" href="logo.drawio.svg">
     <script type="text/javascript" src="jquery.js"></script>
@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-288-g1b2736f</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-290-gbdad494</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -114,10 +114,95 @@ $(function(){initNavTree('index.html',''); initResizable(true); });
 </div>
 </div>
 
-<div class="header">
-  <div class="headertitle"><div class="title">VibroSonics Documentation</div></div>
+<div><div class="header">
+  <div class="headertitle"><div class="title">Vibrosonics </div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="md_docs_2_r_e_a_d_m_e"></a></p>
+<h2><a class="anchor" id="autotoc_md1"></a>
+Experience audio through vibration.</h2>
+<p><b>Vibrosonics</b> is an Arduino library that enables you to translate audio into tactile vibrations in real-time.</p>
+<p><b>Hardware:</b> Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable</p>
+<p><b>Dependencies:</b> <a href="https://github.com/synytsim/AudioLab">AudioLab</a> · <a href="https://github.com/udellc/AudioPrism">AudioPrism</a> · <a href="https://github.com/jmerc77/Fast4ier">Fast4ier</a></p>
+<h1><a class="anchor" id="autotoc_md2"></a>
+Overview</h1>
+<p>The goal of the Vibrosonics project is to enable those who struggle with or cannot hear to enjoy audio-based entertainment in a different way as well as potentially enhance audio-related experiences for enthusiasts by adding the sensation of touch.</p>
+<p>The aim is to create an easily wearable, portable device that can take in audio signals and convert them to vibrations in the haptic range. These vibrations should accurately portray different pitches and intensities of sound.</p>
+<p>We have partnered with <a href="https://www.cymaspace.org/">Cymaspace</a>, an organization whose goal is to make culture and arts accessible for the deaf and hard of hearing community. This group of people makes up our primary audience, as haptic feedback can be used to replace or enhance audio. Some secondary users would be employers whose work environments make pure audio based communication difficult. They could instead receive important audio cues through haptics. Lastly, events such as silent raves, or games that use alternate reality could be interested in using this product to add a new sense. In all these scenarios, the use of haptic vibrations can be used to enhance user experiences in an accessible and interactive way.</p>
+<p>Currently, Apple has a feature called “music haptics”. Similarly to Vibrosonics, this provides a way for users to experience music through tactile vibrations. You can only use this feature with an Apple iPhone with iOS 18 or higher, and it only works for music. While our product is currently also focused on music, we hope that this will someday be used in everyday life as well. Our product is also compatible for use on Windows, Linux, and Mac.</p>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Installation (Arduino IDE)</h1>
+<h2><a class="anchor" id="autotoc_md4"></a>
+1. Install Arduino IDE and ESP32 Board Support</h2>
+<ul>
+<li>Download <a href="https://www.arduino.cc/en/software/">Arduino IDE</a></li>
+<li>Go to <b>Tools &gt; Boards &gt; Boards Manager</b></li>
+<li>Search and install <code>esp32</code> by <b>Espressif Systems</b></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md5"></a>
+2. Set Board and Ports</h2>
+<ul>
+<li>Plug in the board (you may need to install USB drivers)</li>
+<li>Go to the top drop down menu and click <code>Select other board and port...</code></li>
+<li>In the pop up window, search for <code>Adafruit ESP32 Feather</code> and select it along with <code>COMX</code> for port where <code>X</code> is a number 0-6</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md6"></a>
+3. Add Libraries</h2>
+<p>Download the zip files of Vibrosonics and each dependency (<b>Code &gt; Download ZIP</b>):</p><ul>
+<li><a href="https://github.com/synytsim/AudioLab">AudioLab</a></li>
+<li><a href="https://github.com/udellc/AudioPrism">AudioPrism</a></li>
+<li><a href="https://github.com/jmerc77/Fast4ier">Fast4ier</a></li>
+</ul>
+<p>Import into Arduino via:</p>
+<p><b>Sketch &gt; Include Library &gt; Add .ZIP library (repeat for each zip)</b></p>
+<h2><a class="anchor" id="autotoc_md7"></a>
+4. Upload a Sketch</h2>
+<p>You should be ready to use the example sketches or create your own! To upload a sketch to the Vibrosonics hardware:</p><ul>
+<li>Plug in the ESP32 via USB</li>
+<li>Open your own sketch or one of our examples from <b>File &gt; Examples &gt; Vibrosonics &gt; [Example Name]</b></li>
+<li>Press the upload (➜) in the top left to compile and upload your sketch</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md8"></a>
+Library Architecture</h1>
+<p>The Vibrosonics library aims to streamline three processes to enable translating audio into the haptic range: audio signal processing, audio analysis and finally audio synthesis. We utilize a few libraries to achieve this.</p>
+<p>The first is AudioLab, which handles the audio signals between the external hardware and the processor. It reads audio from the analog-to-digital converters (ADC) and writes signals to the digital-to-analog converters (DAC) for synthesis. The captured audio signals from the ADC are analyzed using the other two library dependencies.</p>
+<p>Fast4ier is used to perform the Fast Fourier Transform (FFT) on the signal data, which converts it from a representation of the signal over time (time domain) to a representation of how the signal is distributed over a range of frequency bands (frequency domain). The bandwidth of the frequency domain, or the max frequency, is equal to half of the sample rate of the ADC. Similarly, the number of different frequency bands is equal to half of the window size of the ADC.</p>
+<p>AudioPrism is a library which analyzes the frequency domain data using various algorithms. By filtering this data for different AudioPrism analysis modules, we can detect certain elements of the audio signal. With music, this allows us to detect percussion, isolate prominent vocals and melodies, and more. With this analysis, distinct vibrations can be made to model elements of music by re-synthesizing these findings through AudioLab translated down into the haptic frequency range (0-230Hz).</p>
+<h2><a class="anchor" id="autotoc_md9"></a>
+API Classes</h2>
+<ul>
+<li><code><a class="el" href="class_vibrosonics_a_p_i.html">VibrosonicsAPI</a></code>: This is the core class; it is a unified interface for audio processing, analysis and synthesis</li>
+<li><code><a class="el" href="class_grain.html">Grain</a></code>, <code><a class="el" href="class_grain_list.html">GrainList</a></code>, and <code><a class="el" href="struct_grain_node.html">GrainNode</a></code>: These are the components for granular synthesis. <code><a class="el" href="class_grain.html">Grain</a></code> is the main grain class, and the list and node classes provide a way to manage a linked list of grains.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md10"></a>
+Examples</h1>
+<p>We have an <code>examples</code> folder which contains individual programs that each showcase a different feature or technique possible using Vibrosonics and AudioPrism.</p><ul>
+<li>Start with the <code>Template</code> example to see basic use of the API and for a starting point for your own program</li>
+<li>The <code>Grains</code> example demonstrates using the provided classes for granular synthesis with a frequency and amplitude sweep, duration changes and wave shape variations</li>
+<li><code>Percussion</code> showcases our current percussion detection method, which uses a specially filtered frequency domain representation as input for an AudioPrism percussion module</li>
+<li><code>Mirror mode</code> is our example demonstrating a combination of multiple techniques to provide a real-time translation of music to tactile feedback. Look here for an in-depth example utilizing the full capabilities of our library</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md11"></a>
+Contributors</h1>
+<h2><a class="anchor" id="autotoc_md12"></a>
+2024-25 Software Team</h2>
+<ul>
+<li><a href="https://github.com/wwaltb">Walt Bringenberg</a></li>
+<li><a href="https://github.com/ben-kahl">Ben Kahl</a></li>
+<li><a href="https://github.com/reinhake">Keith Reinhardt</a></li>
+<li><a href="https://github.com/amputee20000">Ashton Tilton</a></li>
+<li><a href="https://github.com/jjuliayang">Julia Yang</a></li>
+</ul>
+<p><a href="https://dot.cards/vibrosonicscs">LinkedIn Pages</a></p>
+<h2><a class="anchor" id="autotoc_md13"></a>
+Special Thanks</h2>
+<ul>
+<li>Dr. Chet Udell (Project leader and manager)</li>
+<li>Nick Synytsia (Developed AudioLab and advised software development for 2024-25)</li>
+<li>Alex Synytsia (Participated in hardware development during 2022-23)</li>
+<li>Vincent Vaughn (Advised software and hardware development) </li>
+</ul>
+</div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"></a>
 </div><!-- contents -->
 </div><!-- doc-content -->
