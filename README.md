@@ -108,17 +108,16 @@ this analysis, distinct vibrations can be made to model elements of music by
 re-synthesizing these findings through AudioLab translated down into the haptic
 frequency range (0-230Hz).
 
-We have created an API, \ref VibrosonicsAPI, that combines these libraries to
-provide a simple interface for audio processing, analysis and synthesis.
-
-Additionally, there is the \ref Grain class which provides a way to implement
-granular synthesis, allowing for sound wave shaping through envelopes. There
-are the \ref GrainList and \ref GrainNode classes that help you manage a
-linked-list of grains.
+### API Classes
+- `VibrosonicsAPI`: This is the core class; it is a unified interface for audio
+processing, analysis and synthesis
+- `Grain`, `GrainList`, and `GrainNode`: These are the components for granular
+synthesis. `Grain` is the main grain class, and the list and node classes provide a
+way to manage a linked list of grains.
 
 ## Examples
 
-We have an `examples/` folder which contains individual programs that each
+We have an `examples` folder which contains individual programs that each
 showcase a different feature or technique possible using Vibrosonics and
 AudioPrism. 
 - Start with the `Template` example to see basic use of the API and
