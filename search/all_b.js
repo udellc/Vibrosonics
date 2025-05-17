@@ -1,8 +1,4 @@
 var searchData=
 [
-  ['ide_0',['Installation (Arduino IDE)',['../index.html#autotoc_md4',1,'']]],
-  ['ide_20and_20esp32_20board_20support_1',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md5',1,'']]],
-  ['init_2',['init',['../class_vibrosonics_a_p_i.html#aa1b346a8270b0677fc3da264fb16a4e8',1,'VibrosonicsAPI']]],
-  ['install_20arduino_20ide_20and_20esp32_20board_20support_3',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md5',1,'']]],
-  ['installation_20arduino_20ide_4',['Installation (Arduino IDE)',['../index.html#autotoc_md4',1,'']]]
+  ['triggergrains_0',['triggerGrains',['../class_vibrosonics_a_p_i.html#afc97ed4b9beab2c5fc6982ade81cdc27',1,'VibrosonicsAPI']]]
 ];

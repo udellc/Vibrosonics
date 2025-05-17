@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['board_20and_20ports_0',['2. Set Board and Ports',['../index.html#autotoc_md6',1,'']]],
-  ['board_20support_1',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md5',1,'']]]
+  ['init_0',['init',['../class_vibrosonics_a_p_i.html#aa1b346a8270b0677fc3da264fb16a4e8',1,'VibrosonicsAPI']]]
 ];

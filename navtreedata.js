@@ -25,23 +25,6 @@
 var NAVTREE =
 [
   [ "VibroSonics", "index.html", [
-    [ "Table of Contents", "index.html#autotoc_md2", null ],
-    [ "Overview", "index.html#autotoc_md3", null ],
-    [ "Installation (Arduino IDE)", "index.html#autotoc_md4", [
-      [ "Experience audio through vibration.", "index.html#autotoc_md1", null ],
-      [ "Install Arduino IDE and ESP32 Board Support", "index.html#autotoc_md5", null ],
-      [ "Set Board and Ports", "index.html#autotoc_md6", null ],
-      [ "Add Libraries", "index.html#autotoc_md7", null ],
-      [ "Upload a Sketch", "index.html#autotoc_md8", null ]
-    ] ],
-    [ "Library Architecture", "index.html#autotoc_md9", [
-      [ "API Classes", "index.html#autotoc_md10", null ]
-    ] ],
-    [ "Examples", "index.html#autotoc_md11", null ],
-    [ "Contributors", "index.html#autotoc_md12", [
-      [ "2024-25 Software Team", "index.html#autotoc_md13", null ],
-      [ "Special Thanks", "index.html#autotoc_md14", null ]
-    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
