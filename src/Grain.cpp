@@ -334,10 +334,10 @@ int Grain::getReleaseDuration()
  */
 void Grain::setFreqEnv(FreqEnv freqEnv)
 {
-  attack.frequency = freqEnv.targetFrequency;
-  decay.frequency = freqEnv.targetFrequency;
-  sustain.frequency = freqEnv.targetFrequency;
-  release.frequency = freqEnv.minFrequency;
+  attack.frequency = freqEnv.attackFrequency;
+  decay.frequency = freqEnv.decayFrequency;
+  sustain.frequency = freqEnv.sustainFrequency;
+  release.frequency = freqEnv.releaseFrequency;
 }
 
 /**
@@ -347,16 +347,15 @@ void Grain::setFreqEnv(FreqEnv freqEnv)
  */
 void Grain::setAmpEnv(AmpEnv ampEnv)
 {
-  attack.amplitude = ampEnv.targetAmplitude;
+  attack.amplitude = ampEnv.attackAmplitude;
   attack.duration = ampEnv.attackDuration;
   attack.curve = ampEnv.curve;
-  decay.amplitude = ampEnv.targetAmplitude;
+  decay.amplitude = ampEnv.decayAmplitude;
   decay.duration = ampEnv.decayDuration;
   decay.curve = ampEnv.curve;
-  sustain.amplitude = ampEnv.targetAmplitude * .8;
+  sustain.amplitude = ampEnv.sustainAmplitude;
   sustain.duration = ampEnv.sustainDuration;
-  sustain.curve = ampEnv.curve;
-  release.amplitude = ampEnv.minAmplitude;
+  release.amplitude = ampEnv.releaseAmplitude;
   release.duration = ampEnv.releaseDuration;
   release.curve = ampEnv.curve;
 }

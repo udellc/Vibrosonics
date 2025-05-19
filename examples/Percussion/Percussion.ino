@@ -31,8 +31,8 @@ void setup() {
   percussionDetection.setDebugMode(0x01);
   modules.addModule(&percussionDetection, 1800, 4000);
 
-  dynamicFreqEnv = vapi.createFreqEnv(110, 110);
-  dynamicAmpEnv = vapi.createAmpEnv(0.5, 0.0, 1, 0, 1, 3, 1.0);
+  dynamicFreqEnv = vapi.createFreqEnv(110, 110, 110, 20);
+  dynamicAmpEnv = vapi.createAmpEnv(0.5, 1, 0.5, 2, 0.4, 1, 0.0, 3, 1.0);
 }
 
 void loop() {
@@ -69,13 +69,13 @@ void loop() {
 
   modules.runAnalysis();
 
-  Serial.printf("raw entropy: %f\n", entropy);
+  //Serial.printf("raw entropy: %f\n", entropy);
 
   if (percussionDetection.getOutput()) {
     Serial.printf("Percussion detected\n");
     vapi.createDynamicGrain(1, SINE, dynamicFreqEnv, dynamicAmpEnv);
   } else {
-    Serial.printf("---\n");
+    //Serial.printf("---\n");
   }
 
   vapi.updateGrains();

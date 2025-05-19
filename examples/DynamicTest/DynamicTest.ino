@@ -18,8 +18,8 @@ void setup() {
   Serial.begin(115200);
   vapi.init();
 
-  dynamicFreqEnv = vapi.createFreqEnv(110, 110);
-  dynamicAmpEnv = vapi.createAmpEnv(0.5, 0.0, 3, 2, 1, 3, 1.0);
+  dynamicFreqEnv = vapi.createFreqEnv(110, 110, 110, 110);
+  dynamicAmpEnv = vapi.createAmpEnv(0.5, 3, 0.5, 2, 0.4, 1, 0.0, 3, 1.0);
 }
 
 void loop() {

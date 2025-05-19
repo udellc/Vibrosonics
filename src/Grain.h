@@ -26,14 +26,20 @@ enum grainState {
  *
  * Struct containing target frequency data for a grain
  *
- * @var FreqEnv::targetFrequency
- * The maximum frequency the grain will reach in it's lifetime.
- * @var FreqEnv::minFrequency
- * The minimum frequency the grain will reach in it's lifetime.
+ * @var FreqEnv::attackFrequency
+ * The maximum frequency the grain will reach in its attack state.
+ * @var FreqEnv::decayFrequency
+ * The maximum frequency the grain will reach in its decay state.
+ * @var FreqEnv::sustainFrequency
+ * The frequency the grain will output in its sustain state.
+ * @var FreqEnv::releaseFrequency
+ * The lowest frequency the grain will output in its release state.
  */
 struct FreqEnv {
-  float targetFrequency = 100.0;
-  float minFrequency = 0.0;
+  float attackFrequency = 100.0;
+  float decayFrequency = 100.0;
+  float sustainFrequency = 100.0;
+  float releaseFrequency = 100.0;
 };
 
 /**
@@ -42,27 +48,33 @@ struct FreqEnv {
  * Struct containing target amplitude data for a grain, its state
  * duration parameters, and the curve shape.
  *
- * @var AmpEnv::targetAmplitude
- * The maximum amplitude the grain will reach in it's lifetime.
- * @var AmpEnv::minAmplitude
- * The minimum amplitude the grain will reach in it's lifetime.
+ * @var AmpEnv::attackAmplitude
+ * The maximum amplitude the grain will reach in its attack state.
  * @var AmpEnv::attackDuration
  * The number of windows the attack state will run for.
+ * @var AmpEnv::decayAmplitude
+ * The maximum amplitude the grain will reach in its decay state.
  * @var AmpEnv::decayDuration
  * The number of windows the decay state will run for.
+ * @var AmpEnv::sustainAmplitude
+ * The amplitude the grain will output in its sustain state.
  * @var AmpEnv::sustainDuration
  * The number of windows the sustain state will run for.
+ * @var AmpEnv::releaseAmplitude
+ * The minimum amplitude the grain will reach in its release state.
  * @var AmpEnv::releaseDuration
  * The number of windows the release state will run for.
  * @var AmpEnv::curve
  * The shape of the progression through the ADSR curve.
  */
 struct AmpEnv {
-  float targetAmplitude = 0.5;
-  float minAmplitude = 0.0;
+  float attackAmplitude = 0.5;
   int attackDuration = 1;
+  float decayAmplitude = 0.5;
   int decayDuration = 1;
+  float sustainAmplitude = 0.5;
   int sustainDuration = 1;
+  float releaseAmplitude = 0.0;
   int releaseDuration = 1;
   float curve = 1.0f;
 };

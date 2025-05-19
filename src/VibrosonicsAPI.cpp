@@ -384,12 +384,14 @@ void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, struct FreqEnv 
 /**
  * Creates a frequency envelope struct to shape the grain's frequency parameters with
  *
- * @param targetFreq The maximum frequency the grain will target
- * @param minFreq The minimum frequency the grain will target
+ * @param attackFreq The frequency the grain will target in its attack state
+ * @param decayFreq The frequency the grain will target in its decay state
+ * @param sustainFreq The frequency the grain will target in its sustain state
+ * @param releaseFreq The frequency the grain will target in its release state
  */
-FreqEnv VibrosonicsAPI::createFreqEnv(float targetFreq, float minFreq)
+FreqEnv VibrosonicsAPI::createFreqEnv(float attackFreq, float decayFreq, float sustainFreq, float releaseFreq)
 {
-    FreqEnv newFreqEnv = {targetFreq, minFreq};
+    FreqEnv newFreqEnv = {attackFreq, decayFreq, sustainFreq, releaseFreq};
     return newFreqEnv;
 }
 
@@ -397,17 +399,19 @@ FreqEnv VibrosonicsAPI::createFreqEnv(float targetFreq, float minFreq)
  * Creates a frequency envelope struct to shape the grain's amplitude parameters with
  * Also sets state durations and curve shape.
  *
- * @param targetAmp The maximum amplitude the grain will target
- * @param minAmp The minimum amplitude the grain will target
+ * @param attackAmp The amplitude the grain will target in its attack state
  * @param attackDuration The number of windows the attack phase will last for
+ * @param decayAmp The amplitude the grain will target in its decay state
  * @param decayDuration The number of windows the decay phase will last for
+ * @param sustainAmp The amplitude the grain will target in its sustain state
  * @param sustainDuration The number of windows the sustain phase will last for
+ * @param releaseAmp The amplitude the grain will target in its release state
  * @param releaseDuration The number of windows the release phase will last for
  * @param curve The shape of the grain's progression through targeted amplitudes and frequencies
  */
-AmpEnv VibrosonicsAPI::createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)
+AmpEnv VibrosonicsAPI::createAmpEnv(float attackAmp, int attackDuration, float decayAmp, int decayDuration, float sustainAmp, int sustainDuration, float releaseAmp, int releaseDuration, float curve)
 {
-    AmpEnv newAmpEnv = {targetAmp, minAmp, attackDuration, decayDuration, sustainDuration, releaseDuration, curve};
+    AmpEnv newAmpEnv = {attackAmp, attackDuration, decayAmp, decayDuration, sustainAmp, sustainDuration, releaseAmp, releaseDuration, curve};
     return newAmpEnv;
 }
 

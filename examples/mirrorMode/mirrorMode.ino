@@ -32,8 +32,8 @@ void setup() {
   melodic.addModule(&majorPeaks, 220, 1400);
   percussive.addModule(&percussionDetection, 1800, 4000);
 
-  dynamicFreqEnv = vapi.createFreqEnv(110, 110);
-  dynamicAmpEnv = vapi.createAmpEnv(0.5, 0.0, 3, 2, 1, 3, 1.0);
+  dynamicFreqEnv = vapi.createFreqEnv(110, 110, 110, 20);
+  dynamicAmpEnv = vapi.createAmpEnv(0.5, 3, 0.5, 2, 0.4, 1, 0.0, 3, 1.0);
 }
 
 void loop() {

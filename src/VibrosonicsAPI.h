@@ -114,10 +114,10 @@ public:
     void triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv);
 
     //! Creates a frequency envelope for a grain.
-    FreqEnv createFreqEnv(float targetFreq, float minFreq);
+    FreqEnv createFreqEnv(float attackFreq, float decayFreq, float sustainFreq, float releaseFreq);
 
     //! Creates an amplitude envelope for a grain.
-    AmpEnv createAmpEnv(float targetAmp, float minAmp, int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
+    AmpEnv createAmpEnv(float attackAmp, int attackDuration, float decayAmp, int decayDuration, float sustainAmp, int sustainDuration, float releaseAmp, int releaseDuration, float curve);
 
     //! Sets the frequency envelope parameters for an array of grains.
     void setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv);

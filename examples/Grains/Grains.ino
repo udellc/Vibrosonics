@@ -78,8 +78,8 @@ void setup()
 {
   Serial.begin(115200);
   vapi.init();
-  sweepFreqEnv = vapi.createFreqEnv(targetFreq, targetFreq);
-  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, MIN_AMP, ATTACK_DURATION, DECAY_DURATION, SUSTAIN_DURATION, RELEASE_DURATION, CURVE);
+  sweepFreqEnv = vapi.createFreqEnv(targetFreq, targetFreq, targetFreq, 20.0);
+  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, ATTACK_DURATION, MAX_AMP, DECAY_DURATION, MAX_AMP, SUSTAIN_DURATION, MIN_AMP, RELEASE_DURATION, CURVE);
 }
 
 /**
