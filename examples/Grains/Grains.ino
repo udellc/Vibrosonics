@@ -19,6 +19,7 @@
 #define MIN_AMP 0.0
 
 #define MAX_FREQ 1000
+#define START_FREQ 20
 /**
  * BACKGROUND: What is a Grain?
  * In a nutshell, grains are tiny "slices" of audio from a larger sample.
@@ -68,7 +69,7 @@ Grain* sweepGrain = vapi.createGrainArray(1, 0, SINE);
 FreqEnv sweepFreqEnv = {};
 AmpEnv sweepAmpEnv = {};
 
-float targetFreq = 100.0;
+float targetFreq = START_FREQ;
 /**
  * Runs once on ESP32 startup.
  * VibrosonicsAPI initializes AudioLab and adds modules to be managed
@@ -78,7 +79,7 @@ void setup()
 {
   Serial.begin(115200);
   vapi.init();
-  sweepFreqEnv = vapi.createFreqEnv(targetFreq, targetFreq, targetFreq, 20.0);
+  sweepFreqEnv = vapi.createFreqEnv(START_FREQ, START_FREQ, START_FREQ, 0.0);
   sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, ATTACK_DURATION, MAX_AMP, DECAY_DURATION, MAX_AMP, SUSTAIN_DURATION, MIN_AMP, RELEASE_DURATION, CURVE);
 }
 
@@ -91,7 +92,7 @@ void loop()
     return;
   }
   // Outside of frequency range, reset
-  if(sweepGrain[0].getFrequency() >= MAX_FREQ) targetFreq = 100.0;
+  if(sweepGrain[0].getFrequency() >= MAX_FREQ) targetFreq = START_FREQ;
   // Previous frequency has finished playing, increase grain frequency
   if(sweepGrain[0].getGrainState() == READY){
     targetFreq = targetFreq*1.0595;
