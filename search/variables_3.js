@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['window_5fsize_5fby_5f2_0',['WINDOW_SIZE_BY_2',['../_vibrosonics_a_p_i_8h.html#ac03078e75fb605280c11d7502c86ee1b',1,'VibrosonicsAPI.h']]]
+  ['freq_5fres_0',['FREQ_RES',['../_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df',1,'VibrosonicsAPI.h']]],
+  ['freq_5fwidth_1',['FREQ_WIDTH',['../_vibrosonics_a_p_i_8h.html#aafc60f8ba1f97829e954fc46c5f5aafa',1,'VibrosonicsAPI.h']]]
 ];

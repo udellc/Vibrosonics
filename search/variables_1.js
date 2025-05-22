@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['next_0',['next',['../struct_grain_node.html#aa2de7ec3288741eaf1e466310319995c',1,'GrainNode']]],
-  ['num_5fwindows_1',['NUM_WINDOWS',['../_vibrosonics_a_p_i_8h.html#a15e4ca772adfd1fe71e8f50dc6722d23',1,'VibrosonicsAPI.h']]]
+  ['curve_0',['curve',['../struct_amp_env.html#a79c4a16c4928229c3982447ebac83c21',1,'AmpEnv']]]
 ];

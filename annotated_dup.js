@@ -1,5 +1,7 @@
 var annotated_dup =
 [
+    [ "AmpEnv", "struct_amp_env.html", "struct_amp_env" ],
+    [ "FreqEnv", "struct_freq_env.html", "struct_freq_env" ],
     [ "Grain", "class_grain.html", "class_grain" ],
     [ "GrainList", "class_grain_list.html", "class_grain_list" ],
     [ "GrainNode", "struct_grain_node.html", "struct_grain_node" ],

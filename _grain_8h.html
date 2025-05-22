@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-290-gbdad494</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-307-ge8480f1</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -130,13 +130,17 @@ Include dependency graph for Grain.h:</div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="_grain_8h__dep__incl.svg" width="284" height="184"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="_grain_8h__dep__incl.svg" width="328" height="184"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div>
 <p><a href="_grain_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_freq_env.html">FreqEnv</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_amp_env.html">AmpEnv</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_grain.html">Grain</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_grain_node.html">GrainNode</a></td></tr>
@@ -146,10 +150,14 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a05122a67715192f0564d8ea597d4d68c" id="r_a05122a67715192f0564d8ea597d4d68c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a05122a67715192f0564d8ea597d4d68c">grainState</a> { <a class="el" href="#a05122a67715192f0564d8ea597d4d68ca6564f2f3e15be06b670547bbcaaf0798">READY</a>
+<tr class="memitem:a05122a67715192f0564d8ea597d4d68c" id="r_a05122a67715192f0564d8ea597d4d68c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a05122a67715192f0564d8ea597d4d68c">grainState</a> { <br />
+&#160;&#160;<a class="el" href="#a05122a67715192f0564d8ea597d4d68ca6564f2f3e15be06b670547bbcaaf0798">READY</a>
 , <a class="el" href="#a05122a67715192f0564d8ea597d4d68ca831c130f9c83adc963152d232a9d61c7">ATTACK</a>
+, <a class="el" href="#a05122a67715192f0564d8ea597d4d68cac99e06a6154014cbb1ab4158b3f5707a">DECAY</a>
 , <a class="el" href="#a05122a67715192f0564d8ea597d4d68caff8f2c749b743b02577de567de908efd">SUSTAIN</a>
-, <a class="el" href="#a05122a67715192f0564d8ea597d4d68cad590443978dc58d64aed5001f56efcdf">RELEASE</a>
+, <br />
+&#160;&#160;<a class="el" href="#a05122a67715192f0564d8ea597d4d68cad590443978dc58d64aed5001f56efcdf">RELEASE</a>
+<br />
  }</td></tr>
 <tr class="separator:a05122a67715192f0564d8ea597d4d68c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -172,6 +180,7 @@ Enumerations</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a05122a67715192f0564d8ea597d4d68ca6564f2f3e15be06b670547bbcaaf0798" name="a05122a67715192f0564d8ea597d4d68ca6564f2f3e15be06b670547bbcaaf0798"></a>READY&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a05122a67715192f0564d8ea597d4d68ca831c130f9c83adc963152d232a9d61c7" name="a05122a67715192f0564d8ea597d4d68ca831c130f9c83adc963152d232a9d61c7"></a>ATTACK&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a05122a67715192f0564d8ea597d4d68cac99e06a6154014cbb1ab4158b3f5707a" name="a05122a67715192f0564d8ea597d4d68cac99e06a6154014cbb1ab4158b3f5707a"></a>DECAY&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a05122a67715192f0564d8ea597d4d68caff8f2c749b743b02577de567de908efd" name="a05122a67715192f0564d8ea597d4d68caff8f2c749b743b02577de567de908efd"></a>SUSTAIN&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a05122a67715192f0564d8ea597d4d68cad590443978dc58d64aed5001f56efcdf" name="a05122a67715192f0564d8ea597d4d68cad590443978dc58d64aed5001f56efcdf"></a>RELEASE&#160;</td><td class="fielddoc"></td></tr>
 </table>

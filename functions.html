@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-290-gbdad494</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-307-ge8480f1</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -120,6 +120,9 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 <h3><a id="index_a" name="index_a"></a>- a -</h3><ul>
 <li>assignWave()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ac39fb95046d254d3da5b26a7104b4d8c">VibrosonicsAPI</a></li>
 <li>assignWaves()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a9d0dbc73ba0905fbf5e69c4654ccfac2">VibrosonicsAPI</a></li>
+<li>attackAmplitude&#160;:&#160;<a class="el" href="struct_amp_env.html#a8efa51ebec80432bfcf5bc6c4c3b4194">AmpEnv</a></li>
+<li>attackDuration&#160;:&#160;<a class="el" href="struct_amp_env.html#a5030ebdd7c493e789963bf2de653af71">AmpEnv</a></li>
+<li>attackFrequency&#160;:&#160;<a class="el" href="struct_freq_env.html#abc9cf0d7a0ef13622a85ea052cad3502">FreqEnv</a></li>
 </ul>
 
 
@@ -127,12 +130,19 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 <li>clearList()&#160;:&#160;<a class="el" href="class_grain_list.html#a89b0a083c70f526d152f584cfac49ffb">GrainList</a></li>
 <li>complexToMagnitude()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a5398e8e78814c2472b595d5b53fc549c">VibrosonicsAPI</a></li>
 <li>computeHammingWindow()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ae68dc34037c3f3f50ad1e815c1434ab7">VibrosonicsAPI</a></li>
+<li>createAmpEnv()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a0988048874dd214f771dcbfbdd91fe1d">VibrosonicsAPI</a></li>
+<li>createDynamicGrain()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a1987b424751b20b5a1ea1069899fbd0b">VibrosonicsAPI</a></li>
+<li>createFreqEnv()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965">VibrosonicsAPI</a></li>
 <li>createGrainArray()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f">VibrosonicsAPI</a></li>
+<li>curve&#160;:&#160;<a class="el" href="struct_amp_env.html#a79c4a16c4928229c3982447ebac83c21">AmpEnv</a></li>
 </ul>
 
 
 <h3><a id="index_d" name="index_d"></a>- d -</h3><ul>
 <li>dcRemoval()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#aec841055a9b7d89fe9fca773a70c93d6">VibrosonicsAPI</a></li>
+<li>decayAmplitude&#160;:&#160;<a class="el" href="struct_amp_env.html#aa435d97b2ccba3bcbcc64ad18b23ecb1">AmpEnv</a></li>
+<li>decayDuration&#160;:&#160;<a class="el" href="struct_amp_env.html#aa373714d3c5c17a579d611a3b103a516">AmpEnv</a></li>
+<li>decayFrequency&#160;:&#160;<a class="el" href="struct_freq_env.html#a2026ac92901821cd32199ccc80f36773">FreqEnv</a></li>
 </ul>
 
 
@@ -142,8 +152,11 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 
 
 <h3><a id="index_g" name="index_g"></a>- g -</h3><ul>
+<li>getAmpEnv()&#160;:&#160;<a class="el" href="class_grain.html#ab158870c34b23c95454abcb4ae44b4d6">Grain</a></li>
 <li>getAmplitude()&#160;:&#160;<a class="el" href="class_grain.html#afbf57edab4dc86304771d2436344c831">Grain</a></li>
 <li>getAttackDuration()&#160;:&#160;<a class="el" href="class_grain.html#a93f50b43d904b77a41da0ea7bb5a7235">Grain</a></li>
+<li>getDecayDuration()&#160;:&#160;<a class="el" href="class_grain.html#a7e6ea6b433211e48c2dde2e83c9e5d44">Grain</a></li>
+<li>getFreqEnv()&#160;:&#160;<a class="el" href="class_grain.html#a0eaa1f3338c33ac124cd9495c85cfd71">Grain</a></li>
 <li>getFrequency()&#160;:&#160;<a class="el" href="class_grain.html#a493ecaf317e78a732eeeb6f7601952db">Grain</a></li>
 <li>getGrainState()&#160;:&#160;<a class="el" href="class_grain.html#adb5cf772d02657fd8096b5d4f6b3fe9d">Grain</a></li>
 <li>getHead()&#160;:&#160;<a class="el" href="class_grain_list.html#ae1c1f9133ba2fbe7509f8d458a331b8d">GrainList</a></li>
@@ -151,13 +164,14 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 <li>getReleaseDuration()&#160;:&#160;<a class="el" href="class_grain.html#af1195ef5ade478ba18457a50cae9484c">Grain</a></li>
 <li>getSustainDuration()&#160;:&#160;<a class="el" href="class_grain.html#af5613c65fc0077c74564d653802d7f42">Grain</a></li>
 <li>Grain()&#160;:&#160;<a class="el" href="class_grain.html#a9ad7991c6a2b005b101ce2260a314818">Grain</a></li>
-<li>GrainList()&#160;:&#160;<a class="el" href="class_grain_list.html#ad500401d8e53b45080f2ebe07467ea0a">GrainList</a></li>
+<li>GrainList&#160;:&#160;<a class="el" href="class_grain.html#a40bae1faec1fad82f04e3cb39134cfaa">Grain</a>, <a class="el" href="class_grain_list.html#ad500401d8e53b45080f2ebe07467ea0a">GrainList</a></li>
 <li>GrainNode()&#160;:&#160;<a class="el" href="struct_grain_node.html#a21811483f9bf0a09bfb6ae122fea9681">GrainNode</a></li>
 </ul>
 
 
 <h3><a id="index_i" name="index_i"></a>- i -</h3><ul>
 <li>init()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#aa1b346a8270b0677fc3da264fb16a4e8">VibrosonicsAPI</a></li>
+<li>isDynamic&#160;:&#160;<a class="el" href="class_grain.html#a897bd7e0fd1909a9808db3e9fc78b3aa">Grain</a></li>
 </ul>
 
 
@@ -165,6 +179,7 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 <li>mapAmplitudes()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b">VibrosonicsAPI</a></li>
 <li>mapFrequenciesExponential()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ab354c4d31e544968ec249315929327fd">VibrosonicsAPI</a></li>
 <li>mapFrequenciesLinear()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a21d912211eeb3a5b55cd61bf0b788dde">VibrosonicsAPI</a></li>
+<li>markedForDeletion&#160;:&#160;<a class="el" href="class_grain.html#a58dd598bd0b2102cee8c9b0112d9b454">Grain</a></li>
 </ul>
 
 
@@ -176,6 +191,7 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 
 
 <h3><a id="index_p" name="index_p"></a>- p -</h3><ul>
+<li>printGrain()&#160;:&#160;<a class="el" href="class_grain.html#a9424bc5a826a426c8586e40d4ec4f5a7">Grain</a></li>
 <li>processAudioInput()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ad636f0c5167fa69f580239c1f33a25f5">VibrosonicsAPI</a></li>
 <li>pushGrain()&#160;:&#160;<a class="el" href="class_grain_list.html#a56dbc0be454e9990a1e8f6d28e928a29">GrainList</a></li>
 </ul>
@@ -183,31 +199,37 @@ $(function(){initNavTree('functions.html',''); initResizable(true); });
 
 <h3><a id="index_r" name="index_r"></a>- r -</h3><ul>
 <li>reference&#160;:&#160;<a class="el" href="struct_grain_node.html#a34c26441fb6ee172c096f42d1dbcc328">GrainNode</a></li>
+<li>releaseAmplitude&#160;:&#160;<a class="el" href="struct_amp_env.html#a3ee2e2835862d5f7540ef86234536b59">AmpEnv</a></li>
+<li>releaseDuration&#160;:&#160;<a class="el" href="struct_amp_env.html#a7d070d5038f5e9c652e9c5d4100687c1">AmpEnv</a></li>
+<li>releaseFrequency&#160;:&#160;<a class="el" href="struct_freq_env.html#a126d83719870dda4563e6e8b5438cc9e">FreqEnv</a></li>
 </ul>
 
 
 <h3><a id="index_s" name="index_s"></a>- s -</h3><ul>
+<li>setAmpEnv()&#160;:&#160;<a class="el" href="class_grain.html#af2c772166abb2482406a7ba13d8cb0c8">Grain</a></li>
 <li>setAttack()&#160;:&#160;<a class="el" href="class_grain.html#a72fbba479a6982a9f21530790e4efee3">Grain</a></li>
 <li>setChannel()&#160;:&#160;<a class="el" href="class_grain.html#ad19508e16ef5c12b12680347410298ce">Grain</a></li>
+<li>setDecay()&#160;:&#160;<a class="el" href="class_grain.html#a153916fd73efcf13324deeb29bd8afb3">Grain</a></li>
+<li>setFreqEnv()&#160;:&#160;<a class="el" href="class_grain.html#a993395fa005df60166f18a2a8025233c">Grain</a></li>
+<li>setGrainAmpEnv()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#afdd3b8008f19c4aa0af09aaa34d67003">VibrosonicsAPI</a></li>
+<li>setGrainFreqEnv()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ae01ce6fcb0b6c4b7ee9b819471613de9">VibrosonicsAPI</a></li>
 <li>setRelease()&#160;:&#160;<a class="el" href="class_grain.html#a75bf41253f96031a79a24489d4cb9a72">Grain</a></li>
 <li>setSustain()&#160;:&#160;<a class="el" href="class_grain.html#a7f7fef71ba43271540650983eced0c6a">Grain</a></li>
 <li>setWaveType()&#160;:&#160;<a class="el" href="class_grain.html#a2c20200d74fb1e891898c83eaa0e5d04">Grain</a></li>
-<li>shapeAttack()&#160;:&#160;<a class="el" href="class_grain.html#aae283e41061369143e68b3193ec13f7c">Grain</a></li>
-<li>shapeGrainAttack()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#aab50b2ed38354f55fb86cd0083de6340">VibrosonicsAPI</a></li>
-<li>shapeGrainRelease()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#a6c43adcbcb49c59018961f8a6f43cc66">VibrosonicsAPI</a></li>
-<li>shapeGrainSustain()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#aed2478eb77cb217c879ac7a20a10f119">VibrosonicsAPI</a></li>
-<li>shapeRelease()&#160;:&#160;<a class="el" href="class_grain.html#ae78c8dee4d3d94dba27199e22db15aaa">Grain</a></li>
-<li>shapeSustain()&#160;:&#160;<a class="el" href="class_grain.html#aee01cac2cc7ae21c36b7f52d7d8231db">Grain</a></li>
+<li>sustainAmplitude&#160;:&#160;<a class="el" href="struct_amp_env.html#a8e62629f02a4cb86851097a8a331b52c">AmpEnv</a></li>
+<li>sustainDuration&#160;:&#160;<a class="el" href="struct_amp_env.html#a16073c1c7ab0088a746278fd48bf9f52">AmpEnv</a></li>
+<li>sustainFrequency&#160;:&#160;<a class="el" href="struct_freq_env.html#a741c65964b43439af1bedc57fe6e1591">FreqEnv</a></li>
 </ul>
 
 
 <h3><a id="index_t" name="index_t"></a>- t -</h3><ul>
-<li>triggerGrains()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#afc97ed4b9beab2c5fc6982ade81cdc27">VibrosonicsAPI</a></li>
+<li>transitionTo()&#160;:&#160;<a class="el" href="class_grain.html#a85e928fe69118956e0c756162216a8be">Grain</a></li>
+<li>triggerGrains()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ab13d6139211dcd8b8d7dfe591be440b1">VibrosonicsAPI</a></li>
 </ul>
 
 
 <h3><a id="index_u" name="index_u"></a>- u -</h3><ul>
-<li>update()&#160;:&#160;<a class="el" href="class_grain.html#a631777b766caf69d1832d50280234ac1">Grain</a></li>
+<li>updateAndReap()&#160;:&#160;<a class="el" href="class_grain_list.html#a7b885fd074062ce729d459106910a177">GrainList</a></li>
 <li>updateGrains()&#160;:&#160;<a class="el" href="class_vibrosonics_a_p_i.html#ab840438b02c579b106d7ca43819a88b1">VibrosonicsAPI</a></li>
 </ul>
 </div><!-- contents -->

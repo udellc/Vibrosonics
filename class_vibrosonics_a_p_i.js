@@ -4,6 +4,9 @@ var class_vibrosonics_a_p_i =
     [ "assignWaves", "class_vibrosonics_a_p_i.html#a9d0dbc73ba0905fbf5e69c4654ccfac2", null ],
     [ "complexToMagnitude", "class_vibrosonics_a_p_i.html#a5398e8e78814c2472b595d5b53fc549c", null ],
     [ "computeHammingWindow", "class_vibrosonics_a_p_i.html#ae68dc34037c3f3f50ad1e815c1434ab7", null ],
+    [ "createAmpEnv", "class_vibrosonics_a_p_i.html#a0988048874dd214f771dcbfbdd91fe1d", null ],
+    [ "createDynamicGrain", "class_vibrosonics_a_p_i.html#a1987b424751b20b5a1ea1069899fbd0b", null ],
+    [ "createFreqEnv", "class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965", null ],
     [ "createGrainArray", "class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f", null ],
     [ "dcRemoval", "class_vibrosonics_a_p_i.html#aec841055a9b7d89fe9fca773a70c93d6", null ],
     [ "fftWindowing", "class_vibrosonics_a_p_i.html#a85b0b94f10a808c0605f30aafe300ad7", null ],
@@ -16,9 +19,8 @@ var class_vibrosonics_a_p_i =
     [ "noiseFloor", "class_vibrosonics_a_p_i.html#a69a5a020287ad80d8006c1ebccac6618", null ],
     [ "noiseFloorCFAR", "class_vibrosonics_a_p_i.html#ac0a9a6c27cd7b0b42ae5caef94f22340", null ],
     [ "processAudioInput", "class_vibrosonics_a_p_i.html#ad636f0c5167fa69f580239c1f33a25f5", null ],
-    [ "shapeGrainAttack", "class_vibrosonics_a_p_i.html#aab50b2ed38354f55fb86cd0083de6340", null ],
-    [ "shapeGrainRelease", "class_vibrosonics_a_p_i.html#a6c43adcbcb49c59018961f8a6f43cc66", null ],
-    [ "shapeGrainSustain", "class_vibrosonics_a_p_i.html#aed2478eb77cb217c879ac7a20a10f119", null ],
-    [ "triggerGrains", "class_vibrosonics_a_p_i.html#afc97ed4b9beab2c5fc6982ade81cdc27", null ],
+    [ "setGrainAmpEnv", "class_vibrosonics_a_p_i.html#afdd3b8008f19c4aa0af09aaa34d67003", null ],
+    [ "setGrainFreqEnv", "class_vibrosonics_a_p_i.html#ae01ce6fcb0b6c4b7ee9b819471613de9", null ],
+    [ "triggerGrains", "class_vibrosonics_a_p_i.html#ab13d6139211dcd8b8d7dfe591be440b1", null ],
     [ "updateGrains", "class_vibrosonics_a_p_i.html#ab840438b02c579b106d7ca43819a88b1", null ]
 ];

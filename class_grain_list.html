@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-290-gbdad494</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-307-ge8480f1</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -138,6 +138,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae1c1f9133ba2fbe7509f8d458a331b8d" id="r_ae1c1f9133ba2fbe7509f8d458a331b8d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_grain_node.html">GrainNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae1c1f9133ba2fbe7509f8d458a331b8d">getHead</a> ()</td></tr>
 <tr class="memdesc:ae1c1f9133ba2fbe7509f8d458a331b8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the head of the list.  <br /></td></tr>
 <tr class="separator:ae1c1f9133ba2fbe7509f8d458a331b8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b885fd074062ce729d459106910a177" id="r_a7b885fd074062ce729d459106910a177"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b885fd074062ce729d459106910a177">updateAndReap</a> ()</td></tr>
+<tr class="memdesc:a7b885fd074062ce729d459106910a177"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates grains and deletes finished dynamic grains.  <br /></td></tr>
+<tr class="separator:a7b885fd074062ce729d459106910a177"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class for the management of a linked list of grains </p>
@@ -234,6 +237,26 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a7b885fd074062ce729d459106910a177" name="a7b885fd074062ce729d459106910a177"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b885fd074062ce729d459106910a177">&#9670;&#160;</a></span>updateAndReap()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GrainList::updateAndReap </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Updates grains and deletes finished dynamic grains. </p>
+<p>Runs update on all grains in the list. Deletes dynamic grains if they have finished their lifespan and are ready to be "reaped". </p>
 
 </div>
 </div>

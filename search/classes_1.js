@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['vibrosonicsapi_0',['VibrosonicsAPI',['../class_vibrosonics_a_p_i.html',1,'']]]
+  ['freqenv_0',['FreqEnv',['../struct_freq_env.html',1,'']]]
 ];
