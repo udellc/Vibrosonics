@@ -96,7 +96,10 @@ void loop()
   // Previous frequency has finished playing, increase grain frequency
   if(sweepGrain[0].getGrainState() == READY){
     targetFreq = targetFreq*1.0595;
-    sweepFreqEnv.targetFrequency = targetFreq;
+    sweepFreqEnv.attackFrequency = targetFreq;
+    sweepFreqEnv.decayFrequency = targetFreq;
+    sweepFreqEnv.sustainFrequency = targetFreq;
+    sweepFreqEnv.releaseFrequency = 20.0;
     vapi.triggerGrains(sweepGrain, 1, sweepFreqEnv, sweepAmpEnv);
   }
   // Progress the grain through its curve
