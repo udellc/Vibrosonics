@@ -16,16 +16,75 @@
 enum grainState {
   READY,
   ATTACK,
+  DECAY,
   SUSTAIN,
   RELEASE
+};
+
+/**
+ * @struct FreqEnv
+ *
+ * Struct containing target frequency data for a grain
+ *
+ * @var FreqEnv::attackFrequency
+ * The maximum frequency the grain will reach in its attack state.
+ * @var FreqEnv::decayFrequency
+ * The maximum frequency the grain will reach in its decay state.
+ * @var FreqEnv::sustainFrequency
+ * The frequency the grain will output in its sustain state.
+ * @var FreqEnv::releaseFrequency
+ * The lowest frequency the grain will output in its release state.
+ */
+struct FreqEnv {
+  float attackFrequency = 100.0;
+  float decayFrequency = 100.0;
+  float sustainFrequency = 100.0;
+  float releaseFrequency = 100.0;
+};
+
+/**
+ * @struct AmpEnv
+ *
+ * Struct containing target amplitude data for a grain, its state
+ * duration parameters, and the curve shape.
+ *
+ * @var AmpEnv::attackAmplitude
+ * The maximum amplitude the grain will reach in its attack state.
+ * @var AmpEnv::attackDuration
+ * The number of windows the attack state will run for.
+ * @var AmpEnv::decayAmplitude
+ * The maximum amplitude the grain will reach in its decay state.
+ * @var AmpEnv::decayDuration
+ * The number of windows the decay state will run for.
+ * @var AmpEnv::sustainAmplitude
+ * The amplitude the grain will output in its sustain state.
+ * @var AmpEnv::sustainDuration
+ * The number of windows the sustain state will run for.
+ * @var AmpEnv::releaseAmplitude
+ * The minimum amplitude the grain will reach in its release state.
+ * @var AmpEnv::releaseDuration
+ * The number of windows the release state will run for.
+ * @var AmpEnv::curve
+ * The shape of the progression through the ADSR curve.
+ */
+struct AmpEnv {
+  float attackAmplitude = 0.5;
+  int attackDuration = 1;
+  float decayAmplitude = 0.5;
+  int decayDuration = 1;
+  float sustainAmplitude = 0.5;
+  int sustainDuration = 1;
+  float releaseAmplitude = 0.0;
+  int releaseDuration = 1;
+  float curve = 1.0f;
 };
 
 class GrainList;
 
 /**
-  * This class creates and manages the Ready, Attack, Sustain,
+  * This class creates and manages the Ready, Attack, Decay, Sustain,
   * and Release states for individual grains. A grain is a very
-  * small segment of an audio segment, allowing for more granular
+  * small segment of an audio sample, allowing for more granular
   * synthesis and management of the waves that are outputted
   * through VibroSonics hardware.
   *
@@ -45,26 +104,18 @@ private:
     float frequency = 0.0f;
     //! Targeted amplitude for the phase
     float amplitude = 0.0f;
-    //! Modulates frequency by multiplying frequencyModulator to frequency
-    float frequencyModulator = 1.0f; // Default: no modulation
-    //! Modulates amplitude by multiplying amplitudeModulator to amplitude
-    float amplitudeModulator = 1.0f; // Default: no modulation
-
     //! Shapes the curve by raising curveStep*windowCounter to the degree of the curve value
     float curve = 1.0f; // Default: linear
   };
 
   //! Struct containing attack parameters
   Phase attack;
+  //! Struct containing decay parameters
+  Phase decay;
   //! Struct containing sustain parameters
   Phase sustain;
   //! Struct containing release parameters
   Phase release;
-
-  //! The difference in frequency between sustain and attack
-  float sustainAttackFrequencyDifference;
-  //! The difference in frequency between release and sustain
-  float releaseSustainFrequencyDifference;
 
   //! The counter for how many windows a state has run for
   int windowCounter;
@@ -85,12 +136,12 @@ private:
 
   //! Update frequency and amplitude values based on current grain state.
   void run();
-
-  //! Helper function to perform necessary operations on grain parameters
-  //! when transitioning between run states
-  void transitionTo(grainState newState);
-
 public:
+  //! Flag to check if a grain is dynamic or static.
+  bool isDynamic;
+  //! Flag to check if a dynamic grain has finished triggering.
+  bool markedForDeletion;
+
   //! Default constructor to allocate a new grain
   Grain();
 
@@ -100,6 +151,9 @@ public:
 
   //! Updates grain parameters in the attack state
   void setAttack(float frequency, float amplitude, int duration);
+
+  //! Updates grain parameters in the decay state
+  void setDecay(float frequency, float amplitude, int duration);
 
   //! Updates grain parameters in the sustain state
   void setSustain(float frequency, float amplitude, int duration);
@@ -113,11 +167,12 @@ public:
   //! Sets grain wave type (SINE, COSINE, SQUARE, TRIANGLE, SAWTOOTH)
   void setWaveType(WaveType waveType);
 
-  //! Returns the state of a grain (READY, ATTACK, SUSTAIN, RELEASE)
+  //! Returns the state of a grain (READY, ATTACK, DECAY, SUSTAIN, RELEASE)
   grainState getGrainState();
 
-  //! Updates grain values and state if necessary
-  static void update(GrainList *globalGrainList);
+  //! Helper function to perform necessary operations on grain parameters
+  //! when transitioning between run states
+  void transitionTo(grainState newState);
 
   //! Returns the current amplitude of the grain
   float getAmplitude();
@@ -128,20 +183,31 @@ public:
   //! Returns the attack duration
   int getAttackDuration();
 
+  //! Returns the decay duration
+  int getDecayDuration();
+
   //! Returns the sustain duration
   int getSustainDuration();
 
   //! Returns the release duration
   int getReleaseDuration();
 
-  //! Sets parameters for the attack state
-  void shapeAttack(int duration, float freqMod, float ampMod, float curve);
+  //! Sets grain parameters for the frequency envelope
+  void setFreqEnv(FreqEnv freqEnv);
 
-  //! Sets parameters for the sustain state
-  void shapeSustain(int duration, float freqMod, float ampMod);
+  //! Sets grain parameters for the amplitude envelope
+  void setAmpEnv(AmpEnv ampEnv);
 
-  //! Sets parameters for the release state
-  void shapeRelease(int duration, float freqMod, float ampMod, float curve);
+  //! Returns the frequncy envelope struct containing state data
+  FreqEnv getFreqEnv();
+
+  //! Returns the amplitude envelope struct containing state data
+  AmpEnv getAmpEnv();
+
+  //! For debugging: Prints a grain's state, frequency, and amplitude.
+  void printGrain();
+
+  friend class GrainList;
 };
 
 /**
@@ -174,6 +240,7 @@ public:
   void clearList();
   //! Returns the head of the list.
   GrainNode* getHead();
+  //! Updates grains and deletes finished dynamic grains.
+  void updateAndReap();
 };
-
 #endif

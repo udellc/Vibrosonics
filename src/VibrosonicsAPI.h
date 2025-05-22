@@ -102,25 +102,28 @@ public:
     //! Updates all grains in the globalGrainList
     void updateGrains();
 
-    //! Creates and returns an array of grains on desired chanel with specified
+    //! Creates and returns a static array of grains on desired chanel with specified
     //! wave type.
     Grain* createGrainArray(int numGrains, uint8_t channel, WaveType waveType);
 
+    //! Creates and returns a single dynamic grain with the specified channel and wave type.
+    //! Also takes frequency and amplitude envelopes for immediate triggering.
+    Grain* createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv);
+
     //! Updates an array of numPeaks grains sustain and release windows.
-    void triggerGrains(Grain* grains, int numPeaks, float** peakData);
+    void triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv);
 
-    //! Sets the attack state parameters for an array of grains
-    void shapeGrainAttack(Grain* grains, int numGrains, int duration,
-        float freqMod, float ampMod, float curve);
+    //! Creates a frequency envelope for a grain.
+    FreqEnv createFreqEnv(float attackFreq, float decayFreq, float sustainFreq, float releaseFreq);
 
-    //! Sets the sustain state parameters for an array of grains
-    void shapeGrainSustain(Grain* grains, int numGrains, int duration,
-        float freqMod, float ampMod);
+    //! Creates an amplitude envelope for a grain.
+    AmpEnv createAmpEnv(float attackAmp, int attackDuration, float decayAmp, int decayDuration, float sustainAmp, int sustainDuration, float releaseAmp, int releaseDuration, float curve);
 
-    //! Sets the release state parameters for an array of grains
-    void shapeGrainRelease(Grain* grains, int numGrains, int duration,
-        float freqMod, float ampMod, float curve);
+    //! Sets the frequency envelope parameters for an array of grains.
+    void setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv);
 
+    //! Sets the amplitude envelope parameters for an array of grains.
+    void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv);
 private:
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.

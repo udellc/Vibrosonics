@@ -1,5 +1,6 @@
 #include "VibrosonicsAPI.h"
 #include "Config.h"
+#include "Grain.h"
 #include "Spectrogram.h"
 
 /**
@@ -333,11 +334,31 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
 }
 
 /**
+ * Creates a grain that runs once and is then deleted.
+ *
+ * @param channel The physical speaker channel, on current hardware valid inputs are 0-2
+ * @param waveType The type of wave Audiolab will generate utilizing the grains.
+ * @param FreqEnv The frequency data used to shape the grain.
+ * @param AmpEnv The amplitude data, duration lengths, and curve used to shape the grain.
+ */
+Grain* VibrosonicsAPI::createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv)
+{
+    Grain* newGrain = new Grain(channel, waveType);
+    newGrain->isDynamic = true;
+    grainList.pushGrain(newGrain);
+    newGrain->setFreqEnv(freqEnv);
+    newGrain->setAmpEnv(ampEnv);
+    newGrain->transitionTo(ATTACK);
+    return newGrain;
+}
+
+/**
  * Calls update for every grain in the grain list
+ * Deletes dynamic grains as needed.
  */
 void VibrosonicsAPI::updateGrains()
 {
-    Grain::update(&grainList);
+    grainList.updateAndReap();
 }
 
 /**
@@ -346,67 +367,78 @@ void VibrosonicsAPI::updateGrains()
  *
  * @param grains An array of grains to be triggered.
  * @param numGrains The size of the Grain array.
- * @param moduleData A pointer to a module's frequency and amplitude data
+ * @param freqEnv The struct containing the frequency envelope data
+ * @param ampEnv The struct containing the amplitude envelope data
  */
-void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, float** moduleData)
+void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, struct FreqEnv freqEnv, struct AmpEnv ampEnv)
 {
     for (int i = 0; i < numGrains; i++) {
-        float currentAmp = moduleData[MP_AMP][i];
-        float currentFreq = moduleData[MP_FREQ][i];
-        if(currentAmp > grains[i].getAmplitude()){
-            grains[i].setAttack(currentFreq, currentAmp, grains[i].getAttackDuration());
-            grains[i].setSustain(currentFreq, currentAmp, grains[i].getSustainDuration());
-            grains[i].setRelease(currentFreq, 0, grains[i].getReleaseDuration());
+        if(grains[i].getGrainState() == READY) {
+            grains[i].setFreqEnv(freqEnv);
+            grains[i].setAmpEnv(ampEnv);
+            grains[i].transitionTo(ATTACK);
         }
     }
 }
 
 /**
- * Updates an array of grains parameters in the attack state.
+ * Creates a frequency envelope struct to shape the grain's frequency parameters with
  *
- * @param grains An array of grains
- * @param numGrains The size of a grain array
- * @param duration The number of windows the attack state will last for
- * @param freqMod The multiplicative modulation factor for the frequency of the attack state
- * @param ampMod The multiplicative modulation factor for the frequency of the attack state
- * @param curve Factor to influence the shave of the progression curve of the grain
+ * @param attackFreq The frequency the grain will target in its attack state
+ * @param decayFreq The frequency the grain will target in its decay state
+ * @param sustainFreq The frequency the grain will target in its sustain state
+ * @param releaseFreq The frequency the grain will target in its release state
  */
-void VibrosonicsAPI::shapeGrainAttack(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
+FreqEnv VibrosonicsAPI::createFreqEnv(float attackFreq, float decayFreq, float sustainFreq, float releaseFreq)
 {
-    for (int i = 0; i < numGrains; i++) {
-        grains[i].shapeAttack(duration, freqMod, ampMod, curve);
+    FreqEnv newFreqEnv = {attackFreq, decayFreq, sustainFreq, releaseFreq};
+    return newFreqEnv;
+}
+
+/**
+ * Creates a frequency envelope struct to shape the grain's amplitude parameters with
+ * Also sets state durations and curve shape.
+ *
+ * @param attackAmp The amplitude the grain will target in its attack state
+ * @param attackDuration The number of windows the attack phase will last for
+ * @param decayAmp The amplitude the grain will target in its decay state
+ * @param decayDuration The number of windows the decay phase will last for
+ * @param sustainAmp The amplitude the grain will target in its sustain state
+ * @param sustainDuration The number of windows the sustain phase will last for
+ * @param releaseAmp The amplitude the grain will target in its release state
+ * @param releaseDuration The number of windows the release phase will last for
+ * @param curve The shape of the grain's progression through targeted amplitudes and frequencies
+ */
+AmpEnv VibrosonicsAPI::createAmpEnv(float attackAmp, int attackDuration, float decayAmp, int decayDuration, float sustainAmp, int sustainDuration, float releaseAmp, int releaseDuration, float curve)
+{
+    AmpEnv newAmpEnv = {attackAmp, attackDuration, decayAmp, decayDuration, sustainAmp, sustainDuration, releaseAmp, releaseDuration, curve};
+    return newAmpEnv;
+}
+
+/**
+ * Sets the frequency envelope for an array of grains
+ *
+ * @param grains An array of grains to have their frequency envelope set.
+ * @param numGrains The size of the Grain array.
+ * @param freqEnv The struct containing the new frequency envelope data
+ */
+void VibrosonicsAPI::setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv)
+{
+    for(int i = 0; i < numGrains; i++) {
+        grains[i].setFreqEnv(freqEnv);
     }
 }
 
 /**
- * Updates an array of grains parameters in the sustain state.
+ * Sets the amplitude envelope for an array of grains
  *
- * @param grains An array of grains
- * @param numGrains The size of a grain array
- * @param duration The number of windows the sustain state will last for
- * @param freqMod The multiplicative modulation factor for the frequency of the sustain state
- * @param ampMod The multiplicative modulation factor for the frequency of the sustain state
+ * @param grains An array of grains to have their amplitude envelope set.
+ * @param numGrains The size of the Grain array.
+ * @param freqEnv The struct containing the new amplitude envelope data
  */
-void VibrosonicsAPI::shapeGrainSustain(Grain* grains, int numGrains, int duration, float freqMod, float ampMod)
+void VibrosonicsAPI::setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv)
 {
-    for (int i = 0; i < numGrains; i++) {
-        grains[i].shapeSustain(duration, freqMod, ampMod);
-    }
-}
-
-/**
- * Updates an array of grains parameters in the release state.
- *
- * @param grains An array of grains
- * @param numGrains The size of a grain array
- * @param duration The number of windows the release state will last for
- * @param freqMod The multiplicative modulation factor for the frequency of the release state
- * @param ampMod The multiplicative modulation factor for the frequency of the release state
- * @param curve Factor to influence the shave of the progression curve of the grain
- */
-void VibrosonicsAPI::shapeGrainRelease(Grain* grains, int numGrains, int duration, float freqMod, float ampMod, float curve)
-{
-    for (int i = 0; i < numGrains; i++) {
-        grains[i].shapeRelease(duration, freqMod, ampMod, curve);
+    for(int i = 0; i < numGrains; i++) {
+        grains[i].setAmpEnv(ampEnv);
     }
 }

@@ -9,6 +9,17 @@
 
 #include "VibrosonicsAPI.h"
 
+// Grain Parameters
+#define ATTACK_DURATION 10
+#define DECAY_DURATION 3
+#define SUSTAIN_DURATION 2
+#define RELEASE_DURATION 8
+#define CURVE 1.0
+#define MAX_AMP 0.5
+#define MIN_AMP 0.0
+
+#define MAX_FREQ 1000
+#define START_FREQ 20
 /**
  * BACKGROUND: What is a Grain?
  * In a nutshell, grains are tiny "slices" of audio from a larger sample.
@@ -55,8 +66,10 @@
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
 Grain* sweepGrain = vapi.createGrainArray(1, 0, SINE);
+FreqEnv sweepFreqEnv = {};
+AmpEnv sweepAmpEnv = {};
 
-float targetFreq = 100.0;
+float targetFreq = START_FREQ;
 /**
  * Runs once on ESP32 startup.
  * VibrosonicsAPI initializes AudioLab and adds modules to be managed
@@ -66,20 +79,8 @@ void setup()
 {
   Serial.begin(115200);
   vapi.init();
-  /* Shape the frequency sweep grain
-   * @param grains An array of grains
-   * @param numGrains The size of a grain array
-   * @param duration The number of windows the attack state will last for
-   * @param freqMod The multiplicative modulation factor for the frequency of the attack state
-   * @param ampMod The multiplicative modulation factor for the frequency of the attack state
-   * @param curve Factor to influence the shave of the progression curve of the grain
-   */
-  vapi.shapeGrainAttack(sweepGrain, 1, 10, 1.0, 1.0, 1.0);
-  vapi.shapeGrainSustain(sweepGrain, 1, 3, 1.0, 1.0);
-  vapi.shapeGrainRelease(sweepGrain, 1, 8, 1.0, 1.0, 1.0);
-  sweepGrain[0].setAttack(targetFreq, 0.5, sweepGrain[0].getAttackDuration());
-  sweepGrain[0].setSustain(targetFreq, 0.5, sweepGrain[0].getSustainDuration());
-  sweepGrain[0].setRelease(targetFreq, 0.0, sweepGrain[0].getReleaseDuration());
+  sweepFreqEnv = vapi.createFreqEnv(START_FREQ, START_FREQ, START_FREQ, 0.0);
+  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, ATTACK_DURATION, MAX_AMP, DECAY_DURATION, MAX_AMP, SUSTAIN_DURATION, MIN_AMP, RELEASE_DURATION, CURVE);
 }
 
 /**
@@ -91,18 +92,17 @@ void loop()
     return;
   }
   // Outside of frequency range, reset
-  if(sweepGrain[0].getFrequency() >= 4000) targetFreq = 100.0;
+  if(sweepGrain[0].getFrequency() >= MAX_FREQ) targetFreq = START_FREQ;
   // Previous frequency has finished playing, increase grain frequency
   if(sweepGrain[0].getGrainState() == READY){
-    targetFreq = targetFreq*1.05;
-    sweepGrain[0].setAttack(targetFreq, 0.5, sweepGrain[0].getAttackDuration());
-    sweepGrain[0].setSustain(targetFreq, 0.5, sweepGrain[0].getSustainDuration());
-    sweepGrain[0].setRelease(targetFreq, 0.0, sweepGrain[0].getReleaseDuration());
+    targetFreq = targetFreq*1.0595;
+    sweepFreqEnv.targetFrequency = targetFreq;
+    vapi.triggerGrains(sweepGrain, 1, sweepFreqEnv, sweepAmpEnv);
   }
   // Progress the grain through its curve
   vapi.updateGrains();
   // Use AudioLab to synthesize waves for output
   AudioLab.synthesize();
   // Uncomment for debugging:
-  Serial.printf("State: %i, Frequency: %f, Amplitude: %f\n", sweepGrain[0].getGrainState(), sweepGrain[0].getFrequency(), sweepGrain[0].getAmplitude());
+  sweepGrain->printGrain();
 }
