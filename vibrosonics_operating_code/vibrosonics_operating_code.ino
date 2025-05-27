@@ -8,7 +8,7 @@ void IRAM_ATTR DAC_OUT(void)
 
 void setup() 
 {
-  initialize(&DAC_OUT);
+  initialize(&DAC_OUT, FM_ENABLE);
 }
 
 void loop() 
