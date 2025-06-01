@@ -1,7 +1,6 @@
 #include <vibrosonics.h>
 
 AD56X4Class dac;
-SI470X rx;
 byte channel[] = { AD56X4_CHANNEL_A, AD56X4_CHANNEL_B, AD56X4_CHANNEL_C, AD56X4_CHANNEL_D };
 hw_timer_t *SAMPLING_TIMER = NULL;
 uint16_t midsWave[SAMPLE_RATE / 4] = {0};
@@ -20,7 +19,7 @@ volatile bool updateWave = false;
 
 extern ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, FFT_SAMPLES, SAMPLE_RATE);
 
-void initialize(void (*DAC_OUT)(), bool FM)
+void initialize(void (*DAC_OUT)())
 {
   const int sampleDelayTime = 1000000 / SAMPLE_RATE;
 
@@ -32,7 +31,7 @@ void initialize(void (*DAC_OUT)(), bool FM)
   pinMode(33, OUTPUT);
   pinMode(SS_PIN, OUTPUT);
   SPI.setClockDivider(SPI_CLOCK_DIV2);
-  SPI.begin(5, -1, 18, 33);
+  SPI.begin();
 
   Serial.println("Initializing AD5644 DAC...");
   dac.reset(SS_PIN, true);
@@ -43,22 +42,11 @@ void initialize(void (*DAC_OUT)(), bool FM)
   analogReadResolution(12);
   analogSetPinAttenuation(A2, ADC_0db);
 
-  if(FM)
-    initialize_FM();
-
   Serial.println("Starting interrupt setup...");
   SAMPLING_TIMER = timerBegin(1000000); // setting clock prescaler 1MHz (80MHz / 80)
   timerAttachInterrupt(SAMPLING_TIMER, DAC_OUT); // attach interrupt function
   timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0); // trigger interrupt every sampleDelayTime microseconds
   Serial.println("Interrupts initialized. Setup is complete.");
-}
-
-void initialize_FM()
-{
-  Wire.begin(SDA_PIN, SCL_PIN);
-  rx.setup(RESET_PIN, SDA_PIN);
-  rx.setVolume(FM_VOLUME);
-  rx.setFrequency(FM_FREQUENCY);  // It is the frequency you want to select in MHz multiplied by 100.
 }
 
 void generateWave(int waveFrequency, uint16_t sinusoid[SAMPLE_RATE / 4], double volume) 

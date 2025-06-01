@@ -6,18 +6,9 @@
 #include <Math.h>
 #include "AD56X4_alt.h"
 #include "arduinoFFT.h"
-#include <SI470X.h>
-
-#define SS_PIN 33
-#define RESET_PIN 13
-#define SDA_PIN 23
-#define SCL_PIN 22
-
-#define FM_VOLUME 15
-#define FM_FREQUENCY 8870 // Frequency in MHz * 100; 93.3Mhz ---> 9330
-#define FM_ENABLE true
 
 #define SAMPLE_RATE 8192
+#define SS_PIN 33
 #define FFT_SAMPLES 512
 #define NOISE_THRESHOLD 1100.0
 
@@ -32,7 +23,6 @@
 #define HIGHS_OUTPUT_MAX 400.0
 
 extern AD56X4Class dac;
-extern SI470X rx;
 extern byte channel[];
 extern hw_timer_t *SAMPLING_TIMER;
 extern uint16_t midsWave[];
@@ -51,8 +41,7 @@ extern volatile bool updateWave;
 
 extern ArduinoFFT<double> FFT;
 
-void initialize(void (*userFunc)(), bool);
-void initialize_FM();
+void initialize(void (*userFunc)());
 void generateWave(int, uint16_t[SAMPLE_RATE], double);
 void analyzeWave();
 void obtain_raw_analog();
