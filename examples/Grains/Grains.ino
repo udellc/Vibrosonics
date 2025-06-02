@@ -68,6 +68,7 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 Grain* sweepGrain = vapi.createGrainArray(1, 0, SINE);
 FreqEnv sweepFreqEnv = {};
 AmpEnv sweepAmpEnv = {};
+DurEnv sweepDurEnv = {};
 
 float targetFreq = START_FREQ;
 /**
@@ -80,7 +81,8 @@ void setup()
   Serial.begin(115200);
   vapi.init();
   sweepFreqEnv = vapi.createFreqEnv(START_FREQ, START_FREQ, START_FREQ, 0.0);
-  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, ATTACK_DURATION, MAX_AMP, DECAY_DURATION, MAX_AMP, SUSTAIN_DURATION, MIN_AMP, RELEASE_DURATION, CURVE);
+  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, MAX_AMP, MAX_AMP, MIN_AMP);
+  sweepDurEnv = vapi.createDurEnv(ATTACK_DURATION, DECAY_DURATION, SUSTAIN_DURATION, RELEASE_DURATION, CURVE);
 }
 
 /**
@@ -100,7 +102,7 @@ void loop()
     sweepFreqEnv.decayFrequency = targetFreq;
     sweepFreqEnv.sustainFrequency = targetFreq;
     sweepFreqEnv.releaseFrequency = 20.0;
-    vapi.triggerGrains(sweepGrain, 1, sweepFreqEnv, sweepAmpEnv);
+    vapi.triggerGrains(sweepGrain, 1, sweepFreqEnv, sweepAmpEnv, sweepDurEnv);
   }
   // Progress the grain through its curve
   vapi.updateGrains();

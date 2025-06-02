@@ -21,6 +21,7 @@ PercussionDetection percussionDetection = PercussionDetection(0.5, 1800000, 0.75
 
 FreqEnv dynamicFreqEnv = {};
 AmpEnv dynamicAmpEnv = {};
+DurEnv dynamicDurEnv = {};
 
 int count = 0;
 
@@ -32,7 +33,8 @@ void setup() {
   modules.addModule(&percussionDetection, 1800, 4000);
 
   dynamicFreqEnv = vapi.createFreqEnv(110, 110, 110, 20);
-  dynamicAmpEnv = vapi.createAmpEnv(0.5, 1, 0.5, 2, 0.4, 1, 0.0, 3, 1.0);
+  dynamicAmpEnv = vapi.createAmpEnv(0.5, 0.5, 0.4, 0.0);
+  dynamicDurEnv = vapi.createDurEnv(1, 2, 1, 3, 1.0);
 }
 
 void loop() {
@@ -73,7 +75,7 @@ void loop() {
 
   if (percussionDetection.getOutput()) {
     Serial.printf("Percussion detected\n");
-    vapi.createDynamicGrain(1, SINE, dynamicFreqEnv, dynamicAmpEnv);
+    vapi.createDynamicGrain(1, SINE, dynamicFreqEnv, dynamicAmpEnv, dynamicDurEnv);
   } else {
     //Serial.printf("---\n");
   }

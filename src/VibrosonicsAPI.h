@@ -108,22 +108,27 @@ public:
 
     //! Creates and returns a single dynamic grain with the specified channel and wave type.
     //! Also takes frequency and amplitude envelopes for immediate triggering.
-    Grain* createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv);
+    Grain* createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv, DurEnv durEnv);
 
     //! Updates an array of numPeaks grains sustain and release windows.
-    void triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv);
+    void triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv, DurEnv durEnv);
 
     //! Creates a frequency envelope for a grain.
     FreqEnv createFreqEnv(float attackFreq, float decayFreq, float sustainFreq, float releaseFreq);
 
     //! Creates an amplitude envelope for a grain.
-    AmpEnv createAmpEnv(float attackAmp, int attackDuration, float decayAmp, int decayDuration, float sustainAmp, int sustainDuration, float releaseAmp, int releaseDuration, float curve);
+    AmpEnv createAmpEnv(float attackAmp, float decayAmp, float sustainAmp, float releaseAmp);
+
+    //! Creates a duration envelope for a grain.
+    DurEnv createDurEnv(int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve);
 
     //! Sets the frequency envelope parameters for an array of grains.
     void setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv);
 
     //! Sets the amplitude envelope parameters for an array of grains.
     void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv);
+
+    void setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv);
 private:
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.
