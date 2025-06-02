@@ -49,6 +49,9 @@ well. Our product is also compatible for use on Windows, Linux, and Mac.
 - Go to the top drop down menu and click `Select other board and port...` 
 - In the pop up window, search for `Adafruit ESP32 Feather` and select it along
 with `COMX` for port where `X` is a number 0-6
+    - You may need to download a driver to see the port ([Windows
+    Tutorial](https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/))
+    - On Linux, this is the `ch341` driver
 
 ### 3. Add Libraries
 Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP**):
@@ -108,16 +111,63 @@ way to manage a linked list of grains.
 We have an `examples` folder which contains individual programs that each
 showcase a different feature or technique possible using Vibrosonics and
 AudioPrism. 
-- Start with the `Template` example to see basic use of the API and
-for a starting point for your own program
+- Start with the `Template` example to see basic use of the API and for a
+starting point for your own program.
 - The `Grains` example demonstrates using the provided classes for granular
 synthesis with a frequency and amplitude sweep, duration changes and wave shape
-variations
-- `Percussion` showcases our current percussion detection method, which uses a specially filtered frequency domain representation as input for an AudioPrism percussion module
-- `Mirror mode` is our example demonstrating a combination of multiple
-techniques to provide a real-time translation of music to tactile feedback.
-Look here for an in-depth example utilizing the full capabilities of our
-library
+variations.
+- `Percussion` showcases our current percussion detection method, which uses a
+specially filtered frequency domain representation as input for an AudioPrism
+percussion module. It utilizes grains to create haptic feedback corresponding
+to the detected percussive hits.
+- `Melody` is a similar example of strategic frequency domain processing, but
+to bring out melodic elements of music. These elements are resynthesized by
+translating the most prominent frequency peaks into the haptic range.
+- `Vibrosonics` is our example demonstrating a combination of multiple
+techniques (`Percussion` and `Melody`) to provide a real-time translation of
+music to tactile feedback. Look here for an in-depth example utilizing the full
+capabilities of our library
+
+## Contributing
+
+Contributors are welcome! To report a bug or request a feature, open an issue
+if you do not find a relevant one already made. If you'd like to help improve the project:
+
+- Create a branch for your feature/fix. If it is corresponding to an issue,
+make sure the branch is linked to that issue.
+- Commit your changes with descriptive commit messages.
+- Push to your branch and open a new Pull Request
+
+Please follow existing code style and conventions, which largely follow the
+Arduino library style guidelines and the Webkit formatting. We have a
+`.clang-format` file for formatting `.cpp/.h` files, and use the default
+Arduino formatting for `.ino` files.
+
+## Future Development
+
+### For the 2025-26 computer science team:
+
+It can take a while to gain a solid understanding and intuition of the concepts
+used in this project. We would recommend starting by looking at the current
+examples, uploading them, and getting a feel for how they work and the output
+you experience. Take a look at the data outputted while listening, and use the
+[frequency domain visualizer](https://github.com/wwaltb/pysonics) to gain an
+intuition for the data analysis.
+
+A good first task could be creating a debug mode setting in the
+`VibrosonicsAPI` that is coherent with how the debug mode in the AudioPrism
+modules works. Also, please update the documentation and the Doxygen site for
+this project and AudioPrism as you see fit.
+
+Ultimately, you will be looking to improve upon the haptic translation by
+utilizing the new stereo input capabilities. This likely require refactoring of
+the library and many of the processing techniques. Specifically, the
+`PhaseCancellation` module in AudioPrism will be a good starting point to begin
+isolating elements of audio based on their position in the stereo mix. It is
+helpful to develop the Pysonics visualizer program alongside with this project
+to be able to continue using it when developing analysis algorithms. Hands-on
+experimentation is necessary to come up with new techniques and validate your
+ideas!
 
 ## Contributors
 ### 2024-25 Software Team

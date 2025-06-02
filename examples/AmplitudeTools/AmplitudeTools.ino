@@ -30,7 +30,6 @@ void loop() {
     // acquire + FFT + noise floor
     vapi.processAudioInput(windowData);
     vapi.noiseFloorCFAR(windowData,
-                        WINDOW_SIZE_BY_2,  // window length
                         4,                 // CFAR training cells
                         1,                 // CFAR guard cells
                         1.6f);             // threshold multiplier

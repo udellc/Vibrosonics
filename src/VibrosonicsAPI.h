@@ -9,6 +9,8 @@
 #include <AudioLab.h>
 #include <AudioPrism.h>
 #include <Fast4ier.h>
+
+// standard libraries
 #include <complex>
 #include <cstdint>
 
@@ -24,7 +26,7 @@ constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE >> 1;
 //! output bin of the Fast Fourier Transform.
 //!
 //! Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
-constexpr float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE;
+constexpr float FREQ_RES = (float)SAMPLE_RATE / (float)WINDOW_SIZE;
 
 //! Duration of a window, in seconds.
 //!
@@ -32,9 +34,6 @@ constexpr float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE;
 //! single window's worth of samples.
 //! Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window.
 constexpr float FREQ_WIDTH = 1.0 / FREQ_RES;
-
-//! Number of previous windows to be stored and used by modules
-const int NUM_WINDOWS = 8;
 
 class VibrosonicsAPI {
 public:
@@ -47,7 +46,7 @@ public:
     // we will need more processAudioInput functionality to handle stereo input
 
     //! Perform fast fourier transform on the AudioLab input buffer.
-    void processAudioInput(float output[]);
+    void processAudioInput(float* output);
 
     //! Pre compute hamming windows for FFT operations
     void computeHammingWindow();
@@ -61,12 +60,17 @@ public:
     //! Computes frequency magnitudes in vReal data.
     void complexToMagnitude();
 
+    //! Returns the mean of some float data.
+    float getMean(float* data, int dataLength);
+
+    //! Retruns the mean of some complex data.
+    float getMean(complex* data, int dataLength);
+
     //! Floors data that is below a certain threshold.
-    void noiseFloor(float data[], int dataLength, float threshold);
+    void noiseFloor(float* data, float threshold);
 
     //! Floors data using the CFAR algorithm.
-    void noiseFloorCFAR(float data[], int dataLength, int numRefs,
-        int numGuards, float bias);
+    void noiseFloorCFAR(float* data, int numRefs, int numGuards, float bias);
 
     // --- AudioLab Interactions ---------------------------------------------------
 
@@ -79,15 +83,9 @@ public:
 
     // --- Wave Manipulation -------------------------------------------------------
 
-    //! Returns the mean of some float data.
-    float getMean(float* data, int dataLength);
-
-    //! Retruns the mean of some complex data.
-    float getMean(complex* data, int dataLength);
-
     //! Maps amplitudes in some data to between 0.0-1.0 range.
-    void mapAmplitudes(float* ampData, int dataLength,
-        float minAmpSum = 10000, float smoothFactor = 0.05);
+    void mapAmplitudes(float* ampData, int dataLength, float minAmpSum = 10000,
+        float smoothFactor = 0.05);
 
     //! linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
     //! (0 - 250) Hz, the haptic range.
@@ -96,6 +94,10 @@ public:
     //! Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
     //! (0 - 250) Hz, the haptic range.
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
+
+    float mapFrequencyLog2(float inFreq);
+
+    float mapFrequencyMIDI(float inFreq, float minFreq, float maxFreq);
 
     // --- Grains -----------------------------------------------------------------
 
@@ -128,6 +130,7 @@ public:
     //! Sets the amplitude envelope parameters for an array of grains.
     void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv);
 
+    //! Sets the duration envelope paramaters for an array of grains.
     void setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv);
 private:
     // Fast Fourier Transform uses complex numbers

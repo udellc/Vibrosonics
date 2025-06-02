@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "Grain.h"
 #include "Spectrogram.h"
+#include <cmath>
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -25,10 +26,10 @@ void VibrosonicsAPI::processAudioInput(float output[])
         vData[i] = audioLabInputBuffer[i];
     }
     // Use Fast4ier combined with Vibrosonics FFT functions
-    this->dcRemoval();
-    this->fftWindowing();
+    dcRemoval();
+    fftWindowing();
     Fast4::FFT(vData, WINDOW_SIZE);
-    this->complexToMagnitude();
+    complexToMagnitude();
 
     // Copy complex data to float arrays
     for (int i = 0; i < WINDOW_SIZE; i++) {
@@ -42,7 +43,7 @@ void VibrosonicsAPI::processAudioInput(float output[])
  */
 void VibrosonicsAPI::dcRemoval()
 {
-    float mean = this->getMean(vData, WINDOW_SIZE);
+    float mean = getMean(vData, WINDOW_SIZE);
     for (int i = 0; i < WINDOW_SIZE; i++) {
         vData[i] -= mean;
     }
@@ -111,12 +112,12 @@ float VibrosonicsAPI::getMean(complex* data, int dataLength)
 /**
  * Sets the amplitude of a bin to 0 if it is less than threshold.
  *
- * @param data The array of data to floor.
+ * @param windowData The frequency domain data to filter.
  * @param threshold The threshold value to floor the data at.
  */
-void VibrosonicsAPI::noiseFloor(float* ampData, int dataLength, float threshold)
+void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
 {
-    for (int i = 0; i < dataLength; i++) {
+    for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
         if (ampData[i] < threshold) {
             ampData[i] = 0.0;
         }
@@ -128,27 +129,28 @@ void VibrosonicsAPI::noiseFloor(float* ampData, int dataLength, float threshold)
  * cells for each cell under test (CUT). If the CUT's value is less than the
  * average * a bias, then the cell is floored.
  *
+ * @param windowData The frequency domain data to filter.
  * @param numRefs The number of reference cells for CFAR.
  * @param numGuards The number of guard cells for CFAR.
  * @param bias The bias factor to use for CFAR.
  */
 
-void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, int numGuards, float bias)
+void VibrosonicsAPI::noiseFloorCFAR(float* windowData, int numRefs, int numGuards, float bias)
 {
     int   i, j, numCells;
     int   left_start, left_end, right_start, right_end;
     float noiseLevel;
 
     // copy data for output
-    float dataCopy[dataLength];
-    memcpy(dataCopy, data, dataLength * sizeof(float));
+    float dataCopy[WINDOW_SIZE_BY_2];
+    memcpy(dataCopy, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
 
-    for (i = 0; i < dataLength; i++) {
+    for (i = 0; i < WINDOW_SIZE_BY_2; i++) {
         // calculate bounds for cell under test (CUT)
         left_start  = max(0, i - numGuards - numRefs);
         left_end    = max(0, i - numGuards);
-        right_start = min(dataLength, i + numGuards);
-        right_end   = min(dataLength, i + numGuards + numRefs);
+        right_start = min(WINDOW_SIZE_BY_2, i + numGuards);
+        right_end   = min(WINDOW_SIZE_BY_2, i + numGuards + numRefs);
 
         numCells   = 0;
         noiseLevel = 0;
@@ -168,9 +170,9 @@ void VibrosonicsAPI::noiseFloorCFAR(float* data, int dataLength, int numRefs, in
 
         // copy original data if above noiseLevel, otherwise floor the CUT
         if (dataCopy[i] > noiseLevel * bias) {
-            data[i] = dataCopy[i];
+            windowData[i] = dataCopy[i];
         } else {
-            data[i] = 0;
+            windowData[i] = 0;
         }
     }
 }
@@ -312,6 +314,35 @@ void VibrosonicsAPI::mapFrequenciesExponential(float* freqData, int dataLength, 
     }
 }
 
+// https://newt.phys.unsw.edu.au/jw/notes.html
+float VibrosonicsAPI::mapFrequencyMIDI(float inFreq, float minFreq, float maxFreq)
+{
+    float midi_min = 69 + 12 * log2(minFreq / 440.);
+    float midi_max = 69 + 12 * log2(maxFreq / 440.);
+    float midi_val = 69 + 12 * log2(inFreq / 440.);
+
+    if (midi_val < midi_min) {
+        midi_val = midi_min;
+    } else if (midi_val > midi_max) {
+        midi_val = midi_max;
+    }
+
+    float ratio = (midi_val - midi_min) / (midi_max - midi_min);
+
+    // use the ratio to map between (80-230 Hz)
+    return 80 + ratio * (180 - 80);
+}
+
+float VibrosonicsAPI::mapFrequencyLog2(float inFreq)
+{
+    float freq = inFreq;
+    while (freq > 180) {
+        freq /= 2;
+    }
+
+    return freq;
+}
+
 /**
  * Creates an array of grains with specified length, channel, and wave type and then
  * pushes the newly created grain array to the global grain list.
@@ -344,7 +375,7 @@ Grain* VibrosonicsAPI::createGrainArray(int numGrains, uint8_t channel, WaveType
  */
 Grain* VibrosonicsAPI::createDynamicGrain(uint8_t channel, WaveType waveType, FreqEnv freqEnv, AmpEnv ampEnv, DurEnv durEnv)
 {
-    Grain* newGrain = new Grain(channel, waveType);
+    Grain* newGrain     = new Grain(channel, waveType);
     newGrain->isDynamic = true;
     grainList.pushGrain(newGrain);
     newGrain->setFreqEnv(freqEnv);
@@ -375,7 +406,7 @@ void VibrosonicsAPI::updateGrains()
 void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv, AmpEnv ampEnv, DurEnv durEnv)
 {
     for (int i = 0; i < numGrains; i++) {
-        if(grains[i].getGrainState() == READY) {
+        if (grains[i].getGrainState() == READY) {
             grains[i].setFreqEnv(freqEnv);
             grains[i].setAmpEnv(ampEnv);
             grains[i].setDurEnv(durEnv);
@@ -394,7 +425,7 @@ void VibrosonicsAPI::triggerGrains(Grain* grains, int numGrains, FreqEnv freqEnv
  */
 FreqEnv VibrosonicsAPI::createFreqEnv(float attackFreq, float decayFreq, float sustainFreq, float releaseFreq)
 {
-    FreqEnv newFreqEnv = {attackFreq, decayFreq, sustainFreq, releaseFreq};
+    FreqEnv newFreqEnv = { attackFreq, decayFreq, sustainFreq, releaseFreq };
     return newFreqEnv;
 }
 
@@ -438,7 +469,7 @@ DurEnv VibrosonicsAPI::createDurEnv(int attackDuration, int decayDuration, int s
  */
 void VibrosonicsAPI::setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqEnv)
 {
-    for(int i = 0; i < numGrains; i++) {
+    for (int i = 0; i < numGrains; i++) {
         grains[i].setFreqEnv(freqEnv);
     }
 }
@@ -452,7 +483,7 @@ void VibrosonicsAPI::setGrainFreqEnv(Grain* grains, int numGrains, FreqEnv freqE
  */
 void VibrosonicsAPI::setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv)
 {
-    for(int i = 0; i < numGrains; i++) {
+    for (int i = 0; i < numGrains; i++) {
         grains[i].setAmpEnv(ampEnv);
     }
 }
