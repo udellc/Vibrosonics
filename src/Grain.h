@@ -50,22 +50,12 @@ struct FreqEnv {
  *
  * @var AmpEnv::attackAmplitude
  * The maximum amplitude the grain will reach in its attack state.
- * @var AmpEnv::attackDuration
- * The number of windows the attack state will run for.
  * @var AmpEnv::decayAmplitude
  * The maximum amplitude the grain will reach in its decay state.
- * @var AmpEnv::decayDuration
- * The number of windows the decay state will run for.
  * @var AmpEnv::sustainAmplitude
  * The amplitude the grain will output in its sustain state.
- * @var AmpEnv::sustainDuration
- * The number of windows the sustain state will run for.
  * @var AmpEnv::releaseAmplitude
  * The minimum amplitude the grain will reach in its release state.
- * @var AmpEnv::releaseDuration
- * The number of windows the release state will run for.
- * @var AmpEnv::curve
- * The shape of the progression through the ADSR curve.
  */
 struct AmpEnv {
   float attackAmplitude = 0.5;
@@ -75,6 +65,30 @@ struct AmpEnv {
   float sustainAmplitude = 0.5;
   int sustainDuration = 1;
   float releaseAmplitude = 0.0;
+  int releaseDuration = 1;
+  float curve = 1.0f;
+};
+
+/**
+ * @struct DurEnv
+ *
+ * Struct containing window durations for a grain
+ *
+ * @var AmpEnv::attackDuration
+ * The number of windows the attack state will run for.
+ * @var AmpEnv::decayDuration
+ * The number of windows the decay state will run for.
+ * @var AmpEnv::sustainDuration
+ * The number of windows the sustain state will run for.
+ * @var AmpEnv::releaseDuration
+ * The number of windows the release state will run for.
+ * @var AmpEnv::curve
+ * The shape of the progression through the ADSR curve.
+ */
+struct DurEnv {
+  int attackDuration = 1;
+  int decayDuration = 1;
+  int sustainDuration = 1;
   int releaseDuration = 1;
   float curve = 1.0f;
 };
@@ -198,11 +212,17 @@ public:
   //! Sets grain parameters for the amplitude envelope
   void setAmpEnv(AmpEnv ampEnv);
 
+  //! Sets grain window duration for the duration envelope
+  void setDurEnv(DurEnv durEnv);
+
   //! Returns the frequncy envelope struct containing state data
   FreqEnv getFreqEnv();
 
   //! Returns the amplitude envelope struct containing state data
   AmpEnv getAmpEnv();
+
+  //! Returns the duration envelope struct containing duration data
+  DurEnv getDurEnv();
 
   //! For debugging: Prints a grain's state, frequency, and amplitude.
   void printGrain();

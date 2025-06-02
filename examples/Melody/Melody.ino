@@ -1,5 +1,5 @@
 #include "VibrosonicsAPI.h"
-#include "Profiler.h"
+//#include "Profiler.h"
 
 #define NOISE_FLOOR 280
 
@@ -88,9 +88,6 @@ void loop() {
   // synthesize the high peak to the right speaker, ducking with percussive
   // hits
   synthesizePeak(1, highPeakData[MP_FREQ][0], highPeakData[MP_AMP][0]);
-
-  // update the percussion grain
-  vapi.updateGrains();
 
   // map the amplitudes of waves in both channels
   AudioLab.mapAmplitudes(0, 10000);

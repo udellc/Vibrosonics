@@ -32,6 +32,7 @@ int windowsSinceHit = 0;
 
 FreqEnv freqEnv = {};
 AmpEnv ampEnv = {};
+DurEnv durEnv = {};
 
 void setup() {
   Serial.begin(115200);
@@ -52,6 +53,8 @@ void setup() {
 
   // add percussion detection module to the percussive group
   percussive.addModule(&percussionDetection, PERC_FREQ_LO, PERC_FREQ_HI);
+
+  durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
 }
 
 void loop() {
@@ -120,15 +123,13 @@ void loop() {
     // vapi.mapAmplitudes(&percussionAmp, 1);
     percussionAmp = percussionAmp * 5 + highPeakData[MP_AMP][0] * 1.1;
     freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
-    ampEnv = vapi.createAmpEnv(percussionAmp, 1, percussionAmp, 0,
-                               0.3 * percussionAmp, 1, 0., 3, 1);
-    vapi.createDynamicGrain(1, TRIANGLE, freqEnv, ampEnv);
+    ampEnv = vapi.createAmpEnv(percussionAmp, percussionAmp, 0.3 * percussionAmp, 0.);
+    vapi.createDynamicGrain(1, TRIANGLE, freqEnv, ampEnv, durEnv);
 
     percussionAmp *= 0.3;
     freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
-    ampEnv = vapi.createAmpEnv(percussionAmp, 1, 0.9 * percussionAmp, 0,
-                               0.8 * percussionAmp, 1, 0., 3, 1);
-    vapi.createDynamicGrain(1, TRIANGLE, freqEnv, ampEnv);
+    ampEnv = vapi.createAmpEnv(percussionAmp, 0.9 * percussionAmp, 0.8 * percussionAmp, 0.);
+    vapi.createDynamicGrain(1, TRIANGLE, freqEnv, ampEnv, durEnv);
     windowsSinceHit = 0;
 
     // Serial.printf("Percussion detected: %f amp\n", percussionAmp);

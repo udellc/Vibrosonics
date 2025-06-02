@@ -188,6 +188,7 @@ void Grain::run()
 /**
  * Helper function for run. Handles skipped states and prepares Grain
  * for the current window without leaving a 1 window gap between grain states.
+ * NOTE: To future teams, you may want to refactor run to be a do while loop like what transition to does. Lots of repeated code.
  *
  * @param newState State to transition to.
  */
@@ -347,17 +348,26 @@ void Grain::setFreqEnv(FreqEnv freqEnv)
  */
 void Grain::setAmpEnv(AmpEnv ampEnv)
 {
-    attack.amplitude  = ampEnv.attackAmplitude;
-    attack.duration   = ampEnv.attackDuration;
-    attack.curve      = ampEnv.curve;
-    decay.amplitude   = ampEnv.decayAmplitude;
-    decay.duration    = ampEnv.decayDuration;
-    decay.curve       = ampEnv.curve;
-    sustain.amplitude = ampEnv.sustainAmplitude;
-    sustain.duration  = ampEnv.sustainDuration;
-    release.amplitude = ampEnv.releaseAmplitude;
-    release.duration  = ampEnv.releaseDuration;
-    release.curve     = ampEnv.curve;
+  attack.amplitude = ampEnv.attackAmplitude;
+  decay.amplitude = ampEnv.decayAmplitude;
+  sustain.amplitude = ampEnv.sustainAmplitude;
+  release.amplitude = ampEnv.releaseAmplitude;
+}
+
+/**
+ * Sets window duration parameters based on the duration envelope passed in.
+ *
+ * @param durEnv Duration envelope containing new data to update state parameters with.
+ */
+void Grain::setDurEnv(DurEnv durEnv)
+{
+  attack.duration = durEnv.attackDuration;
+  attack.curve = durEnv.curve;
+  decay.duration = durEnv.decayDuration;
+  decay.curve = durEnv.curve;
+  sustain.duration = durEnv.sustainDuration;
+  release.duration = durEnv.releaseDuration;
+  release.curve = durEnv.curve;
 }
 
 /**
