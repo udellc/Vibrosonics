@@ -20,6 +20,7 @@
 
 #define MAX_FREQ 1000
 #define START_FREQ 20
+
 /**
  * BACKGROUND: What is a Grain?
  * In a nutshell, grains are tiny "slices" of audio from a larger sample.
@@ -51,7 +52,7 @@
  * In our testing, we found that grains are a bit more of a niche feature
  * rather than being ideal as the primary synthesis method. A good
  * example of an ideal situation for using grains are snare drums.
- * Any instrument/vocal/tone with a long lifetime is a good canidate
+ * Any instrument/vocal/tone with a long lifetime could be a good canidate
  * for using Grains.
  */
 
@@ -70,6 +71,7 @@ FreqEnv sweepFreqEnv = {};
 AmpEnv sweepAmpEnv = {};
 
 float targetFreq = START_FREQ;
+
 /**
  * Runs once on ESP32 startup.
  * VibrosonicsAPI initializes AudioLab and adds modules to be managed
@@ -80,7 +82,9 @@ void setup()
   Serial.begin(115200);
   vapi.init();
   sweepFreqEnv = vapi.createFreqEnv(START_FREQ, START_FREQ, START_FREQ, 0.0);
-  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, ATTACK_DURATION, MAX_AMP, DECAY_DURATION, MAX_AMP, SUSTAIN_DURATION, MIN_AMP, RELEASE_DURATION, CURVE);
+  sweepAmpEnv = vapi.createAmpEnv(MAX_AMP, ATTACK_DURATION, MAX_AMP,
+                                  DECAY_DURATION, MAX_AMP, SUSTAIN_DURATION,
+                                  MIN_AMP, RELEASE_DURATION, CURVE);
 }
 
 /**
@@ -91,21 +95,31 @@ void loop()
   if (!AudioLab.ready()) {
     return;
   }
-  // Outside of frequency range, reset
+
+  // Target frequency is outside of frequency range, reset
   if(sweepGrain[0].getFrequency() >= MAX_FREQ) targetFreq = START_FREQ;
+
   // Previous frequency has finished playing, increase grain frequency
   if(sweepGrain[0].getGrainState() == READY){
+    // Transpose the target frequency by notes:
     targetFreq = targetFreq*1.0595;
+
+    // Adjust frequencies in the envelope:
     sweepFreqEnv.attackFrequency = targetFreq;
     sweepFreqEnv.decayFrequency = targetFreq;
     sweepFreqEnv.sustainFrequency = targetFreq;
     sweepFreqEnv.releaseFrequency = 20.0;
+    
+    // Retrigger the grain:
     vapi.triggerGrains(sweepGrain, 1, sweepFreqEnv, sweepAmpEnv);
   }
+
   // Progress the grain through its curve
   vapi.updateGrains();
+
   // Use AudioLab to synthesize waves for output
   AudioLab.synthesize();
+
   // Uncomment for debugging:
   sweepGrain->printGrain();
 }

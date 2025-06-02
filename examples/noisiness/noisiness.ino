@@ -50,7 +50,7 @@ void loop() {
   vapi.processAudioInput(windowData);
   rawSpectrogram.pushWindow(windowData);
 
-  vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, REF_CELLS, GUARD_CELLS, BIAS);
+  vapi.noiseFloorCFAR(windowData, REF_CELLS, GUARD_CELLS, BIAS);
   filteredSpectrogram.pushWindow(windowData);
 
   // have the analysis modules analyze the processed signal

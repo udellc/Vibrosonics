@@ -48,7 +48,7 @@ void loop() {
 
   // process the freqeuncy domain data
 
-  vapi.noiseFloor(windowData, WINDOW_SIZE_BY_2, NOISE_FLOOR);
+  vapi.noiseFloor(windowData, NOISE_FLOOR);
 
   // save the raw data for synthesis
   rawSpectrogram.pushWindow(windowData);
@@ -57,7 +57,7 @@ void loop() {
   memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
 
   // apply CFAR to filter the data
-  vapi.noiseFloorCFAR(filteredData, WINDOW_SIZE_BY_2, 6, 1, 1.4);
+  vapi.noiseFloorCFAR(filteredData, 6, 1, 1.4);
 
   // smooth the filtered data over a long and short period of time
   AudioPrism::smooth_window_over_time(filteredData, smoothedData, 0.3);

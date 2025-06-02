@@ -64,7 +64,8 @@ void loop()
   // Using this noise flooring function helps with getting a clear
   // sounding output. This is more useful on the original prototype.
   // You may not need this if you are using the latest hardware.
-  // vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.6);
+  vapi.noiseFloorCFAR(windowData, 4, 1, 1.6);
+
   // Push the processed data to the processed spectrogram
   processedSpectrogram.pushWindow(windowData);
 

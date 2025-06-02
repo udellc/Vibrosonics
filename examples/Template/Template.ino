@@ -75,10 +75,19 @@ void loop()
   // Perfroms FFT operations on vReal
   vapi.processAudioInput(windowData);
 
-  // Using this noise flooring function helps with getting a clear
-  // sounding output. This is more useful on the original prototype.
-  // You may not need this if you are using the latest hardware.
-  // vapi.noiseFloorCFAR(windowData, WINDOW_SIZE_BY_2, 4, 1, 1.6);
+  // Basic noise flooring (zeroing below a threshold) is used to clear out the
+  // known signal noise. You can adjust this threshold by looking at the
+  // maximum amplitude found over a sample of just noise data. Make sure this
+  // is not above values commonly found from your signal data (which it
+  // shouldn't be if the device has good noise filtering via a low-pass filter
+  // at the nyquist frequency).
+  vapi.noiseFloor(windowData, 300);
+
+  // Constant false alarm rate (CFAR) noise flooring is useful when there is a
+  // low signal to noise ratio and to simply clean up the frequency domain data
+  // to be the most prominant energies left.
+  vapi.noiseFloorCFAR(windowData, 4, 1, 1.6);
+
   // Push the processed data to the processed spectrogram
   processedSpectrogram.pushWindow(windowData);
 
@@ -98,6 +107,7 @@ void loop()
 
   // Lastly, synthesize all created waves through AudioLab
   AudioLab.synthesize();
+
   // Uncomment for debugging:
   // AudioLab.printWaves();
 }

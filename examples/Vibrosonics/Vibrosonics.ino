@@ -1,5 +1,4 @@
 #include "VibrosonicsAPI.h"
-#include "Profiler.h"
 
 #define NOISE_FLOOR 280
 
@@ -61,14 +60,12 @@ void loop() {
     return;
   }
 
-  profiler_t profiler("loop()");
-
   // process the raw audio signal into frequency domain data
   vapi.processAudioInput(windowData);
 
   // process the freqeuncy domain data
 
-  vapi.noiseFloor(windowData, WINDOW_SIZE_BY_2, NOISE_FLOOR);
+  vapi.noiseFloor(windowData, NOISE_FLOOR);
 
   // save the raw data for synthesis
   rawSpectrogram.pushWindow(windowData);
@@ -77,7 +74,7 @@ void loop() {
   memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
 
   // apply CFAR to filter the data
-  vapi.noiseFloorCFAR(filteredData, WINDOW_SIZE_BY_2, 6, 1, 1.4);
+  vapi.noiseFloorCFAR(filteredData, 6, 1, 1.4);
 
   // smooth the filtered data over a long and short period of time
   AudioPrism::smooth_window_over_time(filteredData, moreSmoothedData, 0.2);
@@ -101,7 +98,10 @@ void loop() {
   // push the short smoothed data for the melodic peak detection
   melodicSpectrogram.pushWindow(melodicData);
 
-  // vapi.noiseFloor(percussiveData, WINDOW_SIZE_BY_2, 500);
+  // experimental: floor more noise from the percussive data to better capture
+  // hits after open hi-hats that leave energy leftover.
+  // vapi.noiseFloor(percussiveData, 500);
+
   percussiveSpectrogram.pushWindow(percussiveData);
 
   // have analysis modules analyze the frequency domain data
