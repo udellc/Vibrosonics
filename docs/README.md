@@ -49,6 +49,9 @@ well. Our product is also compatible for use on Windows, Linux, and Mac.
 - Go to the top drop down menu and click `Select other board and port...` 
 - In the pop up window, search for `Adafruit ESP32 Feather` and select it along
 with `COMX` for port where `X` is a number 0-6
+    - You may need to download a driver to see the port ([Windows
+    Tutorial](https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/))
+    - On Linux, this is the `ch341` driver
 
 ### 3. Add Libraries
 Download the zip files of Vibrosonics and each dependency (**Code > Download ZIP**):

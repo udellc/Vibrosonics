@@ -62,6 +62,7 @@ well. Our product is also compatible for use on Windows, Linux, and Mac.
 with `COMX` for port where `X` is a number 0-6
     - You may need to download a driver to see the port ([Windows
     Tutorial](https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/))
+    - On Linux, this is the `ch341` driver
 
 ![The other board and port drop down](/docs/images/Confirm_board.png)
 
