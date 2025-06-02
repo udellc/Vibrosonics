@@ -148,8 +148,8 @@ It can take a while to gain a solid understanding and intuition of the concepts
 used in this project. We would recommend starting by looking at the current
 examples, uploading them, and getting a feel for how they work and the output
 you experience. Take a look at the data outputted while listening, and use the
-[frequency domain vizualizer](https://github.com/wwaltb/pysonics) to gain an
-intuiting for the data analysis.
+[frequency domain visualizer](https://github.com/wwaltb/pysonics) to gain an
+intuition for the data analysis.
 
 A good first task could be creating a debug mode setting in the
 `VibrosonicsAPI` that is coherent with how the debug mode in the AudioPrism
@@ -162,7 +162,7 @@ the library and many of the processing techniques. Specifically, the
 `PhaseCancellation` module in AudioPrism will be a good starting point to begin
 isolating elements of audio based on their position in the stereo mix. It is
 helpful to develop the Pysonics visualizer program alongside with this project
-to be able to continue using it when developing analsis algorithms. Hands-on
+to be able to continue using it when developing analysis algorithms. Hands-on
 experimentation is necessary to come up with new techniques and validate your
 ideas!
 
