@@ -7,9 +7,10 @@ var searchData=
   ['computer_20science_20team_3a_4',['For the 2025-26 computer science team:',['../index.html#autotoc_md13',1,'']]],
   ['contributing_5',['Contributing',['../index.html#autotoc_md11',1,'']]],
   ['contributors_6',['Contributors',['../index.html#autotoc_md14',1,'']]],
-  ['createampenv_7',['createAmpEnv',['../class_vibrosonics_a_p_i.html#a0988048874dd214f771dcbfbdd91fe1d',1,'VibrosonicsAPI']]],
-  ['createdynamicgrain_8',['createDynamicGrain',['../class_vibrosonics_a_p_i.html#a1987b424751b20b5a1ea1069899fbd0b',1,'VibrosonicsAPI']]],
-  ['createfreqenv_9',['createFreqEnv',['../class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965',1,'VibrosonicsAPI']]],
-  ['creategrainarray_10',['createGrainArray',['../class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f',1,'VibrosonicsAPI']]],
-  ['curve_11',['curve',['../struct_amp_env.html#a79c4a16c4928229c3982447ebac83c21',1,'AmpEnv']]]
+  ['createampenv_7',['createAmpEnv',['../class_vibrosonics_a_p_i.html#ad175cc891ff8fc63b991dae4bf0140e0',1,'VibrosonicsAPI']]],
+  ['createdurenv_8',['createDurEnv',['../class_vibrosonics_a_p_i.html#a5cf0352839581b9e1798e24de43d30e0',1,'VibrosonicsAPI']]],
+  ['createdynamicgrain_9',['createDynamicGrain',['../class_vibrosonics_a_p_i.html#a4d702e892e39a097252b77de5433ac3c',1,'VibrosonicsAPI']]],
+  ['createfreqenv_10',['createFreqEnv',['../class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965',1,'VibrosonicsAPI']]],
+  ['creategrainarray_11',['createGrainArray',['../class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f',1,'VibrosonicsAPI']]],
+  ['curve_12',['curve',['../struct_amp_env.html#a79c4a16c4928229c3982447ebac83c21',1,'AmpEnv::curve'],['../struct_dur_env.html#aaa0cd5b523e7c2b391f85132096450cb',1,'DurEnv::curve']]]
 ];

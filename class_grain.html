@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-316-gf00d02c</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-319-gdb37c8f</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -182,12 +182,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af2c772166abb2482406a7ba13d8cb0c8" id="r_af2c772166abb2482406a7ba13d8cb0c8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2c772166abb2482406a7ba13d8cb0c8">setAmpEnv</a> (<a class="el" href="struct_amp_env.html">AmpEnv</a> ampEnv)</td></tr>
 <tr class="memdesc:af2c772166abb2482406a7ba13d8cb0c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets grain parameters for the amplitude envelope.  <br /></td></tr>
 <tr class="separator:af2c772166abb2482406a7ba13d8cb0c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1c25476b55076d1025956432d8d8278" id="r_af1c25476b55076d1025956432d8d8278"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af1c25476b55076d1025956432d8d8278">setDurEnv</a> (<a class="el" href="struct_dur_env.html">DurEnv</a> durEnv)</td></tr>
+<tr class="memdesc:af1c25476b55076d1025956432d8d8278"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets grain window duration for the duration envelope.  <br /></td></tr>
+<tr class="separator:af1c25476b55076d1025956432d8d8278"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0eaa1f3338c33ac124cd9495c85cfd71" id="r_a0eaa1f3338c33ac124cd9495c85cfd71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_freq_env.html">FreqEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0eaa1f3338c33ac124cd9495c85cfd71">getFreqEnv</a> ()</td></tr>
 <tr class="memdesc:a0eaa1f3338c33ac124cd9495c85cfd71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the frequncy envelope struct containing state data.  <br /></td></tr>
 <tr class="separator:a0eaa1f3338c33ac124cd9495c85cfd71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab158870c34b23c95454abcb4ae44b4d6" id="r_ab158870c34b23c95454abcb4ae44b4d6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_amp_env.html">AmpEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab158870c34b23c95454abcb4ae44b4d6">getAmpEnv</a> ()</td></tr>
 <tr class="memdesc:ab158870c34b23c95454abcb4ae44b4d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the amplitude envelope struct containing state data.  <br /></td></tr>
 <tr class="separator:ab158870c34b23c95454abcb4ae44b4d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a55874cbfc0487a97497ffadb2dc5c1" id="r_a2a55874cbfc0487a97497ffadb2dc5c1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_dur_env.html">DurEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a55874cbfc0487a97497ffadb2dc5c1">getDurEnv</a> ()</td></tr>
+<tr class="memdesc:a2a55874cbfc0487a97497ffadb2dc5c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the duration envelope struct containing duration data.  <br /></td></tr>
+<tr class="separator:a2a55874cbfc0487a97497ffadb2dc5c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9424bc5a826a426c8586e40d4ec4f5a7" id="r_a9424bc5a826a426c8586e40d4ec4f5a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9424bc5a826a426c8586e40d4ec4f5a7">printGrain</a> ()</td></tr>
 <tr class="memdesc:a9424bc5a826a426c8586e40d4ec4f5a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">For debugging: Prints a grain's state, frequency, and amplitude.  <br /></td></tr>
 <tr class="separator:a9424bc5a826a426c8586e40d4ec4f5a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -343,6 +349,25 @@ Friends</h2></td></tr>
 <p>Returns the decay duration. </p>
 <p>Returns the decay window duration</p>
 <dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
+
+</div>
+</div>
+<a id="a2a55874cbfc0487a97497ffadb2dc5c1" name="a2a55874cbfc0487a97497ffadb2dc5c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a55874cbfc0487a97497ffadb2dc5c1">&#9670;&#160;</a></span>getDurEnv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_dur_env.html">DurEnv</a> Grain::getDurEnv </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the duration envelope struct containing duration data. </p>
 
 </div>
 </div>
@@ -595,6 +620,32 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="af1c25476b55076d1025956432d8d8278" name="af1c25476b55076d1025956432d8d8278"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1c25476b55076d1025956432d8d8278">&#9670;&#160;</a></span>setDurEnv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Grain::setDurEnv </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_dur_env.html">DurEnv</a></td>          <td class="paramname"><span class="paramname"><em>durEnv</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets grain window duration for the duration envelope. </p>
+<p>Sets window duration parameters based on the duration envelope passed in.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">durEnv</td><td>Duration envelope containing new data to update state parameters with. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a993395fa005df60166f18a2a8025233c" name="a993395fa005df60166f18a2a8025233c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a993395fa005df60166f18a2a8025233c">&#9670;&#160;</a></span>setFreqEnv()</h2>
 
@@ -737,7 +788,7 @@ Friends</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Helper function to perform necessary operations on grain parameters when transitioning between run states. </p>
-<p>Helper function for run. Handles skipped states and prepares <a class="el" href="class_grain.html">Grain</a> for the current window without leaving a 1 window gap between grain states.</p>
+<p>Helper function for run. Handles skipped states and prepares <a class="el" href="class_grain.html">Grain</a> for the current window without leaving a 1 window gap between grain states. NOTE: To future teams, you may want to refactor run to be a do while loop like what transition to does. Lots of repeated code.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">newState</td><td>State to transition to. </td></tr>

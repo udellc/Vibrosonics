@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['freqenv_0',['FreqEnv',['../struct_freq_env.html',1,'']]]
+  ['durenv_0',['DurEnv',['../struct_dur_env.html',1,'']]]
 ];

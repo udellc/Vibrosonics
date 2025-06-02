@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-316-gf00d02c</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-319-gdb37c8f</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -180,24 +180,30 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2ba81ed2f29af76698fa3626570b251f" id="r_a2ba81ed2f29af76698fa3626570b251f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_grain.html">Grain</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2ba81ed2f29af76698fa3626570b251f">createGrainArray</a> (int numGrains, uint8_t channel, WaveType waveType)</td></tr>
 <tr class="memdesc:a2ba81ed2f29af76698fa3626570b251f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates and returns a static array of grains on desired chanel with specified wave type.  <br /></td></tr>
 <tr class="separator:a2ba81ed2f29af76698fa3626570b251f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1987b424751b20b5a1ea1069899fbd0b" id="r_a1987b424751b20b5a1ea1069899fbd0b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_grain.html">Grain</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1987b424751b20b5a1ea1069899fbd0b">createDynamicGrain</a> (uint8_t channel, WaveType waveType, <a class="el" href="struct_freq_env.html">FreqEnv</a> freqEnv, <a class="el" href="struct_amp_env.html">AmpEnv</a> ampEnv)</td></tr>
-<tr class="memdesc:a1987b424751b20b5a1ea1069899fbd0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates and returns a single dynamic grain with the specified channel and wave type. Also takes frequency and amplitude envelopes for immediate triggering.  <br /></td></tr>
-<tr class="separator:a1987b424751b20b5a1ea1069899fbd0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab13d6139211dcd8b8d7dfe591be440b1" id="r_ab13d6139211dcd8b8d7dfe591be440b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab13d6139211dcd8b8d7dfe591be440b1">triggerGrains</a> (<a class="el" href="class_grain.html">Grain</a> *grains, int numGrains, <a class="el" href="struct_freq_env.html">FreqEnv</a> freqEnv, <a class="el" href="struct_amp_env.html">AmpEnv</a> ampEnv)</td></tr>
-<tr class="memdesc:ab13d6139211dcd8b8d7dfe591be440b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an array of numPeaks grains sustain and release windows.  <br /></td></tr>
-<tr class="separator:ab13d6139211dcd8b8d7dfe591be440b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d702e892e39a097252b77de5433ac3c" id="r_a4d702e892e39a097252b77de5433ac3c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_grain.html">Grain</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d702e892e39a097252b77de5433ac3c">createDynamicGrain</a> (uint8_t channel, WaveType waveType, <a class="el" href="struct_freq_env.html">FreqEnv</a> freqEnv, <a class="el" href="struct_amp_env.html">AmpEnv</a> ampEnv, <a class="el" href="struct_dur_env.html">DurEnv</a> durEnv)</td></tr>
+<tr class="memdesc:a4d702e892e39a097252b77de5433ac3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates and returns a single dynamic grain with the specified channel and wave type. Also takes frequency and amplitude envelopes for immediate triggering.  <br /></td></tr>
+<tr class="separator:a4d702e892e39a097252b77de5433ac3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76d598a6bbc5f99a37b17c4b8772fb3d" id="r_a76d598a6bbc5f99a37b17c4b8772fb3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a76d598a6bbc5f99a37b17c4b8772fb3d">triggerGrains</a> (<a class="el" href="class_grain.html">Grain</a> *grains, int numGrains, <a class="el" href="struct_freq_env.html">FreqEnv</a> freqEnv, <a class="el" href="struct_amp_env.html">AmpEnv</a> ampEnv, <a class="el" href="struct_dur_env.html">DurEnv</a> durEnv)</td></tr>
+<tr class="memdesc:a76d598a6bbc5f99a37b17c4b8772fb3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates an array of numPeaks grains sustain and release windows.  <br /></td></tr>
+<tr class="separator:a76d598a6bbc5f99a37b17c4b8772fb3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4cfd8b313c6f148e8bf8323a1da5965" id="r_ac4cfd8b313c6f148e8bf8323a1da5965"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_freq_env.html">FreqEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac4cfd8b313c6f148e8bf8323a1da5965">createFreqEnv</a> (float attackFreq, float decayFreq, float sustainFreq, float releaseFreq)</td></tr>
 <tr class="memdesc:ac4cfd8b313c6f148e8bf8323a1da5965"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a frequency envelope for a grain.  <br /></td></tr>
 <tr class="separator:ac4cfd8b313c6f148e8bf8323a1da5965"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0988048874dd214f771dcbfbdd91fe1d" id="r_a0988048874dd214f771dcbfbdd91fe1d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_amp_env.html">AmpEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0988048874dd214f771dcbfbdd91fe1d">createAmpEnv</a> (float attackAmp, int attackDuration, float decayAmp, int decayDuration, float sustainAmp, int sustainDuration, float releaseAmp, int releaseDuration, float curve)</td></tr>
-<tr class="memdesc:a0988048874dd214f771dcbfbdd91fe1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an amplitude envelope for a grain.  <br /></td></tr>
-<tr class="separator:a0988048874dd214f771dcbfbdd91fe1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad175cc891ff8fc63b991dae4bf0140e0" id="r_ad175cc891ff8fc63b991dae4bf0140e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_amp_env.html">AmpEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad175cc891ff8fc63b991dae4bf0140e0">createAmpEnv</a> (float attackAmp, float decayAmp, float sustainAmp, float releaseAmp)</td></tr>
+<tr class="memdesc:ad175cc891ff8fc63b991dae4bf0140e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an amplitude envelope for a grain.  <br /></td></tr>
+<tr class="separator:ad175cc891ff8fc63b991dae4bf0140e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cf0352839581b9e1798e24de43d30e0" id="r_a5cf0352839581b9e1798e24de43d30e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_dur_env.html">DurEnv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5cf0352839581b9e1798e24de43d30e0">createDurEnv</a> (int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)</td></tr>
+<tr class="memdesc:a5cf0352839581b9e1798e24de43d30e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a duration envelope for a grain.  <br /></td></tr>
+<tr class="separator:a5cf0352839581b9e1798e24de43d30e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae01ce6fcb0b6c4b7ee9b819471613de9" id="r_ae01ce6fcb0b6c4b7ee9b819471613de9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae01ce6fcb0b6c4b7ee9b819471613de9">setGrainFreqEnv</a> (<a class="el" href="class_grain.html">Grain</a> *grains, int numGrains, <a class="el" href="struct_freq_env.html">FreqEnv</a> freqEnv)</td></tr>
 <tr class="memdesc:ae01ce6fcb0b6c4b7ee9b819471613de9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the frequency envelope parameters for an array of grains.  <br /></td></tr>
 <tr class="separator:ae01ce6fcb0b6c4b7ee9b819471613de9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afdd3b8008f19c4aa0af09aaa34d67003" id="r_afdd3b8008f19c4aa0af09aaa34d67003"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afdd3b8008f19c4aa0af09aaa34d67003">setGrainAmpEnv</a> (<a class="el" href="class_grain.html">Grain</a> *grains, int numGrains, <a class="el" href="struct_amp_env.html">AmpEnv</a> ampEnv)</td></tr>
 <tr class="memdesc:afdd3b8008f19c4aa0af09aaa34d67003"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the amplitude envelope parameters for an array of grains.  <br /></td></tr>
 <tr class="separator:afdd3b8008f19c4aa0af09aaa34d67003"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59dbd0af370fa3a293ed5d6a32a2f731" id="r_a59dbd0af370fa3a293ed5d6a32a2f731"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a59dbd0af370fa3a293ed5d6a32a2f731">setGrainDurEnv</a> (<a class="el" href="class_grain.html">Grain</a> *grains, int numGrains, <a class="el" href="struct_dur_env.html">DurEnv</a> durEnv)</td></tr>
+<tr class="memdesc:a59dbd0af370fa3a293ed5d6a32a2f731"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the duration envelope paramaters for an array of grains.  <br /></td></tr>
+<tr class="separator:a59dbd0af370fa3a293ed5d6a32a2f731"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac39fb95046d254d3da5b26a7104b4d8c" name="ac39fb95046d254d3da5b26a7104b4d8c"></a>
@@ -319,8 +325,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a0988048874dd214f771dcbfbdd91fe1d" name="a0988048874dd214f771dcbfbdd91fe1d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0988048874dd214f771dcbfbdd91fe1d">&#9670;&#160;</a></span>createAmpEnv()</h2>
+<a id="ad175cc891ff8fc63b991dae4bf0140e0" name="ad175cc891ff8fc63b991dae4bf0140e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad175cc891ff8fc63b991dae4bf0140e0">&#9670;&#160;</a></span>createAmpEnv()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -333,17 +339,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>attackDuration</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>decayAmp</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>decayDuration</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -353,12 +349,45 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>sustainDuration</em></span>, </td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>releaseAmp</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates an amplitude envelope for a grain. </p>
+<p>Creates a amplitude envelope struct to shape the grain's amplitude parameters with Also sets state durations and curve shape.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">attackAmp</td><td>The amplitude the grain will target in its attack state </td></tr>
+    <tr><td class="paramname">decayAmp</td><td>The amplitude the grain will target in its decay state </td></tr>
+    <tr><td class="paramname">sustainAmp</td><td>The amplitude the grain will target in its sustain state </td></tr>
+    <tr><td class="paramname">releaseAmp</td><td>The amplitude the grain will target in its release state </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5cf0352839581b9e1798e24de43d30e0" name="a5cf0352839581b9e1798e24de43d30e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cf0352839581b9e1798e24de43d30e0">&#9670;&#160;</a></span>createDurEnv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_dur_env.html">DurEnv</a> VibrosonicsAPI::createDurEnv </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>attackDuration</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>releaseAmp</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>decayDuration</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>sustainDuration</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -373,17 +402,13 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Creates an amplitude envelope for a grain. </p>
-<p>Creates a frequency envelope struct to shape the grain's amplitude parameters with Also sets state durations and curve shape.</p>
+<p>Creates a duration envelope for a grain. </p>
+<p>Creates a duration envelope struct to shape the grain's amplitude parameters with Also sets state durations and curve shape.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">attackAmp</td><td>The amplitude the grain will target in its attack state </td></tr>
     <tr><td class="paramname">attackDuration</td><td>The number of windows the attack phase will last for </td></tr>
-    <tr><td class="paramname">decayAmp</td><td>The amplitude the grain will target in its decay state </td></tr>
     <tr><td class="paramname">decayDuration</td><td>The number of windows the decay phase will last for </td></tr>
-    <tr><td class="paramname">sustainAmp</td><td>The amplitude the grain will target in its sustain state </td></tr>
     <tr><td class="paramname">sustainDuration</td><td>The number of windows the sustain phase will last for </td></tr>
-    <tr><td class="paramname">releaseAmp</td><td>The amplitude the grain will target in its release state </td></tr>
     <tr><td class="paramname">releaseDuration</td><td>The number of windows the release phase will last for </td></tr>
     <tr><td class="paramname">curve</td><td>The shape of the grain's progression through targeted amplitudes and frequencies </td></tr>
   </table>
@@ -392,8 +417,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a1987b424751b20b5a1ea1069899fbd0b" name="a1987b424751b20b5a1ea1069899fbd0b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1987b424751b20b5a1ea1069899fbd0b">&#9670;&#160;</a></span>createDynamicGrain()</h2>
+<a id="a4d702e892e39a097252b77de5433ac3c" name="a4d702e892e39a097252b77de5433ac3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d702e892e39a097252b77de5433ac3c">&#9670;&#160;</a></span>createDynamicGrain()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -416,7 +441,12 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct_amp_env.html">AmpEnv</a></td>          <td class="paramname"><span class="paramname"><em>ampEnv</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="struct_amp_env.html">AmpEnv</a></td>          <td class="paramname"><span class="paramname"><em>ampEnv</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_dur_env.html">DurEnv</a></td>          <td class="paramname"><span class="paramname"><em>durEnv</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -428,7 +458,8 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramname">channel</td><td>The physical speaker channel, on current hardware valid inputs are 0-2 </td></tr>
     <tr><td class="paramname">waveType</td><td>The type of wave Audiolab will generate utilizing the grains. </td></tr>
     <tr><td class="paramname"><a class="el" href="struct_freq_env.html">FreqEnv</a></td><td>The frequency data used to shape the grain. </td></tr>
-    <tr><td class="paramname"><a class="el" href="struct_amp_env.html">AmpEnv</a></td><td>The amplitude data, duration lengths, and curve used to shape the grain. </td></tr>
+    <tr><td class="paramname"><a class="el" href="struct_amp_env.html">AmpEnv</a></td><td>The amplitude data used to shape the grain. </td></tr>
+    <tr><td class="paramname">durEnv</td><td>The duration lengths and curve to shape the grain. </td></tr>
   </table>
   </dd>
 </dl>
@@ -925,7 +956,44 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">grains</td><td>An array of grains to have their amplitude envelope set. </td></tr>
     <tr><td class="paramname">numGrains</td><td>The size of the <a class="el" href="class_grain.html">Grain</a> array. </td></tr>
-    <tr><td class="paramname">freqEnv</td><td>The struct containing the new amplitude envelope data </td></tr>
+    <tr><td class="paramname">ampEnv</td><td>The struct containing the new amplitude envelope data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a59dbd0af370fa3a293ed5d6a32a2f731" name="a59dbd0af370fa3a293ed5d6a32a2f731"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59dbd0af370fa3a293ed5d6a32a2f731">&#9670;&#160;</a></span>setGrainDurEnv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void VibrosonicsAPI::setGrainDurEnv </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_grain.html">Grain</a> *</td>          <td class="paramname"><span class="paramname"><em>grains</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>numGrains</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_dur_env.html">DurEnv</a></td>          <td class="paramname"><span class="paramname"><em>durEnv</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the duration envelope paramaters for an array of grains. </p>
+<p>Sets the amplitude envelope for an array of grains</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">grains</td><td>An array of grains to have their amplitude envelope set. </td></tr>
+    <tr><td class="paramname">numGrains</td><td>The size of the <a class="el" href="class_grain.html">Grain</a> array. </td></tr>
+    <tr><td class="paramname">durEnv</td><td>The struct containing the new duration envelope data </td></tr>
   </table>
   </dd>
 </dl>
@@ -969,8 +1037,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab13d6139211dcd8b8d7dfe591be440b1" name="ab13d6139211dcd8b8d7dfe591be440b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab13d6139211dcd8b8d7dfe591be440b1">&#9670;&#160;</a></span>triggerGrains()</h2>
+<a id="a76d598a6bbc5f99a37b17c4b8772fb3d" name="a76d598a6bbc5f99a37b17c4b8772fb3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76d598a6bbc5f99a37b17c4b8772fb3d">&#9670;&#160;</a></span>triggerGrains()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -993,7 +1061,12 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct_amp_env.html">AmpEnv</a></td>          <td class="paramname"><span class="paramname"><em>ampEnv</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="struct_amp_env.html">AmpEnv</a></td>          <td class="paramname"><span class="paramname"><em>ampEnv</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_dur_env.html">DurEnv</a></td>          <td class="paramname"><span class="paramname"><em>durEnv</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1006,6 +1079,7 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramname">numGrains</td><td>The size of the <a class="el" href="class_grain.html">Grain</a> array. </td></tr>
     <tr><td class="paramname">freqEnv</td><td>The struct containing the frequency envelope data </td></tr>
     <tr><td class="paramname">ampEnv</td><td>The struct containing the amplitude envelope data </td></tr>
+    <tr><td class="paramname">durEnv</td><td>The duration lengths and curve to shape the grain. </td></tr>
   </table>
   </dd>
 </dl>

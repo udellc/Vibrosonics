@@ -4,8 +4,9 @@ var class_vibrosonics_a_p_i =
     [ "assignWaves", "class_vibrosonics_a_p_i.html#a9d0dbc73ba0905fbf5e69c4654ccfac2", null ],
     [ "complexToMagnitude", "class_vibrosonics_a_p_i.html#a5398e8e78814c2472b595d5b53fc549c", null ],
     [ "computeHammingWindow", "class_vibrosonics_a_p_i.html#ae68dc34037c3f3f50ad1e815c1434ab7", null ],
-    [ "createAmpEnv", "class_vibrosonics_a_p_i.html#a0988048874dd214f771dcbfbdd91fe1d", null ],
-    [ "createDynamicGrain", "class_vibrosonics_a_p_i.html#a1987b424751b20b5a1ea1069899fbd0b", null ],
+    [ "createAmpEnv", "class_vibrosonics_a_p_i.html#ad175cc891ff8fc63b991dae4bf0140e0", null ],
+    [ "createDurEnv", "class_vibrosonics_a_p_i.html#a5cf0352839581b9e1798e24de43d30e0", null ],
+    [ "createDynamicGrain", "class_vibrosonics_a_p_i.html#a4d702e892e39a097252b77de5433ac3c", null ],
     [ "createFreqEnv", "class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965", null ],
     [ "createGrainArray", "class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f", null ],
     [ "dcRemoval", "class_vibrosonics_a_p_i.html#aec841055a9b7d89fe9fca773a70c93d6", null ],
@@ -22,7 +23,8 @@ var class_vibrosonics_a_p_i =
     [ "noiseFloorCFAR", "class_vibrosonics_a_p_i.html#a57b0b63f333efd810d6211c411de9fd0", null ],
     [ "processAudioInput", "class_vibrosonics_a_p_i.html#a18d073ca3e71cbbd856537a8612ce479", null ],
     [ "setGrainAmpEnv", "class_vibrosonics_a_p_i.html#afdd3b8008f19c4aa0af09aaa34d67003", null ],
+    [ "setGrainDurEnv", "class_vibrosonics_a_p_i.html#a59dbd0af370fa3a293ed5d6a32a2f731", null ],
     [ "setGrainFreqEnv", "class_vibrosonics_a_p_i.html#ae01ce6fcb0b6c4b7ee9b819471613de9", null ],
-    [ "triggerGrains", "class_vibrosonics_a_p_i.html#ab13d6139211dcd8b8d7dfe591be440b1", null ],
+    [ "triggerGrains", "class_vibrosonics_a_p_i.html#a76d598a6bbc5f99a37b17c4b8772fb3d", null ],
     [ "updateGrains", "class_vibrosonics_a_p_i.html#ab840438b02c579b106d7ca43819a88b1", null ]
 ];

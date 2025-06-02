@@ -2,6 +2,7 @@ var _grain_8h =
 [
     [ "FreqEnv", "struct_freq_env.html", "struct_freq_env" ],
     [ "AmpEnv", "struct_amp_env.html", "struct_amp_env" ],
+    [ "DurEnv", "struct_dur_env.html", "struct_dur_env" ],
     [ "Grain", "class_grain.html", "class_grain" ],
     [ "GrainNode", "struct_grain_node.html", "struct_grain_node" ],
     [ "GrainList", "class_grain_list.html", "class_grain_list" ],
