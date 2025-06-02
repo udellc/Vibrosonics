@@ -24,7 +24,7 @@ constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE >> 1;
 //! output bin of the Fast Fourier Transform.
 //!
 //! Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
-constexpr float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE;
+constexpr float FREQ_RES = (float)SAMPLE_RATE / (float)WINDOW_SIZE;
 
 //! Duration of a window, in seconds.
 //!
@@ -97,6 +97,8 @@ public:
     //! (0 - 250) Hz, the haptic range.
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
 
+    float mapFrequencyMIDI(float inFreq, float minFreq, float maxFreq);
+
     // --- Grains -----------------------------------------------------------------
 
     //! Updates all grains in the globalGrainList
@@ -124,6 +126,7 @@ public:
 
     //! Sets the amplitude envelope parameters for an array of grains.
     void setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv);
+
 private:
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.
