@@ -132,11 +132,17 @@
    
 */
 
-#ifndef AD56X4_alt_h
-#define AD56X4_alt_h
+#ifndef AD56X4_VIBRSONICS_H
+#define AD56X4_VIBRSONICS_H
+
+// VibroSonics note: Some libaries have been added here to enable the write speed optimization.
 
 #include "Arduino.h"
 #include <SPI.h>
+#include <driver/gpio.h> 
+#include <soc/gpio_struct.h>
+#include <soc/io_mux_reg.h>
+#include <soc/gpio_reg.h>
 
 /* For the various defined values, they are chosen so that they
    are exactly the values that need to be put into the SPI

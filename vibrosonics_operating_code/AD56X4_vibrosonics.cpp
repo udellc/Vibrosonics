@@ -1,4 +1,4 @@
-/* This code was originally created by Feja Nordsiek and has been optimized for the purpose of Vibrosonics by Fiona Pendergraft. O
+/* This code was originally created by Feja Nordsiek and has been optimized for the purpose of Vibrosonics by Fiona Pendergraft. 
    Original GitHub page: https://github.com/frejanordsiek/arduino_library_AD56X4
 */ 
 
@@ -139,14 +139,9 @@
 
 #include "Arduino.h"
 #include <SPI.h>
-#include <AD56X4_alt.h>
-#include <driver/gpio.h>
-#include <soc/gpio_struct.h>
-#include <soc/io_mux_reg.h>
-#include <soc/gpio_reg.h>
+#include "AD56X4_vibrosonics.h"
 
 AD56X4Class AD56X4;
-
 #define SS_PIN 33
 
 /* Commands the AD564X DAC whose Slave Select pin is SS_pin to
@@ -281,8 +276,15 @@ void AD56X4Class::powerUpDown (int SS_pin, byte powerModes[])
 void AD56X4Class::reset (int SS_pin, boolean fullReset)
 {
   AD56X4.writeMessage(SS_pin,AD56X4_COMMAND_RESET,0, (word)fullReset);
-  SPI.setDataMode(SPI_MODE1);
+
+  // Set the SPI mode to SPI_MODE1 and the bit order to MSB first.
+
+  SPI.setDataMode(SPI_MODE1); // VibroSonics note: these two initialiation functions are moved here so they are not done repeatedly every single write.
   SPI.setBitOrder(MSBFIRST);
+
+  // The clock speed doesn't matter too much as the chip can go up
+  // to 50 MHz while the arduino can only go up 8 MHz, so we will
+  // leave it.
 }
 
 
@@ -356,16 +358,40 @@ word AD56X4Class::makeChannelMask (boolean channel_D,
    the value to set a channel register to or other control data for
    other commands.
 */
+/* VibroSonics Note: The optimization of this function is how we are able to
+  reduce the write speed from 35μs to 22μs. 
+*/
 void AD56X4Class::writeMessage (int SS_pin, byte command,
                                 byte address, word data)
 {
+  /* VibroSonics Note: Originally, this utilized digitalWrite(), which is very
+    slow. Instead, we write directly to the necessary registers in order to
+    control the Slave Select pin. 
+  */
+
+  // Set the Slave Select pin to low so that the DAC knows to listen for a command.
+  
   WRITE_PERI_REG(GPIO_OUT1_W1TC_REG, (1 << (SS_PIN - 32)));   
+
+  /* VibroSonics Note: Originally, SPI.setDataMode() and SPI.setBitOrder() were
+     run during every single instance of this function. This is very redundant
+     for our purposes, so I moved them to reset() and made sure to run that
+     function during initialization.
+  */
+ 
+  /* The first byte is composed of two bits of nothing, then the command bits, and 
+  then the address bits. Masks are used for each set of bits and then the fields are 
+  OR'ed together.
+  */
   
   SPI.transfer((command & B00111000) | (address & B00000111));
   
+  // Send the data word. Must be sent byte by byte, MSB first.
+
   SPI.transfer(highByte(data));
   SPI.transfer(lowByte(data));
 
+  // Set the Slave Select pin back to high since we are done sending the command.
+
   WRITE_PERI_REG(GPIO_OUT1_W1TS_REG, (1 << (SS_PIN - 32))); 
-  
 }
