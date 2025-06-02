@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-310-gbc0cb41</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-314-g06e05fb</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -152,15 +152,12 @@ Classes</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:ac03078e75fb605280c11d7502c86ee1b" id="r_ac03078e75fb605280c11d7502c86ee1b"><td class="memItemLeft" align="right" valign="top">constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac03078e75fb605280c11d7502c86ee1b">WINDOW_SIZE_BY_2</a> = WINDOW_SIZE &gt;&gt; 1</td></tr>
 <tr class="separator:ac03078e75fb605280c11d7502c86ee1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0eb560ea8df07dae9c2676e230cc89df" id="r_a0eb560ea8df07dae9c2676e230cc89df"><td class="memItemLeft" align="right" valign="top">constexpr float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a> = float(SAMPLE_RATE) / WINDOW_SIZE</td></tr>
+<tr class="memitem:a0eb560ea8df07dae9c2676e230cc89df" id="r_a0eb560ea8df07dae9c2676e230cc89df"><td class="memItemLeft" align="right" valign="top">constexpr float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a> = (float)SAMPLE_RATE / (float)WINDOW_SIZE</td></tr>
 <tr class="memdesc:a0eb560ea8df07dae9c2676e230cc89df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frequency range of an FFT bin in Hz.  <br /></td></tr>
 <tr class="separator:a0eb560ea8df07dae9c2676e230cc89df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aafc60f8ba1f97829e954fc46c5f5aafa" id="r_aafc60f8ba1f97829e954fc46c5f5aafa"><td class="memItemLeft" align="right" valign="top">constexpr float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aafc60f8ba1f97829e954fc46c5f5aafa">FREQ_WIDTH</a> = 1.0 / <a class="el" href="#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a></td></tr>
 <tr class="memdesc:aafc60f8ba1f97829e954fc46c5f5aafa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Duration of a window, in seconds.  <br /></td></tr>
 <tr class="separator:aafc60f8ba1f97829e954fc46c5f5aafa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15e4ca772adfd1fe71e8f50dc6722d23" id="r_a15e4ca772adfd1fe71e8f50dc6722d23"><td class="memItemLeft" align="right" valign="top">const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15e4ca772adfd1fe71e8f50dc6722d23">NUM_WINDOWS</a> = 8</td></tr>
-<tr class="memdesc:a15e4ca772adfd1fe71e8f50dc6722d23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of previous windows to be stored and used by modules.  <br /></td></tr>
-<tr class="separator:a15e4ca772adfd1fe71e8f50dc6722d23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="a0eb560ea8df07dae9c2676e230cc89df" name="a0eb560ea8df07dae9c2676e230cc89df"></a>
@@ -173,7 +170,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">float FREQ_RES = float(SAMPLE_RATE) / WINDOW_SIZE</td>
+          <td class="memname">float FREQ_RES = (float)SAMPLE_RATE / (float)WINDOW_SIZE</td>
         </tr>
       </table>
   </td>
@@ -211,22 +208,6 @@ Variables</h2></td></tr>
 
 <p>Duration of a window, in seconds. </p>
 <p>The width is the duration of time represented by a single window's worth of samples. Ex: 256 Samples/Window / 8192 Samples/Second = 0.03125 Seconds/Window. </p>
-
-</div>
-</div>
-<a id="a15e4ca772adfd1fe71e8f50dc6722d23" name="a15e4ca772adfd1fe71e8f50dc6722d23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15e4ca772adfd1fe71e8f50dc6722d23">&#9670;&#160;</a></span>NUM_WINDOWS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const int NUM_WINDOWS = 8</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Number of previous windows to be stored and used by modules. </p>
 
 </div>
 </div>

@@ -37,9 +37,13 @@ var NAVTREE =
       [ "API Classes", "index.html#autotoc_md9", null ]
     ] ],
     [ "Examples", "index.html#autotoc_md10", null ],
-    [ "Contributors", "index.html#autotoc_md11", [
-      [ "2024-25 Software Team", "index.html#autotoc_md12", null ],
-      [ "Special Thanks", "index.html#autotoc_md13", null ]
+    [ "Contributing", "index.html#autotoc_md11", null ],
+    [ "Future Development", "index.html#autotoc_md12", [
+      [ "For the 2025-26 computer science team:", "index.html#autotoc_md13", null ]
+    ] ],
+    [ "Contributors", "index.html#autotoc_md14", [
+      [ "2024-25 Software Team", "index.html#autotoc_md15", null ],
+      [ "Special Thanks", "index.html#autotoc_md16", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

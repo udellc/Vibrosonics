@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-310-gbc0cb41</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-314-g06e05fb</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -128,9 +128,9 @@ $(function(){initNavTree('class_vibrosonics_a_p_i.html',''); initResizable(true)
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa1b346a8270b0677fc3da264fb16a4e8" id="r_aa1b346a8270b0677fc3da264fb16a4e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa1b346a8270b0677fc3da264fb16a4e8">init</a> ()</td></tr>
 <tr class="separator:aa1b346a8270b0677fc3da264fb16a4e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad636f0c5167fa69f580239c1f33a25f5" id="r_ad636f0c5167fa69f580239c1f33a25f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad636f0c5167fa69f580239c1f33a25f5">processAudioInput</a> (float output[])</td></tr>
-<tr class="memdesc:ad636f0c5167fa69f580239c1f33a25f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform fast fourier transform on the AudioLab input buffer.  <br /></td></tr>
-<tr class="separator:ad636f0c5167fa69f580239c1f33a25f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18d073ca3e71cbbd856537a8612ce479" id="r_a18d073ca3e71cbbd856537a8612ce479"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a18d073ca3e71cbbd856537a8612ce479">processAudioInput</a> (float *output)</td></tr>
+<tr class="memdesc:a18d073ca3e71cbbd856537a8612ce479"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform fast fourier transform on the AudioLab input buffer.  <br /></td></tr>
+<tr class="separator:a18d073ca3e71cbbd856537a8612ce479"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae68dc34037c3f3f50ad1e815c1434ab7" id="r_ae68dc34037c3f3f50ad1e815c1434ab7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae68dc34037c3f3f50ad1e815c1434ab7">computeHammingWindow</a> ()</td></tr>
 <tr class="memdesc:ae68dc34037c3f3f50ad1e815c1434ab7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pre compute hamming windows for FFT operations.  <br /></td></tr>
 <tr class="separator:ae68dc34037c3f3f50ad1e815c1434ab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,24 +143,24 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5398e8e78814c2472b595d5b53fc549c" id="r_a5398e8e78814c2472b595d5b53fc549c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5398e8e78814c2472b595d5b53fc549c">complexToMagnitude</a> ()</td></tr>
 <tr class="memdesc:a5398e8e78814c2472b595d5b53fc549c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes frequency magnitudes in vReal data.  <br /></td></tr>
 <tr class="separator:a5398e8e78814c2472b595d5b53fc549c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69a5a020287ad80d8006c1ebccac6618" id="r_a69a5a020287ad80d8006c1ebccac6618"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a69a5a020287ad80d8006c1ebccac6618">noiseFloor</a> (float data[], int dataLength, float threshold)</td></tr>
-<tr class="memdesc:a69a5a020287ad80d8006c1ebccac6618"><td class="mdescLeft">&#160;</td><td class="mdescRight">Floors data that is below a certain threshold.  <br /></td></tr>
-<tr class="separator:a69a5a020287ad80d8006c1ebccac6618"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0a9a6c27cd7b0b42ae5caef94f22340" id="r_ac0a9a6c27cd7b0b42ae5caef94f22340"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac0a9a6c27cd7b0b42ae5caef94f22340">noiseFloorCFAR</a> (float data[], int dataLength, int numRefs, int numGuards, float bias)</td></tr>
-<tr class="memdesc:ac0a9a6c27cd7b0b42ae5caef94f22340"><td class="mdescLeft">&#160;</td><td class="mdescRight">Floors data using the CFAR algorithm.  <br /></td></tr>
-<tr class="separator:ac0a9a6c27cd7b0b42ae5caef94f22340"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac39fb95046d254d3da5b26a7104b4d8c" id="r_ac39fb95046d254d3da5b26a7104b4d8c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac39fb95046d254d3da5b26a7104b4d8c">assignWave</a> (float freq, float amp, int channel)</td></tr>
-<tr class="memdesc:ac39fb95046d254d3da5b26a7104b4d8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a wave to a channel with specified frequency and amplitude.  <br /></td></tr>
-<tr class="separator:ac39fb95046d254d3da5b26a7104b4d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d0dbc73ba0905fbf5e69c4654ccfac2" id="r_a9d0dbc73ba0905fbf5e69c4654ccfac2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d0dbc73ba0905fbf5e69c4654ccfac2">assignWaves</a> (float *freqs, float *amps, int dataLength, int channel)</td></tr>
-<tr class="memdesc:a9d0dbc73ba0905fbf5e69c4654ccfac2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add waves to a channel from the values in the frequency and amplitude arrays.  <br /></td></tr>
-<tr class="separator:a9d0dbc73ba0905fbf5e69c4654ccfac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a012a316d6bc63235850882313d1eed4e" id="r_a012a316d6bc63235850882313d1eed4e"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a012a316d6bc63235850882313d1eed4e">getMean</a> (float *data, int dataLength)</td></tr>
 <tr class="memdesc:a012a316d6bc63235850882313d1eed4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the mean of some float data.  <br /></td></tr>
 <tr class="separator:a012a316d6bc63235850882313d1eed4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a989d9b27dda65ef61f12d864b34ab45e" id="r_a989d9b27dda65ef61f12d864b34ab45e"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a989d9b27dda65ef61f12d864b34ab45e">getMean</a> (complex *data, int dataLength)</td></tr>
 <tr class="memdesc:a989d9b27dda65ef61f12d864b34ab45e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retruns the mean of some complex data.  <br /></td></tr>
 <tr class="separator:a989d9b27dda65ef61f12d864b34ab45e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac34d7c60970b4cea3dcaf17588073c79" id="r_ac34d7c60970b4cea3dcaf17588073c79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac34d7c60970b4cea3dcaf17588073c79">noiseFloor</a> (float *data, float threshold)</td></tr>
+<tr class="memdesc:ac34d7c60970b4cea3dcaf17588073c79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Floors data that is below a certain threshold.  <br /></td></tr>
+<tr class="separator:ac34d7c60970b4cea3dcaf17588073c79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57b0b63f333efd810d6211c411de9fd0" id="r_a57b0b63f333efd810d6211c411de9fd0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a57b0b63f333efd810d6211c411de9fd0">noiseFloorCFAR</a> (float *data, int numRefs, int numGuards, float bias)</td></tr>
+<tr class="memdesc:a57b0b63f333efd810d6211c411de9fd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Floors data using the CFAR algorithm.  <br /></td></tr>
+<tr class="separator:a57b0b63f333efd810d6211c411de9fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac39fb95046d254d3da5b26a7104b4d8c" id="r_ac39fb95046d254d3da5b26a7104b4d8c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac39fb95046d254d3da5b26a7104b4d8c">assignWave</a> (float freq, float amp, int channel)</td></tr>
+<tr class="memdesc:ac39fb95046d254d3da5b26a7104b4d8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a wave to a channel with specified frequency and amplitude.  <br /></td></tr>
+<tr class="separator:ac39fb95046d254d3da5b26a7104b4d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d0dbc73ba0905fbf5e69c4654ccfac2" id="r_a9d0dbc73ba0905fbf5e69c4654ccfac2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d0dbc73ba0905fbf5e69c4654ccfac2">assignWaves</a> (float *freqs, float *amps, int dataLength, int channel)</td></tr>
+<tr class="memdesc:a9d0dbc73ba0905fbf5e69c4654ccfac2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add waves to a channel from the values in the frequency and amplitude arrays.  <br /></td></tr>
+<tr class="separator:a9d0dbc73ba0905fbf5e69c4654ccfac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ed4ac8be583d31702766ee6ff26065b" id="r_a7ed4ac8be583d31702766ee6ff26065b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ed4ac8be583d31702766ee6ff26065b">mapAmplitudes</a> (float *ampData, int dataLength, float minAmpSum=10000, float smoothFactor=0.05)</td></tr>
 <tr class="memdesc:a7ed4ac8be583d31702766ee6ff26065b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps amplitudes in some data to between 0.0-1.0 range.  <br /></td></tr>
 <tr class="separator:a7ed4ac8be583d31702766ee6ff26065b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,6 +170,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab354c4d31e544968ec249315929327fd" id="r_ab354c4d31e544968ec249315929327fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab354c4d31e544968ec249315929327fd">mapFrequenciesExponential</a> (float *freqData, int dataLength, float exp)</td></tr>
 <tr class="memdesc:ab354c4d31e544968ec249315929327fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range.  <br /></td></tr>
 <tr class="separator:ab354c4d31e544968ec249315929327fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a765858dfc2ea071b449c3d816f32806d" id="r_a765858dfc2ea071b449c3d816f32806d"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a765858dfc2ea071b449c3d816f32806d">mapFrequencyLog2</a> (float inFreq)</td></tr>
+<tr class="separator:a765858dfc2ea071b449c3d816f32806d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aae0297224a31b7a5f00af07cd4cdd7" id="r_a1aae0297224a31b7a5f00af07cd4cdd7"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1aae0297224a31b7a5f00af07cd4cdd7">mapFrequencyMIDI</a> (float inFreq, float minFreq, float maxFreq)</td></tr>
+<tr class="separator:a1aae0297224a31b7a5f00af07cd4cdd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab840438b02c579b106d7ca43819a88b1" id="r_ab840438b02c579b106d7ca43819a88b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab840438b02c579b106d7ca43819a88b1">updateGrains</a> ()</td></tr>
 <tr class="memdesc:ab840438b02c579b106d7ca43819a88b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates all grains in the globalGrainList.  <br /></td></tr>
 <tr class="separator:ab840438b02c579b106d7ca43819a88b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -748,8 +752,51 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a69a5a020287ad80d8006c1ebccac6618" name="a69a5a020287ad80d8006c1ebccac6618"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a69a5a020287ad80d8006c1ebccac6618">&#9670;&#160;</a></span>noiseFloor()</h2>
+<a id="a765858dfc2ea071b449c3d816f32806d" name="a765858dfc2ea071b449c3d816f32806d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a765858dfc2ea071b449c3d816f32806d">&#9670;&#160;</a></span>mapFrequencyLog2()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float VibrosonicsAPI::mapFrequencyLog2 </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>inFreq</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1aae0297224a31b7a5f00af07cd4cdd7" name="a1aae0297224a31b7a5f00af07cd4cdd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aae0297224a31b7a5f00af07cd4cdd7">&#9670;&#160;</a></span>mapFrequencyMIDI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float VibrosonicsAPI::mapFrequencyMIDI </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>inFreq</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>minFreq</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>maxFreq</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac34d7c60970b4cea3dcaf17588073c79" name="ac34d7c60970b4cea3dcaf17588073c79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac34d7c60970b4cea3dcaf17588073c79">&#9670;&#160;</a></span>noiseFloor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -757,12 +804,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">void VibrosonicsAPI::noiseFloor </td>
           <td>(</td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>data</em></span>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dataLength</em></span>, </td>
+          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>ampData</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -776,7 +818,7 @@ Public Member Functions</h2></td></tr>
 <p>Sets the amplitude of a bin to 0 if it is less than threshold.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>The array of data to floor. </td></tr>
+    <tr><td class="paramname">windowData</td><td>The frequency domain data to filter. </td></tr>
     <tr><td class="paramname">threshold</td><td>The threshold value to floor the data at. </td></tr>
   </table>
   </dd>
@@ -784,8 +826,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac0a9a6c27cd7b0b42ae5caef94f22340" name="ac0a9a6c27cd7b0b42ae5caef94f22340"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0a9a6c27cd7b0b42ae5caef94f22340">&#9670;&#160;</a></span>noiseFloorCFAR()</h2>
+<a id="a57b0b63f333efd810d6211c411de9fd0" name="a57b0b63f333efd810d6211c411de9fd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57b0b63f333efd810d6211c411de9fd0">&#9670;&#160;</a></span>noiseFloorCFAR()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -793,12 +835,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">void VibrosonicsAPI::noiseFloorCFAR </td>
           <td>(</td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>data</em></span>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dataLength</em></span>, </td>
+          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>windowData</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -822,6 +859,7 @@ Public Member Functions</h2></td></tr>
 <p>Uses a sliding window to compute the average value of a number of reference cells for each cell under test (CUT). If the CUT's value is less than the average * a bias, then the cell is floored.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">windowData</td><td>The frequency domain data to filter. </td></tr>
     <tr><td class="paramname">numRefs</td><td>The number of reference cells for CFAR. </td></tr>
     <tr><td class="paramname">numGuards</td><td>The number of guard cells for CFAR. </td></tr>
     <tr><td class="paramname">bias</td><td>The bias factor to use for CFAR. </td></tr>
@@ -831,8 +869,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad636f0c5167fa69f580239c1f33a25f5" name="ad636f0c5167fa69f580239c1f33a25f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad636f0c5167fa69f580239c1f33a25f5">&#9670;&#160;</a></span>processAudioInput()</h2>
+<a id="a18d073ca3e71cbbd856537a8612ce479" name="a18d073ca3e71cbbd856537a8612ce479"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18d073ca3e71cbbd856537a8612ce479">&#9670;&#160;</a></span>processAudioInput()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -840,7 +878,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">void VibrosonicsAPI::processAudioInput </td>
           <td>(</td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>output</em></span>[]</td><td>)</td>
+          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>output</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
