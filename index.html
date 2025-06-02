@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-315-g2521da5</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-316-gf00d02c</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -144,7 +144,11 @@ Installation (Arduino IDE)</h1>
 <ul>
 <li>Plug in the board (you may need to install USB drivers)</li>
 <li>Go to the top drop down menu and click <code>Select other board and port...</code></li>
-<li>In the pop up window, search for <code>Adafruit ESP32 Feather</code> and select it along with <code>COMX</code> for port where <code>X</code> is a number 0-6</li>
+<li>In the pop up window, search for <code>Adafruit ESP32 Feather</code> and select it along with <code>COMX</code> for port where <code>X</code> is a number 0-6<ul>
+<li>You may need to download a driver to see the port (<a href="https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/">Windows Tutorial</a>)</li>
+<li>On Linux, this is the <code>ch341</code> driver</li>
+</ul>
+</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md6"></a>
 3. Add Libraries</h2>
