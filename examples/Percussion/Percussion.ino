@@ -150,11 +150,11 @@ void loop() {
 // energy.
 void synthesizeHit(float flux) {
   if (flux > 0.80) {
-    vapi.createDynamicGrain(0, PERC_WAVE_TYPE, freqEnv, ampEnv);
-    vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv);
+    vapi.createDynamicGrain(0, PERC_WAVE_TYPE, freqEnv, ampEnv, durEnv);
+    vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv, durEnv);
     Serial.printf("--- channel: 1 & 0\n");
   } else {
-    vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv);
+    vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv, durEnv);
     Serial.printf("--- channel: 0\n");
   }
 }
