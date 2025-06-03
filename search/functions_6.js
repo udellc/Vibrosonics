@@ -3,6 +3,6 @@ var searchData=
   ['mapamplitudes_0',['mapAmplitudes',['../class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b',1,'VibrosonicsAPI']]],
   ['mapfrequenciesexponential_1',['mapFrequenciesExponential',['../class_vibrosonics_a_p_i.html#ab354c4d31e544968ec249315929327fd',1,'VibrosonicsAPI']]],
   ['mapfrequencieslinear_2',['mapFrequenciesLinear',['../class_vibrosonics_a_p_i.html#a21d912211eeb3a5b55cd61bf0b788dde',1,'VibrosonicsAPI']]],
-  ['mapfrequencylog2_3',['mapFrequencyLog2',['../class_vibrosonics_a_p_i.html#a765858dfc2ea071b449c3d816f32806d',1,'VibrosonicsAPI']]],
+  ['mapfrequencylog2_3',['mapFrequencyLog2',['../class_vibrosonics_a_p_i.html#acaf797e2d7a5a7deeabde7154ad9132e',1,'VibrosonicsAPI']]],
   ['mapfrequencymidi_4',['mapFrequencyMIDI',['../class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7',1,'VibrosonicsAPI']]]
 ];

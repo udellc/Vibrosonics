@@ -17,7 +17,7 @@ var class_vibrosonics_a_p_i =
     [ "mapAmplitudes", "class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b", null ],
     [ "mapFrequenciesExponential", "class_vibrosonics_a_p_i.html#ab354c4d31e544968ec249315929327fd", null ],
     [ "mapFrequenciesLinear", "class_vibrosonics_a_p_i.html#a21d912211eeb3a5b55cd61bf0b788dde", null ],
-    [ "mapFrequencyLog2", "class_vibrosonics_a_p_i.html#a765858dfc2ea071b449c3d816f32806d", null ],
+    [ "mapFrequencyLog2", "class_vibrosonics_a_p_i.html#acaf797e2d7a5a7deeabde7154ad9132e", null ],
     [ "mapFrequencyMIDI", "class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7", null ],
     [ "noiseFloor", "class_vibrosonics_a_p_i.html#ac34d7c60970b4cea3dcaf17588073c79", null ],
     [ "noiseFloorCFAR", "class_vibrosonics_a_p_i.html#a57b0b63f333efd810d6211c411de9fd0", null ],
