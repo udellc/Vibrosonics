@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-326-ga30566f</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-327-gbffc1ba</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -170,8 +170,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab354c4d31e544968ec249315929327fd" id="r_ab354c4d31e544968ec249315929327fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab354c4d31e544968ec249315929327fd">mapFrequenciesExponential</a> (float *freqData, int dataLength, float exp)</td></tr>
 <tr class="memdesc:ab354c4d31e544968ec249315929327fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range.  <br /></td></tr>
 <tr class="separator:ab354c4d31e544968ec249315929327fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acaf797e2d7a5a7deeabde7154ad9132e" id="r_acaf797e2d7a5a7deeabde7154ad9132e"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acaf797e2d7a5a7deeabde7154ad9132e">mapFrequencyLog2</a> (float inFreq, float minFreq, float maxFreq)</td></tr>
-<tr class="separator:acaf797e2d7a5a7deeabde7154ad9132e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a239e1ec9288e7a097fe0110149b1e123" id="r_a239e1ec9288e7a097fe0110149b1e123"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a239e1ec9288e7a097fe0110149b1e123">mapFrequencyByOctaves</a> (float inFreq, float minFreq, float maxFreq)</td></tr>
+<tr class="separator:a239e1ec9288e7a097fe0110149b1e123"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1aae0297224a31b7a5f00af07cd4cdd7" id="r_a1aae0297224a31b7a5f00af07cd4cdd7"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1aae0297224a31b7a5f00af07cd4cdd7">mapFrequencyMIDI</a> (float inFreq, float minFreq, float maxFreq)</td></tr>
 <tr class="separator:a1aae0297224a31b7a5f00af07cd4cdd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab840438b02c579b106d7ca43819a88b1" id="r_ab840438b02c579b106d7ca43819a88b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab840438b02c579b106d7ca43819a88b1">updateGrains</a> ()</td></tr>
@@ -783,14 +783,14 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="acaf797e2d7a5a7deeabde7154ad9132e" name="acaf797e2d7a5a7deeabde7154ad9132e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acaf797e2d7a5a7deeabde7154ad9132e">&#9670;&#160;</a></span>mapFrequencyLog2()</h2>
+<a id="a239e1ec9288e7a097fe0110149b1e123" name="a239e1ec9288e7a097fe0110149b1e123"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a239e1ec9288e7a097fe0110149b1e123">&#9670;&#160;</a></span>mapFrequencyByOctaves()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float VibrosonicsAPI::mapFrequencyLog2 </td>
+          <td class="memname">float VibrosonicsAPI::mapFrequencyByOctaves </td>
           <td>(</td>
           <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>inFreq</em></span>, </td>
         </tr>
