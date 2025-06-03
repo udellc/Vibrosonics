@@ -333,7 +333,7 @@ float VibrosonicsAPI::mapFrequencyMIDI(float inFreq, float minFreq, float maxFre
     return 80 + ratio * (180 - 80);
 }
 
-float VibrosonicsAPI::mapFrequencyLog2(float inFreq, float minFreq, float maxFreq)
+float VibrosonicsAPI::mapFrequencyByOctaves(float inFreq, float minFreq, float maxFreq)
 {
     // float freq = inFreq;
     // while (freq > 180) {

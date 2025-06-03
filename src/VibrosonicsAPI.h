@@ -95,7 +95,7 @@ public:
     //! (0 - 250) Hz, the haptic range.
     void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
 
-    float mapFrequencyLog2(float inFreq, float minFreq, float maxFreq);
+    float mapFrequencyByOctaves(float inFreq, float minFreq, float maxFreq);
 
     float mapFrequencyMIDI(float inFreq, float minFreq, float maxFreq);
 
