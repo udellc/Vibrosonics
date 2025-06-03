@@ -1,12 +1,11 @@
 #include "VibrosonicsAPI.h"
-#include "Profiler.h"
 
 #define NOISE_FLOOR 280
 
 #define MID_FREQ_LO 400
 #define MID_FREQ_HI 1000
 #define HIGH_FREQ_LO 1000
-#define HIGH_FREQ_HI 3800
+#define HIGH_FREQ_HI 3600  // specific frequency max for octave transposing, so we divide one less time compared to 4000.
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
@@ -14,8 +13,6 @@ float windowData[WINDOW_SIZE_BY_2] = { 0 };
 float filteredData[WINDOW_SIZE_BY_2] = { 0 };
 float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
 float melodicData[WINDOW_SIZE_BY_2] = { 0 };
-
-Spectrogram rawSpectrogram(1);
 
 Spectrogram melodicSpectrogram = Spectrogram(2);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
@@ -48,10 +45,8 @@ void loop() {
 
   // process the freqeuncy domain data
 
+  // floor the noise from the wire using a set threshold
   vapi.noiseFloor(windowData, NOISE_FLOOR);
-
-  // save the raw data for synthesis
-  rawSpectrogram.pushWindow(windowData);
 
   // copy the windowData to filterdData
   memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
@@ -83,11 +78,11 @@ void loop() {
   float **highPeakData = highPeak.getOutput();
 
   // synthesize the mid peak to the left speaker, ignoring percussion
-  synthesizePeak(0, midPeakData[MP_FREQ][0], midPeakData[MP_AMP][0]);
+  synthesizePeak(0, midPeakData[MP_FREQ][0], midPeakData[MP_AMP][0], MID_FREQ_HI);
 
   // synthesize the high peak to the right speaker, ducking with percussive
   // hits
-  synthesizePeak(1, highPeakData[MP_FREQ][0], highPeakData[MP_AMP][0]);
+  synthesizePeak(1, highPeakData[MP_FREQ][0], highPeakData[MP_AMP][0], HIGH_FREQ_HI);
 
   // update the percussion grain
   vapi.updateGrains();
@@ -115,12 +110,15 @@ int interpolateAroundPeak(float *data, int indexOfPeak) {
   return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
 }
 
-void synthesizePeak(int channel, float freq, float amp) {
+void synthesizePeak(int channel, float freq, float amp, float freqMax) {
   // interpolate the frequency around the peak to get a more accurate measure
   float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
 
-  // map the frequency to the haptic range using MIDI note quantization
-  float haptic_freq = vapi.mapFrequencyMIDI(interp_freq, MID_FREQ_LO, HIGH_FREQ_HI);
+  // map the frequency to the haptic range by dividing it by 2 (transposing by
+  // octaves) until it is below 230Hz. This is why 3600Hz is a better max
+  // frequency than 3800Hz+ since we can divide one less time and the output is
+  // closer to the full haptic range.
+  float haptic_freq = vapi.mapFrequencyLog2(interp_freq, 0, freqMax);
 
   // create the wave
   vapi.assignWave(haptic_freq, amp, channel);

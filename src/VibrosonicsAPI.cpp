@@ -319,26 +319,51 @@ float VibrosonicsAPI::mapFrequencyMIDI(float inFreq, float minFreq, float maxFre
 {
     float midi_min = 69 + 12 * log2(minFreq / 440.);
     float midi_max = 69 + 12 * log2(maxFreq / 440.);
-    float midi_val = 69 + 12 * log2(inFreq / 440.);
+    float midi_in  = 69 + 12 * log2(inFreq / 440.);
 
-    if (midi_val < midi_min) {
-        midi_val = midi_min;
-    } else if (midi_val > midi_max) {
-        midi_val = midi_max;
+    if (midi_in < midi_min) {
+        midi_in = midi_min;
+    } else if (midi_in > midi_max) {
+        midi_in = midi_max;
     }
 
-    float ratio = (midi_val - midi_min) / (midi_max - midi_min);
+    float ratio = (midi_in - midi_min) / (midi_max - midi_min);
 
     // use the ratio to map between (80-230 Hz)
     return 80 + ratio * (180 - 80);
 }
 
-float VibrosonicsAPI::mapFrequencyLog2(float inFreq)
+float VibrosonicsAPI::mapFrequencyLog2(float inFreq, float minFreq, float maxFreq)
 {
-    float freq = inFreq;
-    while (freq > 180) {
+    // float freq = inFreq;
+    // while (freq > 180) {
+    //     freq /= 2;
+    // }
+    //
+    // return freq;
+
+    // float log_min = log2(minFreq);
+    // float log_in  = log2(inFreq);
+    // float log_max = log2(maxFreq);
+    //
+    // if (log_in < log_min) {
+    //     log_in = log_min;
+    // } else if (log_in > log_max) {
+    //     log_in = log_max;
+    // }
+    //
+    // float ratio = (log_in - log_min) / (log_max - log_min);
+    //
+    // return 80 + ratio * (180 - 80);
+
+    int   shift = 0;
+    float freq  = maxFreq;
+    while (freq > 230) {
         freq /= 2;
+        shift++;
     }
+
+    freq = inFreq / (1 << shift);
 
     return freq;
 }

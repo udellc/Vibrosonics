@@ -43,7 +43,7 @@ void setup() {
 
   // Optional: set the debug mode on the PercussionDetection module:
   // percussionDetection.setDebugMode(0x01);
-  
+
   // Add the PercussionDetection module to our module group.
   modules.addModule(&percussionDetection, PERC_FREQ_LO, PERC_FREQ_HI);
 }
@@ -72,7 +72,7 @@ void loop() {
   // Subtract the melodic data from the raw data to capture the 'percussive
   // data'.
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
-    windowData[i] = max(0., windowData[i] - smoothedData[i]);
+    windowData[i] = max((float)0., windowData[i] - smoothedData[i]);
   }
 
   // Finally, the window data has been filtered for percussion, so push this
@@ -103,7 +103,7 @@ void loop() {
     Serial.printf("- energy: %05g\n", energy);
     Serial.printf("- entropy: %05g\n", entropy);
     Serial.printf("- flux: %05g\n", flux);
-  
+
     // Create the frequency and amplitude envelopes for the percussive hit,
     // using a set frequency of 160 and the energy of the detected hit as the
     // amplitude.
@@ -140,12 +140,12 @@ void loop() {
 // flux. This creates a nice variation between hits with more or less sudden
 // energy.
 void synthesizeHit(float flux) {
-  if (flux < 0.75) {
+  if (flux > 0.80) {
     vapi.createDynamicGrain(0, PERC_WAVE_TYPE, freqEnv, ampEnv);
     vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv);
-    Serial.printf("--- channel: 0\n");
+    Serial.printf("--- channel: 1 & 0\n");
   } else {
     vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv);
-    Serial.printf("--- channel: 1 & 0\n");
+    Serial.printf("--- channel: 0\n");
   }
 }

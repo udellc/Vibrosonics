@@ -183,6 +183,12 @@ to be able to continue using it when developing analysis algorithms. Hands-on
 experimentation is necessary to come up with new techniques and validate your
 ideas!
 
+One additional idea to note is overlapping FFT windows to produce a high
+resolution recording with a much lower window size. This would decrease delay
+and likely improve synthesis, but the 2024-25 team learned about this technique
+too late to experiment with it. Hopefully Nick Synytsia will have tried it out
+more by next Fall and will be able to guide you on this.
+
 ## Contributors
 ### 2024-25 Software Team
 - [Walt Bringenberg](https://github.com/wwaltb)
