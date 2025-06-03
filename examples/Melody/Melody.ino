@@ -84,9 +84,6 @@ void loop() {
   // hits
   synthesizePeak(1, highPeakData[MP_FREQ][0], highPeakData[MP_AMP][0], HIGH_FREQ_HI);
 
-  // update the percussion grain
-  vapi.updateGrains();
-
   // map the amplitudes of waves in both channels
   AudioLab.mapAmplitudes(0, 10000);
   AudioLab.mapAmplitudes(1, 10000);
@@ -121,5 +118,4 @@ void synthesizePeak(int channel, float freq, float amp, float freqMax) {
   float haptic_freq = vapi.mapFrequencyLog2(interp_freq, 0, freqMax);
 
   // create the wave
-  vapi.assignWave(haptic_freq, amp, channel);
-}
+ 

@@ -36,11 +36,13 @@ PercussionDetection percussionDetection = PercussionDetection(0.5, 100000000, 0.
 
 FreqEnv freqEnv = {};
 AmpEnv ampEnv = {};
+DurEnv durEnv = {};
 
 void setup() {
   Serial.begin(115200);
   vapi.init();
 
+  durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
   // Optional: set the debug mode on the PercussionDetection module:
   // percussionDetection.setDebugMode(0x01);
 
@@ -108,7 +110,7 @@ void loop() {
     // using a set frequency of 160 and the energy of the detected hit as the
     // amplitude.
     freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
-    ampEnv = vapi.createAmpEnv(energy, 1, energy, 0, 0.3 * energy, 1, 0., 3, 1);
+    ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
 
     synthesizeHit(flux);
 
@@ -117,7 +119,7 @@ void loop() {
     if (entropy > 0.9) {
       energy *= 0.3;
       freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
-      ampEnv = vapi.createAmpEnv(energy, 1, energy, 0, 0.3 * energy, 1, 0., 3, 1);
+      ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
       synthesizeHit(flux);
     }
   } else {
