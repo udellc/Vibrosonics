@@ -405,6 +405,7 @@ Grain* VibrosonicsAPI::createDynamicGrain(uint8_t channel, WaveType waveType, Fr
     grainList.pushGrain(newGrain);
     newGrain->setFreqEnv(freqEnv);
     newGrain->setAmpEnv(ampEnv);
+    newGrain->setDurEnv(durEnv);
     newGrain->transitionTo(ATTACK);
     return newGrain;
 }
