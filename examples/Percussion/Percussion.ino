@@ -12,6 +12,10 @@
 #define PERC_FREQ_LO 1800
 #define PERC_FREQ_HI 4000
 #define PERC_WAVE_TYPE TRIANGLE
+#define ENERGY_THRESHOLD 100000000
+#define FLUX_THRESHOLD 0.5
+#define ENTROPY_THRESHOLD 0.78
+#define AMPLITUDE_MAPPING 10000000
 
 #include "VibrosonicsAPI.h"
 
@@ -32,7 +36,8 @@ ModuleGroup modules = ModuleGroup(&percussiveSpectrogram);
 
 // Create the PercussionDetection module. These parameters have been configured
 // for the (as of 2024-25) newest version of the Vibrosonics hardware.
-PercussionDetection percussionDetection = PercussionDetection(0.5, 100000000, 0.78);
+// add defines for parameters
+PercussionDetection percussionDetection = PercussionDetection(FLUX_THRESHOLD, ENERGY_THRESHOLD, ENTROPY_THRESHOLD);
 
 FreqEnv freqEnv = {};
 AmpEnv ampEnv = {};
@@ -131,8 +136,8 @@ void loop() {
   vapi.updateGrains();
 
   // Map the amplitudes of both channels for output through the DAC.
-  AudioLab.mapAmplitudes(0, 10000000);
-  AudioLab.mapAmplitudes(1, 10000000);
+  AudioLab.mapAmplitudes(0, AMPLITUDE_MAPPING );
+  AudioLab.mapAmplitudes(1, AMPLITUDE_MAPPING);
 
   // Synthesize the waves created for haptic feedback.
   AudioLab.synthesize();
@@ -142,7 +147,7 @@ void loop() {
 // flux. This creates a nice variation between hits with more or less sudden
 // energy.
 void synthesizeHit(float flux) {
-  if (flux < 0.75) {
+  if (flux > 0.75) {
     vapi.createDynamicGrain(0, PERC_WAVE_TYPE, freqEnv, ampEnv, durEnv);
     vapi.createDynamicGrain(1, PERC_WAVE_TYPE, freqEnv, ampEnv, durEnv);
     Serial.printf("--- channel: 0\n");
