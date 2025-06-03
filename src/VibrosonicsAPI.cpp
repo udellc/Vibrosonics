@@ -129,12 +129,14 @@ void VibrosonicsAPI::noiseFloor(float* ampData, float threshold)
  * cells for each cell under test (CUT). If the CUT's value is less than the
  * average * a bias, then the cell is floored.
  *
+ * Read more on the CFAR here:
+ * https://en.wikipedia.org/wiki/Constant_false_alarm_rate.
+ *
  * @param windowData The frequency domain data to filter.
  * @param numRefs The number of reference cells for CFAR.
  * @param numGuards The number of guard cells for CFAR.
  * @param bias The bias factor to use for CFAR.
  */
-
 void VibrosonicsAPI::noiseFloorCFAR(float* windowData, int numRefs, int numGuards, float bias)
 {
     int   i, j, numCells;
@@ -257,61 +259,18 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
     }
 }
 
-/**
- * mapFrequenciesLinear() and mapFrequenciesExponential() map their input
- * frequencies to the haptic range (0-250Hz).
- *
- * mapFrequenciesLinear maps the frequencies to the lower range by normalizing
- * them and then scaling by 250 Hz.
- *
- * These functions help reduce 'R2-D2' noises caused by outputting high
- * frequencies.
- *
- * We've found that maintaining certain harmonic relationships between
- * frequencies for output on a single driver can greatly improve tactile
- * feel, so we recommend scaling down by octaves in these scenarios.
- *
- * @param freqData The frequency array to map.
- * @param dataLength The length of the frequency array.
- */
-void VibrosonicsAPI::mapFrequenciesLinear(float* freqData, int dataLength)
+float VibrosonicsAPI::mapFrequencyByOctaves(float inFreq, float maxFreq)
 {
-    float freqRatio;
-    // loop through frequency data
-    for (int i = 0; i < dataLength; i++) {
-        freqRatio   = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
-        freqData[i] = round(freqRatio * 250) + 20;      // convert into to haptic range linearly
+    int   shift = 0;
+    float freq  = maxFreq;
+    while (freq > 230) {
+        freq /= 2;
+        shift++;
     }
-}
 
-/**
- * mapFrequenciesLinear() and mapFrequenciesExponential() map their input
- * frequencies to the haptic range (0-250Hz).
- *
- * mapFrequencyExponential uses an exponent to apply a curve to the mapping
- * that mapFrequenciesLinear does.
- *
- * These functions help reduce 'R2-D2' noises caused by outputting high
- * frequencies.
- *
- * We've found that maintaining certain harmonic relationships between
- * frequencies for output on a single driver can greatly improve tactile
- * feel, so we recommend scaling down by octaves in these scenarios.
- *
- * @param freqData The frequency array to map.
- * @param dataLength The length of the frequency array.
- * @param exp The exponential value to apply to the normalized frequencies.
- */
-void VibrosonicsAPI::mapFrequenciesExponential(float* freqData, int dataLength, float exp)
-{
-    float freqRatio;
-    for (int i = 0; i < dataLength; i++) {
-        if (freqData[i] <= 50) {
-            continue;
-        } // freq already within haptic range
-        freqRatio   = freqData[i] / (SAMPLE_RATE >> 1); // find where each freq lands in the spectrum
-        freqData[i] = pow(freqRatio, exp) * 250;        // convert into haptic range along a exp^ curve
-    }
+    freq = inFreq / (1 << shift);
+
+    return freq;
 }
 
 // https://newt.phys.unsw.edu.au/jw/notes.html
@@ -331,41 +290,6 @@ float VibrosonicsAPI::mapFrequencyMIDI(float inFreq, float minFreq, float maxFre
 
     // use the ratio to map between (80-230 Hz)
     return 80 + ratio * (180 - 80);
-}
-
-float VibrosonicsAPI::mapFrequencyLog2(float inFreq, float minFreq, float maxFreq)
-{
-    // float freq = inFreq;
-    // while (freq > 180) {
-    //     freq /= 2;
-    // }
-    //
-    // return freq;
-
-    // float log_min = log2(minFreq);
-    // float log_in  = log2(inFreq);
-    // float log_max = log2(maxFreq);
-    //
-    // if (log_in < log_min) {
-    //     log_in = log_min;
-    // } else if (log_in > log_max) {
-    //     log_in = log_max;
-    // }
-    //
-    // float ratio = (log_in - log_min) / (log_max - log_min);
-    //
-    // return 80 + ratio * (180 - 80);
-
-    int   shift = 0;
-    float freq  = maxFreq;
-    while (freq > 230) {
-        freq /= 2;
-        shift++;
-    }
-
-    freq = inFreq / (1 << shift);
-
-    return freq;
 }
 
 /**
@@ -465,7 +389,7 @@ FreqEnv VibrosonicsAPI::createFreqEnv(float attackFreq, float decayFreq, float s
  */
 AmpEnv VibrosonicsAPI::createAmpEnv(float attackAmp, float decayAmp, float sustainAmp, float releaseAmp)
 {
-    AmpEnv newAmpEnv = {attackAmp, decayAmp, sustainAmp, releaseAmp};
+    AmpEnv newAmpEnv = { attackAmp, decayAmp, sustainAmp, releaseAmp };
     return newAmpEnv;
 }
 
@@ -481,8 +405,8 @@ AmpEnv VibrosonicsAPI::createAmpEnv(float attackAmp, float decayAmp, float susta
  */
 DurEnv VibrosonicsAPI::createDurEnv(int attackDuration, int decayDuration, int sustainDuration, int releaseDuration, float curve)
 {
-  DurEnv newDurEnv = {attackDuration, decayDuration, sustainDuration, releaseDuration, curve};
-  return newDurEnv;
+    DurEnv newDurEnv = { attackDuration, decayDuration, sustainDuration, releaseDuration, curve };
+    return newDurEnv;
 }
 
 /**
@@ -522,7 +446,7 @@ void VibrosonicsAPI::setGrainAmpEnv(Grain* grains, int numGrains, AmpEnv ampEnv)
  */
 void VibrosonicsAPI::setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv)
 {
-    for(int i = 0; i < numGrains; i++) {
+    for (int i = 0; i < numGrains; i++) {
         grains[i].setDurEnv(durEnv);
     }
 }

@@ -87,16 +87,12 @@ public:
     void mapAmplitudes(float* ampData, int dataLength, float minAmpSum = 10000,
         float smoothFactor = 0.05);
 
-    //! linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
-    //! (0 - 250) Hz, the haptic range.
-    void mapFrequenciesLinear(float* freqData, int dataLength);
+    //! Maps a frequency to the haptic range (0-230Hz) by transposing it down
+    //! by octaves.
+    float mapFrequencyByOctaves(float inFreq, float maxFreq);
 
-    //! Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to
-    //! (0 - 250) Hz, the haptic range.
-    void mapFrequenciesExponential(float* freqData, int dataLength, float exp);
-
-    float mapFrequencyLog2(float inFreq, float minFreq, float maxFreq);
-
+    //! Maps a frequency to the haptic range by quantizing it using MIDI
+    //! values.
     float mapFrequencyMIDI(float inFreq, float minFreq, float maxFreq);
 
     // --- Grains -----------------------------------------------------------------
@@ -132,6 +128,7 @@ public:
 
     //! Sets the duration envelope paramaters for an array of grains.
     void setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv);
+
 private:
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.

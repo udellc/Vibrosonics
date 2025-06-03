@@ -115,7 +115,8 @@ void synthesizePeak(int channel, float freq, float amp, float freqMax) {
   // octaves) until it is below 230Hz. This is why 3600Hz is a better max
   // frequency than 3800Hz+ since we can divide one less time and the output is
   // closer to the full haptic range.
-  float haptic_freq = vapi.mapFrequencyLog2(interp_freq, 0, freqMax);
+  float haptic_freq = vapi.mapFrequencyByOctaves(interp_freq, freqMax);
 
   // create the wave
- 
+  vapi.assignWave(haptic_freq, amp, channel);
+}
