@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-327-gbffc1ba</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-329-gbe4e638</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -164,15 +164,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7ed4ac8be583d31702766ee6ff26065b" id="r_a7ed4ac8be583d31702766ee6ff26065b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ed4ac8be583d31702766ee6ff26065b">mapAmplitudes</a> (float *ampData, int dataLength, float minAmpSum=10000, float smoothFactor=0.05)</td></tr>
 <tr class="memdesc:a7ed4ac8be583d31702766ee6ff26065b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps amplitudes in some data to between 0.0-1.0 range.  <br /></td></tr>
 <tr class="separator:a7ed4ac8be583d31702766ee6ff26065b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21d912211eeb3a5b55cd61bf0b788dde" id="r_a21d912211eeb3a5b55cd61bf0b788dde"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a21d912211eeb3a5b55cd61bf0b788dde">mapFrequenciesLinear</a> (float *freqData, int dataLength)</td></tr>
-<tr class="memdesc:a21d912211eeb3a5b55cd61bf0b788dde"><td class="mdescLeft">&#160;</td><td class="mdescRight">linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range.  <br /></td></tr>
-<tr class="separator:a21d912211eeb3a5b55cd61bf0b788dde"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab354c4d31e544968ec249315929327fd" id="r_ab354c4d31e544968ec249315929327fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab354c4d31e544968ec249315929327fd">mapFrequenciesExponential</a> (float *freqData, int dataLength, float exp)</td></tr>
-<tr class="memdesc:ab354c4d31e544968ec249315929327fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range.  <br /></td></tr>
-<tr class="separator:ab354c4d31e544968ec249315929327fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a239e1ec9288e7a097fe0110149b1e123" id="r_a239e1ec9288e7a097fe0110149b1e123"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a239e1ec9288e7a097fe0110149b1e123">mapFrequencyByOctaves</a> (float inFreq, float minFreq, float maxFreq)</td></tr>
-<tr class="separator:a239e1ec9288e7a097fe0110149b1e123"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afcd86f3f2b73d50fe97499daabc46f76" id="r_afcd86f3f2b73d50fe97499daabc46f76"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afcd86f3f2b73d50fe97499daabc46f76">mapFrequencyByOctaves</a> (float inFreq, float maxFreq)</td></tr>
+<tr class="memdesc:afcd86f3f2b73d50fe97499daabc46f76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a frequency to the haptic range (0-230Hz) by transposing it down by octaves.  <br /></td></tr>
+<tr class="separator:afcd86f3f2b73d50fe97499daabc46f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1aae0297224a31b7a5f00af07cd4cdd7" id="r_a1aae0297224a31b7a5f00af07cd4cdd7"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1aae0297224a31b7a5f00af07cd4cdd7">mapFrequencyMIDI</a> (float inFreq, float minFreq, float maxFreq)</td></tr>
+<tr class="memdesc:a1aae0297224a31b7a5f00af07cd4cdd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a frequency to the haptic range by quantizing it using MIDI values.  <br /></td></tr>
 <tr class="separator:a1aae0297224a31b7a5f00af07cd4cdd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab840438b02c579b106d7ca43819a88b1" id="r_ab840438b02c579b106d7ca43819a88b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab840438b02c579b106d7ca43819a88b1">updateGrains</a> ()</td></tr>
 <tr class="memdesc:ab840438b02c579b106d7ca43819a88b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates all grains in the globalGrainList.  <br /></td></tr>
@@ -709,82 +705,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab354c4d31e544968ec249315929327fd" name="ab354c4d31e544968ec249315929327fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab354c4d31e544968ec249315929327fd">&#9670;&#160;</a></span>mapFrequenciesExponential()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void VibrosonicsAPI::mapFrequenciesExponential </td>
-          <td>(</td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>freqData</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dataLength</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>exp</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range. </p>
-<p><a class="el" href="#a21d912211eeb3a5b55cd61bf0b788dde" title="linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range.">mapFrequenciesLinear()</a> and <a class="el" href="#ab354c4d31e544968ec249315929327fd" title="Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz,...">mapFrequenciesExponential()</a> map their input frequencies to the haptic range (0-250Hz).</p>
-<p>mapFrequencyExponential uses an exponent to apply a curve to the mapping that mapFrequenciesLinear does.</p>
-<p>These functions help reduce 'R2-D2' noises caused by outputting high frequencies.</p>
-<p>We've found that maintaining certain harmonic relationships between frequencies for output on a single driver can greatly improve tactile feel, so we recommend scaling down by octaves in these scenarios.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">freqData</td><td>The frequency array to map. </td></tr>
-    <tr><td class="paramname">dataLength</td><td>The length of the frequency array. </td></tr>
-    <tr><td class="paramname">exp</td><td>The exponential value to apply to the normalized frequencies. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a21d912211eeb3a5b55cd61bf0b788dde" name="a21d912211eeb3a5b55cd61bf0b788dde"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21d912211eeb3a5b55cd61bf0b788dde">&#9670;&#160;</a></span>mapFrequenciesLinear()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void VibrosonicsAPI::mapFrequenciesLinear </td>
-          <td>(</td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>freqData</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>dataLength</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range. </p>
-<p><a class="el" href="#a21d912211eeb3a5b55cd61bf0b788dde" title="linearly maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz, the haptic range.">mapFrequenciesLinear()</a> and <a class="el" href="#ab354c4d31e544968ec249315929327fd" title="Exponentially maps input frequencies from (0 - (1/2)*SAMPLE_RATE) Hz to (0 - 250) Hz,...">mapFrequenciesExponential()</a> map their input frequencies to the haptic range (0-250Hz).</p>
-<p>mapFrequenciesLinear maps the frequencies to the lower range by normalizing them and then scaling by 250 Hz.</p>
-<p>These functions help reduce 'R2-D2' noises caused by outputting high frequencies.</p>
-<p>We've found that maintaining certain harmonic relationships between frequencies for output on a single driver can greatly improve tactile feel, so we recommend scaling down by octaves in these scenarios.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">freqData</td><td>The frequency array to map. </td></tr>
-    <tr><td class="paramname">dataLength</td><td>The length of the frequency array. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a239e1ec9288e7a097fe0110149b1e123" name="a239e1ec9288e7a097fe0110149b1e123"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a239e1ec9288e7a097fe0110149b1e123">&#9670;&#160;</a></span>mapFrequencyByOctaves()</h2>
+<a id="afcd86f3f2b73d50fe97499daabc46f76" name="afcd86f3f2b73d50fe97499daabc46f76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afcd86f3f2b73d50fe97499daabc46f76">&#9670;&#160;</a></span>mapFrequencyByOctaves()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -797,15 +719,12 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>minFreq</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>maxFreq</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Maps a frequency to the haptic range (0-230Hz) by transposing it down by octaves. </p>
 
 </div>
 </div>
@@ -832,6 +751,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Maps a frequency to the haptic range by quantizing it using MIDI values. </p>
 
 </div>
 </div>
@@ -897,6 +818,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Floors data using the CFAR algorithm. </p>
 <p>Uses a sliding window to compute the average value of a number of reference cells for each cell under test (CUT). If the CUT's value is less than the average * a bias, then the cell is floored.</p>
+<p>Read more on the CFAR here: <a href="https://en.wikipedia.org/wiki/Constant_false_alarm_rate">https://en.wikipedia.org/wiki/Constant_false_alarm_rate</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">windowData</td><td>The frequency domain data to filter. </td></tr>
