@@ -8,7 +8,7 @@ For the most part, this code will not be particularly helpful for future CS stud
 
 View ``vibrosonics.cpp``, especially the ``speakerMode()`` and ``initialize()`` functions, to see how to initialize the DAC and the SPI communication that allows it to work with the board. Additionally, read the Guide to AD5644 Implementation below.
 
-Additionally, ``AD56X4_alt.cpp`` is a modified version of a [library originally created by Feja Nordsiek](https://github.com/frejanordsiek/arduino_library_AD56X4). I modified it to optimize the DAC's channel writes to be less generalized and instead more specific to VibroSonics. This optimization is significant (~22μs per channel write down from ~35μs) and I would highly recommend using it over the original code; it will give you much more flexibility within our limited interrupt cycle time, which is ~122μs at 8kHz.
+Additionally, ``AD56X4_vibrosonics.cpp`` is a modified version of a [library originally created by Feja Nordsiek](https://github.com/frejanordsiek/arduino_library_AD56X4). I modified it to optimize the DAC's channel writes to be less generalized and instead more specific to VibroSonics. This optimization is significant (~22μs per channel write down from ~35μs) and I would highly recommend using it over the original code; it will give you much more flexibility within our limited interrupt cycle time, which is ~122μs at 8kHz.
 
 ## Guide to AD56X4 Implementation
 
@@ -112,4 +112,4 @@ To those who work on this project in the future, I wish you the best.
 
 Fiona Pendergraft 
 
-[Updated June 1st, 2025]
+[Updated June 3rd, 2025]
