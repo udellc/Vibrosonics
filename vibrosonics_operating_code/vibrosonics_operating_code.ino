@@ -2,13 +2,13 @@
 
 void IRAM_ATTR DAC_OUT(void) 
 {
-  //speakerMode(channel[0]);
-  FFTMode();
+  speakerMode(channel[0]);
+  //FFTMode();
 }
 
 void setup() 
 {
-  initialize(&DAC_OUT);
+  initialize(&DAC_OUT, FM_ENABLE);
 }
 
 void loop() 

@@ -6,8 +6,16 @@
 #include <Math.h>
 #include "AD56X4_vibrosonics.h"
 #include "arduinoFFT.h"
+#include <SI470x.h>
 
 #define SS_PIN 33 // Slave select pin; I chose Pin 33 on the ESP32 Feather, but others could be used so long as it is updated here.
+#define RESET_PIN 13 // FM chip reset pin; same as SS pin, choice is arbitrary and this value can be modified.
+#define SDA_PIN 23
+#define SCL_PIN 22
+
+#define FM_VOLUME 15
+#define FM_FREQUENCY 8870 // Frequency in MHz * 100; e.g. 93.3Mhz ---> 9330
+#define FM_ENABLE true
 
 #define AD56X4_SIZE 14 // Change to 12 or 16 if using the AD5624 or AD5664.
 #define SAMPLE_RATE 8192 // 8kHz sample rate. This leaves us with 122 μs of time between interrupts.
@@ -26,6 +34,7 @@
 #define HIGHS_OUTPUT_MAX 400.0
 
 extern AD56X4Class dac; // DAC object
+extern SI470X rx; // FM object
 extern ArduinoFFT<double> FFT; // FFT object
 extern byte channel[]; // Array for holding bytes corresponding to our AD564X4's A, B, C, and D channels.
 extern hw_timer_t *SAMPLING_TIMER; // Interrupt timer
@@ -43,7 +52,8 @@ extern volatile int current_mids; // Used to store current mids frequency so it 
 extern volatile int current_highs; // Used to store current hgihs frequency so it can be compared against new ones
 extern volatile bool updateWave; // This is made true when the interrupt collects a 512 sample window, triggering FFT analysis.
 
-void initialize(void (*userFunc)()); // Initialization of Serial and SPI communication, the AD56X4 DAC, analog input, and the interrupt.
+void initialize(void (*userFunc)(), bool); // Initialization of Serial and SPI communication, the AD56X4 DAC, analog input, and the interrupt.
+void initialize_FM(); // Initialization of FM chip, setting frequency and volume
 void generateWave(int, uint16_t[], double); // Generates sinusoid at a specified frequency, in a given array, and at a specified volume
 void analyzeWave(); // Performs FFT analysis on mids and highs sample windows
 void obtain_raw_analog(); // Useful for identifying where we should map inputs in speakerMode()

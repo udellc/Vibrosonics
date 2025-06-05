@@ -1,6 +1,7 @@
 #include <vibrosonics.h>
 
 AD56X4Class dac; // DAC object
+SI470X rx; // FM object
 extern ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, FFT_SAMPLES, SAMPLE_RATE); // FFT Object
 byte channel[] = { AD56X4_CHANNEL_A, AD56X4_CHANNEL_B, AD56X4_CHANNEL_C, AD56X4_CHANNEL_D }; // Bytes corresponding to our AD56X4's A, B, C, and D channels
 hw_timer_t *SAMPLING_TIMER = NULL; // Interrupt timer
@@ -19,13 +20,19 @@ volatile int current_highs = 0; // Used to store current hgihs frequency so it c
 volatile bool updateWave = false; // This is made true when the interrupt collects a 512 sample window, triggering FFT analysis.
 
 // Initialization of Serial and SPI communication, the AD56X4 DAC, analog input, and the interrupt.
-void initialize(void (*DAC_OUT)())
+void initialize(void (*DAC_OUT)(), bool FM)
 {
   const int sampleDelayTime = 1000000 / SAMPLE_RATE;
 
   Serial.begin(115200);
   delay(3000);
   Serial.println("\nSerial connection initiated.");
+
+  if(FM)
+  {
+    Serial.println("Initializing FM receiever...");
+    initialize_FM();
+  }
 
   Serial.println("Initializing SPI communication...");
   pinMode(SS_PIN, OUTPUT); // Setting slave select pin to output mode
@@ -45,6 +52,15 @@ void initialize(void (*DAC_OUT)())
   timerAttachInterrupt(SAMPLING_TIMER, DAC_OUT); // Attaching interrupt function
   timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0); // Trigger interrupt every sampleDelayTime μs
   Serial.println("Interrupts initialized. Setup is complete.");
+}
+
+void initialize_FM()
+{
+  Wire.begin(SDA_PIN, SCL_PIN);
+  rx.setup(RESET_PIN, SDA_PIN);
+  rx.setVolume(FM_VOLUME);
+  rx.setFrequency(FM_FREQUENCY);  // It is the frequency you want to select in MHz multiplied by 100.
+  //Wire.end();
 }
 
 // Generates sinusoid at a specified frequency, in a given array, and at a specified volume
