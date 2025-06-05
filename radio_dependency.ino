@@ -52,37 +52,34 @@ void showStatus() {
 
 
 void setup() {
-  Serial.begin(9600);//115200);
+  Serial.begin(115200);//115200);
   while (!Serial);
 
   // The line below may be necessary to setup I2C pins on ESP32
   Wire.begin(ESP32_I2C_SDA, ESP32_I2C_SCL);
 
   rx.setup(RESET_PIN, ESP32_I2C_SDA);
-  // pinMode(RESET_PIN, OUTPUT);
-  // Serial.println("1");
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, LOW);
+  delay(1);
+  digitalWrite(RESET_PIN, HIGH);  // HIGH == inactive reset
+  delay(10);                      // give time for chip to initialize
 
-  // digitalWrite(RESET_PIN, LOW);
-  // delay(1);
+  rx.setVolume(100);
 
-  // Serial.println("2");
-  // digitalWrite(RESET_PIN, HIGH);
+  delay(500);
 
-//   rx.setVolume(15);
+  // Select a station with RDS service in your place
+  Serial.println("\Station 88.7MHz");
+  rx.setFrequency(8770);  // It is the frequency you want to select in MHz multiplied by 100.
+  Serial.println("Station Set");
+  // Enables SDR
+  rx.setRds(true);
+  rx.setRdsMode(0);
+  rx.setSeekThreshold(30);  // Sets RSSI Seek Threshold (0 to 127)
 
-//   delay(500);
-
-//   // Select a station with RDS service in your place
-//   Serial.println("\Station 93.3MHz");
-//   rx.setFrequency(9330);  // It is the frequency you want to select in MHz multiplied by 100.
-//   Serial.println("Station Set");
-//   // Enables SDR
-//   rx.setRds(true);
-//   rx.setRdsMode(0);
-//   rx.setSeekThreshold(30);  // Sets RSSI Seek Threshold (0 to 127)
-
-//   showHelp();
-//   showStatus();
+  showHelp();
+  showStatus();
 }
 
 void loop() {
