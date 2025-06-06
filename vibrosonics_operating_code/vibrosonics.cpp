@@ -28,7 +28,7 @@ void initialize(void (*DAC_OUT)(), bool FM)
   delay(3000);
   Serial.println("\nSerial connection initiated.");
 
-  if(FM)
+  if(FM) // NOTE: Enabling FM currently breaks SPI communication!!!
   {
     Serial.println("Initializing FM receiever...");
     initialize_FM();
@@ -54,6 +54,8 @@ void initialize(void (*DAC_OUT)(), bool FM)
   Serial.println("Interrupts initialized. Setup is complete.");
 }
 
+// Initializes FM receiver chip by sending setup instructions as well as volume and frequency via I2C
+// // NOTE: Enabling FM currently breaks SPI communication!!!
 void initialize_FM()
 {
   Wire.begin(SDA_PIN, SCL_PIN);

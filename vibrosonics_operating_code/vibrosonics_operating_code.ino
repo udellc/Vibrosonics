@@ -2,8 +2,8 @@
 
 void IRAM_ATTR DAC_OUT(void) 
 {
-  speakerMode(channel[0]);
-  //FFTMode();
+  //speakerMode(channel[0]);
+  FFTMode();
 }
 
 void setup() 
@@ -13,5 +13,5 @@ void setup()
 
 void loop() 
 {
-  FFTMode_loop(0.5);
+  FFTMode_loop(1);
 }

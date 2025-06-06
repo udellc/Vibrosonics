@@ -15,7 +15,7 @@
 
 #define FM_VOLUME 15
 #define FM_FREQUENCY 8870 // Frequency in MHz * 100; e.g. 93.3Mhz ---> 9330
-#define FM_ENABLE true
+#define FM_ENABLE false // NOTE: Enabling FM currently breaks SPI communication!!!
 
 #define AD56X4_SIZE 14 // Change to 12 or 16 if using the AD5624 or AD5664.
 #define SAMPLE_RATE 8192 // 8kHz sample rate. This leaves us with 122 μs of time between interrupts.
