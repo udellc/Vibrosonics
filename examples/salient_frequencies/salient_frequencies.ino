@@ -54,9 +54,9 @@ void setup() {
  * All of the main anylysis is here
  */
 void loop() {
-    // AudioLab.ready() returns true when synthesis should occur/input buffer fills 
+    // vapi.isAudioLabReady() returns true when synthesis should occur/input buffer fills 
     // (this returns true at (SAMPLE_RATE / WINDOW_SIZE) times per second)
-    if (!AudioLab.ready()) {
+    if (!vapi.isAudioLabReady()) {
         return;
     }
     // processInput runs an FFT on the complex audio data captured from audioLab

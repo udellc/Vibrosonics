@@ -65,7 +65,7 @@ void loop()
 {
   // First check to make sure that the AudioLab input buffer has 
   // been filled
-  if (!AudioLab.ready()) {
+  if (!vapi.isAudioLabReady()) {
     return;
   }
 

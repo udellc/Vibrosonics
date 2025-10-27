@@ -58,7 +58,7 @@ void setup() {
 }
 
 void loop() {
-  if (!AudioLab.ready()) {
+  if (!vapi.isAudioLabReady()) {
     return;
   }
 

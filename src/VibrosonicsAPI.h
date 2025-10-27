@@ -81,6 +81,9 @@ public:
     //! arrays.
     void assignWaves(float* freqs, float* amps, int dataLength, int channel);
 
+    //! Check if a new audio window has been recorded
+    bool isAudioLabReady();
+
     // --- Wave Manipulation -------------------------------------------------------
 
     //! Maps amplitudes in some data to between 0.0-1.0 range.
@@ -136,9 +139,6 @@ private:
     complex vData[WINDOW_SIZE];
 
     // --- AudioLab Library --------------------------------------------------------
-
-    //! VibrosonicsAPI adopts AudioLab's input buffer.
-    int* audioLabInputBuffer = AudioLab.getInputBuffer();
 
     GrainList grainList;
 };

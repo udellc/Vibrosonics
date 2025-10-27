@@ -129,10 +129,10 @@ void setup() {
 */
 void loop() {
 
-    // AudioLab.ready() returns True when AudioLab's input buffer is full.
+    // vapi.isAudioLabReady() returns True when AudioLab's input buffer is full.
     // This gaurd protects analysis and synthesis logic, which is run only when
     // a new window of audio is ready to be processed.
-    if (!AudioLab.ready()) {
+    if (!vapi.isAudioLabReady()) {
         return;
     }
 
