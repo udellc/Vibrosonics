@@ -21,10 +21,6 @@ void VibrosonicsAPI::init()
  */
 void VibrosonicsAPI::processAudioInput(float output[])
 {
-    // copy samples from input to vData and set imaginary component to 0
-    for (int i = 0; i < WINDOW_SIZE; i++) {
-        vData[i] = audioLabInputBuffer[i];
-    }
     // Use Fast4ier combined with Vibrosonics FFT functions
     dcRemoval();
     fftWindowing();
@@ -450,4 +446,12 @@ void VibrosonicsAPI::setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv)
     for (int i = 0; i < numGrains; i++) {
         grains[i].setDurEnv(durEnv);
     }
+}
+
+/**
+ * Checks if the a new audio window has been recorded by seeing if our input buffer is full.
+ */
+bool VibrosonicsAPI::isAudioLabReady()
+{
+  return AudioLab.ready<complex>(vData);
 }

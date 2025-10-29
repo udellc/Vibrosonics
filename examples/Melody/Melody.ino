@@ -36,7 +36,7 @@ void setup() {
 
 void loop() {
   // skip if new audio window has not been recorded
-  if (!AudioLab.ready()) {
+  if (!vapi.isAudioLabReady()) {
     return;
   }
 
