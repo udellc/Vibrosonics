@@ -1,4 +1,3 @@
----
 #-----------------------------------------------------
 # CI workflow for linting the VibroSonics web
 # application
@@ -13,14 +12,20 @@ defaults:
 on:
   push:
     paths:
-      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
     #   TODO: remove the feat branch once workflow works as expected
-    branches: [main, 25-26_dev, feat/initWebApp]
+    branches: 
+        - main
+        - 25-26_dev
+        - feat/initWebApp
   pull_request:
     paths:
-      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
       #   TODO: remove the feat branch once workflow works as expected
-    branches: [main, 25-26_dev, feat/initWebApp]
+    branches:
+        - main
+        - 25-26_dev
+        - feat/initWebApp
 
 jobs:
   eslint:
@@ -32,6 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
         # FIXME: may not need, but keep incase
         # working-directory: ./WebApp
 
@@ -45,5 +51,6 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+        
         # FIXME: may not need, but keep incase
         # working-directory: ./WebApp
