@@ -1,3 +1,11 @@
+/***************************************************************
+ * File: index.jsx
+ * Date: 10/30/2025
+ * Description: The main entry point for the VibroSonics web
+ * 				application built with Preact and Vite.
+ * Author: Ivan Wong
+ ***************************************************************/
+
 import { render } from 'preact';
 import preactLogo from './assets/preact.svg';
 import "./index.css";
