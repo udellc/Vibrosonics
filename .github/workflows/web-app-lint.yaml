@@ -1,0 +1,49 @@
+---
+#-----------------------------------------------------
+# CI workflow for linting the VibroSonics web
+# application
+#-----------------------------------------------------
+
+name: ESLint Web App
+
+defaults:
+  run:
+    working-directory: ./WebApp
+
+on:
+  push:
+    paths:
+      - ".github/workflows/*.yml"
+    #   TODO: remove the feat branch once workflow works as expected
+    branches: [main, 25-26_dev, feat/initWebApp]
+  pull_request:
+    paths:
+      - ".github/workflows/*.yml"
+      #   TODO: remove the feat branch once workflow works as expected
+    branches: [main, 25-26_dev, feat/initWebApp]
+
+jobs:
+  eslint:
+    name: Run ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+        # FIXME: may not need, but keep incase
+        # working-directory: ./WebApp
+
+      - name: Cache packages
+        uses: actions/cache@v4
+        with:
+          path: /node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Run ESLint
+        run: npm run lint
+        # FIXME: may not need, but keep incase
+        # working-directory: ./WebApp
