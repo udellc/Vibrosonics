@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['board_20and_20ports_0',['2. Set Board and Ports',['../index.html#autotoc_md5',1,'']]],
-  ['board_20support_1',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md4',1,'']]]
+  ['expectations_0',['Documentation Expectations',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md20',1,'']]],
+  ['experience_20audio_20through_20vibration_1',['Experience audio through vibration',['../index.html#autotoc_md1',1,'']]]
 ];

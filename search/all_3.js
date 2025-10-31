@@ -1,4 +1,23 @@
 var searchData=
 [
-  ['4_20upload_20a_20sketch_0',['4. Upload a Sketch',['../index.html#autotoc_md7',1,'']]]
+  ['cd_0',['CI/CD',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md18',1,'']]],
+  ['ci_20cd_1',['CI/CD',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md18',1,'']]],
+  ['clearlist_2',['clearList',['../class_grain_list.html#a89b0a083c70f526d152f584cfac49ffb',1,'GrainList']]],
+  ['code_20of_20conduct_3',['Code of Conduct',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md10',1,'']]],
+  ['code_20style_20linting_20formatting_4',['Code Style, Linting &amp; Formatting',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md15',1,'']]],
+  ['commit_20messages_5',['Commit Messages',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md14',1,'']]],
+  ['complextomagnitude_6',['complexToMagnitude',['../class_vibrosonics_a_p_i.html#a5398e8e78814c2472b595d5b53fc549c',1,'VibrosonicsAPI']]],
+  ['computehammingwindow_7',['computeHammingWindow',['../class_vibrosonics_a_p_i.html#ae68dc34037c3f3f50ad1e815c1434ab7',1,'VibrosonicsAPI']]],
+  ['conduct_8',['Code of Conduct',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md10',1,'']]],
+  ['contact_9',['Support &amp; Contact',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md22',1,'']]],
+  ['contents_10',['Table of Contents',['../index.html#autotoc_md2',1,'']]],
+  ['contributing_20guide_11',['Contributing Guide',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html',1,'']]],
+  ['contributing_2emd_12',['CONTRIBUTING.md',['../_c_o_n_t_r_i_b_u_t_i_n_g_8md.html',1,'']]],
+  ['contributors_13',['Contributors',['../index.html#autotoc_md5',1,'']]],
+  ['createampenv_14',['createAmpEnv',['../class_vibrosonics_a_p_i.html#ad175cc891ff8fc63b991dae4bf0140e0',1,'VibrosonicsAPI']]],
+  ['createdurenv_15',['createDurEnv',['../class_vibrosonics_a_p_i.html#a5cf0352839581b9e1798e24de43d30e0',1,'VibrosonicsAPI']]],
+  ['createdynamicgrain_16',['createDynamicGrain',['../class_vibrosonics_a_p_i.html#a4d702e892e39a097252b77de5433ac3c',1,'VibrosonicsAPI']]],
+  ['createfreqenv_17',['createFreqEnv',['../class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965',1,'VibrosonicsAPI']]],
+  ['creategrainarray_18',['createGrainArray',['../class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f',1,'VibrosonicsAPI']]],
+  ['curve_19',['curve',['../struct_amp_env.html#a79c4a16c4928229c3982447ebac83c21',1,'AmpEnv::curve'],['../struct_dur_env.html#aaa0cd5b523e7c2b391f85132096450cb',1,'DurEnv::curve']]]
 ];

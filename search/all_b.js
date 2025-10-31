@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['ide_0',['Installation (Arduino IDE)',['../index.html#autotoc_md3',1,'']]],
-  ['ide_20and_20esp32_20board_20support_1',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md4',1,'']]],
-  ['init_2',['init',['../class_vibrosonics_a_p_i.html#aa1b346a8270b0677fc3da264fb16a4e8',1,'VibrosonicsAPI']]],
-  ['install_20arduino_20ide_20and_20esp32_20board_20support_3',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md4',1,'']]],
-  ['installation_20arduino_20ide_4',['Installation (Arduino IDE)',['../index.html#autotoc_md3',1,'']]],
-  ['isdynamic_5',['isDynamic',['../class_grain.html#a897bd7e0fd1909a9808db3e9fc78b3aa',1,'Grain']]]
+  ['next_0',['next',['../struct_grain_node.html#aa2de7ec3288741eaf1e466310319995c',1,'GrainNode']]],
+  ['noisefloor_1',['noiseFloor',['../class_vibrosonics_a_p_i.html#ac34d7c60970b4cea3dcaf17588073c79',1,'VibrosonicsAPI']]],
+  ['noisefloorcfar_2',['noiseFloorCFAR',['../class_vibrosonics_a_p_i.html#a57b0b63f333efd810d6211c411de9fd0',1,'VibrosonicsAPI']]]
 ];

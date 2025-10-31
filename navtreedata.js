@@ -25,25 +25,29 @@
 var NAVTREE =
 [
   [ "VibroSonics", "index.html", [
-    [ "Overview", "index.html#autotoc_md2", null ],
-    [ "Installation (Arduino IDE)", "index.html#autotoc_md3", [
-      [ "Experience audio through vibration.", "index.html#autotoc_md1", null ],
-      [ "Install Arduino IDE and ESP32 Board Support", "index.html#autotoc_md4", null ],
-      [ "Set Board and Ports", "index.html#autotoc_md5", null ],
-      [ "Add Libraries", "index.html#autotoc_md6", null ],
-      [ "Upload a Sketch", "index.html#autotoc_md7", null ]
+    [ "Experience audio through vibration", "index.html#autotoc_md1", null ],
+    [ "Table of Contents", "index.html#autotoc_md2", null ],
+    [ "Overview", "index.html#autotoc_md3", null ],
+    [ "Additional Information", "index.html#autotoc_md4", null ],
+    [ "Contributors", "index.html#autotoc_md5", [
+      [ "2025-26 Software Team", "index.html#autotoc_md6", null ],
+      [ "2024-25 Software Team", "index.html#autotoc_md7", null ],
+      [ "Special Thanks", "index.html#autotoc_md8", null ]
     ] ],
-    [ "Library Architecture", "index.html#autotoc_md8", [
-      [ "API Classes", "index.html#autotoc_md9", null ]
-    ] ],
-    [ "Examples", "index.html#autotoc_md10", null ],
-    [ "Contributing", "index.html#autotoc_md11", null ],
-    [ "Future Development", "index.html#autotoc_md12", [
-      [ "For the 2025-26 computer science team:", "index.html#autotoc_md13", null ]
-    ] ],
-    [ "Contributors", "index.html#autotoc_md14", [
-      [ "2024-25 Software Team", "index.html#autotoc_md15", null ],
-      [ "Special Thanks", "index.html#autotoc_md16", null ]
+    [ "Contributing Guide", "md__c_o_n_t_r_i_b_u_t_i_n_g.html", [
+      [ "Code of Conduct", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md10", null ],
+      [ "Getting Started", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md11", null ],
+      [ "Branching & Workflow", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md12", null ],
+      [ "Issues & Planning", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md13", null ],
+      [ "Commit Messages", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md14", null ],
+      [ "Code Style, Linting & Formatting", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md15", null ],
+      [ "Testing", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md16", null ],
+      [ "Pull Requests & Reviews", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md17", null ],
+      [ "CI/CD", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md18", null ],
+      [ "Security & Secrets", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md19", null ],
+      [ "Documentation Expectations", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md20", null ],
+      [ "Release Process", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md21", null ],
+      [ "Support & Contact", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md22", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

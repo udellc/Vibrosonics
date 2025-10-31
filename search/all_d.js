@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['mapamplitudes_0',['mapAmplitudes',['../class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b',1,'VibrosonicsAPI']]],
-  ['mapfrequencybyoctaves_1',['mapFrequencyByOctaves',['../class_vibrosonics_a_p_i.html#afcd86f3f2b73d50fe97499daabc46f76',1,'VibrosonicsAPI']]],
-  ['mapfrequencymidi_2',['mapFrequencyMIDI',['../class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7',1,'VibrosonicsAPI']]],
-  ['markedfordeletion_3',['markedForDeletion',['../class_grain.html#a58dd598bd0b2102cee8c9b0112d9b454',1,'Grain']]]
+  ['planning_0',['Issues &amp; Planning',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md13',1,'']]],
+  ['printgrain_1',['printGrain',['../class_grain.html#a9424bc5a826a426c8586e40d4ec4f5a7',1,'Grain']]],
+  ['process_2',['Release Process',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md21',1,'']]],
+  ['processaudioinput_3',['processAudioInput',['../class_vibrosonics_a_p_i.html#a18d073ca3e71cbbd856537a8612ce479',1,'VibrosonicsAPI']]],
+  ['pull_20requests_20reviews_4',['Pull Requests &amp; Reviews',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md17',1,'']]],
+  ['pushgrain_5',['pushGrain',['../class_grain_list.html#a56dbc0be454e9990a1e8f6d28e928a29',1,'GrainList']]]
 ];

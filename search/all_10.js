@@ -1,7 +1,10 @@
 var searchData=
 [
-  ['ports_0',['2. Set Board and Ports',['../index.html#autotoc_md5',1,'']]],
-  ['printgrain_1',['printGrain',['../class_grain.html#a9424bc5a826a426c8586e40d4ec4f5a7',1,'Grain']]],
-  ['processaudioinput_2',['processAudioInput',['../class_vibrosonics_a_p_i.html#a18d073ca3e71cbbd856537a8612ce479',1,'VibrosonicsAPI']]],
-  ['pushgrain_3',['pushGrain',['../class_grain_list.html#a56dbc0be454e9990a1e8f6d28e928a29',1,'GrainList']]]
+  ['table_20of_20contents_0',['Table of Contents',['../index.html#autotoc_md2',1,'']]],
+  ['team_1',['Team',['../index.html#autotoc_md7',1,'2024-25 Software Team'],['../index.html#autotoc_md6',1,'2025-26 Software Team']]],
+  ['testing_2',['Testing',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md16',1,'']]],
+  ['thanks_3',['Special Thanks',['../index.html#autotoc_md8',1,'']]],
+  ['through_20vibration_4',['Experience audio through vibration',['../index.html#autotoc_md1',1,'']]],
+  ['transitionto_5',['transitionTo',['../class_grain.html#a85e928fe69118956e0c756162216a8be',1,'Grain']]],
+  ['triggergrains_6',['triggerGrains',['../class_vibrosonics_a_p_i.html#a76d598a6bbc5f99a37b17c4b8772fb3d',1,'VibrosonicsAPI']]]
 ];
