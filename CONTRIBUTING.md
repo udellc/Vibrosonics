@@ -42,7 +42,7 @@ JavaScript linter: ESLint – [https://github.com/eslint/eslint](https://github.
 C++ and Arduino formatter: .clang-format (given with the Vibrosonics project)  – [https://github.com/udellc/Vibrosonics/blob/main/.clang-format](https://github.com/udellc/Vibrosonics/blob/main/.clang-format)  
 
 * Located in the root of the repository  
-* Example of how to manually format multiple files:   
+* Example of how to manually format multiple files:
   * clang-format \-i \*.cpp  
   * clang-format \-i \*.ino
 
@@ -136,7 +136,7 @@ README should contain a simple but complete description of the project that incl
 Current API References:
 
 * VibroSonics README: [https://github.com/udellc/Vibrosonics/blob/main/README.md](https://github.com/udellc/Vibrosonics/blob/main/README.md)
-* VibroSonics documentation: [https://udellc.github.io/Vibrosonics/](https://udellc.github.io/Vibrosonics/)   
+* VibroSonics documentation: [https://udellc.github.io/Vibrosonics/](https://udellc.github.io/Vibrosonics/)
 * AudioPrism README: [https://github.com/udellc/AudioPrism/blob/main/README.md](https://github.com/udellc/AudioPrism/blob/main/README.md)
 
 ## Release Process
