@@ -20,7 +20,7 @@ with `COMX` for port where `X` is a number 0-6
     Tutorial](https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/))
   - On Linux, this is the `ch341` driver
 
-![The other board and port drop down](/docs/assets/assets/images/Confirm_board.png)
+![The other board and port drop down](/docs/assets/images/Confirm_board.png)
 
 ### 3. Add Libraries
 
