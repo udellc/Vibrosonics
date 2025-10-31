@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-331-g1d5e022</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-332-gc63f485</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -119,13 +119,13 @@ $(function(){initNavTree('md__c_o_n_t_r_i_b_u_t_i_n_g.html',''); initResizable(t
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="autotoc_md25"></a></p>
-<p>How to set up, code, test, review, and release so contributions meet our Definition of Done.</p>
+<p>Welcome to the VibroSonics contributing guide! This document outlines the guidelines and best practices for contributing to the VibroSonics project. Whether you're fixing a bug, adding a new feature, or improving documentation, we appreciate your contributions!</p>
 <h1><a class="anchor" id="autotoc_md26"></a>
 Code of Conduct</h1>
-<p>Reference the project/community behavior expectations and reporting process.</p>
+<p>TODO: Reference the project/community behavior expectations and reporting process.</p>
 <h1><a class="anchor" id="autotoc_md27"></a>
 Getting Started</h1>
-<p>Refer to the <a href="https://udellc.github.io/Vibrosonics/setup.html">Setup (Developer Setup)</a> document for instructions on setting up a development environment.</p>
+<p>Refer to the <a href="https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html">Developer Setup)</a> document for instructions on setting up a dev environment.</p>
 <h1><a class="anchor" id="autotoc_md28"></a>
 Branching &amp; Workflow</h1>
 <p>This repository follows a Git Flow workflow. Developers for this capstone year will create feature/fix branches off of the 25-26_dev branch and make PRs to merge back to the developer branch. 25-26_dev will be periodically merged into the main branch once changes have been thoroughly tested and deemed release-ready. Feature branches should follow the naming convention “feat/featureName”, and fix branches should follow the naming convention “fix/fixName”. To maintain a clean commit history, all branches should be rebased onto the branch they are merging into.</p>
@@ -143,14 +143,13 @@ Issues &amp; Planning</h1>
 <h1><a class="anchor" id="autotoc_md30"></a>
 Commit Messages</h1>
 <p>Commits should follow Conventional Commits standards. At a minimum, commits should contain a type and a short description of the commit contents. The most common commit types are “feat” and “fix”, which correspond to a new feature or a bug fix respectively. Other relevant types are “doc” for updating documentation, “test” for test changes, and “refactor” for code refactors. For the purposes of this project, we do not require a body or footer for commits. In-depth descriptions of changes and links to GitHub issues can be contained in PRs rather than each individual commit.</p>
-<p>Commit examples: <br  />
- feat: add newFunct() method to TestClass <br  />
+<p><b>Commit examples:</b></p>
+<p>feat: add newFunct() method to TestClass <br  />
  fix: fix out of bounds error in brokenFunct() <br  />
  doc: update README with new build instructions</p>
 <h1><a class="anchor" id="autotoc_md31"></a>
 Code Style, Linting &amp; Formatting</h1>
-<p>**many linters require npm to be installed** <br  />
- JavaScript linter: ESLint – <a href="https://github.com/eslint/eslint">https://github.com/eslint/eslint</a></p>
+<p>JavaScript Linter: <a href="https://github.com/eslint/eslint">ESLint</a></p>
 <ul>
 <li>To run manually: npm run lint</li>
 </ul>
@@ -169,13 +168,13 @@ Code Style, Linting &amp; Formatting</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md32"></a>
 Testing</h1>
-<p>API Testing</p>
+<p><b>API Testing:</b></p>
 <ul>
 <li>Primarily used for the interaction between the API and web application. <br  />
 </li>
 <li>Each test is expected to cover one corresponding HTTP method to ensure precise coverage.</li>
 </ul>
-<p>UI Testing</p>
+<p><b>UI Testing:</b></p>
 <ul>
 <li>Primarily used for testing the web application’s user interface. <br  />
 </li>
@@ -183,7 +182,7 @@ Testing</h1>
 </li>
 <li>Each test is expected to cover the entire process of a feature, from login to final expected feature state in order to guarantee that the feature being tested has not made an impact on the flow and set up of the web app.</li>
 </ul>
-<p>Regression Testing</p>
+<p><b>Regression Testing:</b></p>
 <ul>
 <li>Used primarily for testing the web application’s user interface. <br  />
 </li>
@@ -191,7 +190,7 @@ Testing</h1>
 </li>
 <li>These tests will not be completed as regularly as the other testing, as it is more time consuming and if done regularly can be very monotonous.</li>
 </ul>
-<p>Integration Testing</p>
+<p><b>Integration Testing:</b></p>
 <ul>
 <li>Used primarily for testing the team’s libraries. <br  />
 </li>
@@ -206,8 +205,8 @@ Pull Requests &amp; Reviews</h1>
 <p>In order for status checks to pass to merge, each PR must pass the linter/formatter and have at least two reviews from other members.</p>
 <h1><a class="anchor" id="autotoc_md34"></a>
 CI/CD</h1>
-<p>Link to Github Actions: <a href="https://github.com/udellc/Vibrosonics/actions">udellc/Vibrosonics/actions</a></p>
-<p>Workflow Jobs:</p>
+<p><b>Link to Github Actions:</b> <a href="https://github.com/udellc/Vibrosonics/actions">udellc/Vibrosonics/actions</a></p>
+<p><b>Workflow Jobs:</b></p>
 <ul>
 <li>Publish Documentation to Github Pages <br  />
 <ul>
@@ -225,13 +224,13 @@ CI/CD</h1>
 </ul>
 </li>
 </ul>
-<p>Viewing Workflow Logs:</p>
+<p><b>Viewing Workflow Logs:</b></p>
 <ul>
 <li>Navigate the Github actions link provided in this document. <br  />
 </li>
 <li>Select the desired workflow you want to view.</li>
 </ul>
-<p>Reruning Workflows:</p>
+<p><b>Reruning Workflows:</b></p>
 <ul>
 <li>Navigate the Github actions link provided in this document. <br  />
 </li>
@@ -239,7 +238,7 @@ CI/CD</h1>
 </li>
 <li>Select the desired workflow run then re-execute and select Re-run all jobs or specific one if desired.</li>
 </ul>
-<p>Mandatory Requirements Prior to Merges:</p>
+<p><b>Mandatory Requirements Prior to Merges:</b></p>
 <ul>
 <li><p class="startli">The 25-26_dev branch must pass ALL workflows before merging into main. Any exceptions made must be clearly documented with sections detailing what was falling, why if failed (if applicable), and why the exception was made.</p>
 <p class="startli">NOTE: The 25-26_dev branch may fail from features/fix branches merging into it, it only needs to pass before merging it into main. <br  />
@@ -254,7 +253,7 @@ CI/CD</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md35"></a>
 Security &amp; Secrets</h1>
-<p>Reporting Vulnerabilities:</p>
+<p><b>Reporting Vulnerabilities:</b></p>
 <ul>
 <li>Do not open a public GitHub issue for the vulnerability <br  />
 <ul>
@@ -272,7 +271,7 @@ Security &amp; Secrets</h1>
 </li>
 <li>A repository owner will investigate and resolve the reported issue as soon as possible</li>
 </ul>
-<p>Secrets Rules:</p>
+<p><b>Secrets Rules:</b></p>
 <ul>
 <li>No API keys, passwords, or other secrets should be committed to the public repository <br  />
 </li>
@@ -282,7 +281,7 @@ Security &amp; Secrets</h1>
 Documentation Expectations</h1>
 <p>README should contain a simple but complete description of the project that includes program functionality, installation and setup instructions, including dependencies, examples of usage and key features, directions on how to contribute such as pull request guidelines and issue reporting, and any license information. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic. Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language. <br  />
 </p>
-<p>Current API References:</p>
+<p><b>Current API References:</b></p>
 <ul>
 <li>VibroSonics README: <a href="https://github.com/udellc/Vibrosonics/blob/main/README.md">https://github.com/udellc/Vibrosonics/blob/main/README.md</a></li>
 <li>VibroSonics documentation: <a href="https://udellc.github.io/Vibrosonics/">https://udellc.github.io/Vibrosonics/</a></li>
@@ -290,7 +289,7 @@ Documentation Expectations</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md37"></a>
 Release Process</h1>
-<p>Versioning Scheme:</p>
+<p><b>Versioning Scheme:</b></p>
 <ul>
 <li>Adhere to Semantic Version, where version numbers follow a MAJOR.MINOR.PATCH format <br  />
 </li>
@@ -300,7 +299,7 @@ Release Process</h1>
 </li>
 <li>MAJOR is for any breaking changes</li>
 </ul>
-<p>Tagging:</p>
+<p><b>Tagging:</b></p>
 <ul>
 <li>Create an annotated git tag on the main branch <br  />
 <ul>
@@ -308,19 +307,19 @@ Release Process</h1>
 </ul>
 </li>
 </ul>
-<p>Changelog Generation:</p>
+<p><b>Changelog Generation:</b></p>
 <ul>
 <li>Our process uses manual changelog generation <br  />
 </li>
 <li>We follow the past release format, with each changelog having a descriptive name, a few sentences about the updates, and the changed files attached in .zip and tar.zip folders</li>
 </ul>
-<p>Packaging/Publishing Steps:</p>
+<p><b>Packaging/Publishing Steps:</b></p>
 <ul>
 <li>For our libraries, we build a source distribution that can be found in the release section of the github repo, sorted by release <br  />
 </li>
 <li>These folders are then uploaded to the public repository</li>
 </ul>
-<p>Rollback Process:</p>
+<p><b>Rollback Process:</b></p>
 <ul>
 <li>We use a manual procedure triggered by human observation <br  />
 </li>
