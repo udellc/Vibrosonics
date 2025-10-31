@@ -1,5 +1,11 @@
 # Developer Notes
 
+## Table of Contents
+
+- [Library Architecture](#library-architecture)
+- [API Classes](#api-classes)
+- [Examples](#examples)
+
 ## Library Architecture
 
 The Vibrosonics library aims to streamline three processes to enable

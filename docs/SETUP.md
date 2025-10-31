@@ -1,5 +1,10 @@
 # Developer Setup
 
+## Table of Contents
+
+- [Installation (Arduino IDE)](#installation-arduino-ide)
+- [Web Development Setup](#web-development-setup)
+
 ## Installation (Arduino IDE)
 
 ### 1. Install Arduino IDE and ESP32 Board Support

@@ -2,6 +2,22 @@
 
 Welcome to the VibroSonics contributing guide! This document outlines the guidelines and best practices for contributing to the VibroSonics project. Whether you're fixing a bug, adding a new feature, or improving documentation, we appreciate your contributions!
 
+## Table of Contents
+
+* [Code of Conduct](#code-of-conduct)
+* [Getting Started](#getting-started)
+* [Branching & Workflow](#branching--workflow)
+* [Issues & Planning](#issues--planning)
+* [Commit Messages](#commit-messages)
+* [Code Style, Linting & Formatting](#code-style-linting--formatting)
+* [Testing](#testing)
+* [Pull Requests & Reviews](#pull-requests--reviews)
+* [CI/CD](#cicd)
+* [Security & Secrets](#security--secrets)
+* [Documentation Expectations](#documentation-expectations)
+* [Release Process](#release-process)
+* [Support & Contact](#support--contact)
+
 ## Code of Conduct
 
 To maintain a welcoming and inclusive environment, all contributors are expected to adhere to the **VibroSonics Code of Conduct**.
