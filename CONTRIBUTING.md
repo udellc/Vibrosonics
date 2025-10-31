@@ -1,14 +1,14 @@
 # Contributing Guide
 
-How to set up, code, test, review, and release so contributions meet our Definition of Done.
+Welcome to the VibroSonics contributing guide! This document outlines the guidelines and best practices for contributing to the VibroSonics project. Whether you're fixing a bug, adding a new feature, or improving documentation, we appreciate your contributions!
 
 ## Code of Conduct
 
-Reference the project/community behavior expectations and reporting process.
+TODO: Reference the project/community behavior expectations and reporting process.
 
 ## Getting Started
 
-Refer to the [Setup (Developer Setup)](https://udellc.github.io/Vibrosonics/setup.html) document for instructions on setting up a development environment.
+Refer to the [Developer Setup)](https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html) document for instructions on setting up a dev environment.
 
 ## Branching & Workflow
 
@@ -27,15 +27,15 @@ To report a bug or request a feature, open an issue if you do not find a relevan
 
 Commits should follow Conventional Commits standards. At a minimum, commits should contain a type and a short description of the commit contents. The most common commit types are “feat” and “fix”, which correspond to a new feature or a bug fix respectively. Other relevant types are “doc” for updating documentation, “test” for test changes, and “refactor” for code refactors. For the purposes of this project, we do not require a body or footer for commits. In-depth descriptions of changes and links to GitHub issues can be contained in PRs rather than each individual commit.
 
-Commit examples:  
+**Commit examples:**
+
 feat: add newFunct() method to TestClass  
 fix: fix out of bounds error in brokenFunct()  
 doc: update README with new build instructions
 
 ## Code Style, Linting & Formatting
 
-\*\*many linters require npm to be installed\*\*  
-JavaScript linter: ESLint – [https://github.com/eslint/eslint](https://github.com/eslint/eslint)
+JavaScript Linter: [ESLint](https://github.com/eslint/eslint)
 
 * To run manually: npm run lint
 
@@ -50,24 +50,24 @@ C++ and Arduino formatter: .clang-format (given with the Vibrosonics project)  �
 
 ## Testing
 
-API Testing
+**API Testing:**
 
 * Primarily used for the interaction between the API and web application.  
 * Each test is expected to cover one corresponding HTTP method to ensure precise coverage.
 
-UI Testing
+**UI Testing:**
 
 * Primarily used for testing the web application’s user interface.  
 * Each test is expected to cover one corresponding feature of the web app to ensure precise coverage.  
 * Each test is expected to cover the entire process of a feature, from login to final expected feature state in order to guarantee that the feature being tested has not made an impact on the flow and set up of the web app.
 
-Regression Testing
+**Regression Testing:**
 
 * Used primarily for testing the web application’s user interface.  
 * Manual testing to ensure the user interface features are functioning and work in tandem with each other.  
 * These tests will not be completed as regularly as the other testing, as it is more time consuming and if done regularly can be very monotonous.
 
-Integration Testing
+**Integration Testing:**
 
 * Used primarily for testing the team’s libraries.  
 * Each test is expected to test the different interactions between our library modules.  
@@ -83,9 +83,9 @@ In order for status checks to pass to merge, each PR must pass the linter/format
 
 ## CI/CD
 
-Link to Github Actions: [udellc/Vibrosonics/actions](https://github.com/udellc/Vibrosonics/actions)
+**Link to Github Actions:** [udellc/Vibrosonics/actions](https://github.com/udellc/Vibrosonics/actions)
 
-Workflow Jobs:
+**Workflow Jobs:**
 
 * Publish Documentation to Github Pages  
   * Publishes VibroSonics documentation files to Github pages using Doxygen.  
@@ -94,18 +94,18 @@ Workflow Jobs:
   * Runs ESLint tool for the WebApp directory, checking for syntax errors or potential bugs.  
   * Triggers the workflow when pushes or pull requests occur on the 25-36\_dev or main branches.
 
-Viewing Workflow Logs:
+**Viewing Workflow Logs:**
 
 * Navigate the Github actions link provided in this document.  
 * Select the desired workflow you want to view.
 
-Reruning Workflows:
+**Reruning Workflows:**
 
 * Navigate the Github actions link provided in this document.  
 * Select the desired workflow to rerun, workflows should be in the left sidebar  
 * Select the desired workflow run then re-execute and select Re-run all jobs or specific one if desired.
 
-Mandatory Requirements Prior to Merges:
+**Mandatory Requirements Prior to Merges:**
 
 * The  25-26\_dev branch must pass ALL workflows before merging into main. Any exceptions made must be clearly documented with sections detailing what was falling, why if failed (if applicable), and why the exception was made.
 
@@ -115,7 +115,7 @@ Mandatory Requirements Prior to Merges:
 
 ## Security & Secrets
 
-Reporting Vulnerabilities:
+**Reporting Vulnerabilities:**
 
 * Do not open a public GitHub issue for the vulnerability  
   * This could lead to further exploits before the vulnerability can be fully resolved  
@@ -124,7 +124,7 @@ Reporting Vulnerabilities:
   * If applicable, provide step-by-step instructions on how to reproduce the vulnerability  
 * A repository owner will investigate and resolve the reported issue as soon as possible
 
-Secrets Rules:
+**Secrets Rules:**
 
 * No API keys, passwords, or other secrets should be committed to the public repository  
 * If a secret is mistakenly committed, undo the commit and change/invalidate the secret as soon as possible
@@ -133,7 +133,7 @@ Secrets Rules:
 
 README should contain a simple but complete description of the project that includes program functionality, installation and setup instructions, including dependencies, examples of usage and key features, directions on how to contribute such as pull request guidelines and issue reporting, and any license information. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic. Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language.  
 
-Current API References:
+**Current API References:**
 
 * VibroSonics README: [https://github.com/udellc/Vibrosonics/blob/main/README.md](https://github.com/udellc/Vibrosonics/blob/main/README.md)
 * VibroSonics documentation: [https://udellc.github.io/Vibrosonics/](https://udellc.github.io/Vibrosonics/)
@@ -141,29 +141,29 @@ Current API References:
 
 ## Release Process
 
-Versioning Scheme:
+**Versioning Scheme:**
 
 * Adhere to Semantic Version, where version numbers follow a MAJOR.MINOR.PATCH format  
 * PATCH increment is for bug fixes  
 * MINOR is for new, backward-compatible features  
 * MAJOR is for any breaking changes
 
-Tagging:
+**Tagging:**
 
 * Create an annotated git tag on the main branch  
   * Example of annotated git tag: git tag \-a v1.2.5 \-m “Release version 1.2.5”
 
-Changelog Generation:
+**Changelog Generation:**
 
 * Our process uses manual changelog generation  
 * We follow the past release format, with each changelog having a descriptive name, a few sentences about the updates, and the changed files attached in .zip and tar.zip folders
 
-Packaging/Publishing Steps:
+**Packaging/Publishing Steps:**
 
 * For our libraries, we build a source distribution that can be found in the release section of the github repo, sorted by release  
 * These folders are then uploaded to the public repository
 
-Rollback Process:
+**Rollback Process:**
 
 * We use a manual procedure triggered by human observation  
 * Each deployment is monitored both by the internal team and the project partners who perform a series of manual checks.  

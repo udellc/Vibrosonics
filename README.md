@@ -15,6 +15,7 @@ transducer, 3.5mm audio jack cable \
 ## Table of Contents
 
 - [Overview](#overview)
+- [Additional Information](#additional-information)
 - [Contributors](#contributors)
 
 ## Overview
@@ -51,8 +52,8 @@ well. Our product is also compatible for use on Windows, Linux, and Mac.
 For more detailed information about setting up a development environment,
 library architecture, and example programs, refer to the following documents:
 
-- [Setup (Developer Setup)](https://udellc.github.io/Vibrosonics/setup.html)
-- [Developer Notes](https://udellc.github.io/Vibrosonics/devnotes.html)
+- [Developer Setup](https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html)
+- [Developer Notes](https://udellc.github.io/Vibrosonics/md_docs_2_d_e_v_n_o_t_e_s.html)
 
 ## Contributors
 
