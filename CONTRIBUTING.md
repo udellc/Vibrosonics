@@ -4,11 +4,39 @@ Welcome to the VibroSonics contributing guide! This document outlines the guidel
 
 ## Code of Conduct
 
-TODO: Reference the project/community behavior expectations and reporting process.
+To maintain a welcoming and inclusive environment, all contributors are expected to adhere to the **VibroSonics Code of Conduct**.
+
+**Community and Team Behavior Expectations:**
+
+* All team members and contributors are expected to uphold a respectful, inclusive, and collaborative environment.
+* Communication should remain constructive, professional, and free of discrimination, harassment, or personal attacks.
+* Feedback should be directed toward improving ideas, designs, and code—not individuals.
+* Disagreements should be resolved through open discussion, evidence-based reasoning, and adherence to project goals.
+
+**Core Principles:**
+
+* Respect: Treat all contributors and stakeholders with courtesy.
+* Integrity: Be honest about work status, errors, and limitations.
+* Accountability: Take responsibility for your actions and follow through on commitments.
+* Inclusivity: Support participation from diverse backgrounds, skill levels, and perspectives.
+* Safety: Foster a space where everyone can contribute without fear of hostility or exclusion.
+
+**Reporting Process:**
+
+Concerns about behavior or conduct violations should be reported directly to the Project partners or leader via the official communication channel (e.g. email or Discord).
+
+Reports should include:
+
+* A brief description of the incident
+* Names (if comfortable sharing) of those involved
+* Date, time, and relevant context
+* All reports will be handled confidentially and reviewed promptly.
+
+Confirmed violations may result in actions such as a private warning, temporary suspension from collaboration tools, or removal from the project depending on severity.
 
 ## Getting Started
 
-Refer to the [Developer Setup)](https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html) document for instructions on setting up a dev environment.
+Refer to the [Developer Setup](https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html) document for instructions on setting up a dev environment.
 
 ## Branching & Workflow
 
@@ -16,7 +44,6 @@ This repository follows a Git Flow workflow. Developers for this capstone year w
 
 ## Issues & Planning
 
-Explain how to file issues, required templates/labels, estimation, and triage/assignment practices.  
 To report a bug or request a feature, open an issue if you do not find a relevant one already made. If you’d like to help improve the project:
 
 * Create a branch for your feature/fix. If it is corresponding to an issue, make sure the branch is linked to that issue.  
@@ -35,18 +62,28 @@ doc: update README with new build instructions
 
 ## Code Style, Linting & Formatting
 
-JavaScript Linter: [ESLint](https://github.com/eslint/eslint)
+**JavaScript Linter:** [ESLint](https://github.com/eslint/eslint)
 
-* To run manually: npm run lint
+**To run manually:**
 
-C++ and Arduino formatter: .clang-format (given with the Vibrosonics project)  – [https://github.com/udellc/Vibrosonics/blob/main/.clang-format](https://github.com/udellc/Vibrosonics/blob/main/.clang-format)  
+```bash
+npm run lint
+```
 
-* Located in the root of the repository  
-* Example of how to manually format multiple files:
-  * clang-format \-i \*.cpp  
-  * clang-format \-i \*.ino
+C++ and Arduino formatter: [.clang-format (given with the Vibrosonics project)](https://github.com/udellc/Vibrosonics/blob/main/.clang-format)  
 
-* When using Visual Studio Code, it can be installed automatically through the CSSCop extension.
+Located in the root of the repository  
+Example of how to manually format multiple files:
+
+```bash
+# C++ files
+clang-format \-i \*.cpp
+
+# Arduino files
+clang-format \-i \*.ino
+```
+
+When using Visual Studio Code, it can be installed automatically through the CSSCop extension.
 
 ## Testing
 
@@ -89,10 +126,10 @@ In order for status checks to pass to merge, each PR must pass the linter/format
 
 * Publish Documentation to Github Pages  
   * Publishes VibroSonics documentation files to Github pages using Doxygen.  
-  * Triggers the workflow when pushes or release events occur on the main branch.  
-* ESLint Web App  
-  * Runs ESLint tool for the WebApp directory, checking for syntax errors or potential bugs.  
-  * Triggers the workflow when pushes or pull requests occur on the 25-36\_dev or main branches.
+  * Triggers the workflow when pushes or release events occur on the main branch.
+* ESLint Web App
+  * Runs ESLint tool for the WebApp directory, checking for syntax errors or potential bugs.
+  * Triggers the workflow when pushes or pull requests occur on the 25-26\_dev or main branches.
 
 **Viewing Workflow Logs:**
 
@@ -107,7 +144,7 @@ In order for status checks to pass to merge, each PR must pass the linter/format
 
 **Mandatory Requirements Prior to Merges:**
 
-* The  25-26\_dev branch must pass ALL workflows before merging into main. Any exceptions made must be clearly documented with sections detailing what was falling, why if failed (if applicable), and why the exception was made.
+* The 25-26\_dev branch must pass ALL workflows before merging into main. Any exceptions made must be clearly documented with sections detailing what was falling, why if failed (if applicable), and why the exception was made.
 
   NOTE: The 25-26\_dev branch may fail from features/fix branches merging into it, it only needs to pass before merging it into main.  
   * ESLint Web App \[ Critical \]:  
@@ -117,7 +154,7 @@ In order for status checks to pass to merge, each PR must pass the linter/format
 
 **Reporting Vulnerabilities:**
 
-* Do not open a public GitHub issue for the vulnerability  
+* **DO NOT** open a public GitHub issue for the vulnerability  
   * This could lead to further exploits before the vulnerability can be fully resolved  
 * Directly email the repository owners with a description of the vulnerability  
   * Reference specific code files and lines when possible  
@@ -126,18 +163,26 @@ In order for status checks to pass to merge, each PR must pass the linter/format
 
 **Secrets Rules:**
 
-* No API keys, passwords, or other secrets should be committed to the public repository  
+* **NO API KEYS**, passwords, or other secrets should be committed to the public repository  
 * If a secret is mistakenly committed, undo the commit and change/invalidate the secret as soon as possible
 
 ## Documentation Expectations
 
-README should contain a simple but complete description of the project that includes program functionality, installation and setup instructions, including dependencies, examples of usage and key features, directions on how to contribute such as pull request guidelines and issue reporting, and any license information. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic. Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language.  
+Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic.
+
+**README.md** should contain a simple but complete description of the project that includes an overview of the project, links to additional resources, and contributors.
+
+**CONTRIBUTING.md** should include developer guidelines/directions on how to contribute, such as pull request guidelines and issue reporting, and any license information.
+
+**SETUP.md** should include installation and setup instructions along with some useful commands to help the developer verify that the build environment is ready for development.
+
+**DEVNOTES.md** should include useful information about implementation details for the project along with usage of some VibroSonics examples.
 
 **Current API References:**
 
-* VibroSonics README: [https://github.com/udellc/Vibrosonics/blob/main/README.md](https://github.com/udellc/Vibrosonics/blob/main/README.md)
-* VibroSonics documentation: [https://udellc.github.io/Vibrosonics/](https://udellc.github.io/Vibrosonics/)
-* AudioPrism README: [https://github.com/udellc/AudioPrism/blob/main/README.md](https://github.com/udellc/AudioPrism/blob/main/README.md)
+* [VibroSonics README](https://github.com/udellc/Vibrosonics/blob/main/README.md)
+* [VibroSonics documentation](https://udellc.github.io/Vibrosonics/)
+* [AudioPrism README](https://github.com/udellc/AudioPrism/blob/main/README.md)
 
 ## Release Process
 
