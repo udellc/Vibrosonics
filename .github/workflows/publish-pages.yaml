@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      # TODO: remove when docs generation is stable
+      - refactor/docs
   workflow_dispatch:
 jobs:
   deploy:
