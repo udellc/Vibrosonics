@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-332-gc63f485</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-334-g31a7136</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -122,17 +122,41 @@ $(function(){initNavTree('md__c_o_n_t_r_i_b_u_t_i_n_g.html',''); initResizable(t
 <p>Welcome to the VibroSonics contributing guide! This document outlines the guidelines and best practices for contributing to the VibroSonics project. Whether you're fixing a bug, adding a new feature, or improving documentation, we appreciate your contributions!</p>
 <h1><a class="anchor" id="autotoc_md26"></a>
 Code of Conduct</h1>
-<p>TODO: Reference the project/community behavior expectations and reporting process.</p>
+<p>To maintain a welcoming and inclusive environment, all contributors are expected to adhere to the <b>VibroSonics Code of Conduct</b>.</p>
+<p><b>Community and Team Behavior Expectations:</b></p>
+<ul>
+<li>All team members and contributors are expected to uphold a respectful, inclusive, and collaborative environment.</li>
+<li>Communication should remain constructive, professional, and free of discrimination, harassment, or personal attacks.</li>
+<li>Feedback should be directed toward improving ideas, designs, and code—not individuals.</li>
+<li>Disagreements should be resolved through open discussion, evidence-based reasoning, and adherence to project goals.</li>
+</ul>
+<p><b>Core Principles:</b></p>
+<ul>
+<li>Respect: Treat all contributors and stakeholders with courtesy.</li>
+<li>Integrity: Be honest about work status, errors, and limitations.</li>
+<li>Accountability: Take responsibility for your actions and follow through on commitments.</li>
+<li>Inclusivity: Support participation from diverse backgrounds, skill levels, and perspectives.</li>
+<li>Safety: Foster a space where everyone can contribute without fear of hostility or exclusion.</li>
+</ul>
+<p><b>Reporting Process:</b></p>
+<p>Concerns about behavior or conduct violations should be reported directly to the Project partners or leader via the official communication channel (e.g. email or Discord).</p>
+<p>Reports should include:</p>
+<ul>
+<li>A brief description of the incident</li>
+<li>Names (if comfortable sharing) of those involved</li>
+<li>Date, time, and relevant context</li>
+<li>All reports will be handled confidentially and reviewed promptly.</li>
+</ul>
+<p>Confirmed violations may result in actions such as a private warning, temporary suspension from collaboration tools, or removal from the project depending on severity.</p>
 <h1><a class="anchor" id="autotoc_md27"></a>
 Getting Started</h1>
-<p>Refer to the <a href="https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html">Developer Setup)</a> document for instructions on setting up a dev environment.</p>
+<p>Refer to the <a href="https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html">Developer Setup</a> document for instructions on setting up a dev environment.</p>
 <h1><a class="anchor" id="autotoc_md28"></a>
 Branching &amp; Workflow</h1>
 <p>This repository follows a Git Flow workflow. Developers for this capstone year will create feature/fix branches off of the 25-26_dev branch and make PRs to merge back to the developer branch. 25-26_dev will be periodically merged into the main branch once changes have been thoroughly tested and deemed release-ready. Feature branches should follow the naming convention “feat/featureName”, and fix branches should follow the naming convention “fix/fixName”. To maintain a clean commit history, all branches should be rebased onto the branch they are merging into.</p>
 <h1><a class="anchor" id="autotoc_md29"></a>
 Issues &amp; Planning</h1>
-<p>Explain how to file issues, required templates/labels, estimation, and triage/assignment practices. <br  />
- To report a bug or request a feature, open an issue if you do not find a relevant one already made. If you’d like to help improve the project:</p>
+<p>To report a bug or request a feature, open an issue if you do not find a relevant one already made. If you’d like to help improve the project:</p>
 <ul>
 <li>Create a branch for your feature/fix. If it is corresponding to an issue, make sure the branch is linked to that issue. <br  />
 </li>
@@ -149,23 +173,19 @@ Commit Messages</h1>
  doc: update README with new build instructions</p>
 <h1><a class="anchor" id="autotoc_md31"></a>
 Code Style, Linting &amp; Formatting</h1>
-<p>JavaScript Linter: <a href="https://github.com/eslint/eslint">ESLint</a></p>
-<ul>
-<li>To run manually: npm run lint</li>
-</ul>
-<p>C++ and Arduino formatter: .clang-format (given with the Vibrosonics project) – <a href="https://github.com/udellc/Vibrosonics/blob/main/.clang-format">https://github.com/udellc/Vibrosonics/blob/main/.clang-format</a> <br  />
+<p><b>JavaScript Linter:</b> <a href="https://github.com/eslint/eslint">ESLint</a></p>
+<p><b>To run manually:</b></p>
+<div class="fragment"><div class="line">npm run lint</div>
+</div><!-- fragment --><p>C++ and Arduino formatter: <a href="https://github.com/udellc/Vibrosonics/blob/main/.clang-format">.clang-format (given with the Vibrosonics project)</a> <br  />
 </p>
-<ul>
-<li>Located in the root of the repository <br  />
-</li>
-<li>Example of how to manually format multiple files:<ul>
-<li>clang-format -i *.cpp <br  />
-</li>
-<li>clang-format -i *.ino</li>
-</ul>
-</li>
-<li>When using Visual Studio Code, it can be installed automatically through the CSSCop extension.</li>
-</ul>
+<p>Located in the root of the repository <br  />
+ Example of how to manually format multiple files:</p>
+<div class="fragment"><div class="line"># C++ files</div>
+<div class="line">clang-format \-i \*.cpp</div>
+<div class="line"> </div>
+<div class="line"># Arduino files</div>
+<div class="line">clang-format \-i \*.ino</div>
+</div><!-- fragment --><p>When using Visual Studio Code, it can be installed automatically through the CSSCop extension.</p>
 <h1><a class="anchor" id="autotoc_md32"></a>
 Testing</h1>
 <p><b>API Testing:</b></p>
@@ -212,15 +232,12 @@ CI/CD</h1>
 <ul>
 <li>Publishes VibroSonics documentation files to Github pages using Doxygen. <br  />
 </li>
-<li>Triggers the workflow when pushes or release events occur on the main branch. <br  />
-</li>
+<li>Triggers the workflow when pushes or release events occur on the main branch.</li>
 </ul>
 </li>
-<li>ESLint Web App <br  />
-<ul>
-<li>Runs ESLint tool for the WebApp directory, checking for syntax errors or potential bugs. <br  />
-</li>
-<li>Triggers the workflow when pushes or pull requests occur on the 25-36_dev or main branches.</li>
+<li>ESLint Web App<ul>
+<li>Runs ESLint tool for the WebApp directory, checking for syntax errors or potential bugs.</li>
+<li>Triggers the workflow when pushes or pull requests occur on the 25-26_dev or main branches.</li>
 </ul>
 </li>
 </ul>
@@ -255,7 +272,7 @@ CI/CD</h1>
 Security &amp; Secrets</h1>
 <p><b>Reporting Vulnerabilities:</b></p>
 <ul>
-<li>Do not open a public GitHub issue for the vulnerability <br  />
+<li><b>DO NOT</b> open a public GitHub issue for the vulnerability <br  />
 <ul>
 <li>This could lead to further exploits before the vulnerability can be fully resolved <br  />
 </li>
@@ -273,19 +290,22 @@ Security &amp; Secrets</h1>
 </ul>
 <p><b>Secrets Rules:</b></p>
 <ul>
-<li>No API keys, passwords, or other secrets should be committed to the public repository <br  />
+<li><b>NO API KEYS</b>, passwords, or other secrets should be committed to the public repository <br  />
 </li>
 <li>If a secret is mistakenly committed, undo the commit and change/invalidate the secret as soon as possible</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md36"></a>
 Documentation Expectations</h1>
-<p>README should contain a simple but complete description of the project that includes program functionality, installation and setup instructions, including dependencies, examples of usage and key features, directions on how to contribute such as pull request guidelines and issue reporting, and any license information. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic. Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language. <br  />
-</p>
+<p>Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic.</p>
+<p><b><a class="el" href="_r_e_a_d_m_e_8md.html">README.md</a></b> should contain a simple but complete description of the project that includes an overview of the project, links to additional resources, and contributors.</p>
+<p><b><a class="el" href="_c_o_n_t_r_i_b_u_t_i_n_g_8md.html">CONTRIBUTING.md</a></b> should include developer guidelines/directions on how to contribute, such as pull request guidelines and issue reporting, and any license information.</p>
+<p><b><a class="el" href="_s_e_t_u_p_8md.html">SETUP.md</a></b> should include installation and setup instructions along with some useful commands to help the developer verify that the build environment is ready for development.</p>
+<p><b><a class="el" href="_d_e_v_n_o_t_e_s_8md.html">DEVNOTES.md</a></b> should include useful information about implementation details for the project along with usage of some VibroSonics examples.</p>
 <p><b>Current API References:</b></p>
 <ul>
-<li>VibroSonics README: <a href="https://github.com/udellc/Vibrosonics/blob/main/README.md">https://github.com/udellc/Vibrosonics/blob/main/README.md</a></li>
-<li>VibroSonics documentation: <a href="https://udellc.github.io/Vibrosonics/">https://udellc.github.io/Vibrosonics/</a></li>
-<li>AudioPrism README: <a href="https://github.com/udellc/AudioPrism/blob/main/README.md">https://github.com/udellc/AudioPrism/blob/main/README.md</a></li>
+<li><a href="https://github.com/udellc/Vibrosonics/blob/main/README.md">VibroSonics README</a></li>
+<li><a href="https://udellc.github.io/Vibrosonics/">VibroSonics documentation</a></li>
+<li><a href="https://github.com/udellc/AudioPrism/blob/main/README.md">AudioPrism README</a></li>
 </ul>
 <h1><a class="anchor" id="autotoc_md37"></a>
 Release Process</h1>
