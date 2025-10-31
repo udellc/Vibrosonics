@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['mapamplitudes_0',['mapAmplitudes',['../class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b',1,'VibrosonicsAPI']]],
-  ['mapfrequencybyoctaves_1',['mapFrequencyByOctaves',['../class_vibrosonics_a_p_i.html#afcd86f3f2b73d50fe97499daabc46f76',1,'VibrosonicsAPI']]],
-  ['mapfrequencymidi_2',['mapFrequencyMIDI',['../class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7',1,'VibrosonicsAPI']]],
-  ['markedfordeletion_3',['markedForDeletion',['../class_grain.html#a58dd598bd0b2102cee8c9b0112d9b454',1,'Grain']]],
-  ['messages_4',['Commit Messages',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md14',1,'']]]
+  ['fftwindowing_0',['fftWindowing',['../class_vibrosonics_a_p_i.html#a85b0b94f10a808c0605f30aafe300ad7',1,'VibrosonicsAPI']]],
+  ['formatting_1',['Code Style, Linting &amp; Formatting',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md31',1,'']]],
+  ['freq_5fres_2',['FREQ_RES',['../_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df',1,'VibrosonicsAPI.h']]],
+  ['freq_5fwidth_3',['FREQ_WIDTH',['../_vibrosonics_a_p_i_8h.html#aafc60f8ba1f97829e954fc46c5f5aafa',1,'VibrosonicsAPI.h']]],
+  ['freqenv_4',['FreqEnv',['../struct_freq_env.html',1,'']]]
 ];

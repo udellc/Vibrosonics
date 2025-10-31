@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['branching_20workflow_0',['Branching &amp; Workflow',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md12',1,'']]]
+  ['3_20add_20libraries_0',['3. Add Libraries',['../md_docs_2_s_e_t_u_p.html#autotoc_md8',1,'']]],
+  ['3_20start_20the_20development_20server_1',['3. Start the Development Server',['../md_docs_2_s_e_t_u_p.html#autotoc_md13',1,'']]]
 ];
