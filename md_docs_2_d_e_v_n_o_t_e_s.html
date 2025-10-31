@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-338-g0868821</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-339-gc56f213</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -120,18 +120,25 @@ $(function(){initNavTree('md_docs_2_d_e_v_n_o_t_e_s.html',''); initResizable(tru
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="autotoc_md0"></a></p>
 <h1><a class="anchor" id="autotoc_md1"></a>
+Table of Contents</h1>
+<ul>
+<li>Library Architecture</li>
+<li>API Classes</li>
+<li>Examples</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md2"></a>
 Library Architecture</h1>
 <p>The Vibrosonics library aims to streamline three processes to enable translating audio into the haptic range: audio signal processing, audio analysis and finally audio synthesis. We utilize a few libraries to achieve this.</p>
 <p>The first is AudioLab, which handles the audio signals between the external hardware and the processor. It reads audio from the analog-to-digital converters (ADC) and writes signals to the digital-to-analog converters (DAC) for synthesis. The captured audio signals from the ADC are analyzed using the other two library dependencies.</p>
 <p>Fast4ier is used to perform the Fast Fourier Transform (FFT) on the signal data, which converts it from a representation of the signal over time (time domain) to a representation of how the signal is distributed over a range of frequency bands (frequency domain). The bandwidth of the frequency domain, or the max frequency, is equal to half of the sample rate of the ADC. Similarly, the number of different frequency bands is equal to half of the window size of the ADC.</p>
 <p>AudioPrism is a library which analyzes the frequency domain data using various algorithms. By filtering this data for different AudioPrism analysis modules, we can detect certain elements of the audio signal. With music, this allows us to detect percussion, isolate prominent vocals and melodies, and more. With this analysis, distinct vibrations can be made to model elements of music by re-synthesizing these findings through AudioLab translated down into the haptic frequency range (0-230Hz).</p>
-<h2><a class="anchor" id="autotoc_md2"></a>
+<h2><a class="anchor" id="autotoc_md3"></a>
 API Classes</h2>
 <ul>
 <li><code><a class="el" href="class_vibrosonics_a_p_i.html">VibrosonicsAPI</a></code>: This is the core class; it is a unified interface for audio processing, analysis and synthesis</li>
 <li><code><a class="el" href="class_grain.html">Grain</a></code>, <code><a class="el" href="class_grain_list.html">GrainList</a></code>, and <code><a class="el" href="struct_grain_node.html">GrainNode</a></code>: These are the components for granular synthesis. <code><a class="el" href="class_grain.html">Grain</a></code> is the main grain class, and the list and node classes provide a way to manage a linked list of grains.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md3"></a>
+<h1><a class="anchor" id="autotoc_md4"></a>
 Examples</h1>
 <p>We have an <code>examples</code> folder which contains individual programs that each showcase a different feature or technique possible using Vibrosonics and AudioPrism.</p>
 <ul>

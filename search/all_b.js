@@ -12,7 +12,7 @@ var searchData=
   ['getmean_9',['getMean',['../class_vibrosonics_a_p_i.html#a012a316d6bc63235850882313d1eed4e',1,'VibrosonicsAPI::getMean(float *data, int dataLength)'],['../class_vibrosonics_a_p_i.html#a989d9b27dda65ef61f12d864b34ab45e',1,'VibrosonicsAPI::getMean(complex *data, int dataLength)']]],
   ['getreleaseduration_10',['getReleaseDuration',['../class_grain.html#af1195ef5ade478ba18457a50cae9484c',1,'Grain']]],
   ['getsustainduration_11',['getSustainDuration',['../class_grain.html#af5613c65fc0077c74564d653802d7f42',1,'Grain']]],
-  ['getting_20started_12',['Getting Started',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md27',1,'']]],
+  ['getting_20started_12',['Getting Started',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md30',1,'']]],
   ['grain_13',['Grain',['../class_grain.html',1,'Grain'],['../class_grain.html#a9ad7991c6a2b005b101ce2260a314818',1,'Grain::Grain()'],['../class_grain.html#a212cb6c56993fa3d109922b88e2a8277',1,'Grain::Grain(uint8_t channel, WaveType waveType)']]],
   ['grain_2ecpp_14',['Grain.cpp',['../_grain_8cpp.html',1,'']]],
   ['grain_2eh_15',['Grain.h',['../_grain_8h.html',1,'']]],

@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-338-g0868821</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-339-gc56f213</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -118,10 +118,16 @@ $(function(){initNavTree('md_docs_2_s_e_t_u_p.html',''); initResizable(true); })
   <div class="headertitle"><div class="title">Developer Setup</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md4"></a></p>
-<h1><a class="anchor" id="autotoc_md5"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md5"></a></p>
+<h1><a class="anchor" id="autotoc_md6"></a>
+Table of Contents</h1>
+<ul>
+<li>Installation (Arduino IDE)</li>
+<li>Web Development Setup</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md7"></a>
 Installation (Arduino IDE)</h1>
-<h2><a class="anchor" id="autotoc_md6"></a>
+<h2><a class="anchor" id="autotoc_md8"></a>
 1. Install Arduino IDE and ESP32 Board Support</h2>
 <ul>
 <li>Download <a href="https://www.arduino.cc/en/software/">Arduino IDE</a></li>
@@ -129,7 +135,7 @@ Installation (Arduino IDE)</h1>
 <li>Search and install <code>esp32</code> by <b>Espressif Systems</b></li>
 </ul>
 <p><img src="/docs/assets/images/Board_library.png" alt="Installing the board manager" class="inline"/></p>
-<h2><a class="anchor" id="autotoc_md7"></a>
+<h2><a class="anchor" id="autotoc_md9"></a>
 2. Set Board and Ports</h2>
 <ul>
 <li>Plug in the board (you may need to install USB drivers)</li>
@@ -141,7 +147,7 @@ Installation (Arduino IDE)</h1>
 </li>
 </ul>
 <p><img src="/docs/assets/images/Confirm_board.png" alt="The other board and port drop down" class="inline"/></p>
-<h2><a class="anchor" id="autotoc_md8"></a>
+<h2><a class="anchor" id="autotoc_md10"></a>
 3. Add Libraries</h2>
 <p>Navigate to the Arduino libraries folder. This is usually located in <code>Documents/Arduino/libraries/</code> for Windows and <code>~/Arduino/libraries/</code> for Mac and Linux.</p>
 <p>Clone the repositories into the libraries folder:</p>
@@ -150,7 +156,7 @@ Installation (Arduino IDE)</h1>
 <div class="line">git clone https://github.com/udellc/AudioPrism.git</div>
 <div class="line">git clone https://github.com/jmerc77/Fast4ier.git</div>
 </div><!-- fragment --><p>Verify that the libraries are installed by opening Arduino IDE and going to <b>Sketch &gt; Include Library &gt; Manage Libraries...</b>. You should see <code>AudioLab</code>, <code>AudioPrism</code>, and <code>Fast4ier</code> in the list.</p>
-<h2><a class="anchor" id="autotoc_md9"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 4. Upload a Sketch</h2>
 <p>You should be ready to use the example sketches or create your own! To upload a sketch to the Vibrosonics hardware:</p>
 <ul>
@@ -159,21 +165,21 @@ Installation (Arduino IDE)</h1>
 <li>Press the upload (➜) in the top left to compile and upload your sketch</li>
 </ul>
 <p><img src="/docs/assets/images/Upload_sketch.png" alt="Uploading a sketch to the arduino" class="inline"/></p>
-<h1><a class="anchor" id="autotoc_md10"></a>
+<h1><a class="anchor" id="autotoc_md12"></a>
 Web Development Setup</h1>
-<h2><a class="anchor" id="autotoc_md11"></a>
+<h2><a class="anchor" id="autotoc_md13"></a>
 1. Install Node.js and npm</h2>
 <ul>
 <li>Download and install Node.js through your prefered web browser. This will also install npm.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md14"></a>
 2. Install Dependencies</h2>
 <ul>
 <li>Open a terminal and navigate to the <code>WebApp/</code> directory of the repository.</li>
 <li>Run the following command to install the required dependencies:</li>
 </ul>
 <div class="fragment"><div class="line">npm install</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md13"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md15"></a>
 3. Start the Development Server</h2>
 <ul>
 <li>Run the following command to start the development server:</li>
@@ -189,7 +195,7 @@ Web Development Setup</h1>
 <div class="line"> </div>
 <div class="line"># Stops the server</div>
 <div class="line">q</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md14"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md16"></a>
 4. Additional Commands</h2>
 <p><b>Production Build:</b> To build the application for production, run:</p>
 <div class="fragment"><div class="line"># This will produce optimized files in the `dist/` directory</div>
@@ -203,7 +209,7 @@ Web Development Setup</h1>
 <div class="line"> </div>
 <div class="line"># This will automatically fix any fixable issues found by ESLint</div>
 <div class="line">npm run lint.fix</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md15"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md17"></a>
 5. Troubleshooting</h2>
 <p>If you encounter any issues during setup or development, consider the following steps:</p>
 <ul>
