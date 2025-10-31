@@ -8,6 +8,8 @@
 - Go to **Tools > Boards > Boards Manager**
 - Search and install `esp32` by **Espressif Systems**
 
+![Installing the board manager](/images/Board_library.png)
+
 ### 2. Set Board and Ports
 
 - Plug in the board (you may need to install USB drivers)
@@ -17,6 +19,8 @@ with `COMX` for port where `X` is a number 0-6
   - You may need to download a driver to see the port ([Windows
     Tutorial](https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/))
   - On Linux, this is the `ch341` driver
+
+![The other board and port drop down](/images/Confirm_board.png)
 
 ### 3. Add Libraries
 
@@ -46,6 +50,8 @@ sketch to the Vibrosonics hardware:
 Vibrosonics > \[Example Name]**
 - Press the upload (➜) in the top left to compile and upload your sketch
 
+![Uploading a sketch to the arduino](/images/Upload_sketch.png)
+
 ## Web Development Setup
 
 ### 1. Install Node.js and npm
@@ -67,9 +73,8 @@ npm install
 - Run the following command to start the development server:
 
 ```bash
-npm run dev
-
 # This will start the server and provide a local URL at localhost. Once the server is running,
+npm run dev
 
 # Opens the application in your default web browser.
 o
