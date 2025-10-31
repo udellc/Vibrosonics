@@ -8,7 +8,7 @@
 - Go to **Tools > Boards > Boards Manager**
 - Search and install `esp32` by **Espressif Systems**
 
-![Installing the board manager](/docs/images/Board_library.png)
+![Installing the board manager](/docs/assets/images/Board_library.png)
 
 ### 2. Set Board and Ports
 
@@ -20,7 +20,7 @@ with `COMX` for port where `X` is a number 0-6
     Tutorial](https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/))
   - On Linux, this is the `ch341` driver
 
-![The other board and port drop down](/docs/images/Confirm_board.png)
+![The other board and port drop down](/docs/assets/assets/images/Confirm_board.png)
 
 ### 3. Add Libraries
 
@@ -50,7 +50,7 @@ sketch to the Vibrosonics hardware:
 Vibrosonics > \[Example Name]**
 - Press the upload (➜) in the top left to compile and upload your sketch
 
-![Uploading a sketch to the arduino](/docs/images/Upload_sketch.png)
+![Uploading a sketch to the arduino](/docs/assets/images/Upload_sketch.png)
 
 ## Web Development Setup
 
