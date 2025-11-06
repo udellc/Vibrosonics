@@ -6,15 +6,16 @@
  * Author: Ivan Wong
  ***************************************************************/
 
-import { render } from 'preact';
+import { render } from "preact";
 import "./index.css";
 
 export function App() {
-	return (
-		<div>
-			Hello VibroSonics
-		</div>
-	);
+  return (
+    <div>
+      <h1>Hello VibroSonics</h1>
+      <p>Test</p>
+    </div>
+  );
 }
 
-render(<App />, document.getElementById('app'));
+render(<App />, document.getElementById("app"));
