@@ -32,3 +32,4 @@ data
 *.njsproj
 *.sln
 *.sw?
+.vs

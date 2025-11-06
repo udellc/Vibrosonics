@@ -18,7 +18,8 @@
 #include "Grain.h"
 #include "Wave.h"
 
-constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE >> 1;
+constexpr uint16_t WINDOW_SIZE_OVERLAP = WINDOW_SIZE << WINDOW_OVERLAP;
+constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE_OVERLAP >> 1;
 
 //! Frequency range of an FFT bin in Hz.
 //!
@@ -26,7 +27,7 @@ constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE >> 1;
 //! output bin of the Fast Fourier Transform.
 //!
 //! Ex: 8192 Samples/Second / 256 Samples/Window = 32 Hz per output bin.
-constexpr float FREQ_RES = (float)SAMPLE_RATE / (float)WINDOW_SIZE;
+constexpr float FREQ_RES = (float)SAMPLE_RATE / (float)WINDOW_SIZE_OVERLAP;
 
 //! Duration of a window, in seconds.
 //!
@@ -134,10 +135,11 @@ public:
 
 private:
     // Fast Fourier Transform uses complex numbers
-    float   vReal[WINDOW_SIZE];   //!< Real component of cosine amplitude of each frequency.
-    float   hamming[WINDOW_SIZE]; //!< Pre computed hamming window data
-    complex vData[WINDOW_SIZE];
-
+    float   vReal[WINDOW_SIZE_OVERLAP];   //!< Real component of cosine amplitude of each frequency.
+    float   hamming[WINDOW_SIZE_OVERLAP]; //!< Pre computed hamming window data
+    complex vData[WINDOW_SIZE_OVERLAP];
+    uint16_t rollingInputBuffer[WINDOW_SIZE_OVERLAP]; 
+    
     // --- AudioLab Library --------------------------------------------------------
 
     GrainList grainList;
