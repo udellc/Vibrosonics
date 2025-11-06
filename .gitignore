@@ -6,3 +6,4 @@ latex/
 tags
 .cache/
 .DS_Store
+.vs
