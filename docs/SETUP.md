@@ -4,6 +4,7 @@
 
 - [Installation (Arduino IDE)](#installation-arduino-ide)
 - [Web Development Setup](#web-development-setup)
+- [ESP32 Web Server Setup](#esp32-web-server-setup)
 
 ## Installation (Arduino IDE)
 
@@ -122,3 +123,26 @@ If you encounter any issues during setup or development, consider the following 
 - Ensure that Node.js and npm are correctly installed by running `node -v` and `npm -v` in your terminal.
 - Check for any error messages in the terminal and refer to the documentation of the specific tools or libraries being used.
 - Make sure all dependencies are installed correctly by running `npm ci` for a clean install. If issues still persist, try deleting the `node_modules/` directory and running `npm install` again.
+
+## ESP32 Web Server Setup
+
+**File System Setup:**
+To deploy the WiFi web app onto the ESP32, we'll need to store it into non-voltile memory. We use Little FS to store the web app build files, to setup the file system plugin, consider the following,
+
+### 1. Download the Little FS VSIX File
+
+- Navigate to [Little FS Git Repository](https://github.com/earlephilhower/arduino-littlefs-upload/releases) and download the .vsix file. As of 11/06/2025, we are using Release version 1.6.0.
+
+![Little FS](/docs/assets/images/Little_FS_file.png)
+
+### 2. Move the VSIX File to Plugins Directory
+
+- Move the VSIX file into the **.arduinoIDE > plugins** directory. Create the directory if necessary.
+
+![Little FS Directory](/docs/assets/images/Little_FS_file_directory.png)
+
+### 3. Verify Little FS Plugin in ArduinoIDE
+
+- Restart the ArduinoIDE and enter **[Ctrl] + [Shift] + [p]** to open the list of commands and look verify that **Upload LittleFS to Pico/ESP8266/ESP32** exists.
+
+![Little FS Command](/docs/assets/images/Little_FS_command.png)
