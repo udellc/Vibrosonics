@@ -14,10 +14,6 @@
 #include <LittleFS.h>
 #include <ESPAsyncWebServer.h>
 
-// FIXME: set this to your local network
-const char *SSID = "WongFam";
-const char *Password = "asdfghjkl5";
-
 AsyncWebServer server(80);
 
 // TODO: maybe move to a different file
