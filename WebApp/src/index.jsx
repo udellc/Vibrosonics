@@ -7,13 +7,13 @@
  ***************************************************************/
 
 import { render } from "preact";
+import { LandingPage } from "./pages/landingPage";
 import "./index.css";
 
 export function App() {
   return (
     <div>
-      <h1>Hello VibroSonics</h1>
-      <p>Test</p>
+      <LandingPage />
     </div>
   );
 }

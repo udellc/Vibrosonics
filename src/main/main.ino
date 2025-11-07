@@ -11,39 +11,107 @@
 
 #include <WiFi.h>
 #include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
-// #include "webServer.h"
+#include <ESPAsyncWebServer.h>
 
-// FIXME: set this to your local network this when done
-const char *SSID = "";
-const char *Password = "";
+// FIXME: set this to your local network
+const char *SSID = "WongFam";
+const char *Password = "asdfghjkl5";
 
 AsyncWebServer server(80);
-String header;
 
-void handleLandingPage(AsyncWebServerRequest *req)
+// TODO: maybe move to a different file
+String getContentType(const String& path) {
+  if (path.endsWith(".html")) return "text/html";
+  if (path.endsWith(".css"))  return "text/css";
+  if (path.endsWith(".js"))   return "application/javascript";
+  if (path.endsWith(".png"))  return "image/png";
+  if (path.endsWith(".jpg"))  return "image/jpeg";
+  if (path.endsWith(".ico"))  return "image/x-icon";
+  if (path.endsWith(".json")) return "application/json";
+  return "text/plain";
+}
+
+// TODO: maybe move to a different file
+void handleLandingPage(AsyncWebServerRequest *req, String path)
 {
-  AsyncWebServerResponse *res = req->beginResponse(LittleFS, "/index.html", "text/html");
-  req->send(res);
+  if (path.endsWith("/"))
+  {
+    path += "index.html";
+  }
+  if (LittleFS.exists(path))
+  {
+    req->send(LittleFS, path, getContentType(path));
+  }
+  else
+  {
+    Serial.println("index.html not sent");
+  }
+}
+
+// TODO: maybe move to different file
+bool initFileSystem()
+{
+  const bool Success = LittleFS.begin();
+  if (!Success)
+  {
+    Serial.println("Mini file system not initialized");
+  }
+  else
+  {
+    Serial.println("Mini file system initialized");
+  }
+  return Success;
+}
+
+// TODO: maybe move to a different file
+bool initWiFiConnection(const char *SSID, const char *Password, const uint MaxTimeout_ms)
+{
+  const bool IsEmptyCredentials = (SSID == "") || (Password == "");
+  // unsigned long curTime = millis();
+  // unsigned long prevTime = curTime;
+
+  if (IsEmptyCredentials)
+  {
+    Serial.println("Empty WiFi credentials");
+    return false;
+  }
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(SSID, Password);
+
+  // TODO: add a timer using MaxTimeout_ms
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println(WiFi.SSID());
+  Serial.println(WiFi.localIP());
+
+  return true;
 }
 
 void setup()
 {
+  const uint MaxTimeout_ms = 3000;
+  bool success = true;
+
   Serial.begin(115200);
-  WiFi.begin(SSID, Password);
+  
+  success &= initFileSystem();
 
-  while (WiFi.status() != WL_CONNECTED)
+  // FIXME: fill the first arg with wifi SSID and second with the password
+  success &= initWiFiConnection("", "", MaxTimeout_ms);
+
+  if (!success)
   {
-    delay(1000);
-    Serial.println(WiFi.SSID());
+    Serial.println("Setup failure");
+    return;
   }
-  Serial.println(WiFi.localIP());
-
   // Lambda for req
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
   {
-    handleLandingPage(req);
+    handleLandingPage(req, req->url());
   });
   server.begin();
 }
