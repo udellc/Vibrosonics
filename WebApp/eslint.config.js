@@ -1,5 +1,8 @@
 import preact from "eslint-config-preact";
 
 export default [
-  ...preact
+  ...preact,
+  {
+    ignores: ["dist/"],
+  }
 ];
