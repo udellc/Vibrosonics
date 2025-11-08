@@ -1,0 +1,9 @@
+/***************************************************************
+ * File: index.css
+ * Date: 10/30/2025
+ * Description: Main CSS file for the VibroSonics web 
+ *              application. Links tailwindcss for styling.
+ * Author: Ivan Wong
+ ***************************************************************/
+
+@import "tailwindcss";

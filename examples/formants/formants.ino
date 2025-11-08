@@ -41,9 +41,9 @@ void setup() {
  * Do what you want with that analyzed data.
  */
 void loop() {
-    // AudioLab.ready() returns true when synthesis should occur/input buffer fills 
+    // vapi.isAudioLabReady() returns true when synthesis should occur/input buffer fills 
     // (this returns true at (SAMPLE_RATE / WINDOW_SIZE) times per second)
-    if (!AudioLab.ready()) {
+    if (!vapi.isAudioLabReady()) {
         return;
     }
 

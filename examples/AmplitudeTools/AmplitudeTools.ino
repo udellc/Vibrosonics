@@ -23,7 +23,7 @@ void setup() {
 
 void loop() {
     // wait for new audio window
-    if (!AudioLab.ready()) {
+    if (!vapi.isAudioLabReady()) {
         return;
     }
 

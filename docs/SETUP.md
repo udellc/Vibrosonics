@@ -4,6 +4,8 @@
 
 - [Installation (Arduino IDE)](#installation-arduino-ide)
 - [Web Development Setup](#web-development-setup)
+- [ESP32 Web Server Setup](#esp32-web-server-setup)
+- [Uploading Web App Build into ESP32](#uploading-web-app-build-into-esp32)
 
 ## Installation (Arduino IDE)
 
@@ -122,3 +124,65 @@ If you encounter any issues during setup or development, consider the following 
 - Ensure that Node.js and npm are correctly installed by running `node -v` and `npm -v` in your terminal.
 - Check for any error messages in the terminal and refer to the documentation of the specific tools or libraries being used.
 - Make sure all dependencies are installed correctly by running `npm ci` for a clean install. If issues still persist, try deleting the `node_modules/` directory and running `npm install` again.
+
+### 6. Install Web Server Libraries for the ArduinoIDE
+
+**ArduinoIDE Library Manager:**
+To make requests for the web server on the ESP32, install the following libraries,
+
+![ESP Async WebServer Library](/docs/assets/images/ESP_web_server_library.png)
+
+![Async TCP Library](/docs/assets/images/ESP_async_tcp_library.png)
+
+## ESP32 Web Server Setup
+
+**Little File System Setup:**
+To deploy the WiFi web app onto the ESP32, we'll need to store it into non-voltile memory. We use Little FS to store the web app build files, to setup the file system plugin, consider the following,
+
+### 1. Download the Little FS VSIX File
+
+- Navigate to [Little FS Git Repository](https://github.com/earlephilhower/arduino-littlefs-upload/releases) and download the .vsix file. As of 11/06/2025, we are using Release version 1.6.0.
+
+![Little FS VSIX file](/docs/assets/images/Little_FS_file.png)
+
+### 2. Move the VSIX File to Plugins Directory
+
+- Move the VSIX file into the **.arduinoIDE > plugins** directory. Create the directory if necessary.
+
+![Little FS Directory](/docs/assets/images/Little_FS_file_directory.png)
+
+### 3. Verify Little FS Plugin in ArduinoIDE
+
+- Restart the ArduinoIDE and enter **[Ctrl] + [Shift] + [p]** to open the list of commands and look verify that **Upload LittleFS to Pico/ESP8266/ESP32** exists.
+
+![Little FS Command](/docs/assets/images/Little_FS_command.png)
+
+## Uploading Web App Build into ESP32
+
+**Steps:**
+To upload the Preact web app into the ESP32, we'll need to build the web app and move them into a directory LittleFS knows about.
+
+### 1. Build Web App
+
+```bash
+# CD into the web app directory
+cd WebApp
+
+# Build production level web app
+npm run build
+
+# Create a data directory under src/main
+cd ../src/main
+mkdir data
+```
+
+### 2. Upload Build Output into ESP32
+
+- Now move or copy the output of the web app build directory into the data directory. The output directory should be named `dist` or `build`. Make sure to not include the dist directory.
+- Open ArduinoIDE and use the Little FS upload command. Make sure that the ESP32 is connected and the Serial Monitor is closed.
+
+### 3. Compile and Verify
+
+- Once the files are uploaded, compile and upload the `main.ino` file using the AruduinoIDE with your network's SSID and password and open the Serial Monitor.
+- Once the ESP32 connects to your network, the Serial Monitor should have print an IP link that you can open using a web browser.
+- Confirm that the web app mirrors the development web app.
