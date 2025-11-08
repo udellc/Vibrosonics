@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['next_0',['next',['../struct_grain_node.html#aa2de7ec3288741eaf1e466310319995c',1,'GrainNode']]],
-  ['node_20js_20and_20npm_1',['1. Install Node.js and npm',['../md_docs_2_s_e_t_u_p.html#autotoc_md13',1,'']]],
-  ['noisefloor_2',['noiseFloor',['../class_vibrosonics_a_p_i.html#ac34d7c60970b4cea3dcaf17588073c79',1,'VibrosonicsAPI']]],
-  ['noisefloorcfar_3',['noiseFloorCFAR',['../class_vibrosonics_a_p_i.html#a57b0b63f333efd810d6211c411de9fd0',1,'VibrosonicsAPI']]],
-  ['notes_4',['Developer Notes',['../md_docs_2_d_e_v_n_o_t_e_s.html',1,'']]],
-  ['npm_5',['1. Install Node.js and npm',['../md_docs_2_s_e_t_u_p.html#autotoc_md13',1,'']]]
+  ['mapamplitudes_0',['mapAmplitudes',['../class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b',1,'VibrosonicsAPI']]],
+  ['mapfrequencybyoctaves_1',['mapFrequencyByOctaves',['../class_vibrosonics_a_p_i.html#afcd86f3f2b73d50fe97499daabc46f76',1,'VibrosonicsAPI']]],
+  ['mapfrequencymidi_2',['mapFrequencyMIDI',['../class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7',1,'VibrosonicsAPI']]],
+  ['markedfordeletion_3',['markedForDeletion',['../class_grain.html#a58dd598bd0b2102cee8c9b0112d9b454',1,'Grain']]],
+  ['messages_4',['Commit Messages',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md42',1,'']]],
+  ['move_20the_20vsix_20file_20to_20plugins_20directory_5',['2. Move the VSIX File to Plugins Directory',['../md_docs_2_s_e_t_u_p.html#autotoc_md21',1,'']]]
 ];

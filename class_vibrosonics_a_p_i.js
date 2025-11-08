@@ -14,6 +14,7 @@ var class_vibrosonics_a_p_i =
     [ "getMean", "class_vibrosonics_a_p_i.html#a989d9b27dda65ef61f12d864b34ab45e", null ],
     [ "getMean", "class_vibrosonics_a_p_i.html#a012a316d6bc63235850882313d1eed4e", null ],
     [ "init", "class_vibrosonics_a_p_i.html#aa1b346a8270b0677fc3da264fb16a4e8", null ],
+    [ "isAudioLabReady", "class_vibrosonics_a_p_i.html#aac987d33c63711dd9c16426c0ab14b52", null ],
     [ "mapAmplitudes", "class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b", null ],
     [ "mapFrequencyByOctaves", "class_vibrosonics_a_p_i.html#afcd86f3f2b73d50fe97499daabc46f76", null ],
     [ "mapFrequencyMIDI", "class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7", null ],

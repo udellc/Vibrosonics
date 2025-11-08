@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-341-g8dd6519</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-364-g1751614</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -124,6 +124,8 @@ Table of Contents</h1>
 <ul>
 <li>Installation (Arduino IDE)</li>
 <li>Web Development Setup</li>
+<li>ESP32 Web Server Setup</li>
+<li>Uploading Web App Build into ESP32</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md7"></a>
 Installation (Arduino IDE)</h1>
@@ -215,7 +217,60 @@ Web Development Setup</h1>
 <ul>
 <li>Ensure that Node.js and npm are correctly installed by running <code>node -v</code> and <code>npm -v</code> in your terminal.</li>
 <li>Check for any error messages in the terminal and refer to the documentation of the specific tools or libraries being used.</li>
-<li>Make sure all dependencies are installed correctly by running <code>npm ci</code> for a clean install. If issues still persist, try deleting the <code>node_modules/</code> directory and running <code>npm install</code> again. </li>
+<li>Make sure all dependencies are installed correctly by running <code>npm ci</code> for a clean install. If issues still persist, try deleting the <code>node_modules/</code> directory and running <code>npm install</code> again.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md18"></a>
+6. Install Web Server Libraries for the ArduinoIDE</h2>
+<p><b>ArduinoIDE Library Manager:</b> To make requests for the web server on the ESP32, install the following libraries,</p>
+<p><img src="/docs/assets/images/ESP_web_server_library.png" alt="ESP Async WebServer Library" class="inline"/></p>
+<p><img src="/docs/assets/images/ESP_async_tcp_library.png" alt="Async TCP Library" class="inline"/></p>
+<h1><a class="anchor" id="autotoc_md19"></a>
+ESP32 Web Server Setup</h1>
+<p><b>Little File System Setup:</b> To deploy the WiFi web app onto the ESP32, we'll need to store it into non-voltile memory. We use Little FS to store the web app build files, to setup the file system plugin, consider the following,</p>
+<h2><a class="anchor" id="autotoc_md20"></a>
+1. Download the Little FS VSIX File</h2>
+<ul>
+<li>Navigate to <a href="https://github.com/earlephilhower/arduino-littlefs-upload/releases">Little FS Git Repository</a> and download the .vsix file. As of 11/06/2025, we are using Release version 1.6.0.</li>
+</ul>
+<p><img src="/docs/assets/images/Little_FS_file.png" alt="Little FS VSIX file" class="inline"/></p>
+<h2><a class="anchor" id="autotoc_md21"></a>
+2. Move the VSIX File to Plugins Directory</h2>
+<ul>
+<li>Move the VSIX file into the <b>.arduinoIDE &gt; plugins</b> directory. Create the directory if necessary.</li>
+</ul>
+<p><img src="/docs/assets/images/Little_FS_file_directory.png" alt="Little FS Directory" class="inline"/></p>
+<h2><a class="anchor" id="autotoc_md22"></a>
+3. Verify Little FS Plugin in ArduinoIDE</h2>
+<ul>
+<li>Restart the ArduinoIDE and enter <b>[Ctrl] + [Shift] + [p]</b> to open the list of commands and look verify that <b>Upload LittleFS to Pico/ESP8266/ESP32</b> exists.</li>
+</ul>
+<p><img src="/docs/assets/images/Little_FS_command.png" alt="Little FS Command" class="inline"/></p>
+<h1><a class="anchor" id="autotoc_md23"></a>
+Uploading Web App Build into ESP32</h1>
+<p><b>Steps:</b> To upload the Preact web app into the ESP32, we'll need to build the web app and move them into a directory LittleFS knows about.</p>
+<h2><a class="anchor" id="autotoc_md24"></a>
+1. Build Web App</h2>
+<div class="fragment"><div class="line"># CD into the web app directory</div>
+<div class="line">cd WebApp</div>
+<div class="line"> </div>
+<div class="line"># Build production level web app</div>
+<div class="line">npm run build</div>
+<div class="line"> </div>
+<div class="line"># Create a data directory under src/main</div>
+<div class="line">cd ../src/main</div>
+<div class="line">mkdir data</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md25"></a>
+2. Upload Build Output into ESP32</h2>
+<ul>
+<li>Now move or copy the output of the web app build directory into the data directory. The output directory should be named <code>dist</code> or <code>build</code>. Make sure to not include the dist directory.</li>
+<li>Open ArduinoIDE and use the Little FS upload command. Make sure that the ESP32 is connected and the Serial Monitor is closed.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md26"></a>
+3. Compile and Verify</h2>
+<ul>
+<li>Once the files are uploaded, compile and upload the <code>main.ino</code> file using the AruduinoIDE with your network's SSID and password and open the Serial Monitor.</li>
+<li>Once the ESP32 connects to your network, the Serial Monitor should have print an IP link that you can open using a web browser.</li>
+<li>Confirm that the web app mirrors the development web app. </li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

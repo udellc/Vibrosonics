@@ -25,14 +25,14 @@
 var NAVTREE =
 [
   [ "VibroSonics", "index.html", [
-    [ "Experience audio through vibration", "index.html#autotoc_md19", null ],
-    [ "Table of Contents", "index.html#autotoc_md20", null ],
-    [ "Overview", "index.html#autotoc_md21", null ],
-    [ "Additional Information", "index.html#autotoc_md22", null ],
-    [ "Contributors", "index.html#autotoc_md23", [
-      [ "2025-26 Software Team", "index.html#autotoc_md24", null ],
-      [ "2024-25 Software Team", "index.html#autotoc_md25", null ],
-      [ "Special Thanks", "index.html#autotoc_md26", null ]
+    [ "Experience audio through vibration", "index.html#autotoc_md28", null ],
+    [ "Table of Contents", "index.html#autotoc_md29", null ],
+    [ "Overview", "index.html#autotoc_md30", null ],
+    [ "Additional Information", "index.html#autotoc_md31", null ],
+    [ "Contributors", "index.html#autotoc_md32", [
+      [ "2025-26 Software Team", "index.html#autotoc_md33", null ],
+      [ "2024-25 Software Team", "index.html#autotoc_md34", null ],
+      [ "Special Thanks", "index.html#autotoc_md35", null ]
     ] ],
     [ "Developer Notes", "md_docs_2_d_e_v_n_o_t_e_s.html", [
       [ "Table of Contents", "md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md1", null ],
@@ -54,24 +54,35 @@ var NAVTREE =
         [ "Install Dependencies", "md_docs_2_s_e_t_u_p.html#autotoc_md14", null ],
         [ "Start the Development Server", "md_docs_2_s_e_t_u_p.html#autotoc_md15", null ],
         [ "Additional Commands", "md_docs_2_s_e_t_u_p.html#autotoc_md16", null ],
-        [ "Troubleshooting", "md_docs_2_s_e_t_u_p.html#autotoc_md17", null ]
+        [ "Troubleshooting", "md_docs_2_s_e_t_u_p.html#autotoc_md17", null ],
+        [ "Install Web Server Libraries for the ArduinoIDE", "md_docs_2_s_e_t_u_p.html#autotoc_md18", null ]
+      ] ],
+      [ "ESP32 Web Server Setup", "md_docs_2_s_e_t_u_p.html#autotoc_md19", [
+        [ "Download the Little FS VSIX File", "md_docs_2_s_e_t_u_p.html#autotoc_md20", null ],
+        [ "Move the VSIX File to Plugins Directory", "md_docs_2_s_e_t_u_p.html#autotoc_md21", null ],
+        [ "Verify Little FS Plugin in ArduinoIDE", "md_docs_2_s_e_t_u_p.html#autotoc_md22", null ]
+      ] ],
+      [ "Uploading Web App Build into ESP32", "md_docs_2_s_e_t_u_p.html#autotoc_md23", [
+        [ "Build Web App", "md_docs_2_s_e_t_u_p.html#autotoc_md24", null ],
+        [ "Upload Build Output into ESP32", "md_docs_2_s_e_t_u_p.html#autotoc_md25", null ],
+        [ "Compile and Verify", "md_docs_2_s_e_t_u_p.html#autotoc_md26", null ]
       ] ]
     ] ],
     [ "Contributing Guide", "md__c_o_n_t_r_i_b_u_t_i_n_g.html", [
-      [ "Table of Contents", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md28", null ],
-      [ "Code of Conduct", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md29", null ],
-      [ "Getting Started", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md30", null ],
-      [ "Branching & Workflow", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md31", null ],
-      [ "Issues & Planning", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md32", null ],
-      [ "Commit Messages", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md33", null ],
-      [ "Code Style, Linting & Formatting", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md34", null ],
-      [ "Testing", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md35", null ],
-      [ "Pull Requests & Reviews", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md36", null ],
-      [ "CI/CD", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md37", null ],
-      [ "Security & Secrets", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md38", null ],
-      [ "Documentation Expectations", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md39", null ],
-      [ "Release Process", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md40", null ],
-      [ "Support & Contact", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md41", null ]
+      [ "Table of Contents", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md37", null ],
+      [ "Code of Conduct", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md38", null ],
+      [ "Getting Started", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md39", null ],
+      [ "Branching & Workflow", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md40", null ],
+      [ "Issues & Planning", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md41", null ],
+      [ "Commit Messages", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md42", null ],
+      [ "Code Style, Linting & Formatting", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md43", null ],
+      [ "Testing", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md44", null ],
+      [ "Pull Requests & Reviews", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md45", null ],
+      [ "CI/CD", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md46", null ],
+      [ "Security & Secrets", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md47", null ],
+      [ "Documentation Expectations", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md48", null ],
+      [ "Release Process", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md49", null ],
+      [ "Support & Contact", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md50", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

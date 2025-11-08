@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-341-g8dd6519</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-364-g1751614</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -118,9 +118,9 @@ $(function(){initNavTree('md__c_o_n_t_r_i_b_u_t_i_n_g.html',''); initResizable(t
   <div class="headertitle"><div class="title">Contributing Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md27"></a></p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md36"></a></p>
 <p>Welcome to the VibroSonics contributing guide! This document outlines the guidelines and best practices for contributing to the VibroSonics project. Whether you're fixing a bug, adding a new feature, or improving documentation, we appreciate your contributions!</p>
-<h1><a class="anchor" id="autotoc_md28"></a>
+<h1><a class="anchor" id="autotoc_md37"></a>
 Table of Contents</h1>
 <ul>
 <li>Code of Conduct</li>
@@ -137,7 +137,7 @@ Table of Contents</h1>
 <li>Release Process</li>
 <li>Support &amp; Contact</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md29"></a>
+<h1><a class="anchor" id="autotoc_md38"></a>
 Code of Conduct</h1>
 <p>To maintain a welcoming and inclusive environment, all contributors are expected to adhere to the <b>VibroSonics Code of Conduct</b>.</p>
 <p><b>Community and Team Behavior Expectations:</b></p>
@@ -165,13 +165,13 @@ Code of Conduct</h1>
 <li>All reports will be handled confidentially and reviewed promptly.</li>
 </ul>
 <p>Confirmed violations may result in actions such as a private warning, temporary suspension from collaboration tools, or removal from the project depending on severity.</p>
-<h1><a class="anchor" id="autotoc_md30"></a>
+<h1><a class="anchor" id="autotoc_md39"></a>
 Getting Started</h1>
 <p>Refer to the <a href="https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html">Developer Setup</a> document for instructions on setting up a dev environment.</p>
-<h1><a class="anchor" id="autotoc_md31"></a>
+<h1><a class="anchor" id="autotoc_md40"></a>
 Branching &amp; Workflow</h1>
 <p>This repository follows a Git Flow workflow. Developers for this capstone year will create feature/fix branches off of the 25-26_dev branch and make PRs to merge back to the developer branch. 25-26_dev will be periodically merged into the main branch once changes have been thoroughly tested and deemed release-ready. Feature branches should follow the naming convention “feat/featureName”, and fix branches should follow the naming convention “fix/fixName”. To maintain a clean commit history, all branches should be rebased onto the branch they are merging into.</p>
-<h1><a class="anchor" id="autotoc_md32"></a>
+<h1><a class="anchor" id="autotoc_md41"></a>
 Issues &amp; Planning</h1>
 <p>To report a bug or request a feature, open an issue if you do not find a relevant one already made. If you’d like to help improve the project:</p>
 <ul>
@@ -181,14 +181,14 @@ Issues &amp; Planning</h1>
 </li>
 <li>Push to your branch and open a new Pull Request.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md33"></a>
+<h1><a class="anchor" id="autotoc_md42"></a>
 Commit Messages</h1>
 <p>Commits should follow Conventional Commits standards. At a minimum, commits should contain a type and a short description of the commit contents. The most common commit types are “feat” and “fix”, which correspond to a new feature or a bug fix respectively. Other relevant types are “doc” for updating documentation, “test” for test changes, and “refactor” for code refactors. For the purposes of this project, we do not require a body or footer for commits. In-depth descriptions of changes and links to GitHub issues can be contained in PRs rather than each individual commit.</p>
 <p><b>Commit examples:</b></p>
 <p>feat: add newFunct() method to TestClass <br  />
  fix: fix out of bounds error in brokenFunct() <br  />
  doc: update README with new build instructions</p>
-<h1><a class="anchor" id="autotoc_md34"></a>
+<h1><a class="anchor" id="autotoc_md43"></a>
 Code Style, Linting &amp; Formatting</h1>
 <p><b>JavaScript Linter:</b> <a href="https://github.com/eslint/eslint">ESLint</a></p>
 <p><b>To run manually:</b></p>
@@ -203,7 +203,7 @@ Code Style, Linting &amp; Formatting</h1>
 <div class="line"># Arduino files</div>
 <div class="line">clang-format \-i \*.ino</div>
 </div><!-- fragment --><p>When using Visual Studio Code, it can be installed automatically through the CSSCop extension.</p>
-<h1><a class="anchor" id="autotoc_md35"></a>
+<h1><a class="anchor" id="autotoc_md44"></a>
 Testing</h1>
 <p><b>API Testing:</b></p>
 <ul>
@@ -236,11 +236,11 @@ Testing</h1>
 <li>These tests will verify a seamless interaction between library functions and their actions/responses.</li>
 </ul>
 <p>New/updated tests are needed when there is an updated or created aspect of the codebase. Because each test is going to be applied to one aspect of the API, web app, and libraries, there should be enough features between the overall codebase where the tests can be easily repeated or modified.</p>
-<h1><a class="anchor" id="autotoc_md36"></a>
+<h1><a class="anchor" id="autotoc_md45"></a>
 Pull Requests &amp; Reviews</h1>
 <p>Follow existing code style and conventions, which largely follow the Arduino library style guidelines and the Webkit formatting. There is a .clang-format file for formatting .cpp/.h files, and use the default Arduino formatting for .ino files.</p>
 <p>In order for status checks to pass to merge, each PR must pass the linter/formatter and have at least two reviews from other members.</p>
-<h1><a class="anchor" id="autotoc_md37"></a>
+<h1><a class="anchor" id="autotoc_md46"></a>
 CI/CD</h1>
 <p><b>Link to Github Actions:</b> <a href="https://github.com/udellc/Vibrosonics/actions">udellc/Vibrosonics/actions</a></p>
 <p><b>Workflow Jobs:</b></p>
@@ -285,7 +285,7 @@ CI/CD</h1>
 </ul>
 </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md38"></a>
+<h1><a class="anchor" id="autotoc_md47"></a>
 Security &amp; Secrets</h1>
 <p><b>Reporting Vulnerabilities:</b></p>
 <ul>
@@ -311,7 +311,7 @@ Security &amp; Secrets</h1>
 </li>
 <li>If a secret is mistakenly committed, undo the commit and change/invalidate the secret as soon as possible</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md39"></a>
+<h1><a class="anchor" id="autotoc_md48"></a>
 Documentation Expectations</h1>
 <p>Documentation should be regularly updated to reflect changes made in the codebase, with plain and concise language. Self-documenting code should be implemented for improved readability. Functions and more complex pieces of code should be well commented, explaining its functionality and logic.</p>
 <p><b><a class="el" href="_r_e_a_d_m_e_8md.html">README.md</a></b> should contain a simple but complete description of the project that includes an overview of the project, links to additional resources, and contributors.</p>
@@ -324,7 +324,7 @@ Documentation Expectations</h1>
 <li><a href="https://udellc.github.io/Vibrosonics/">VibroSonics documentation</a></li>
 <li><a href="https://github.com/udellc/AudioPrism/blob/main/README.md">AudioPrism README</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md40"></a>
+<h1><a class="anchor" id="autotoc_md49"></a>
 Release Process</h1>
 <p><b>Versioning Scheme:</b></p>
 <ul>
@@ -366,7 +366,7 @@ Release Process</h1>
 </li>
 <li>If all the manual checks pass, the deployment is successful</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md41"></a>
+<h1><a class="anchor" id="autotoc_md50"></a>
 Support &amp; Contact</h1>
 <ul>
 <li>Main support contact channels: ‘cs-capstone’ Discord channel and internal Teams channel <br  />

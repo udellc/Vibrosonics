@@ -1,8 +1,9 @@
 var searchData=
 [
-  ['fftwindowing_0',['fftWindowing',['../class_vibrosonics_a_p_i.html#a85b0b94f10a808c0605f30aafe300ad7',1,'VibrosonicsAPI']]],
-  ['formatting_1',['Code Style, Linting &amp; Formatting',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md34',1,'']]],
-  ['freq_5fres_2',['FREQ_RES',['../_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df',1,'VibrosonicsAPI.h']]],
-  ['freq_5fwidth_3',['FREQ_WIDTH',['../_vibrosonics_a_p_i_8h.html#aafc60f8ba1f97829e954fc46c5f5aafa',1,'VibrosonicsAPI.h']]],
-  ['freqenv_4',['FreqEnv',['../struct_freq_env.html',1,'']]]
+  ['esp32_0',['ESP32',['../md_docs_2_s_e_t_u_p.html#autotoc_md25',1,'2. Upload Build Output into ESP32'],['../md_docs_2_s_e_t_u_p.html#autotoc_md23',1,'Uploading Web App Build into ESP32']]],
+  ['esp32_20board_20support_1',['1. Install Arduino IDE and ESP32 Board Support',['../md_docs_2_s_e_t_u_p.html#autotoc_md8',1,'']]],
+  ['esp32_20web_20server_20setup_2',['ESP32 Web Server Setup',['../md_docs_2_s_e_t_u_p.html#autotoc_md19',1,'']]],
+  ['examples_3',['Examples',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md4',1,'']]],
+  ['expectations_4',['Documentation Expectations',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md48',1,'']]],
+  ['experience_20audio_20through_20vibration_5',['Experience audio through vibration',['../index.html#autotoc_md28',1,'']]]
 ];

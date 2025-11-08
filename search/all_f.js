@@ -1,8 +1,9 @@
 var searchData=
 [
-  ['mapamplitudes_0',['mapAmplitudes',['../class_vibrosonics_a_p_i.html#a7ed4ac8be583d31702766ee6ff26065b',1,'VibrosonicsAPI']]],
-  ['mapfrequencybyoctaves_1',['mapFrequencyByOctaves',['../class_vibrosonics_a_p_i.html#afcd86f3f2b73d50fe97499daabc46f76',1,'VibrosonicsAPI']]],
-  ['mapfrequencymidi_2',['mapFrequencyMIDI',['../class_vibrosonics_a_p_i.html#a1aae0297224a31b7a5f00af07cd4cdd7',1,'VibrosonicsAPI']]],
-  ['markedfordeletion_3',['markedForDeletion',['../class_grain.html#a58dd598bd0b2102cee8c9b0112d9b454',1,'Grain']]],
-  ['messages_4',['Commit Messages',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md33',1,'']]]
+  ['libraries_0',['3. Add Libraries',['../md_docs_2_s_e_t_u_p.html#autotoc_md10',1,'']]],
+  ['libraries_20for_20the_20arduinoide_1',['6. Install Web Server Libraries for the ArduinoIDE',['../md_docs_2_s_e_t_u_p.html#autotoc_md18',1,'']]],
+  ['library_20architecture_2',['Library Architecture',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md2',1,'']]],
+  ['linting_20formatting_3',['Code Style, Linting &amp; Formatting',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md43',1,'']]],
+  ['little_20fs_20plugin_20in_20arduinoide_4',['3. Verify Little FS Plugin in ArduinoIDE',['../md_docs_2_s_e_t_u_p.html#autotoc_md22',1,'']]],
+  ['little_20fs_20vsix_20file_5',['1. Download the Little FS VSIX File',['../md_docs_2_s_e_t_u_p.html#autotoc_md20',1,'']]]
 ];
