@@ -33,7 +33,7 @@ void VibrosonicsAPI::processAudioInput(float output[])
     complexToMagnitude();
 
     // Copy complex data to float arrays
-    for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
+    for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
         vReal[i]  = vData[i].re();
         output[i] = vReal[i];
     }
