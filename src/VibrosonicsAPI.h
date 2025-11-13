@@ -135,7 +135,7 @@ public:
 
 private:
     // Fast Fourier Transform uses complex numbers
-    float   vReal[WINDOW_SIZE_OVERLAP];   //!< Real component of cosine amplitude of each frequency.
+    float   vReal[WINDOW_SIZE_BY_2];   //!< Real component of cosine amplitude of each frequency.
     float   hamming[WINDOW_SIZE_OVERLAP]; //!< Pre computed hamming window data
     complex vData[WINDOW_SIZE_OVERLAP];
     uint16_t rollingInputBuffer[WINDOW_SIZE_OVERLAP]; 
