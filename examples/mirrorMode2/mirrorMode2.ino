@@ -1,11 +1,11 @@
 #include "VibrosonicsAPI.h"
 
-#define NUM_PEAKS 32
+#define NUM_PEAKS 8
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
 float windowData[WINDOW_SIZE_BY_2];
-Spectrogram spectrogram = Spectrogram(1);
+Spectrogram spectrogram = Spectrogram(1, WINDOW_SIZE_BY_2);
 MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
 void setup() {
@@ -13,6 +13,8 @@ void setup() {
 
   // call the API setup function
   vapi.init();
+
+  majorPeaks.setWindowSize(WINDOW_SIZE_BY_2);
 
   majorPeaks.setSpectrogram(&spectrogram);
 }
