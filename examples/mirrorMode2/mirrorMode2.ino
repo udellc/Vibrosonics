@@ -66,7 +66,7 @@ void synthesizePeaks(MajorPeaks* peaks) {
   vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS);
 
   for (int i = 0; i < NUM_PEAKS; i++) {
-    int freq = interpolateAroundPeak(spectrogram.getCurrentWindow(), round(int(peaksData[MP_FREQ][i] * FREQ_WIDTH)), SAMPLE_RATE, WINDOW_SIZE);
+    int freq = interpolateAroundPeak(spectrogram.getCurrentWindow(), round(int(peaksData[MP_FREQ][i] * FREQ_WIDTH)), SAMPLE_RATE, WINDOW_SIZE_OVERLAP);
     vapi.assignWave(freq, peaksData[MP_AMP][i], 0);
     vapi.assignWave(freq, peaksData[MP_AMP][i], 1);
   }
