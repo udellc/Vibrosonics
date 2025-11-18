@@ -1,18 +1,17 @@
 /***************************************************************
- * FILE: boot.cpp
+ * FILE: networking.cpp
  * 
- * DATE: 11/17/2025
+ * DATE: 11/18/2025
  * 
- * DESCRIPTION: Implemenation fiel for booting the ESP32
- * components.
+ * DESCRIPTION: The implementation file for the Networking
+ * namespace.
  * 
  * AUTHOR: Ivan Wong
  ***************************************************************/
 
-#include "boot.h"
+#include "networking.h"
 
-bool InternalNetwork::init()
+bool Networking::initAccessPoint()
 {
   return true;    
 }
-

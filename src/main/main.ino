@@ -87,9 +87,9 @@ bool initWiFiConnection(const char *SSID, const char *Password, const uint MaxTi
   return true;
 }
 
-void setup()
+bool boot()
 {
-  const uint MaxTimeout_ms = 3000;
+  // TODO: move init functions for each component here then call in setup
   bool success = true;
 
   Serial.begin(115200);
@@ -99,11 +99,18 @@ void setup()
   // FIXME: fill the first arg with wifi SSID and second with the password
   success &= initWiFiConnection("", "", MaxTimeout_ms);
 
-  if (!success)
+  return success;
+}
+
+void setup()
+{
+  const uint MaxTimeout_ms = 3000;
+  if (!boot())
   {
     Serial.println("Setup failure");
-    return;
   }
+
+  // TODO: move web server logic to webServer.h
   // Lambda for req
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
   {
