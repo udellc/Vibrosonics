@@ -7,14 +7,15 @@
  ***************************************************************/
 
 import { render } from "preact";
-import { LandingPage } from "./pages/landingPage";
+import Router, { Route } from "preact-router";
+import LandingPage from "./pages/landingPage";
 import "./index.css";
 
 export function App() {
   return (
-    <div>
-      <LandingPage />
-    </div>
+    <Router>
+      <Route path="/" component={LandingPage} />
+    </Router>
   );
 }
 

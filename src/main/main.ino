@@ -4,7 +4,7 @@
  * DATE: 11/4/2025
  * 
  * DESCRIPTION: Entry point for starting the web server on 
- *  the ES32
+ * the ESP32
  * 
  * AUTHOR: Ivan Wong
  ***************************************************************/
