@@ -1,50 +1,26 @@
 /***************************************************************
  * File: index.jsx
- * 
+ *
  * Date: 10/30/2025
- * 
+ *
  * Description: The main entry point for the VibroSonics web
  * application built with Preact and Vite.
- * 
+ *
  * Author: Ivan Wong
  ***************************************************************/
 
 import { render } from "preact";
 import Router, { Route } from "preact-router";
-import LandingPage from "./pages/landingPage";
 import "./index.css";
+import LandingPage from "./pages/landingPage";
+import Header from "./components/header";
+import Footer from "./components/footer";
 
-/***************************************************************
+/**
  * @brief
- * 
- * @returns 
- ***************************************************************/
-const Header = () => {
-  return (
-    <div>
-      <h1>Maybe have a top bar for spacing and other global buttons?</h1>
-    </div>
-  );
-}
-
-/****************************************************************
- * @brief
- * 
- * @returns 
- ****************************************************************/
-const Footer = () => {
-  return (
-    <div>
-      <h1>Maybe use a footer?</h1>
-    </div>
-  );  
-}
-
-/***************************************************************
- * @brief
- * 
- * @returns 
- ***************************************************************/
+ *
+ * @returns
+ */
 const AppContent = () => {
   return (
     <Router>
@@ -54,13 +30,13 @@ const AppContent = () => {
       {/* <Route path="/modules" component={ModulesPage} /> */}
     </Router>
   );
-}
+};
 
-/***************************************************************
+/**
  * @brief
- * 
- * @returns 
- ***************************************************************/
+ *
+ * @returns
+ */
 export function App() {
   return (
     <>
