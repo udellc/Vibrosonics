@@ -29,6 +29,7 @@ export function Knob({ value, min, max, step, onChanged }) {
           <div>
             
           </div>
+
           {/* Text value */}
           <div>
             

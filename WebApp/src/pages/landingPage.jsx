@@ -16,7 +16,9 @@ const LandingPage = () => {
 
   return (
     <div>
-      <h1 className="font-bold mt-10">Landing page title</h1>
+      <h1 className="font-bold mt-10">
+        Landing page title
+      </h1>
       <div>
         <p>Maybe a page to connect to a wifi network</p>
         
