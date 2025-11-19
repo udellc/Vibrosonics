@@ -10,11 +10,25 @@
 
 import { useState } from "preact/hooks";
 
-export function Slider({ value, min, max, step, onChanged }) {
-  const [currentValue, setCurrentValue] = useState(value);
-  const [isDragging, setIsDragging] = useState(false);
+export default function Slider({ initialValue, min, max, step }) {
+  const [value, setValue] = useState(initialValue);
+
+  const handleInput = (e) => {
+    const newValue = Number(e.target.value);
+    setValue(newValue);    
+  };
 
   return (
-    <div></div>
+    <div className="flex flex-col items-center">
+      <input className="w-[300px]"
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={handleInput}
+      />
+      <h1>Value: {value}</h1>
+    </div>
   );
 }
