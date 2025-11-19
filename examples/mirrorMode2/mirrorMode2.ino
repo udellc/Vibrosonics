@@ -1,6 +1,6 @@
 #include "VibrosonicsAPI.h"
 
-#define NUM_PEAKS 8
+#define NUM_PEAKS 32
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
@@ -28,7 +28,7 @@ void loop() {
   // process the raw audio signal into frequency domain data
   vapi.processAudioInput(windowData);
 
-  for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
+  for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
     if (windowData[i] < 300) {
       windowData[i] = 0;
     }
@@ -48,7 +48,7 @@ void loop() {
 int interpolateAroundPeak(float* data, int indexOfPeak) {
   float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
   float atPeak = data[indexOfPeak];
-  float postPeak = indexOfPeak == WINDOW_SIZE_OVERLAP ? 0.0 : data[indexOfPeak + 1];
+  float postPeak = indexOfPeak == WINDOW_SIZE_BY_2 ? 0.0 : data[indexOfPeak + 1];
   // summing around the index of maximum amplitude to normalize magnitudeOfChange
   float peakSum = prePeak + atPeak + postPeak;
   // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0

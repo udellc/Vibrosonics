@@ -14,7 +14,7 @@ float filteredData[WINDOW_SIZE_BY_2] = { 0 };
 float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
 float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 
-Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_BY_2);
+Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 MajorPeaks midPeak = MajorPeaks(1);
 MajorPeaks highPeak = MajorPeaks(1);
@@ -29,8 +29,8 @@ void setup() {
   // midPeak.setDebugMode(0x1);
   // highPeak.setDebugMode(0x1);
 
-  midPeak.setWindowSize(WINDOW_SIZE_BY_2);
-  highPeak.setWindowSize(WINDOW_SIZE_BY_2);
+  midPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
+  highPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
 
   // add melody peak modules to the melodic group
   melodic.addModule(&midPeak, MID_FREQ_LO, MID_FREQ_HI);
@@ -58,7 +58,7 @@ void loop() {
   vapi.noiseFloorCFAR(filteredData, 6, 1, 1.4);
 
   // smooth the filtered data over a long and short period of time
-  AudioPrism::smooth_window_over_time(filteredData, smoothedData, 0.3, WINDOW_SIZE_BY_2);
+  AudioPrism::smooth_window_over_time(filteredData, smoothedData, 0.3, WINDOW_SIZE_OVERLAP);
 
   // calculate the percussive and melodic data
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
