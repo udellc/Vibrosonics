@@ -84,6 +84,13 @@ void setup() {
      *  $1 - lowerFreq is the lower frequency bound of the analysis module
      *  $2 - upperFreq is the upper frequency bound of the analysis module
     */
+    bass_peaks.setWindowSize(WINDOW_SIZE_OVERLAP);
+    mid_peaks.setWindowSize(WINDOW_SIZE_OVERLAP);
+    noisiness.setWindowSize(WINDOW_SIZE_OVERLAP);
+    snare_detector.setWindowSize(WINDOW_SIZE_OVERLAP);
+    
+    meanAmp.setWindowSize(WINDOW_SIZE_OVERLAP);
+
     bass_peaks.setAnalysisRangeByFreq(0, 100);
     vapi.addModule(&bass_peaks);
 

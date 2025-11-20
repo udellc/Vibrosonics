@@ -18,14 +18,14 @@ float lessSmoothedData[WINDOW_SIZE_BY_2] = { 0 };
 float percussiveData[WINDOW_SIZE_BY_2] = { 0 };
 float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 
-Spectrogram rawSpectrogram(1);
+Spectrogram rawSpectrogram(1, WINDOW_SIZE_OVERLAP);
 
-Spectrogram melodicSpectrogram = Spectrogram(2);
+Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 MajorPeaks midPeak = MajorPeaks(1);
 MajorPeaks highPeak = MajorPeaks(1);
 
-Spectrogram percussiveSpectrogram = Spectrogram(2);
+Spectrogram percussiveSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup percussive = ModuleGroup(&percussiveSpectrogram);
 PercussionDetection percussionDetection = PercussionDetection(0.5, 1800000, 0.75);
 int windowsSinceHit = 0;
@@ -43,6 +43,9 @@ void setup() {
   // set peak debug mode on to see the peaks picked up in each range
   // midPeak.setDebugMode(0x1);
   // highPeak.setDebugMode(0x1);
+  midPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
+  highPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
+  percussionDetection.setWindowSize(WINDOW_SIZE_OVERLAP);
 
   // add melody peak modules to the melodic group
   melodic.addModule(&midPeak, MID_FREQ_LO, MID_FREQ_HI);
