@@ -12,9 +12,6 @@
 #include "networking.h"
 #include <WiFi.h>
 
-// FIXME: temporary for debugging
-#define DEBUG
-
 const char *defaultHostname = "vibrosonics";
 const char *apSSID = "VIBROSONICS";
 const char *apPassword = "1234567890";
@@ -23,21 +20,19 @@ const char *apPassword = "1234567890";
 bool Networking::initAccessPoint()
 {  
   WiFi.mode(WIFI_MODE_APSTA);
-  Serial.println("Starting WiFi access point.");
+  Serial.println("Starting WiFi access point...");
 
   const bool Success = WiFi.softAP(apSSID, apPassword);
 
-  #ifdef DEBUG
-    if (!Success)
-    {
-      Serial.println("Access point creation failed.");
-    }
-    else
-    {
-      Serial.print("Access point created. Access at ");
-      Serial.print(WiFi.softAPIP());
-    }
-  #endif
+  if (!Success)
+  {
+    Serial.println("Access point creation failed.");
+  }
+  else
+  {
+    Serial.print("Access point created. Accessible at ");
+    Serial.println(WiFi.softAPIP());
+  }
 
   return Success;
 }
