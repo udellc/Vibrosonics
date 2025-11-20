@@ -9,15 +9,18 @@
  * AUTHOR: Ivan Wong
  ***************************************************************/
 
-#ifndef WEBSERVER_H
-#define WEBSERVER_H
+#ifndef WEB_SERVER_H
+#define WEB_SERVER_H
 
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+#include <Arduino.h>
+#include <string.h>
 
 namespace WebServer
 {
+  // Initializes the web server before starting it
   bool init();
+
+  // Helper function for returning the content type
   String getContentType(const String &Path);
 }
 
