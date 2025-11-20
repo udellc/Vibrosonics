@@ -9,14 +9,11 @@
  * AUTHOR: Ivan Wong
  ***************************************************************/
 
+#include "webServer.h"
 #include "networking.h"
 #include "fileSys.h"
-#include "webServer.h"
+#include "config.h"
 
-AsyncWebServer server(80);
-
-//---------------------------------------------
-// Prototypes
 bool boot();
 
 /**
@@ -27,9 +24,13 @@ void setup()
 {
   Serial.begin(115200);
 
+  // On setup failure, do nothing 
   if (!boot())
   {
-    Serial.println("Setup failure");
+    Serial.println("Setup failure. Looping...");
+    
+    while (1)
+      delay(1000);
   }
 }
 
