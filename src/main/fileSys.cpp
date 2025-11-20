@@ -12,5 +12,15 @@
 
 bool FileSys::init()
 {
-  return false;
+  bool success = true;
+  Serial.println("File system initializing...");
+
+  if (!SD.begin(CS_PIN))
+  {
+    Serial.println("SD File system failed to initialize.");
+    success = false;
+  }
+  Serial.println("SD File system successfully initialized.");
+
+  return success;
 }

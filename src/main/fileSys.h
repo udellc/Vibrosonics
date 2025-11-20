@@ -10,14 +10,17 @@
  * AUTHOR: Ivan Wong
  ***************************************************************/
 
-#ifndef FILESYS_H
-#define FILESYS_H
+#ifndef FILE_SYS_H
+#define FILE_SYS_H
 
-// SD card pinouts
-// #define SCK 5
-// #define MISO 19
-// #define MOSI 18
-// #define CS 21
+#include <SPI.h>
+#include <SD.h>
+
+// SD card pins
+#define SCK_PIN 5
+#define MISO_PIN 19
+#define MOSI_PIN 18
+#define CS_PIN 16 
 
 namespace FileSys
 {
