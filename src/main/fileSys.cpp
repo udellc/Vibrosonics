@@ -10,3 +10,7 @@
 
 #include "fileSys.h"
 
+bool FileSys::init()
+{
+  return false;
+}

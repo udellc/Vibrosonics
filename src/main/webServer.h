@@ -18,6 +18,7 @@
 namespace WebServer
 {
   bool init();
+  String getContentType(const String &Path);
 }
 
 #endif
