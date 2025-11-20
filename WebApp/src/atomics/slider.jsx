@@ -10,12 +10,13 @@
 
 import { useState } from "preact/hooks";
 
-export default function Slider({ initialValue, min, max, step }) {
+export default function Slider({ initialValue, min, max, step, onInput }) {
   const [value, setValue] = useState(initialValue);
 
   const handleInput = (e) => {
-    const newValue = Number(e.target.value);
-    setValue(newValue);    
+    const updatedVal = Number(e.target.value);
+    setValue(updatedVal);
+    onInput?.(updatedVal);
   };
 
   return (
@@ -26,9 +27,9 @@ export default function Slider({ initialValue, min, max, step }) {
         max={max}
         step={step}
         value={value}
-        onChange={handleInput}
+        onInput={handleInput}
       />
-      <h1>Value: {value}</h1>
+      <span>Value: {value}</span>
     </div>
   );
 }

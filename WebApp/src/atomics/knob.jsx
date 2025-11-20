@@ -11,7 +11,7 @@
 import { useState } from "preact/hooks";
 import "../index.css";
 
-export function Knob({ value, min, max, step, onChanged }) {
+export default function Knob({ value, min, max, step, onChange }) {
   const [currentValue, setCurrentValue] = useState(value);
   const [isDragging, setIsDragging] = useState(false);
 
