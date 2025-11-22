@@ -83,8 +83,8 @@ void loop() {
   vapi.noiseFloorCFAR(filteredData, 6, 1, 1.4);
 
   // smooth the filtered data over a long and short period of time
-  AudioPrism::smooth_window_over_time(filteredData, moreSmoothedData, 0.2);
-  AudioPrism::smooth_window_over_time(filteredData, lessSmoothedData, 0.3);
+  AudioPrism::smooth_window_over_time(filteredData, moreSmoothedData, 0.2, WINDOW_SIZE_OVERLAP);
+  AudioPrism::smooth_window_over_time(filteredData, lessSmoothedData, 0.3, WINDOW_SIZE_OVERLAP);
 
   // calculate the percussive and melodic data
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
@@ -122,7 +122,7 @@ void loop() {
   // if percussion is detected, trigger a grain to synthesize the hit and reset
   // windowsSinceHit to 0.
   if (p) {
-    float percussionAmp = AudioPrism::mean(windowData, PERC_FREQ_LO, PERC_FREQ_HI);
+    float percussionAmp = AudioPrism::mean(windowData, PERC_FREQ_LO, PERC_FREQ_HI, WINDOW_SIZE_OVERLAP);
     // vapi.mapAmplitudes(&percussionAmp, 1);
     percussionAmp = percussionAmp * 5 + highPeakData[MP_AMP][0] * 1.1;
     freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
