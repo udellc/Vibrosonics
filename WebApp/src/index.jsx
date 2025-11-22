@@ -13,6 +13,8 @@ import { render } from "preact";
 import Router, { Route } from "preact-router";
 import "./index.css";
 import LandingPage from "./pages/landingPage";
+import NetworkPage from "./pages/networkPage";
+import ModulesPage from "./pages/modulesPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
 
@@ -26,8 +28,8 @@ const AppContent = () => {
     <Router>
       <Route path="/" component={LandingPage} />
       {/* TODO: maybe give these routes permissions? */}
-      {/* <Route path="/network" component={NetworkPage} /> */}
-      {/* <Route path="/modules" component={ModulesPage} /> */}
+      <Route path="/network" component={NetworkPage} />
+      <Route path="/modules" component={ModulesPage} />
     </Router>
   );
 };
