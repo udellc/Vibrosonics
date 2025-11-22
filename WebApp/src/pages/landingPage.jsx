@@ -8,8 +8,6 @@
  * Author: Ivan Wong
  ***************************************************************/
 
-import "../index.css";
-
 const LandingPage = () => {  
   return (
     <div>

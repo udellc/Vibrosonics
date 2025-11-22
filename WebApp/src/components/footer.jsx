@@ -15,7 +15,7 @@
  */
 const Footer = () => {
   return (
-    <div>
+    <div className="font-bold mt-10">
       <h1>Maybe use a footer?</h1>
     </div>
   );
