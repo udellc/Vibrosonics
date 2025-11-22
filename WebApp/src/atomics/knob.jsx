@@ -9,7 +9,6 @@
  ***************************************************************/
 
 import { useState } from "preact/hooks";
-import "../index.css";
 
 export default function Knob({ value, min, max, step, onChange }) {
   const [currentValue, setCurrentValue] = useState(value);
