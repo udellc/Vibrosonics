@@ -10,20 +10,22 @@
 
 import Slider from "../atomics/slider";
 
+// TODO: pass in a interface prop to define different knobs, sliders, etc.
 export default function AnalysisModule() {
+  
+  // FIXME: simple example callback function used for the Slider
   const handleInput = (value) => {
     console.log("Value: " + value);
   };
 
   return (
     <div>
-      {/* TODO: remove this h1 title */}
-      <h1>Analysis module</h1>
       <Slider
+        title={"example of the slider"}
         initialValue={0}
         min={0}
         max={100}
-        step={1}
+        step={2}
         onInput={handleInput}
       />
     </div>
