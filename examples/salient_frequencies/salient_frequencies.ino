@@ -23,7 +23,7 @@ float windowData[WINDOW_SIZE_BY_2];
 
 // Stores 2 windows of processed data
 // Most of the time you will be using processed data for analysis
-Spectrogram processedSpectrogram = Spectrogram(2);
+Spectrogram processedSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 
 // MODULES
 // Create the ModuleGroup to store initialized modules
@@ -46,6 +46,7 @@ SalientFreqs deltas = SalientFreqs();
 void setup() {
     Serial.begin(115200);
     vapi.init();
+    deltas.setWindowSize(WINDOW_SIZE_OVERLAP);
     modules.addModule(&deltas, 20, 3000);
 }
 

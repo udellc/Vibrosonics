@@ -27,7 +27,7 @@ float windowData[WINDOW_SIZE_BY_2];
 
 // Stores 2 windows of processed data
 // Most of the time you will be using processed data for analysis
-Spectrogram processedSpectrogram = Spectrogram(2);
+Spectrogram processedSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 
 // MODULES
 // Create the ModuleGroup to store initialized modules
@@ -49,6 +49,7 @@ void setup()
   // Add any AudioPrism modules to the ModuleGroup here
   // Here, majorPeaks is added with a frequency analysis range of
   // 20hz-3000hz
+  majorPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
   modules.addModule(&majorPeaks, 20, 3000);
 }
 

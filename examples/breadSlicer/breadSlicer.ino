@@ -26,7 +26,7 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 // create windowData that can store one FFT window
 float windowData[WINDOW_SIZE_BY_2];
 // create spectrogram 
-Spectrogram processedSpectrogram = Spectrogram(2);
+Spectrogram processedSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 
 // create module group and pass spectrogram as a parameter 
 ModuleGroup modules = ModuleGroup(&processedSpectrogram);
@@ -44,6 +44,7 @@ void setup() {
     vapi.init();
 
     breadSlicer.setBands(frequencyBands, numBands);
+    breadSlicer.setWindowSize(WINDOW_SIZE_OVERLAP);
 
     // add the breadSlicer analysis module
     modules.addModule(&breadSlicer, frequencyBands[0], frequencyBands[numBands]);

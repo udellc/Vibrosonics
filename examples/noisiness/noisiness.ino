@@ -8,8 +8,8 @@
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
 float windowData[WINDOW_SIZE_BY_2];
-Spectrogram rawSpectrogram = Spectrogram(2);
-Spectrogram filteredSpectrogram = Spectrogram(2);
+Spectrogram rawSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
+Spectrogram filteredSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 
 ModuleGroup rawModules = ModuleGroup(&rawSpectrogram);
 Noisiness rawNoisiness = Noisiness();
@@ -26,6 +26,16 @@ MajorPeaks filteredPeaks = MajorPeaks(NUM_PEAKS);
 void setup() {
   Serial.begin(115200);
   vapi.init();
+
+  rawNoisiness.setWindowSize(WINDOW_SIZE_OVERLAP);
+  rawMaxAmp.setWindowSize(WINDOW_SIZE_OVERLAP);
+  rawMeanAmp.setWindowSize(WINDOW_SIZE_OVERLAP);
+  rawPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
+  
+  filteredNoisiness.setWindowSize(WINDOW_SIZE_OVERLAP);
+  filteredMaxAmp.setWindowSize(WINDOW_SIZE_OVERLAP);
+  filteredMeanAmp.setWindowSize(WINDOW_SIZE_OVERLAP);
+  filteredPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
 
   rawModules.addModule(&rawNoisiness);
   rawModules.addModule(&rawMaxAmp);

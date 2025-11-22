@@ -11,7 +11,7 @@ const int UPPER_BIN = WINDOW_SIZE_BY_2;
 
 // API + spectrogram buffer
 VibrosonicsAPI vapi;
-Spectrogram processedSpectrogram = Spectrogram(2);
+Spectrogram processedSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 
 // time-domain buffer for one FFT window
 float windowData[WINDOW_SIZE_BY_2];

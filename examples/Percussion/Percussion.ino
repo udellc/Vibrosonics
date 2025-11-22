@@ -30,7 +30,7 @@ float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
 // Create the spectrogram which will store our filtered percussive data. It
 // needs at least two windows to be able to calculate the energy flux between
 // windows.
-Spectrogram percussiveSpectrogram = Spectrogram(2);
+Spectrogram percussiveSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 
 // Create a module group which will use the percussive spectrogram as its
 // input.
@@ -52,6 +52,8 @@ void setup() {
   durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
   // Optional: set the debug mode on the PercussionDetection module:
   // percussionDetection.setDebugMode(0x01);
+
+  percussionDetection.setWindowSize(WINDOW_SIZE_OVERLAP);
 
   // Add the PercussionDetection module to our module group.
   modules.addModule(&percussionDetection, PERC_FREQ_LO, PERC_FREQ_HI);
@@ -76,7 +78,7 @@ void loop() {
 
   // Smooth the filterd data over a long period of time to capture melodic
   // elements (frequencies present over multiple windows).
-  AudioPrism::smooth_window_over_time(filteredData, smoothedData, 0.2);
+  AudioPrism::smooth_window_over_time(filteredData, smoothedData, 0.2, WINDOW_SIZE_OVERLAP);
 
   // Subtract the melodic data from the raw data to capture the 'percussive
   // data'.
@@ -97,11 +99,11 @@ void loop() {
   if (percussionDetection.getOutput()) {
     // Get the energy, entropy and positive flux for the percussive hit. These
     // values are used to synthesize the haptic feedback of the percussion.
-    float energy = AudioPrism::energy(windowData, PERC_FREQ_LO, PERC_FREQ_HI);
-    float entropy = AudioPrism::entropy(windowData, PERC_FREQ_LO, PERC_FREQ_HI);
+    float energy = AudioPrism::energy(windowData, PERC_FREQ_LO, PERC_FREQ_HI, WINDOW_SIZE_OVERLAP);
+    float entropy = AudioPrism::entropy(windowData, PERC_FREQ_LO, PERC_FREQ_HI, WINDOW_SIZE_OVERLAP);
     float flux = AudioPrism::positive_flux(windowData,
                                            percussiveSpectrogram.getPreviousWindow(),
-                                           PERC_FREQ_LO, PERC_FREQ_HI);
+                                           PERC_FREQ_LO, PERC_FREQ_HI, WINDOW_SIZE_OVERLAP);
 
     // Normalize the flux [0.0, 1.0] by the total energy
     flux /= energy;
