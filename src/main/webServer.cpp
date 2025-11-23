@@ -11,8 +11,6 @@
 
 #include "webServer.h"
 #include "fileSys.h"
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 
 // HTTP defines
 constexpr int HTTP_OK = 200;
@@ -26,15 +24,18 @@ constexpr int HTTP_UNAVAILABLE = 503;
 
 static AsyncWebServer server(80);
 
-// TODO: add header comment
+/**
+ * @brief Initializes the web server in either Upload or web app mode,
+ *        depending on the config file
+ * 
+ * @return Bool inidicating if the web server is live
+ */
 bool WebServer::init()
 {
   bool success = true;
 
   Serial.println("Starting web server...");
 
-  // TODO: Add Vibrosonics APIS
-  // TODO: Add WiFi/server monitoring APIs if needed
   success &= FileSys::exists("/index.html");
 
   #ifdef UPLOAD_MODE
@@ -49,7 +50,13 @@ bool WebServer::init()
   return success;
 }
 
-// TODO: add header comment
+/**
+ * @brief Helper function for getting the content type of a file, given the file name
+ * 
+ * @param Path - Name of the file we want to get the type for
+ * 
+ * @return String for the content type of the file 
+ */
 String WebServer::getContentType(const String &Path) {
   if (Path.endsWith(".html")) return "text/html";
   if (Path.endsWith(".css"))  return "text/css";
@@ -61,41 +68,113 @@ String WebServer::getContentType(const String &Path) {
   return "text/plain";
 }
 
+/**
+ * @brief Connects the backend API endpoints to the respective handlers
+ * 
+ * NOTE: This function should be the only time SD is referenced outside of the FileSys namespace
+ */
 inline void WebServer::setupWebApp()
 {
+  // Lambda for the initial request to the URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
   {
-    //! NOTE: This should be the only time SD is referenced outside of the FileSys namespace
     req->send(SD, "/index.html", getContentType("/index.html"));
   });
+  server.serveStatic("/", SD, "/");
 }
 
 #ifdef UPLOAD_MODE
+static const char *uploadForm PROGMEM = R"(
+<!DOCTYPE html>
+  <html>
+  <head>
+    <title>Upload Mode</title>
+  </head>
+  <body>
+    <h1>In Upload Mode</h1>
+    <h3>Upload a File</h3>
+    <form method='POST' action='/upload' enctype='multipart/form-data'>
+      <label for='directoryName'>Target Directory</label>
+      <input type='text' name='directoryName' value='/'>
+      
+      <label for='fileName'>Target File</label>
+      <input type='file' name='fileName'>
+      
+      <input type='submit' value='Upload'>
+    </form>
+  </body>
+  </html>
+)";
+
+/**
+ * @brief Adds endpoint API handlers for upload mode
+ * 
+ */
 inline void WebServer::setupUploadMode()
 {
-  // Sends the form
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
+  server.on("/", HTTP_GET, sendUploadPage);
+  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *req)
   {
-    req->send(HTTP_OK, "text/html",
-      "<!DOCTYPE html>
-      <html>
-      <head>
-        <title>Upload Mode</title>
-      </head>
-      <body>
-        <h1>In Upload Mode</h1>
-        <h3>Upload a File</h3>
-        <form method='POST' action='/upload' enctype='multipart/form-data'><input type='file' name='data_file' webkitdirectory multiple>
-          <input type='submit' value='Upload'>
-        </form>
-      </body>
-      </html>"
-    );
-  });
-
-  // TODO: add an upload API using the FileSys::writeFile() to see if it works
-  // server.on("/upload", HTTP_POST, );
+    req->send(200, "text/plain", "Upload Successful");
+  }, handleUpload);
 
   // TODO: add a make directory API for the assets directory produced by Vite
 }
+
+/**
+ * @brief Sends the upload file form
+ * 
+ * @param req - Object to respond to the initial request
+ */
+void WebServer::sendUploadPage(AsyncWebServerRequest *req)
+{
+  req->send(HTTP_OK, "text/html", uploadForm);
+}
+
+/**
+ * @brief Uploads the request file into the specified directory name on the SD card in chunks
+ * 
+ * @param req - Object to handle the request
+ * @param filename - File we want to download
+ * @param index - Current write index of filename
+ * @param data - Chunk of data to write
+ * @param len - Total file size
+ * 
+ * NOTE: Ref: https://github.com/lacamera/ESPAsyncWebServer?tab=readme-ov-file#file-upload-handling
+ */
+void WebServer::handleUpload(AsyncWebServerRequest *req, String filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+  String path = req->arg("directoryName");
+
+  // Path handling branches
+  if (path.isEmpty())
+  {
+    return;
+  }
+  else if (path == "/")
+  {
+    path += filename;
+  }
+  else
+  {
+    path += String("/") + filename;
+  }
+
+  // File uploading branches
+  if (!index)
+  {
+    Serial.print("Starting upload: ");
+    Serial.println(path);
+    req->_tempFile = SD.open(path, FILE_WRITE);
+  }
+  if (len)
+  {
+    req->_tempFile.write(data, len);
+  }
+  if (final)
+  {
+    req->_tempFile.close();
+  }
+}
+
 #endif
