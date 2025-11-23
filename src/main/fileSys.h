@@ -47,8 +47,6 @@ namespace FileSys
     //! Returns a JSON array as a string for the files in the given directory
     String listFiles(const String &Dir, const bool Print);
 
-    //! Returns an HTML form for uploading files into the SD card
-    String getForm();
   #endif
 }
 

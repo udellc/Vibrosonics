@@ -119,7 +119,7 @@ String FileSys::listFiles(const String &Dir, const bool Print)
 {
   File root = SD.open(Dir);
 
-  // Nothing found in the directory, retun empty array
+  // Nothing found in the directory, return empty array
   if (!root)
   {
     return "[]";
@@ -144,11 +144,6 @@ String FileSys::listFiles(const String &Dir, const bool Print)
   files += "]";
 
   return files;
-}
-
-String FileSys::getForm()
-{
-  return "";
 }
 
 #endif
