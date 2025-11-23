@@ -20,6 +20,14 @@ namespace WebServer
   //! Initializes the web server before starting it
   bool init();
 
+  //! Initializes the web server assuming the web app is setup correctly on the SD card
+  inline void setupWebApp();
+
+  #ifdef UPLOAD_MODE
+    //! Initializes the web server assuming the web app is not setup correctly on the SD card  
+    inline void setupUploadMode();
+  #endif
+
   //! Helper function for returning the content type
   String getContentType(const String &Path);
 }

@@ -24,19 +24,6 @@ constexpr int HTTP_UNPROCESSABLE = 422;
 constexpr int HTTP_INTERNAL_ERROR = 500;
 constexpr int HTTP_UNAVAILABLE = 503;
 
-// Error HTML file that gets sent if the web app is not found in SD memory
-static const char *noWebAppContent PROGMEM = R"(
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Server-Sent Events</title>
-</head>
-<body>
-  <h1>Web app not on SD card!</h1>
-</body>
-</html>
-)";
-
 static AsyncWebServer server(80);
 
 // TODO: add header comment
@@ -48,25 +35,14 @@ bool WebServer::init()
 
   // TODO: Add Vibrosonics APIS
   // TODO: Add WiFi/server monitoring APIs if needed
-
   success &= FileSys::exists("/index.html");
 
-  // Lamnda for initial request
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
-  {
-    // TODO: find out how to add web app files to SD card
-    // NOTE: the current SD card has the AudioLux web files loaded onto it, we need to remove them and replace them with
-    //       the Vibrosonics web app files
-    if (!FileSys::exists("/index.html"))
-    {
-      req->send(HTTP_OK, "text/html", noWebAppContent);
-    }
-    else
-    {
-      //! NOTE: This should be the only time SD is referenced outside of the FileSys namespace
-      req->send(SD, "/index.html", getContentType("/index.html"));
-    }
-  });
+  #ifdef UPLOAD_MODE
+    setupUploadMode();
+  #else
+    setupWebApp();
+  #endif
+
   server.begin();
   Serial.println("Web server started.");
 
@@ -84,3 +60,42 @@ String WebServer::getContentType(const String &Path) {
   if (Path.endsWith(".json")) return "application/json";
   return "text/plain";
 }
+
+inline void WebServer::setupWebApp()
+{
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
+  {
+    //! NOTE: This should be the only time SD is referenced outside of the FileSys namespace
+    req->send(SD, "/index.html", getContentType("/index.html"));
+  });
+}
+
+#ifdef UPLOAD_MODE
+inline void WebServer::setupUploadMode()
+{
+  // Sends the form
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
+  {
+    req->send(HTTP_OK, "text/html",
+      "<!DOCTYPE html>
+      <html>
+      <head>
+        <title>Upload Mode</title>
+      </head>
+      <body>
+        <h1>In Upload Mode</h1>
+        <h3>Upload a File</h3>
+        <form method='POST' action='/upload' enctype='multipart/form-data'><input type='file' name='data_file' webkitdirectory multiple>
+          <input type='submit' value='Upload'>
+        </form>
+      </body>
+      </html>"
+    );
+  });
+
+  // TODO: add an upload API using the FileSys::writeFile() to see if it works
+  // server.on("/upload", HTTP_POST, );
+
+  // TODO: add a make directory API for the assets directory produced by Vite
+}
+#endif
