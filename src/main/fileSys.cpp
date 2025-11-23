@@ -27,8 +27,6 @@ bool FileSys::init()
   }
   Serial.println("SD File system successfully initialized.");
 
-  listFiles("/", true);
-
   return success;
 }
 
@@ -139,8 +137,6 @@ String FileSys::listFiles(const String &Dir, const bool Print)
       Serial.print(Type);
       Serial.println(file.name());
     }
-    // TODO: this uncommented should remove all files on the SD card, will do it later once I confirm this wont break anything
-    // SD.remove(file.path());
     file = root.openNextFile();
   }
   // Remove last comma
@@ -149,4 +145,10 @@ String FileSys::listFiles(const String &Dir, const bool Print)
 
   return files;
 }
+
+String FileSys::getForm()
+{
+  return "";
+}
+
 #endif
