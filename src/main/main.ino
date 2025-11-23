@@ -46,7 +46,7 @@ void loop()
 /**
  * @brief boot() initializes the major components needed for the WiFI web app to run
  * 
- * @return success - Bool indicating of all components initializes successfully 
+ * @return success - Bool indicating of all components initialized successfully 
  */
 bool boot()
 {
