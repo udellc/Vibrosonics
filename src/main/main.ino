@@ -3,8 +3,8 @@
  * 
  * DATE: 11/4/2025
  * 
- * DESCRIPTION: Entry point for starting the web server on 
- * the ESP32
+ * DESCRIPTION: Entry point for starting the Vibrosonics audio
+ * analysis and web app.
  * 
  * AUTHOR: Ivan Wong
  ***************************************************************/
