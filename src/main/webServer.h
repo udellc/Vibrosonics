@@ -17,10 +17,10 @@
 
 namespace WebServer
 {
-  // Initializes the web server before starting it
+  //! Initializes the web server before starting it
   bool init();
 
-  // Helper function for returning the content type
+  //! Helper function for returning the content type
   String getContentType(const String &Path);
 }
 
