@@ -15,7 +15,7 @@
 /**
  * NOTE: This macro makes the ESP32 display a web page for interacting with
  * the SD file system, since we don't have a thumb drive for the SD card
- * to access the data yet
+ * to modify the data yet
  */
 #define UPLOAD_MODE
 
