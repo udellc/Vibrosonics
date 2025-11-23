@@ -15,7 +15,7 @@ export default function AnalysisModule() {
   
   // FIXME: simple example callback function used for the Slider
   const handleInput = (value) => {
-    console.log("Value: " + value);
+    console.log(String("Value: ") + String(value));
   };
 
   return (
