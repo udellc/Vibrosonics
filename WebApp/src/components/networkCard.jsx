@@ -14,9 +14,9 @@
  * @brief Network card is a small component that displays the given SSID with a custom callback
  * when the connect button is clicked.
  * 
- * @param {Object} params - Expanded object for the network card params
- * @param {String} params.SSID - Network SSID to be displayed
- * @param {CallableFunction} params.onConnect - Function that gets invoked when the connect button is clicked
+ * @param { Object } params - Expanded object for the network card params
+ * @param { String } params.SSID - Network SSID to be displayed
+ * @param { CallableFunction } params.onConnect - Function that gets invoked when the connect button is clicked
  * 
  * @returns UI component for a network card
  */
