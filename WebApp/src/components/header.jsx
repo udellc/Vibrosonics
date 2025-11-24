@@ -15,19 +15,22 @@
  */
 const Header = () => {
   return (
-    <div className="bg-red-600 pt-[15px] pl-[15px] flex w-full h-[60px]">
-      <svg width="50" height="50">
-        <circle
-          cx="20"
-          cy="20"
-          r="20"
-          stroke="gray"
-          stroke-width="2"
-          fill="white"
-        />
-        <text fill="#00000" font-size="10" font-family="Verdana" x="5" y="22">Logo?</text>
-      </svg>
-      <h1>Top bar for spacing and other global buttons</h1>
+    <div className="p-4 flex w-full h-[60px] border-b-2 border-black justify-between">
+
+      {/* Left side */}
+      <div className="flex flex-row justify-between">
+
+        {/* Logo can go here */}
+        {/* TODO: use the vibrosonics logo file in an assets folder under WebApp/assets and link img here */}
+        <h2 className="font-bold text-3xl ml-2">
+          Vibrosonics
+        </h2>
+      </div>
+
+      {/* Right side */}
+      <div>
+        {/* The tabs will go here */}
+      </div>
     </div>
   );
 };
