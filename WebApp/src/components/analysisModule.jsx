@@ -17,13 +17,23 @@ import { useState } from 'react';
 export default function AnalysisModule() {
   
   const [activeGenre, setActiveGenre] = useState('Rock');
-  const [values, setValues] = useState({});
+  const [knobValue, setKnobValue] = useState({});
+  const [sliderValue, setSliderValue] = useState({});
   
   // FIXME: simple example callback function used for the Slider
   const handleInput = (id, value) => {
     console.log(String(id) + String("Value: ") + String(value));
-    setValues(prev => ({...prev, [id]: value }));
   };
+
+  const handleKnobChange = (id, value) => {
+    setKnobValue(prev => ({...prev, [id]: value}));
+    console.log(String("Knob") + String(id) + String("Value: ") + String(value));
+  }
+
+  const handleSliderChange = (id, value) => {
+    setSliderValue(prev => ({...prev, [id]: value}));
+    console.log(String("Slider") + String(id) + String("Value: ") + String(value));
+  }
 
   const currentSliders = EQ_PRESETS[activeGenre];
   const currentKnobs = EQ_PRESETS[activeGenre];
@@ -53,11 +63,13 @@ export default function AnalysisModule() {
         {currentKnobs.map((knobData) => (
           <div key={knobData.id} className="flex flex-col items-center gap-2">
             <Knob
-              value={values[knobData.id] ?? knobData.default}
-              min={0}
-              max={100}
-              step={1}
-              onChange={(val) => handleInput(knobData.id, val)}
+              key={knobData.id}
+              title={knobData.title}
+              value={knobValue[knobData.id] ?? knobData.default ?? 0}
+              min={knobData.min}
+              max={knobData.max}
+              step={0.1}
+              onChange={(value) => handleKnobChange(knobData.id, value)}
           />
           <span className = "font-bold text-gray-700">{knobData.label}</span>
         </div>
@@ -75,10 +87,11 @@ export default function AnalysisModule() {
           key={slider.id}
           title={slider.title}
           initialValue={0}
+          value={sliderValue[slider.id] ?? slider.default ?? 0}
           min={slider.min}
           max={slider.max}
           step={2}
-          onInput={(val) => handleInput(slider.id, val)}
+          onInput={(sliderValue) => handleSliderChange(slider.id, sliderValue)}
         />
         ))}
       </div>

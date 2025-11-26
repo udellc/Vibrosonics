@@ -8,11 +8,26 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useState, useEffect, useRef } from "react";
 
-export default function Knob({ value, min, max, step = 1, onChange }) {
-  const [currentValue, setCurrentValue] = useState(value);
-  const [isDragging, setIsDragging] = useState(false);
+/**
+ * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob
+ *        foe reconfiguration
+ * 
+ * @param {Object} setting - Expanded object for the knob settings
+ * @param {String} setting.title - Name of the setting to be changed
+ * @param {Number} setting.value - changing value
+ * @param {Number} setting.min - Min value the knob can be at
+ * @param {Number} setting.max - Max value the knob can be at
+ * @param {Number} setting.step - Step size for each knob increment
+ * @param {CallableFunction} setting.onChange - Callback that happens for each knob value change
+ */
+
+export default function Knob({min = 0, max = 10, step = 1, onChange, title, value }) {
+  //const [currentValue, setCurrentValue] = useState(initialValue);
+  //const [isDragging, setIsDragging] = useState(false);
+  //initialValue = 0;
+  const safeVal = isNaN(value) ? min : value;
 
   const startY = useRef(null);
   const startVal = useRef(null);
@@ -31,7 +46,7 @@ export default function Knob({ value, min, max, step = 1, onChange }) {
   const handleMouseMove = (e) => {
     if(startY.current === null) return;
 
-    const sensitivity = 200; 
+    const sensitivity = 100; 
     const deltaY = startY.current - e.clientY;
 
     const change = (deltaY / sensitivity) * (max - min);
@@ -59,8 +74,9 @@ export default function Knob({ value, min, max, step = 1, onChange }) {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     }
-  })
+  }, []);
 
+  //{Math.round(initialValue)}
   return (
     // Parent container
     <div className="w-full h-full flex items-center justify-center font-bold text-sm">
@@ -79,11 +95,12 @@ export default function Knob({ value, min, max, step = 1, onChange }) {
 
             {/* Text value */}
             <div className="absolute inset-0 flex items-center justify-center text-white pointer-events-none"> 
-              {Math.round(value)}
+              {title} 
             </div>
           </div>
         </div>
       </div>
+      Value: {Math.round(value)} {/* change this to be below*/}
     </div>
   );
 }
