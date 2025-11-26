@@ -8,7 +8,7 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob
@@ -24,11 +24,6 @@ import { useState, useEffect, useRef } from "react";
  */
 
 export default function Knob({min = 0, max = 10, step = 1, onChange, title, value }) {
-  //const [currentValue, setCurrentValue] = useState(initialValue);
-  //const [isDragging, setIsDragging] = useState(false);
-  //initialValue = 0;
-  const safeVal = isNaN(value) ? min : value;
-
   const startY = useRef(null);
   const startVal = useRef(null);
 

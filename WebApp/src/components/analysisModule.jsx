@@ -10,7 +10,7 @@
 
 import Slider from "../atomics/slider";
 import Knob from "../atomics/knob";
-import { EQ_PRESETS } from "../atomics/eqSettings";
+import EQ_PRESETS from '../data/eqSettings.json';
 import { useState } from 'react';
 
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
@@ -21,9 +21,9 @@ export default function AnalysisModule() {
   const [sliderValue, setSliderValue] = useState({});
   
   // FIXME: simple example callback function used for the Slider
-  const handleInput = (id, value) => {
+  /*const handleInput = (id, value) => {
     console.log(String(id) + String("Value: ") + String(value));
-  };
+  };*/
 
   const handleKnobChange = (id, value) => {
     setKnobValue(prev => ({...prev, [id]: value}));
@@ -76,12 +76,7 @@ export default function AnalysisModule() {
         ))}
       </div>
 
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '20px',
-        padding: '20px'
-      }}>
+      <div className="flex flex-row gap-[20px] p-[20px]">
         {currentSliders.map((slider) => (
         <Slider
           key={slider.id}

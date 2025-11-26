@@ -24,7 +24,7 @@ import { useState } from "preact/hooks";
  * @param {CallableFunction} setting.onInput - Callback that happens for each slider value change
  */
 export default function Slider({ title, initialValue, value, min, max, step, onInput }) {
-  const [currentVal, setValue] = useState(initialValue);
+  const [, setValue] = useState(initialValue);
 
   // Updates the value UI for each slider movement
   const handleInput = (e) => {
