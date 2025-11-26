@@ -44,10 +44,12 @@ const LandingPage = () => {
               powerful beat.
             </p>
           </div>
-            <button className="border-2 border-amber-500 cursor-pointer max-h-[30px]"
-              onClick={handleConnectNetwork}>
-              Connect to Network
-            </button>
+          <button
+            className="border-2 border-amber-500 cursor-pointer max-h-[30px]"
+            onClick={handleConnectNetwork}
+          >
+            Connect to Network
+          </button>
         </div>
       </div>
     </div>

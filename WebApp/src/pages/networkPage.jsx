@@ -1,11 +1,11 @@
 /***************************************************************
  * File: networkPage.jsx
- * 
+ *
  * Date: 11/22/2025
- * 
+ *
  * Description: The network page for the web app. Handles the UI
  * connections for the networking API calls
- * 
+ *
  * Author: Ivan Wong
  ***************************************************************/
 
@@ -31,64 +31,75 @@ const networks = [
   },
   {
     "wifi-ssid": "Network5",
-  }
+  },
 ];
 
-const NetworkPage = () => {  
+const NetworkPage = () => {
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [showTextForm, setTextForm] = useState(false);
-  
+
   // Scan for networks on mount
-  useEffect( () => {
+  useEffect(() => {
     // const networks = api("GET", "/network/scan-networks");
     console.log("Loaded Network page");
   }, []);
 
+  /**
+   * @brief Shows the password text entry and sets the selected network
+   *
+   * @param { String } SSID - User selected network SSID
+   */
   const handleConnectClicked = (SSID) => {
     setTextForm(true);
     setSelectedNetwork(SSID);
   };
+
+  /**
+   * @brief Sends a connection request to the web server for the selected network SSID and password.
+   * Routes to the modules page on successful connection
+   *
+   * @param { String } Password - Password entered by the user
+   */
   const handleNetworkRequest = (Password) => {
-    const payload = { 
+    const payload = {
       "wifi-ssid": selectedNetwork,
-      "password": Password
+      password: Password,
     };
     const res = api("POST", "/network/network-request", payload);
 
     // Ok, route to modules page
     if (res["status"] == 200) {
-      route("/modules")
-    }
-    else {
+      route("/modules", true);
+    } else {
       // TODO: error handle
       console.log("Invalid credentials");
     }
-  }
+  };
 
   return (
     <div className="mt-20 ml-10 mr-10">
       {/* Centered vertical layout */}
       <div className="flex flex-col items-center">
-        <h1 className="font-bold mt-10 text-4xl">
-          Available Networks
-        </h1>
-        { networks.map( (network) => {
+        <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
+        {networks.map((network) => {
           return (
-            <NetworkCard 
+            <NetworkCard
               key={network["wifi-ssid"]}
               SSID={network["wifi-ssid"]}
               onConnect={() => {
                 handleConnectClicked(network["wifi-ssid"]);
-              }}/>
+              }}
+            />
           );
         })}
         {showTextForm === true ? (
-          // TODO: replace this with a text form component
+          // TODO: add some sort of functionality to pass in SSID and password onSubmit, assuming the component
+          // is form HTML type. Will probably be handled using a passed in onSubmit function that uses handleNetworkRequest
           <TextEntry />
         ) : (
           // Show nothing
           <></>
-        ) }
+        )}
       </div>
     </div>
   );
