@@ -34,7 +34,6 @@ bool FileSys::init()
  * @brief Writes content to the given file in the SD card in truncate mode
  * 
  * @param Path - File we want to write to
- * 
  * @param Data - Content we want to write to the file
  * 
  * @return Bool inidicating of the file can be opened from the SD card
@@ -59,7 +58,6 @@ bool FileSys::writeFile(const String &Path, const String &Data)
  * @brief Writes content to the given file in the SD card in appends mode
  * 
  * @param Path - File we want to write to
- * 
  * @param Data - Content we want to write to the file
  * 
  * @return Bool inidicating of the file can be opened from the SD card
@@ -104,46 +102,34 @@ String FileSys::readFile(const String &Path)
 
 #ifdef UPLOAD_MODE
 
-/**
- * @brief Returns a JSON style array as a string for the files within the given directory path
- * 
- * @param Dir - Directory path to list files from
- * 
- * @param Print - Bool indicating if the files should be printed to the Serial monitor
- * 
- * @return JSON style array as a string, representing all files in directory of the SD card 
- * 
- * NOTE: This function should only exist in dev environment to view the SD card files
- */
-String FileSys::listFiles(const String &Dir, const bool Print)
+// TODO: add header comment
+void FileSys::traverseFiles(File start, FSCallback callback)
 {
-  File root = SD.open(Dir);
-
-  // Nothing found in the directory, return empty array
-  if (!root)
+  while (1)
   {
-    return "[]";
-  }
-  String files = "[";
-  File file = root.openNextFile();
-  
-  while (file)
-  {
-    files += "/" + String(file.name()) + ",";
+    File next = start.openNextFile();
 
-    if (Print)
+    if (!next)
     {
-      const char *Type = (file.isDirectory()) ?  "Type: Directory\t" : "Type: File\t";
-      Serial.print(Type);
-      Serial.println(file.name());
+      break;
     }
-    file = root.openNextFile();
+    if (next.isDirectory())
+    {
+      traverseFiles(next, callback);
+    }
+    else
+    {
+      callback(next);
+    }
+    next.close();
   }
-  // Remove last comma
-  files.remove( (files.length() - 1) );
-  files += "]";
+}
 
-  return files;
+// TODO: add header comment
+void FileSys::printFile(File &file)
+{
+  const String FileType = (file.isDirectory()) ? "Directory" : "File";
+  Serial.printf("Type: %s\tName: %s\tPath: %s\n", FileType, file.name(), file.path());
 }
 
 #endif
