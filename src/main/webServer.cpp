@@ -102,6 +102,10 @@ static const char *uploadForm PROGMEM = R"(
       
       <input type='submit' value='Upload'>
     </form>
+    <form method='GET' action='/printFiles'>
+      <label for='printFiles'>See root directory content</label>
+      <input type='submit' value='Print Files'>
+    </form>
   </body>
   </html>
 )";
@@ -115,8 +119,9 @@ inline void WebServer::setupUploadMode()
   server.on("/", HTTP_GET, sendUploadPage);
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *req)
   {
-    req->send(200, "text/plain", "Upload Successful");
+    req->send(HTTP_OK, "text/plain", "Upload Successful");
   }, handleUpload);
+  server.on("/printFiles", HTTP_GET, printFiles);
 
   // TODO: add a make directory API for the assets directory produced by Vite
 }
@@ -174,6 +179,28 @@ void WebServer::handleUpload(AsyncWebServerRequest *req, String filename, size_t
   if (final)
   {
     req->_tempFile.close();
+  }
+}
+
+/**
+ * @brief Prints the contents of the root directory from the SD card into the serial monitor 
+ *
+ * @param req - Handler for the web request
+ */
+void WebServer::printFiles(AsyncWebServerRequest *req)
+{
+  File root = FileSys::getFile();
+
+  if (root)
+  {
+    FileSys::traverseFiles(root, FileSys::printFile);
+
+    root.close();
+    req->send(HTTP_OK, "text/plain", "SD File System Printed");
+  }
+  else
+  {
+    req->send(HTTP_BAD_REQUEST, "text/plain", "Invalid root provided");
   }
 }
 
