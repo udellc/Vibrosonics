@@ -34,6 +34,9 @@ namespace WebServer
 
     //! Handler for writing a file into the SD card
     void handleUpload(AsyncWebServerRequest *req, String filename, size_t index, uint8_t *data, size_t len, bool final);
+
+    //! Prints the contents of the root directory in the SD card
+    void printFiles(AsyncWebServerRequest *req);
   #endif
 
   //! Helper function for returning the content type
