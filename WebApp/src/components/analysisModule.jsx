@@ -10,30 +10,33 @@
 
 import Slider from "../atomics/slider";
 import Knob from "../atomics/knob";
-import EQ_PRESETS from '../data/eqSettings.json';
-import { useState } from 'react';
+import EQ_PRESETS from "../data/eqSettings.json";
+import { useState } from "react";
 
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
 export default function AnalysisModule() {
-  
-  const [activeGenre, setActiveGenre] = useState('Rock');
+  const [activeGenre, setActiveGenre] = useState("Rock");
   const [knobValue, setKnobValue] = useState({});
   const [sliderValue, setSliderValue] = useState({});
-  
+
   // FIXME: simple example callback function used for the Slider
   /*const handleInput = (id, value) => {
     console.log(String(id) + String("Value: ") + String(value));
   };*/
 
   const handleKnobChange = (id, value) => {
-    setKnobValue(prev => ({...prev, [id]: value}));
-    console.log(String("Knob") + String(id) + String("Value: ") + String(value));
-  }
+    setKnobValue((prev) => ({ ...prev, [id]: value }));
+    console.log(
+      String("Knob") + String(id) + String("Value: ") + String(value)
+    );
+  };
 
   const handleSliderChange = (id, value) => {
-    setSliderValue(prev => ({...prev, [id]: value}));
-    console.log(String("Slider") + String(id) + String("Value: ") + String(value));
-  }
+    setSliderValue((prev) => ({ ...prev, [id]: value }));
+    console.log(
+      String("Slider") + String(id) + String("Value: ") + String(value)
+    );
+  };
 
   const currentSliders = EQ_PRESETS[activeGenre];
   const currentKnobs = EQ_PRESETS[activeGenre];
@@ -42,20 +45,21 @@ export default function AnalysisModule() {
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">EQ</h1>
 
-      <div style={{display: 'flex', gap: '10px', marginBottom: '30px'}}>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "30px" }}>
         {Object.keys(EQ_PRESETS).map((genre) => (
           <button
+            className={`pr-2.5 pl-2.5 pt-5 pb-5 border border-solid border-[#ccc] rounded-lg cursor-pointer
+            ${
+              activeGenre === genre
+                ? "bg-[#fcd34d] font-bold"
+                : "bg-[#e5e7eb] font-normal"
+            }`}
             key={genre}
             onClick={() => setActiveGenre(genre)}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: activeGenre === genre ? '#fcd34d' : '#e5e7eb',
-              fontWeight: activeGenre == genre ? 'bold' : 'normal',
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              cursor: 'pointer'
-            }}
-          > {genre} </button>
+          >
+            {" "}
+            {genre}{" "}
+          </button>
         ))}
       </div>
 
@@ -70,24 +74,26 @@ export default function AnalysisModule() {
               max={knobData.max}
               step={0.1}
               onChange={(value) => handleKnobChange(knobData.id, value)}
-          />
-          <span className = "font-bold text-gray-700">{knobData.label}</span>
-        </div>
+            />
+            <span className="font-bold text-gray-700">{knobData.label}</span>
+          </div>
         ))}
       </div>
 
-      <div className="flex flex-row gap-[20px] p-[20px]">
+      <div className="flex flex-row gap-5 p-5">
         {currentSliders.map((slider) => (
-        <Slider
-          key={slider.id}
-          title={slider.title}
-          initialValue={0}
-          value={sliderValue[slider.id] ?? slider.default ?? 0}
-          min={slider.min}
-          max={slider.max}
-          step={2}
-          onInput={(sliderValue) => handleSliderChange(slider.id, sliderValue)}
-        />
+          <Slider
+            key={slider.id}
+            title={slider.title}
+            initialValue={0}
+            value={sliderValue[slider.id] ?? slider.default ?? 0}
+            min={slider.min}
+            max={slider.max}
+            step={2}
+            onInput={(sliderValue) =>
+              handleSliderChange(slider.id, sliderValue)
+            }
+          />
         ))}
       </div>
     </div>
