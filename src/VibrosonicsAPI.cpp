@@ -3,6 +3,7 @@
 #include "Grain.h"
 #include "Spectrogram.h"
 #include <cmath>
+#include <algorithm>
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -22,9 +23,7 @@ void VibrosonicsAPI::init()
 void VibrosonicsAPI::processAudioInput(float output[])
 {
     // Copy samples from rolling buffer to FFT input array
-    for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
-      vData[i] = rollingInputBuffer[i];
-    }
+    std::copy(rollingInputBuffer, rollingInputBuffer + WINDOW_SIZE_OVERLAP, vData);
 
     // Use Fast4ier combined with Vibrosonics FFT functions
     dcRemoval();
@@ -39,9 +38,7 @@ void VibrosonicsAPI::processAudioInput(float output[])
     }
 
     // Move rolling buffer forward to make room for next set of samples
-    for (int i = WINDOW_SIZE; i < WINDOW_SIZE_OVERLAP; i++) {
-      rollingInputBuffer[i - WINDOW_SIZE] = rollingInputBuffer[i];
-    }
+    std::copy(rollingInputBuffer + WINDOW_SIZE, rollingInputBuffer + WINDOW_SIZE_OVERLAP, rollingInputBuffer);
 }
 
 /**
@@ -270,7 +267,7 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
  */
 bool VibrosonicsAPI::isAudioLabReady()
 {
-    return AudioLab.ready<uint16_t>(rollingInputBuffer + WINDOW_SIZE_OVERLAP - WINDOW_SIZE, WINDOW_SIZE_OVERLAP);
+    return AudioLab.ready<uint16_t>(rollingInputBuffer + WINDOW_SIZE_OVERLAP - WINDOW_SIZE, WINDOW_SIZE);
 }
 
 float VibrosonicsAPI::mapFrequencyByOctaves(float inFreq, float maxFreq)
