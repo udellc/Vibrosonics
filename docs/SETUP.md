@@ -136,53 +136,28 @@ To make requests for the web server on the ESP32, install the following librarie
 
 ## ESP32 Web Server Setup
 
-**Little File System Setup:**
-To deploy the WiFi web app onto the ESP32, we'll need to store it into non-voltile memory. We use Little FS to store the web app build files, to setup the file system plugin, consider the following,
+**SD File System Setup:**
+To deploy the WiFi web app onto the ESP32, we'll need to store the web app onto a micro SD card connected to the ESP32. View `WebApp/main/fileSys.h` for the pin connections, these directions assume that the pins are connected properly.
 
-### 1. Download the Little FS VSIX File
+**Note:** Uploading the web app onto the SD card only needs to be done everytime a new build of the web app is needed.
 
-- Navigate to [Little FS Git Repository](https://github.com/earlephilhower/arduino-littlefs-upload/releases) and download the .vsix file. As of 11/06/2025, we are using Release version 1.6.0.
+### 1. Setup Upload Mode (Necessary if web app is not on the ESP32, otherwise skip)
 
-![Little FS VSIX file](/docs/assets/images/Little_FS_file.png)
+- Navigate to the `WebApp/main/config.h` file and uncomment the following line to setup the ESP32 in upload mode
 
-### 2. Move the VSIX File to Plugins Directory
-
-- Move the VSIX file into the **.arduinoIDE > plugins** directory. Create the directory if necessary.
-
-![Little FS Directory](/docs/assets/images/Little_FS_file_directory.png)
-
-### 3. Verify Little FS Plugin in ArduinoIDE
-
-- Restart the ArduinoIDE and enter **[Ctrl] + [Shift] + [p]** to open the list of commands and look verify that **Upload LittleFS to Pico/ESP8266/ESP32** exists.
-
-![Little FS Command](/docs/assets/images/Little_FS_command.png)
-
-## Uploading Web App Build into ESP32
-
-**Steps:**
-To upload the Preact web app into the ESP32, we'll need to build the web app and move them into a directory LittleFS knows about.
-
-### 1. Build Web App
-
-```bash
-# CD into the web app directory
-cd WebApp
-
-# Build production level web app
-npm run build
-
-# Create a data directory under src/main
-cd ../src/main
-mkdir data
+```cpp
+#define UPLOAD_MODE
 ```
 
-### 2. Upload Build Output into ESP32
+- Build and upload `main.ino` in the ArduinoIDE once connected to a COM port.
+- Connect to the Wi-Fi access point on your device, name of the network is **Vibrosonics-Unsecure**.
+- Open a web browser and open `http://vibrosonics-webapp`.
+- Enter the directory you want to write to and select the file to upload.
+- Click the upload button to write the file. **Note:** Open the Serial monitor in ArduinoIDE to view the files on the SD card.
+- Once successful, exit the web app, comment out the `UPLOAD_MODE` macro and rebuild and upload `main.ino`.
 
-- Now move or copy the output of the web app build directory into the data directory. The output directory should be named `dist` or `build`. Make sure to not include the dist directory.
-- Open ArduinoIDE and use the Little FS upload command. Make sure that the ESP32 is connected and the Serial Monitor is closed.
+### 2. Connect to the Web App
 
-### 3. Compile and Verify
-
-- Once the files are uploaded, compile and upload the `main.ino` file using the AruduinoIDE with your network's SSID and password and open the Serial Monitor.
-- Once the ESP32 connects to your network, the Serial Monitor should have print an IP link that you can open using a web browser.
-- Confirm that the web app mirrors the development web app.
+- Connect to the Wi-Fi access point on your device, name of the network is **Vibrosonics-Unsecure**.
+- Open a web browser and open `http://vibrosonics-webapp`.
+- Follow the directions provided by the web app

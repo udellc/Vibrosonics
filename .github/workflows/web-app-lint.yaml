@@ -29,18 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+        # For faster workflows
+      - name: Setup Node.js and caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
-
-      - name: Cache packages
-        uses: actions/cache@v4
-        with:
-          path: /node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
+      
       - name: Run ESLint
         run: npm run lint

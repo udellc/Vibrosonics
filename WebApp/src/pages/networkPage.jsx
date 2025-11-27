@@ -1,24 +1,22 @@
 /***************************************************************
- * File: landingPage.jsx
+ * File: networkPage.jsx
  * 
- * Date: 11/06/2025
+ * Date: 11/22/2025
  * 
- * Description: The landing page for web app
+ * Description: The network page for the web app. Handles the UI
+ * connections for the networking API calls
  * 
  * Author: Ivan Wong
  ***************************************************************/
 
-const LandingPage = () => {  
+const NetworkPage = () => {  
   return (
     <div>
       <h1 className="font-bold mt-10">
-        Landing page title
+        Network page
       </h1>
-      <div>
-        <p>Maybe a page to connect to a wifi network</p>
-      </div>
     </div>
   );
 };
 
-export default LandingPage;
+export default NetworkPage;
