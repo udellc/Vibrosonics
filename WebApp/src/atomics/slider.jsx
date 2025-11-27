@@ -14,16 +14,17 @@ import { useState } from "preact/hooks";
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based slider
  *        for reconfiguration
  * 
- * @param { Object } _ - Expanded object for the slider settings
- * @param { String } _.title - Name of the setting to be changed
- * @param { Number } _.initialValue - Initial/Default value
- * @param { Number } _.min - Min value the slider can be at
- * @param { Number } _.max - Max value the slider can be at
- * @param { Number } _.step - Step size for each slider increment
- * @param { CallableFunction } _.onInput - Callback that happens for each slider value change
+ * @param {Object} setting - Expanded object for the slider settings
+ * @param {String} setting.title - Name of the setting to be changed
+ * @param {Number} setting.initialValue - Initial/Default value
+ * @param {Number} setting.value - changing value
+ * @param {Number} setting.min - Min value the slider can be at
+ * @param {Number} setting.max - Max value the slider can be at
+ * @param {Number} setting.step - Step size for each slider increment
+ * @param {CallableFunction} setting.onInput - Callback that happens for each slider value change
  */
-export default function Slider({ title, initialValue, min, max, step, onInput }) {
-  const [value, setValue] = useState(initialValue);
+export default function Slider({ title, initialValue, value, min, max, step, onInput }) {
+  const [, setValue] = useState(initialValue);
 
   // Updates the value UI for each slider movement
   const handleInput = (e) => {
