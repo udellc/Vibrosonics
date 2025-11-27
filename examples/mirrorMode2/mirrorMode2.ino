@@ -28,11 +28,7 @@ void loop() {
   // process the raw audio signal into frequency domain data
   vapi.processAudioInput(windowData);
 
-  for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
-    if (windowData[i] < 300) {
-      windowData[i] = 0;
-    }
-  }
+  vapi.noiseFloor(windowData, 300);
 
   spectrogram.pushWindow(windowData);
 
