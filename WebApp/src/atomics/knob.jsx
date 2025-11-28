@@ -8,7 +8,7 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "preact/hooks";
 
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob

@@ -54,8 +54,7 @@ export default function AnalysisModule() {
               cursor: "pointer",
             }}
           >
-            {" "}
-            {genre}{" "}
+            {` ${genre} `}
           </button>
         ))}
       </div>
@@ -77,13 +76,12 @@ export default function AnalysisModule() {
         ))}
       </div>
 
-      <div className="flex flex-row gap-[20px] p-[20px]">
+      <div className="flex flex-row gap-5 p-5">
         {currentSliders.map((slider) => (
           <Slider
             key={slider.id}
             title={slider.title}
-            initialValue={0}
-            value={sliderValue[slider.id] ?? slider.default ?? 0}
+            initialValue={sliderValue[slider.id] ?? slider.default ?? 0}
             min={slider.min}
             max={slider.max}
             step={2}

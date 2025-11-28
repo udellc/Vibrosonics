@@ -24,9 +24,8 @@ const NetworkCard = ({ SSID, onConnect }) => {
   return (
     <div className="flex flex-row p-3">
       <p>{SSID}</p>
-      <div className="w-4"></div>
       <button
-        className="border-amber-500 border-2 cursor-pointer"
+        className="border-amber-500 border-2 cursor-pointer pl-4"
         onClick={() => onConnect()}
       >
         Connect
