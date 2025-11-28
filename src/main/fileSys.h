@@ -56,6 +56,9 @@ namespace FileSys
     //! Prints the type, name, and path of the given file
     void printFile(File &file);
 
+    //! Used for compatibility with traverseFiles()
+    void removeFile(File &file);
+
   #endif
 }
 

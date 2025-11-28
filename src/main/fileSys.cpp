@@ -132,4 +132,9 @@ void FileSys::printFile(File &file)
   Serial.printf("Type: %s\tName: %s\tPath: %s\n", FileType, file.name(), file.path());
 }
 
+void FileSys::removeFile(File &file)
+{
+  (void) remove(file.path()); 
+}
+
 #endif
