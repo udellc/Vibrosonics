@@ -8,6 +8,8 @@
  * Author: Ivan Wong
  ***************************************************************/
 
+import axios from "axios";
+
 /**
  * @brief The api util provides an generic interface for making API calls to the
  * backend web server
@@ -19,33 +21,29 @@
  */
 export const api = async (method, endpoint, data = null) => {
   // TODO: replace this with the actual backend url, this is the current default for ESP32 in AP mode -- has no internet
-  const backendUrl = "http://192.168.4.1";
-  const url = `${backendUrl}${endpoint};`;
+  const backendUrl = "http://vibrosonics-webapp";
+  const url = `${backendUrl}${endpoint}`;
 
-  switch (method) {
-    case "GET": {
-      const res = await fetch(url);
-
-      if (!res.ok) {
-        // TODO: error handle
+  try {
+    switch (method) {
+      case "GET": {
+        return (await axios.get(url)).data;
       }
-      return res.json();
-    }
-    case "POST": {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        // TODO: error handle
+      case "POST": {
+        return (await axios.post(url, data)).data;
       }
-      return res.json();
+      case "PATCH": {
+        return (await axios.patch(url, data)).data;
+      }
+      case "DELETE": {
+        return (await axios.delete(url)).data;
+      }
+      default: {
+        throw new Error(`Unknown HTTP method: ${method}`);
+      }
     }
-    default: {
-        // TODO: add error handling for an unknow method
-        return null;
-    }
-    // TODO: may need to add more cases for the PATCH and DELETE methods
+  } catch (error) {
+    console.error(`API Error [${method} ${url}]:`, error.message);
+    return null;
   }
 };
