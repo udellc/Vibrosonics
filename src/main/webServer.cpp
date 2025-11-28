@@ -11,6 +11,8 @@
 
 #include "webServer.h"
 #include "fileSys.h"
+#include "networking.h"
+#include <ArduinoJson.h>
 
 // HTTP defines
 constexpr int HTTP_OK = 200;
@@ -40,14 +42,59 @@ bool WebServer::init()
 
   #ifdef UPLOAD_MODE
     setupUploadMode();
-  #else
-    setupWebApp();
   #endif
+    setupWebApp();
 
   server.begin();
   Serial.println("Web server started.");
 
   return success;
+}
+
+/**
+ * @brief Connects the backend API endpoints to the respective handlers
+ * 
+ * NOTE: This function should be the only time SD is referenced outside of the FileSys namespace
+ */
+inline void WebServer::setupWebApp()
+{
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Lambda for the initial request to the URL
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
+  {
+    req->send(SD, "/index.html", getContentType("/index.html"));
+  });
+  server.serveStatic("/", SD, "/");
+
+  // Network APIs
+  server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
+
+  // TODO: add implementation
+  // server.on("/network/networkRequest", HTTP_GET, );
+}
+
+// TODO: add header comment
+void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
+{
+  // Populate networks vector
+  std::vector<String> networks;
+  Networking::scanAvailableNetworks(networks);
+
+  // Convert networks into json for frontend to parse
+  JsonDocument doc;
+  JsonArray jsonNetworks = doc["wifi-ssid"].to<JsonArray>();
+
+  for (const auto &ssid : networks)
+  {
+    jsonNetworks.add(ssid);
+  }
+  String json;
+  serializeJson(doc, json);
+
+  req->send(HTTP_OK, "application/json", json);
 }
 
 /**
@@ -68,32 +115,20 @@ String WebServer::getContentType(const String &Path) {
   return "text/plain";
 }
 
-/**
- * @brief Connects the backend API endpoints to the respective handlers
- * 
- * NOTE: This function should be the only time SD is referenced outside of the FileSys namespace
- */
-inline void WebServer::setupWebApp()
-{
-  // Lambda for the initial request to the URL
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
-  {
-    req->send(SD, "/index.html", getContentType("/index.html"));
-  });
-  server.serveStatic("/", SD, "/");
-}
-
 #ifdef UPLOAD_MODE
+
 static const char *uploadForm PROGMEM = R"(
 <!DOCTYPE html>
-  <html>
+  <html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Mode</title>
   </head>
   <body>
     <h1>In Upload Mode</h1>
     <h3>Upload a File</h3>
-    <form method='POST' action='/upload' enctype='multipart/form-data'>
+    <form method='POST' action='/dev/upload' enctype='multipart/form-data'>
       <label for='directoryName'>Target Directory</label>
       <input type='text' name='directoryName' value='/'>
       
@@ -102,9 +137,14 @@ static const char *uploadForm PROGMEM = R"(
       
       <input type='submit' value='Upload'>
     </form>
-    <form method='GET' action='/printFiles'>
+    <form method='POST' action='/dev/printFiles'>
       <label for='printFiles'>See root directory content</label>
       <input type='submit' value='Print Files'>
+    </form>
+
+    <form method='POST' action='/dev/clearSd'>
+      <label for='clearSd'>Clear Content</label>
+      <input type='submit' value='Clear SD'>
     </form>
   </body>
   </html>
@@ -116,14 +156,13 @@ static const char *uploadForm PROGMEM = R"(
  */
 inline void WebServer::setupUploadMode()
 {
-  server.on("/", HTTP_GET, sendUploadPage);
-  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *req)
+  server.on("/dev", HTTP_GET, sendUploadPage);
+  server.on("/dev/upload", HTTP_POST, [](AsyncWebServerRequest *req)
   {
     req->send(HTTP_OK, "text/plain", "Upload Successful");
   }, handleUpload);
-  server.on("/printFiles", HTTP_GET, printFiles);
-
-  // TODO: add a make directory API for the assets directory produced by Vite
+  server.on("/dev/printFiles", HTTP_POST, printFiles);
+  server.on("/dev/clearSd", HTTP_POST, clearSD);
 }
 
 /**
@@ -189,14 +228,33 @@ void WebServer::handleUpload(AsyncWebServerRequest *req, String filename, size_t
  */
 void WebServer::printFiles(AsyncWebServerRequest *req)
 {
+  Serial.println("Printing files...");
   File root = FileSys::getFile();
 
   if (root)
   {
     FileSys::traverseFiles(root, FileSys::printFile);
 
+    req->send(HTTP_OK, "text/plain", "Printed files to serial monitor");
     root.close();
-    req->send(HTTP_OK, "text/plain", "SD File System Printed");
+  }
+  else
+  {
+    req->send(HTTP_BAD_REQUEST, "text/plain", "Invalid root provided");
+  }
+}
+
+void WebServer::clearSD(AsyncWebServerRequest *req)
+{
+  Serial.println("Clearing SD memory...");
+  File root = FileSys::getFile();
+
+  if (root)
+  {
+    FileSys::traverseFiles(root, FileSys::removeFile);
+
+    root.close();
+    req->send(HTTP_OK, "text/plain", "SD File System Cleared");
   }
   else
   {

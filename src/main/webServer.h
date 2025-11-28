@@ -25,6 +25,11 @@ namespace WebServer
   //! Initializes the web server assuming the web app is setup correctly on the SD card
   inline void setupWebApp();
 
+  void sendScannedNetworks(AsyncWebServerRequest *req);
+
+  //! Helper function for returning the content type
+  String getContentType(const String &Path);
+
   #ifdef UPLOAD_MODE
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();
@@ -37,10 +42,9 @@ namespace WebServer
 
     //! Prints the contents of the root directory in the SD card
     void printFiles(AsyncWebServerRequest *req);
-  #endif
 
-  //! Helper function for returning the content type
-  String getContentType(const String &Path);
+    void clearSD(AsyncWebServerRequest *req);
+  #endif
 }
 
 #endif

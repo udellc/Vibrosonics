@@ -15,35 +15,28 @@ import { api } from "../utils/utils";
 import NetworkCard from "../components/networkCard";
 import TextEntry from "../components/textEntry";
 
-// FIXME: remove once the backend API is implemented, just here for testing
-const networks = [
-  {
-    "wifi-ssid": "Network1",
-  },
-  {
-    "wifi-ssid": "Network2",
-  },
-  {
-    "wifi-ssid": "Network3",
-  },
-  {
-    "wifi-ssid": "Network4",
-  },
-  {
-    "wifi-ssid": "Network5",
-  },
-];
-
+/**
+ * @brief
+ */
 const NetworkPage = () => {
+  const [availableNetworks, setAvailableNetworks] = useState([]);
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [showTextForm, setTextForm] = useState(false);
 
-  // Scan for networks on mount
-  useEffect(() => {
-    // const networks = api("GET", "/network/scan-networks");
-    console.log("Loaded Network page");
-  }, []);
-
+  /**
+   * @brief Makes a request to the ESP32 to scan and return available networks
+   */
+  const fetchNetworks = async () => {
+    try {
+      const res = await api("GET", "/network/scanNetworks");
+      if (res) {
+        setAvailableNetworks(res);
+      }
+      console.log(String(res));
+    } catch (err) {
+      console.error("Failed to scan networks", err);
+    }
+  };
   /**
    * @brief Shows the password text entry and sets the selected network
    *
@@ -53,7 +46,6 @@ const NetworkPage = () => {
     setTextForm(true);
     setSelectedNetwork(SSID);
   };
-
   /**
    * @brief Sends a connection request to the web server for the selected network SSID and password.
    * Routes to the modules page on successful connection
@@ -65,7 +57,7 @@ const NetworkPage = () => {
       "wifi-ssid": selectedNetwork,
       password: Password,
     };
-    const res = api("POST", "/network/network-request", payload);
+    const res = api("POST", "/network/networkRequest", payload);
 
     // Ok, route to modules page
     if (res["status"] == 200) {
@@ -75,19 +67,29 @@ const NetworkPage = () => {
       console.log("Invalid credentials");
     }
   };
+  // Scan for networks on mount
+  useEffect(() => {
+    fetchNetworks();
+  }, []);
 
   return (
     <div className="mt-20 ml-10 mr-10">
       {/* Centered vertical layout */}
       <div className="flex flex-col items-center">
         <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
-        {networks.map((network) => {
+        <button
+          className="border-3 border-amber-500 p-1 cursor-pointer mt-3 text-xl font-semibold rounded-sm"
+          onClick={fetchNetworks}
+        >
+          Scan Networks
+        </button>
+        {availableNetworks.map((network) => {
           return (
             <NetworkCard
-              key={network["wifi-ssid"]}
-              SSID={network["wifi-ssid"]}
+              key={network}
+              SSID={network}
               onConnect={() => {
-                handleConnectClicked(network["wifi-ssid"]);
+                handleConnectClicked(network);
               }}
             />
           );
@@ -97,7 +99,7 @@ const NetworkPage = () => {
           // is form HTML type.
           <TextEntry
             presetText="FIXME"
-            onEntered={ () => {
+            onEntered={() => {
               handleNetworkRequest(null);
             }}
           />
