@@ -93,9 +93,14 @@ const NetworkPage = () => {
           );
         })}
         {showTextForm === true ? (
-          // TODO: add some sort of functionality to pass in SSID and password onSubmit, assuming the component
-          // is form HTML type. Will probably be handled using a passed in onSubmit function that uses handleNetworkRequest
-          <TextEntry />
+          // TODO: add some sort of functionality to pass in SSID and password, assuming the component
+          // is form HTML type.
+          <TextEntry
+            presetText="FIXME"
+            onEntered={ () => {
+              handleNetworkRequest(null);
+            }}
+          />
         ) : (
           // Show nothing
           <></>

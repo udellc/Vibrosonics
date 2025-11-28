@@ -40,19 +40,17 @@ export default function AnalysisModule() {
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">EQ</h1>
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: "30px" }}>
+      <div className="flex gap-2.5 mb-8">
         {Object.keys(EQ_PRESETS).map((genre) => (
           <button
+            className={`p-3 border border-[#ccc] rounded-lg cursor-pointer
+            ${
+              activeGenre
+                ? "bg-[#fcd34d] font-bold"
+                : "bg-[#e5e7eb] font-normal"
+            }`}
             key={genre}
             onClick={() => setActiveGenre(genre)}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: activeGenre === genre ? "#fcd34d" : "#e5e7eb",
-              fontWeight: activeGenre == genre ? "bold" : "normal",
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
           >
             {` ${genre} `}
           </button>

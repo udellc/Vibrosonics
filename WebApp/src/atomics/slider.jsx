@@ -13,7 +13,7 @@ import { useState } from "preact/hooks";
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based slider
  *        for reconfiguration
- * 
+ *
  * @param {Object} setting - Expanded object for the slider settings
  * @param {String} setting.title - Name of the setting to be changed
  * @param {Number} setting.initialValue - Initial/Default value
@@ -22,11 +22,17 @@ import { useState } from "preact/hooks";
  * @param {Number} setting.step - Step size for each slider increment
  * @param {CallableFunction} setting.onInput - Callback that happens for each slider value change
  */
-export default function Slider({ title, initialValue, min, max, step, onInput }) {
+export default function Slider({
+  title,
+  initialValue,
+  min,
+  max,
+  step,
+  onInput,
+}) {
   const [value, setValue] = useState(initialValue);
 
-  // Updates the value UI for each slider movement
-  const handleInput = (e) => {
+  const updateValueText = (e) => {
     const updatedVal = Number(e.target.value);
     setValue(updatedVal);
   };
@@ -39,16 +45,19 @@ export default function Slider({ title, initialValue, min, max, step, onInput })
 
   return (
     <div className="flex flex-col w-max h-max items-center m-1 p-2">
-      <input className="[writing-mode:vertical-lr] [direction:rtl]"
+      <input
+        className="[writing-mode:vertical-lr] [direction:rtl]"
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
-        onInput={handleInput}
+        onInput={updateValueText}
         onChange={handleInputChanged}
       />
-      <span>{title}: {value}</span>
+      <span>
+        {title}: {value}
+      </span>
     </div>
   );
 }
