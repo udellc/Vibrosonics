@@ -10,7 +10,7 @@
  ***************************************************************/
 
 import { useEffect, useState } from "preact/hooks";
-import { route } from "preact-router";
+// import { route } from "preact-router";
 import { api } from "../utils/utils";
 import NetworkCard from "../components/networkCard";
 import TextEntry from "../components/textEntry";
@@ -43,8 +43,8 @@ const NetworkPage = () => {
    */
   const getNetworkResponse = async () => {
     const payload = {
-      ssid: selectedNetwork,
-      password: password,
+      selectedNetwork,
+      password,
     };
     const res = await api("POST", "/network/connect", payload);
 

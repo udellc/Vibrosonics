@@ -71,7 +71,7 @@ export default function Knob({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  });
 
   return (
     // Parent container
