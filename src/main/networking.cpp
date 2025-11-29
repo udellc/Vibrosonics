@@ -60,6 +60,7 @@ void Networking::scanAvailableNetworks(std::vector<String> &result)
     {
       result.push_back(WiFi.SSID(i));
     }
+    WiFi.scanDelete();
   }
 }
 
@@ -68,15 +69,15 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
   const unsigned long MaxTimeout_ms = 4000u;
   unsigned long prev_ms = millis();
-  unsigned long current_ms = 0;
+  unsigned long current_ms = prev_ms;
 
   WiFi.scanDelete();
   WiFi.disconnect();
   WiFi.begin(Ssid.c_str(), Password.c_str());
 
-  while (WiFi.status() != WL_CONNECTED && current_ms >= MaxTimeout_ms)
+  while ( (WiFi.status() != WL_CONNECTED) && ( (current_ms - prev_ms) <= MaxTimeout_ms) )
   {
-    Serial.printf("Connecting to %s\n", Ssid);
+    current_ms = millis();
     delay(100);
   }
   return (WiFi.status() == WL_CONNECTED) ? true : false;
