@@ -21,7 +21,7 @@ import axios from "axios";
  */
 export const api = async (method, endpoint, data = null) => {
   // TODO: replace this with the actual backend url, this is the current default for ESP32 in AP mode -- has no internet
-  const backendUrl = "http://vibrosonics-webapp";
+  const backendUrl = "http://vibrosonics";
   const url = `${backendUrl}${endpoint}`;
 
   try {
