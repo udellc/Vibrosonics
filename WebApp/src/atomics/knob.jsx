@@ -12,7 +12,7 @@ import { useEffect, useRef } from "preact/hooks";
 
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob
- *        foe reconfiguration
+ *        for reconfiguration
  *
  * @param {Object} setting - Expanded object for the knob settings
  * @param {String} setting.title - Name of the setting to be changed
