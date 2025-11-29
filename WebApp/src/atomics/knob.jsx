@@ -8,7 +8,7 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "preact/hooks";
 
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob
@@ -60,10 +60,8 @@ export default function Knob({
 
     if (onChange) onChange(newVal);
   };
-
   const handleMouseUp = () => {
     startY.current = null;
-
     window.removeEventListener("mousemove", handleMouseMove);
     window.removeEventListener("mouseup", handleMouseUp);
   };
@@ -73,11 +71,11 @@ export default function Knob({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  });
 
   return (
     // Parent container
-    <div className="w-full h-full flex items-center justify-center font-bold text-sm">
+    <div className="flex items-center font-bold text-sm">
       {/* Outside slider */}
       <div className="w-[100px] h-[100px] flex items-center justify-center border-2 relative">
         <div
@@ -88,7 +86,8 @@ export default function Knob({
           <div className="w-[75px] h-[75px] bg-gray-800 border-2 rounded-full">
             {/* Rotator */}
             <div
-              className={`w-full h-full absolute top-0 left-0 rounded-full pointer-events-none`}
+              className="w-full h-full absolute top-0 left-0 rounded-full pointer-events-none"
+              // FIXME: convert to tailwindcss, `rotate-${rotation}` does not work as expected
               style={{ transform: `rotate(${rotation}deg)` }}
             >
               <div className="w-1.5 h-3 bg-white mx-auto mt-2 rounded-full shadow-[0_0_5px_white]" />

@@ -13,8 +13,10 @@
 #define WEB_SERVER_H
 
 #include <Arduino.h>
-#include <AsyncTCP.h>
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <AsyncJson.h>
 #include "config.h"
 
 namespace WebServer
@@ -25,6 +27,15 @@ namespace WebServer
   //! Initializes the web server assuming the web app is setup correctly on the SD card
   inline void setupWebApp();
 
+  //!
+  void sendScannedNetworks(AsyncWebServerRequest *req);
+
+  //! 
+  void sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json);
+
+  //! Helper function for returning the content type
+  String getContentType(const String &Path);
+
   #ifdef UPLOAD_MODE
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();
@@ -34,10 +45,12 @@ namespace WebServer
 
     //! Handler for writing a file into the SD card
     void handleUpload(AsyncWebServerRequest *req, String filename, size_t index, uint8_t *data, size_t len, bool final);
-  #endif
 
-  //! Helper function for returning the content type
-  String getContentType(const String &Path);
+    //! Prints the contents of the root directory in the SD card
+    void printFiles(AsyncWebServerRequest *req);
+
+    void clearSD(AsyncWebServerRequest *req);
+  #endif
 }
 
 #endif

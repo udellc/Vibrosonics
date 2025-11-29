@@ -12,22 +12,27 @@ import { useState } from "preact/hooks";
 
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based slider
- *        foe reconfiguration
- * 
+ *        for reconfiguration
+ *
  * @param {Object} setting - Expanded object for the slider settings
  * @param {String} setting.title - Name of the setting to be changed
  * @param {Number} setting.initialValue - Initial/Default value
- * @param {Number} setting.value - changing value
  * @param {Number} setting.min - Min value the slider can be at
  * @param {Number} setting.max - Max value the slider can be at
  * @param {Number} setting.step - Step size for each slider increment
  * @param {CallableFunction} setting.onInput - Callback that happens for each slider value change
  */
-export default function Slider({ title, initialValue, value, min, max, step, onInput }) {
-  const [, setValue] = useState(initialValue);
+export default function Slider({
+  title,
+  initialValue,
+  min,
+  max,
+  step,
+  onInput,
+}) {
+  const [value, setValue] = useState(initialValue);
 
-  // Updates the value UI for each slider movement
-  const handleInput = (e) => {
+  const updateValueText = (e) => {
     const updatedVal = Number(e.target.value);
     setValue(updatedVal);
   };
@@ -40,19 +45,19 @@ export default function Slider({ title, initialValue, value, min, max, step, onI
 
   return (
     <div className="flex flex-col w-max h-max items-center m-1 p-2">
-      <h3 className="mb-2">
-        {title}
-      </h3>
-      <input className="[writing-mode:vertical-lr] [direction:rtl]"
+      <input
+        className="[writing-mode:vertical-lr] [direction:rtl]"
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
-        onInput={handleInput}
+        onInput={updateValueText}
         onChange={handleInputChanged}
       />
-      <span>Value: {value}</span>
+      <span>
+        {title}: {value}
+      </span>
     </div>
   );
 }
