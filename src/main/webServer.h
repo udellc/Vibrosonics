@@ -13,8 +13,10 @@
 #define WEB_SERVER_H
 
 #include <Arduino.h>
-#include <AsyncTCP.h>
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <AsyncJson.h>
 #include "config.h"
 
 namespace WebServer
@@ -29,7 +31,7 @@ namespace WebServer
   void sendScannedNetworks(AsyncWebServerRequest *req);
 
   //! 
-  void sendNetworkConnectResponse(AsyncWebServerRequest *req);
+  void sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json);
 
   //! Helper function for returning the content type
   String getContentType(const String &Path);

@@ -12,7 +12,6 @@
 #include "webServer.h"
 #include "fileSys.h"
 #include "networking.h"
-#include <ArduinoJson.h>
 
 // HTTP defines
 constexpr int HTTP_OK = 200;
@@ -71,7 +70,7 @@ inline void WebServer::setupWebApp()
 
   // Network APIs
   server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
-  server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
+  // server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
 }
 
 // TODO: add header comment
@@ -96,32 +95,17 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 }
 
 // TODO: add header comment
-void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req)
+void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json)
 {
-  const bool HasValidParams = ( req->hasParam("ssid", true) ) && ( req->hasParam("password", true) );
+  JsonObject payload = json.as<JsonObject>();
 
-  if (HasValidParams)
-  {
-    const String NewSsid = req->getParam("ssid", true)->value();
-    const String NewPassword = req->getParam("password", true)->value();
+  const String NewSsid = payload["ssid"];
+  const String NewPassword = payload["password"];
 
-    Serial.printf("SSID: %s\tPassword: %s\n", NewSsid, NewPassword);
+  Serial.println(NewSsid);
+  Serial.println(NewPassword);
 
-    const bool HasConnected = Networking::connectToNetwork(NewSsid, NewPassword);
-
-    if (HasConnected)
-    {
-      req->send(HTTP_OK, "text/plain", "Connected to WiFI");
-    }
-    else
-    {
-      req->send(HTTP_BAD_REQUEST, "text/plain", "Could not connect to WiFi");
-    }
-  }
-  else
-  {
-    req->send(HTTP_UNPROCESSABLE, "text/plain", "Invalid request params");
-  }
+  req->send(HTTP_OK, "text/plain", "Testing");
 }
 
 /**
