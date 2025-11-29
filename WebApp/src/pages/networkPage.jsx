@@ -21,24 +21,37 @@ import TextEntry from "../components/textEntry";
 const NetworkPage = () => {
   const [availableNetworks, setAvailableNetworks] = useState([]);
   const [selectedNetwork, setSelectedNetwork] = useState("");
+  const [password, setPassword] = useState("");
   const [showTextForm, setTextForm] = useState(false);
 
   /**
    * @brief Makes a request to the ESP32 to scan and return available networks
    */
-  const fetchNetworks = async () => {
+  const getNetworks = async () => {
     try {
       const res = await api("GET", "/network/scanNetworks");
+
       if (res) {
-        setAvailableNetworks(res);
+        setAvailableNetworks(res.ssid);
       }
-      console.log(String(res));
     } catch (err) {
       console.error("Failed to scan networks", err);
     }
   };
   /**
-   * @brief Shows the password text entry and sets the selected network
+   * @brief Gets the reponse to a network conenction request
+   */
+  const getNetworkResponse = async () => {
+    const payload = {
+      ssid: selectedNetwork,
+      password: password,
+    };
+    const res = await api("POST", "/network/connect", payload);
+
+    return res;
+  }
+  /**
+   * @brief Shows the password form and sets the selected network
    *
    * @param { String } SSID - User selected network SSID
    */
@@ -49,27 +62,15 @@ const NetworkPage = () => {
   /**
    * @brief Sends a connection request to the web server for the selected network SSID and password.
    * Routes to the modules page on successful connection
-   *
-   * @param { String } Password - Password entered by the user
    */
-  const handleNetworkRequest = (Password) => {
-    const payload = {
-      "wifi-ssid": selectedNetwork,
-      password: Password,
-    };
-    const res = api("POST", "/network/networkRequest", payload);
+  const handleNetworkRequest = () => {
+    const res = getNetworkResponse();
 
-    // Ok, route to modules page
-    if (res["status"] == 200) {
-      route("/modules", true);
-    } else {
-      // TODO: error handle
-      console.log("Invalid credentials");
-    }
+    console.log(res);
   };
   // Scan for networks on mount
   useEffect(() => {
-    fetchNetworks();
+    getNetworks();
   }, []);
 
   return (
@@ -77,12 +78,16 @@ const NetworkPage = () => {
       {/* Centered vertical layout */}
       <div className="flex flex-col items-center">
         <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
+
+        {/* Scan network button */}
         <button
           className="border-3 border-amber-500 p-1 cursor-pointer mt-3 text-xl font-semibold rounded-sm"
-          onClick={fetchNetworks}
+          onClick={getNetworks}
         >
           Scan Networks
         </button>
+
+        {/* Network list */}
         {availableNetworks.map((network) => {
           return (
             <NetworkCard
@@ -95,14 +100,22 @@ const NetworkPage = () => {
           );
         })}
         {showTextForm === true ? (
-          // TODO: add some sort of functionality to pass in SSID and password, assuming the component
-          // is form HTML type.
-          <TextEntry
-            presetText="FIXME"
-            onEntered={() => {
-              handleNetworkRequest(null);
-            }}
-          />
+          // Form for entering password
+          <>
+            <p className="mt-4">Selected Network: {selectedNetwork}</p>
+            <TextEntry
+              label="Password"
+              entryType="password"
+              presetText="Enter Password"
+              onChange={setPassword}
+            />
+            <button
+              className="border-3 border-amber-500 p-1 cursor-pointer mt-3 text-lg font-semibold rounded-sm"
+              onClick={handleNetworkRequest}
+            >
+              Submit
+            </button>
+          </>
         ) : (
           // Show nothing
           <></>

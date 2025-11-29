@@ -25,7 +25,11 @@ namespace WebServer
   //! Initializes the web server assuming the web app is setup correctly on the SD card
   inline void setupWebApp();
 
+  //!
   void sendScannedNetworks(AsyncWebServerRequest *req);
+
+  //! 
+  void sendNetworkConnectResponse(AsyncWebServerRequest *req);
 
   //! Helper function for returning the content type
   String getContentType(const String &Path);

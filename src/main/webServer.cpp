@@ -59,8 +59,8 @@ bool WebServer::init()
 inline void WebServer::setupWebApp()
 {
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
-  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "*");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "*");
 
   // Lambda for the initial request to the URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
@@ -71,21 +71,20 @@ inline void WebServer::setupWebApp()
 
   // Network APIs
   server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
-
-  // TODO: add implementation
-  // server.on("/network/networkRequest", HTTP_GET, );
+  server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
 }
 
 // TODO: add header comment
 void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 {
+  Serial.println("Getting available networks...");
   // Populate networks vector
   std::vector<String> networks;
   Networking::scanAvailableNetworks(networks);
 
   // Convert networks into json for frontend to parse
   JsonDocument doc;
-  JsonArray jsonNetworks = doc["wifi-ssid"].to<JsonArray>();
+  JsonArray jsonNetworks = doc["ssid"].to<JsonArray>();
 
   for (const auto &ssid : networks)
   {
@@ -93,8 +92,36 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
   }
   String json;
   serializeJson(doc, json);
-
   req->send(HTTP_OK, "application/json", json);
+}
+
+// TODO: add header comment
+void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req)
+{
+  const bool HasValidParams = ( req->hasParam("ssid", true) ) && ( req->hasParam("password", true) );
+
+  if (HasValidParams)
+  {
+    const String NewSsid = req->getParam("ssid", true)->value();
+    const String NewPassword = req->getParam("password", true)->value();
+
+    Serial.printf("SSID: %s\tPassword: %s\n", NewSsid, NewPassword);
+
+    const bool HasConnected = Networking::connectToNetwork(NewSsid, NewPassword);
+
+    if (HasConnected)
+    {
+      req->send(HTTP_OK, "text/plain", "Connected to WiFI");
+    }
+    else
+    {
+      req->send(HTTP_BAD_REQUEST, "text/plain", "Could not connect to WiFi");
+    }
+  }
+  else
+  {
+    req->send(HTTP_UNPROCESSABLE, "text/plain", "Invalid request params");
+  }
 }
 
 /**

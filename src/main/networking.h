@@ -25,11 +25,8 @@ namespace Networking
   //! Scans available networks and adds their SSID to the result vector
   void scanAvailableNetworks(std::vector<String> &result);
   
-  //!
-  bool connectToNetwork();
-  
-  //!
-  bool disconnectFromNetwork();
+  //! Disconnects the ESP32 access point and attempts to reconnect to the new network
+  bool connectToNetwork(const String &Ssid, const String &Password);
 }
 
 #endif
