@@ -27,8 +27,8 @@ void loop() {
 
   // process the raw audio signal into frequency domain data
   vapi.processAudioInput(windowData);
-
-  vapi.noiseFloor(windowData, 300);
+  
+  vapi.noiseFloorCFAR(windowData, 4, 1, 1.8);
 
   spectrogram.pushWindow(windowData);
 
@@ -58,7 +58,7 @@ int interpolateAroundPeak(float* data, int indexOfPeak) {
 void synthesizePeaks(MajorPeaks* peaks) {
   float** peaksData = peaks->getOutput();
   // interpolate around peaks
-  vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS);
+  vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS, 20000);
 
   for (int i = 0; i < NUM_PEAKS; i++) {
     int freq = interpolateAroundPeak(spectrogram.getCurrentWindow(), round(int(peaksData[MP_FREQ][i] * FREQ_WIDTH)));
