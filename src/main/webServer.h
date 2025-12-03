@@ -16,7 +16,6 @@
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
-#include <AsyncJson.h>
 #include "config.h"
 
 namespace WebServer
@@ -27,14 +26,17 @@ namespace WebServer
   //! Initializes the web server assuming the web app is setup correctly on the SD card
   inline void setupWebApp();
 
-  //!
+  //! Sends the discovered networks found from the ESP32
   void sendScannedNetworks(AsyncWebServerRequest *req);
 
-  //! 
+  //! Sends a success status for the connection request to the given network
   void sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json);
 
   //! Helper function for returning the content type
   String getContentType(const String &Path);
+
+  //! Helper for creating json responses
+  String createRes(const bool Success, const String &Message, const String &Metails);
 
   #ifdef UPLOAD_MODE
     //! Initializes the web server assuming the web app in upload files mode 

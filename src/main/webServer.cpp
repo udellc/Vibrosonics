@@ -44,6 +44,10 @@ bool WebServer::init()
   #endif
     setupWebApp();
 
+  if (!success)
+  {
+    Serial.println("/index.html not found. Missing web app files.");
+  }
   server.begin();
   Serial.println("Web server started.");
 
@@ -70,7 +74,7 @@ inline void WebServer::setupWebApp()
 
   // Network APIs
   server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
-  // server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
+  server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
 }
 
 // TODO: add header comment
@@ -98,14 +102,30 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json)
 {
   JsonObject payload = json.as<JsonObject>();
-
-  const String NewSsid = payload["ssid"];
+  const String NewSsid = payload["selectedNetwork"];
   const String NewPassword = payload["password"];
+  const bool Success = Networking::connectToNetwork(NewSsid, NewPassword);
 
-  Serial.println(NewSsid);
-  Serial.println(NewPassword);
+  int code;
+  // TODO: use createRes once implemented
+  JsonDocument doc;
+  String message;
+  String response;
 
-  req->send(HTTP_OK, "text/plain", "Testing");
+  if (Success)
+  {
+    code = HTTP_OK;
+    message = "Connected to network.";
+  }
+  else
+  {
+    code = HTTP_BAD_REQUEST;
+    message = "Could not connect to network.";
+  }
+  doc["success"] = Success ? "true" : "false";
+  doc["message"] = message;
+  serializeJson(doc, response);
+  req->send(code, "application/json", response);
 }
 
 /**
@@ -124,6 +144,12 @@ String WebServer::getContentType(const String &Path) {
   if (Path.endsWith(".ico"))  return "image/x-icon";
   if (Path.endsWith(".json")) return "application/json";
   return "text/plain";
+}
+
+// TODO: add header comment & implement
+String WebServer::createRes(const bool Success, const String &Message, const String &Details)
+{
+  return "";
 }
 
 #ifdef UPLOAD_MODE

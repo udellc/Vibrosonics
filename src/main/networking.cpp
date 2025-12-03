@@ -13,9 +13,16 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
 
-const char *defaultHostname = "vibrosonics";
-const char *apSSID = "Vibrosonics-Unsecure";
-const char *apPassword = "1234567890";
+const char *DefaultHostname = "vibrosonics";
+const char *ApSSID = "Vibrosonics-Unsecure";
+const char *ApPassword = "1234567890";
+
+// TODO: implment and use this instead of the initAccessPoint in main.ino : boot
+//       Needs to be able to attempt to reconnect to saved WiFi settings, is fails, then use initAccessPoint
+bool Networking::init()
+{
+  return true;
+}
 
 /**
  * @brief Initializes WiFi capabilities on the ESP32 in access point mode, with a custom host name
@@ -28,8 +35,8 @@ bool Networking::initAccessPoint()
   WiFi.mode(WIFI_MODE_APSTA);
   Serial.println("Starting WiFi access point...");
 
-  bool success = WiFi.softAP(apSSID, apPassword);
-  success &= MDNS.begin(defaultHostname);
+  bool success = WiFi.softAP(ApSSID, ApPassword);
+  success &= MDNS.begin(DefaultHostname);
 
   if (!success)
   {
@@ -39,7 +46,7 @@ bool Networking::initAccessPoint()
   {
     Serial.print("Access point created. Accessible at ");
     Serial.print(WiFi.softAPIP());
-    Serial.printf(" or http://%s\n", defaultHostname);
+    Serial.printf(" or http://%s\n", DefaultHostname);
   }
   return success;
 }
@@ -64,21 +71,27 @@ void Networking::scanAvailableNetworks(std::vector<String> &result)
   }
 }
 
-// TODO: implement
+// TODO: add header comment
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
-  const unsigned long MaxTimeout_ms = 4000u;
-  unsigned long prev_ms = millis();
-  unsigned long current_ms = prev_ms;
+  // const unsigned long MaxTimeout_ms = 00u;
+  const uint DisconnectDelay_ms = 100u;
 
   WiFi.scanDelete();
   WiFi.disconnect();
+  MDNS.end();
+  delay(DisconnectDelay_ms);
   WiFi.begin(Ssid.c_str(), Password.c_str());
 
-  while ( (WiFi.status() != WL_CONNECTED) && ( (current_ms - prev_ms) <= MaxTimeout_ms) )
+  const uint8_t Status = WiFi.waitForConnectResult();
+  const bool IsConnected = (Status == WL_CONNECTED);
+  bool success = IsConnected;
+
+  if (IsConnected)
   {
-    current_ms = millis();
-    delay(100);
+    success &= MDNS.begin(DefaultHostname);
   }
-  return (WiFi.status() == WL_CONNECTED) ? true : false;
+  Serial.printf("Done, has res %d\n", Status);
+
+  return success;
 }
