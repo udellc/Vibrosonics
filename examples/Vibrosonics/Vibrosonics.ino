@@ -18,14 +18,14 @@ float lessSmoothedData[WINDOW_SIZE_BY_2] = { 0 };
 float percussiveData[WINDOW_SIZE_BY_2] = { 0 };
 float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 
-Spectrogram rawSpectrogram(1);
+Spectrogram rawSpectrogram(1, WINDOW_SIZE_OVERLAP);
 
-Spectrogram melodicSpectrogram = Spectrogram(2);
+Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 MajorPeaks midPeak = MajorPeaks(1);
 MajorPeaks highPeak = MajorPeaks(1);
 
-Spectrogram percussiveSpectrogram = Spectrogram(2);
+Spectrogram percussiveSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup percussive = ModuleGroup(&percussiveSpectrogram);
 PercussionDetection percussionDetection = PercussionDetection(0.5, 1800000, 0.75);
 int windowsSinceHit = 0;
@@ -43,6 +43,9 @@ void setup() {
   // set peak debug mode on to see the peaks picked up in each range
   // midPeak.setDebugMode(0x1);
   // highPeak.setDebugMode(0x1);
+  midPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
+  highPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
+  percussionDetection.setWindowSize(WINDOW_SIZE_OVERLAP);
 
   // add melody peak modules to the melodic group
   melodic.addModule(&midPeak, MID_FREQ_LO, MID_FREQ_HI);
@@ -80,8 +83,8 @@ void loop() {
   vapi.noiseFloorCFAR(filteredData, 6, 1, 1.4);
 
   // smooth the filtered data over a long and short period of time
-  AudioPrism::smooth_window_over_time(filteredData, moreSmoothedData, 0.2);
-  AudioPrism::smooth_window_over_time(filteredData, lessSmoothedData, 0.3);
+  AudioPrism::smooth_window_over_time(filteredData, moreSmoothedData, 0.2, WINDOW_SIZE_OVERLAP);
+  AudioPrism::smooth_window_over_time(filteredData, lessSmoothedData, 0.3, WINDOW_SIZE_OVERLAP);
 
   // calculate the percussive and melodic data
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
@@ -119,7 +122,7 @@ void loop() {
   // if percussion is detected, trigger a grain to synthesize the hit and reset
   // windowsSinceHit to 0.
   if (p) {
-    float percussionAmp = AudioPrism::mean(windowData, PERC_FREQ_LO, PERC_FREQ_HI);
+    float percussionAmp = AudioPrism::mean(windowData, PERC_FREQ_LO, PERC_FREQ_HI, WINDOW_SIZE_OVERLAP);
     // vapi.mapAmplitudes(&percussionAmp, 1);
     percussionAmp = percussionAmp * 5 + highPeakData[MP_AMP][0] * 1.1;
     freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
