@@ -27,7 +27,6 @@ const AppContent = () => {
   return (
     <Router>
       <Route path="/" component={LandingPage} />
-      {/* TODO: maybe give these routes permissions? */}
       <Route path="/network" component={NetworkPage} />
       <Route path="/modules" component={ModulesPage} />
     </Router>
@@ -41,11 +40,12 @@ const AppContent = () => {
  */
 export function App() {
   return (
-    <>
+    // FIXME: align the footer to the bottom with the header and content filling the rest of space
+    <div className="min-w-lvw min-h-lvh flex flex-col">
       <Header />
       <AppContent />
-      <Footer />
-    </>
+      <Footer/>
+    </div>
   );
 }
 

@@ -151,7 +151,7 @@ To deploy the WiFi web app onto the ESP32, we'll need to store the web app onto 
 
 - Build and upload `main.ino` in the ArduinoIDE once connected to a COM port.
 - Connect to the Wi-Fi access point on your device, name of the network is **Vibrosonics-Unsecure**.
-- Open a web browser and open `http://vibrosonics-webapp`.
+- Open a web browser and open `http://vibrosonics/dev`.
 - Enter the directory you want to write to and select the file to upload.
 - Click the upload button to write the file. **Note:** Open the Serial monitor in ArduinoIDE to view the files on the SD card.
 - Once successful, exit the web app, comment out the `UPLOAD_MODE` macro and rebuild and upload `main.ino`.
@@ -159,5 +159,5 @@ To deploy the WiFi web app onto the ESP32, we'll need to store the web app onto 
 ### 2. Connect to the Web App
 
 - Connect to the Wi-Fi access point on your device, name of the network is **Vibrosonics-Unsecure**.
-- Open a web browser and open `http://vibrosonics-webapp`.
+- Open a web browser and open `http://vibrosonics`.
 - Follow the directions provided by the web app

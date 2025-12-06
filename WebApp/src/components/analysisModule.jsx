@@ -19,10 +19,8 @@ export default function AnalysisModule() {
   const [knobValue, setKnobValue] = useState({});
   const [sliderValue, setSliderValue] = useState({});
 
-  // FIXME: simple example callback function used for the Slider
-  /*const handleInput = (id, value) => {
-    console.log(String(id) + String("Value: ") + String(value));
-  };*/
+  const currentSliders = EQ_PRESETS[activeGenre];
+  const currentKnobs = EQ_PRESETS[activeGenre];
 
   const handleKnobChange = (id, value) => {
     setKnobValue((prev) => ({ ...prev, [id]: value }));
@@ -38,27 +36,23 @@ export default function AnalysisModule() {
     );
   };
 
-  const currentSliders = EQ_PRESETS[activeGenre];
-  const currentKnobs = EQ_PRESETS[activeGenre];
-
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">EQ</h1>
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: "30px" }}>
+      <div className="flex gap-2.5 mb-8">
         {Object.keys(EQ_PRESETS).map((genre) => (
           <button
-            className={`pr-2.5 pl-2.5 pt-5 pb-5 border border-solid border-[#ccc] rounded-lg cursor-pointer
+            className={`p-3 border border-[#ccc] rounded-lg cursor-pointer
             ${
-              activeGenre === genre
+              activeGenre
                 ? "bg-[#fcd34d] font-bold"
                 : "bg-[#e5e7eb] font-normal"
             }`}
             key={genre}
             onClick={() => setActiveGenre(genre)}
           >
-            {" "}
-            {genre}{" "}
+            {` ${genre} `}
           </button>
         ))}
       </div>
@@ -85,8 +79,7 @@ export default function AnalysisModule() {
           <Slider
             key={slider.id}
             title={slider.title}
-            initialValue={0}
-            value={sliderValue[slider.id] ?? slider.default ?? 0}
+            initialValue={sliderValue[slider.id] ?? slider.default ?? 0}
             min={slider.min}
             max={slider.max}
             step={2}

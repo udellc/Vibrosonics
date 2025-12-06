@@ -23,10 +23,16 @@
 #define MOSI_PIN 18
 #define CS_PIN 16 
 
+// A generic alias for the traverseFiles function, this is called for each file in the SD card
+typedef void (*FSCallback)(File& file);
+
 namespace FileSys
 {
   //! Inits the connected SD card
   bool init();
+
+  //! Getter for a file given a path
+  inline File getFile(const String &Path = "/", const char *mode = FILE_READ) { return SD.open(Path, mode); }
 
   //! Checks for existance if a file
   inline bool exists(const String &Path) { return ( SD.exists(Path) ); }
@@ -44,8 +50,14 @@ namespace FileSys
   String readFile(const String &Path);
 
   #ifdef UPLOAD_MODE
-    //! Returns a JSON array as a string for the files in the given directory
-    String listFiles(const String &Dir, const bool Print);
+    //! Applies the callback function for every file in the SD card
+    void traverseFiles(File start, FSCallback callback);
+
+    //! Prints the type, name, and path of the given file
+    void printFile(File &file);
+
+    //! Used for compatibility with traverseFiles()
+    void removeFile(File &file);
 
   #endif
 }
