@@ -13,6 +13,9 @@
 #include "networking.h"
 #include "fileSys.h"
 #include "config.h"
+#include "VibrosonicsAPI.h"
+
+static VibrosonicsAPI vapi = VibrosonicsAPI();
 
 bool boot();
 
@@ -53,7 +56,7 @@ bool boot()
   bool success = true;
   
   success &= FileSys::init();
-  success &= Networking::initAccessPoint();
+  success &= Networking::init();
   success &= WebServer::init();
 
   return success;

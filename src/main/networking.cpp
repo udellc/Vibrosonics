@@ -17,11 +17,28 @@ const char *DefaultHostname = "vibrosonics";
 const char *ApSSID = "Vibrosonics-Unsecure";
 const char *ApPassword = "1234567890";
 
-// TODO: implment and use this instead of the initAccessPoint in main.ino : boot
-//       Needs to be able to attempt to reconnect to saved WiFi settings, is fails, then use initAccessPoint
+static TimerHandle_t wifiTimer;
+static SemaphoreHandle_t wifiMutex;
+Networking::Status wifiStatus;
+
 bool Networking::init()
 {
-  return true;
+  // TODO: Init access point if no WiFi settings found, else use saved settings
+  bool success = initAccessPoint();
+
+  if (success) wifiStatus = Status::ConnectedToAP;
+  else wifiStatus = Status::NotConnected;
+
+  wifiMutex = xSemaphoreCreateMutex();
+  wifiTimer = xTimerCreate
+  (
+    "WiFiTimer",
+    pdMS_TO_TICKS(200),
+    pdTRUE,   // Auto re-trigger.
+    nullptr,  // Timer ID pointer, not used.
+    initWifiTimerConnect
+  );
+  return success;
 }
 
 /**
@@ -72,10 +89,34 @@ void Networking::scanAvailableNetworks(std::vector<String> &result)
 }
 
 // TODO: add header comment
+void Networking::initWifiTimerConnect(TimerHandle_t timer)
+{
+  if (xSemaphoreTake(wifiMutex, pdMS_TO_TICKS(50)) == pdTRUE)
+  {
+    if (wifiStatus == Status::JoiningWiFi)
+    {
+      wl_status_t status = WiFi.status();
+
+      if (status == WL_CONNECTED)
+      {
+        wifiStatus = Status::ConnectedToWiFi;
+        xTimerStop(wifiTimer, 0);
+      }
+      else if (status != WL_IDLE_STATUS && status != WL_CONNECT_FAILED && status != WL_NO_SHIELD)
+      {
+        wifiStatus = NotConnected;
+        xTimerStop(wifiTimer, 0);
+      }
+    }
+    xSemaphoreGive(wifiMutex);
+  }
+}
+
+// TODO: implement
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
-  // const unsigned long MaxTimeout_ms = 00u;
   const uint DisconnectDelay_ms = 100u;
+  bool success = true;
 
   WiFi.scanDelete();
   WiFi.disconnect();
@@ -83,15 +124,23 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
   delay(DisconnectDelay_ms);
   WiFi.begin(Ssid.c_str(), Password.c_str());
 
-  const uint8_t Status = WiFi.waitForConnectResult();
-  const bool IsConnected = (Status == WL_CONNECTED);
-  bool success = IsConnected;
-
-  if (IsConnected)
+  if (xSemaphoreTake(wifiMutex, pdMS_TO_TICKS(50)) == pdTRUE)
   {
-    success &= MDNS.begin(DefaultHostname);
-  }
-  Serial.printf("Done, has res %d\n", Status);
+    wifiStatus = Status::JoiningWiFi;
 
+    if (xTimerStart(wifiTimer, 0) != pdPASS)
+    {
+      success = false;
+    }
+    xSemaphoreGive(wifiMutex);
+  }
+  else
+  {
+    success = false;
+  }
+  if (success) 
+  {
+    (void) MDNS.begin(DefaultHostname);
+  }
   return success;
 }

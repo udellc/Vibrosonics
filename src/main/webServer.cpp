@@ -102,30 +102,22 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json)
 {
   JsonObject payload = json.as<JsonObject>();
-  const String NewSsid = payload["selectedNetwork"];
+  const String NewSSID = payload["ssid"];
   const String NewPassword = payload["password"];
-  const bool Success = Networking::connectToNetwork(NewSsid, NewPassword);
 
-  int code;
-  // TODO: use createRes once implemented
-  JsonDocument doc;
-  String message;
-  String response;
+  Serial.println(NewSSID);
+  Serial.println(NewPassword);
 
-  if (Success)
+  const bool IsConnected = Networking::connectToNetwork(NewSSID, NewPassword);
+
+  if (IsConnected)
   {
-    code = HTTP_OK;
-    message = "Connected to network.";
+    req->send(HTTP_OK, "text/plain", "Testing");
   }
   else
   {
-    code = HTTP_BAD_REQUEST;
-    message = "Could not connect to network.";
+    req->send(HTTP_OK, "text/plain", "Testing1234");
   }
-  doc["success"] = Success ? "true" : "false";
-  doc["message"] = message;
-  serializeJson(doc, response);
-  req->send(code, "application/json", response);
 }
 
 /**

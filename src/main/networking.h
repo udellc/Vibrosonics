@@ -18,18 +18,28 @@
 
 namespace Networking
 {
-  //! Init Wi-Fi in access point mode
+  //! Initializes the networking settings
   bool init();
+
   //! NOTE: This is insecure, only use this to open the landing and network pages from the hostname for the ESP32
   bool initAccessPoint();
-
-  inline bool resetMdns(); 
 
   //! Scans available networks and adds their SSID to the result vector
   void scanAvailableNetworks(std::vector<String> &result);
   
+  //! Starts the wifi connection
+  void initWifiTimerConnect(TimerHandle_t timer);
+
   //! Disconnects the ESP32 access point and attempts to reconnect to the new network
   bool connectToNetwork(const String &Ssid, const String &Password);
+
+  enum Status : unsigned int
+  {
+    ConnectedToAP = 0,
+    ConnectedToWiFi,
+    JoiningWiFi,
+    NotConnected
+  };
 }
 
 #endif
