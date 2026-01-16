@@ -3,6 +3,7 @@
 #include "Grain.h"
 #include "Spectrogram.h"
 #include <cmath>
+#include <algorithm>
 
 /**
  * Initializes all necessary api variables and dependencies.
@@ -21,17 +22,23 @@ void VibrosonicsAPI::init()
  */
 void VibrosonicsAPI::processAudioInput(float output[])
 {
+    // Copy samples from rolling buffer to FFT input array
+    std::copy(rollingInputBuffer, rollingInputBuffer + WINDOW_SIZE_OVERLAP, vData);
+
     // Use Fast4ier combined with Vibrosonics FFT functions
     dcRemoval();
     fftWindowing();
-    Fast4::FFT(vData, WINDOW_SIZE);
+    Fast4::FFT(vData, WINDOW_SIZE_OVERLAP);
     complexToMagnitude();
 
     // Copy complex data to float arrays
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+    for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
         vReal[i]  = vData[i].re();
         output[i] = vReal[i];
     }
+
+    // Move rolling buffer forward to make room for next set of samples
+    std::copy(rollingInputBuffer + WINDOW_SIZE, rollingInputBuffer + WINDOW_SIZE_OVERLAP, rollingInputBuffer);
 }
 
 /**
@@ -39,16 +46,16 @@ void VibrosonicsAPI::processAudioInput(float output[])
  */
 void VibrosonicsAPI::dcRemoval()
 {
-    float mean = getMean(vData, WINDOW_SIZE);
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+    float mean = getMean(vData, WINDOW_SIZE_OVERLAP);
+    for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
         vData[i] -= mean;
     }
 }
 
 void VibrosonicsAPI::computeHammingWindow()
 {
-    float step = 2 * PI / (WINDOW_SIZE - 1);
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+    float step = 2 * PI / (WINDOW_SIZE_OVERLAP - 1);
+    for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
         hamming[i] = 0.54 - 0.46 * cos(step * i);
     }
 }
@@ -59,7 +66,7 @@ void VibrosonicsAPI::computeHammingWindow()
  */
 void VibrosonicsAPI::fftWindowing()
 {
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+    for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
         // Use precomputed hamming window for better efficiency. Thanks Nick!
         vData[i] *= hamming[i];
     }
@@ -70,7 +77,7 @@ void VibrosonicsAPI::fftWindowing()
  */
 void VibrosonicsAPI::complexToMagnitude()
 {
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+    for (int i = 0; i < WINDOW_SIZE_OVERLAP; i++) {
         vData[i] = sqrt(pow(vData[i].re(), 2) + pow(vData[i].im(), 2));
     }
 }
@@ -253,6 +260,14 @@ void VibrosonicsAPI::assignWaves(float* freqData, float* ampData, int dataLength
             continue;                                                              // skip storing if ampData is 0, or freqData is 0
         Wave wave = AudioLab.dynamicWave(channel, round(freqData[i]), ampData[i]); // create wave
     }
+}
+
+/**
+ * Checks if the a new audio window has been recorded by seeing if our input buffer is full.
+ */
+bool VibrosonicsAPI::isAudioLabReady()
+{
+    return AudioLab.ready<uint16_t>(rollingInputBuffer + WINDOW_SIZE_OVERLAP - WINDOW_SIZE, WINDOW_SIZE);
 }
 
 float VibrosonicsAPI::mapFrequencyByOctaves(float inFreq, float maxFreq)
@@ -446,12 +461,4 @@ void VibrosonicsAPI::setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv)
     for (int i = 0; i < numGrains; i++) {
         grains[i].setDurEnv(durEnv);
     }
-}
-
-/**
- * Checks if the a new audio window has been recorded by seeing if our input buffer is full.
- */
-bool VibrosonicsAPI::isAudioLabReady()
-{
-  return AudioLab.ready<complex>(vData);
 }
