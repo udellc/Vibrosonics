@@ -13,7 +13,6 @@
 #ifndef FILE_SYS_H
 #define FILE_SYS_H
 
-#include <SPI.h>
 #include <SD.h>
 #include "config.h"
 
@@ -23,7 +22,7 @@
 #define MOSI_PIN 18
 #define CS_PIN 16 
 
-// A generic alias for the traverseFiles function, this is called for each file in the SD card
+// An alias for the traverseFiles function, this is called for each file in the SD card
 typedef void (*FSCallback)(File& file);
 
 namespace FileSys
