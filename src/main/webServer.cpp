@@ -138,12 +138,6 @@ String WebServer::getContentType(const String &Path) {
   return "text/plain";
 }
 
-// TODO: add header comment & implement
-String WebServer::createRes(const bool Success, const String &Message, const String &Details)
-{
-  return "";
-}
-
 #ifdef UPLOAD_MODE
 
 static const char *uploadForm PROGMEM = R"(

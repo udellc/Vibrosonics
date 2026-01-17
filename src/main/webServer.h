@@ -35,9 +35,6 @@ namespace WebServer
   //! Helper function for returning the content type
   String getContentType(const String &Path);
 
-  //! Helper for creating json responses
-  String createRes(const bool Success, const String &Message, const String &Metails);
-
   #ifdef UPLOAD_MODE
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();
