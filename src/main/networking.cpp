@@ -10,8 +10,21 @@
  ***************************************************************/
 
 #include "networking.h"
+#include "fileSys.h"
 #include <WiFi.h>
 #include <ESPmDNS.h>
+#include <ArduinoJson.h>
+
+#define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
+
+struct WiFiInfo
+{
+  String ssid;
+  String password;
+};
+
+WiFiInfo currentWifi;
+static JsonDocument settingsDoc;
 
 const char *DefaultHostname = "vibrosonics";
 const char *ApSSID = "Vibrosonics-Unsecure";
@@ -21,13 +34,17 @@ static TimerHandle_t wifiTimer;
 static SemaphoreHandle_t wifiMutex;
 Networking::Status wifiStatus;
 
+/**
+ * @brief Initializes the WiFi settings, using saved settings if they exist.
+ *        If settings don't exist, falls back in AP mode.
+ * 
+ * @return True if the system was able to either connect to a 
+ *         saved WiFi network or start in AP mode.
+ *         False otherwise.
+ */
 bool Networking::init()
 {
-  // TODO: Init access point if no WiFi settings found, else use saved settings
-  bool success = initAccessPoint();
-
-  if (success) wifiStatus = Status::ConnectedToAP;
-  else wifiStatus = Status::NotConnected;
+  bool isAPMode = true;
 
   wifiMutex = xSemaphoreCreateMutex();
   wifiTimer = xTimerCreate
@@ -36,9 +53,38 @@ bool Networking::init()
     pdMS_TO_TICKS(200),
     pdTRUE,   // Auto re-trigger.
     nullptr,  // Timer ID pointer, not used.
-    initWifiTimerConnect
+    initiateWifiTimerConnect
   );
-  return success;
+  const bool HasSettings = FileSys::exists(WIFI_SETTINGS_PATH);
+
+  // Try connecting to a saved network
+  if (HasSettings)
+  {
+    auto settingsFile = FileSys::getFile(WIFI_SETTINGS_PATH);
+    const auto Error = deserializeJson(settingsDoc, settingsFile);
+    settingsFile.close();
+
+    if (!Error)
+    {
+      auto ssid = settingsDoc["ssid"];
+      auto password = settingsDoc["password"];
+    
+      if (connectToNetwork(ssid, password))
+      {
+        wifiStatus = Status::ConnectedToWiFi;
+        return true;
+      }
+    }
+  }
+  // Fall back on AP mode if saved network settings DNE or couldn't connect
+  if (initAccessPoint())
+  {
+    wifiStatus = Status::ConnectedToAP;
+    return true;
+  }
+  // Complete failure
+  wifiStatus = Status::NotConnected;
+  return false;
 }
 
 /**
@@ -89,7 +135,7 @@ void Networking::scanAvailableNetworks(std::vector<String> &result)
 }
 
 // TODO: add header comment
-void Networking::initWifiTimerConnect(TimerHandle_t timer)
+void Networking::initiateWifiTimerConnect(TimerHandle_t timer)
 {
   if (xSemaphoreTake(wifiMutex, pdMS_TO_TICKS(50)) == pdTRUE)
   {
@@ -112,7 +158,7 @@ void Networking::initWifiTimerConnect(TimerHandle_t timer)
   }
 }
 
-// TODO: implement
+// TODO: save the network settings, so that the user can access the modules page on the selected own network
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
   const uint DisconnectDelay_ms = 100u;
@@ -138,9 +184,18 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
   {
     success = false;
   }
-  if (success) 
+  if (success)
   {
     (void) MDNS.begin(DefaultHostname);
+
+    // TODO: may need to move this into a seperate function if writing to SD card takes too long
+    currentWifi.ssid = Ssid;
+    currentWifi.password = Password;
+    const String JsonWifi = "{\n"
+                            "  \"ssid\": \"" + Ssid + "\",\n"
+                            "  \"password\": \"" + Password + "\"\n"
+                            "}";
+    FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
   }
   return success;
 }

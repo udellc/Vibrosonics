@@ -18,7 +18,7 @@
 
 namespace Networking
 {
-  //! Initializes the networking settings
+  //! Initializes the Wi-Fi settings for the web app
   bool init();
 
   //! NOTE: This is insecure, only use this to open the landing and network pages from the hostname for the ESP32
@@ -28,7 +28,7 @@ namespace Networking
   void scanAvailableNetworks(std::vector<String> &result);
   
   //! Starts the wifi connection
-  void initWifiTimerConnect(TimerHandle_t timer);
+  void initiateWifiTimerConnect(TimerHandle_t timer);
 
   //! Disconnects the ESP32 access point and attempts to reconnect to the new network
   bool connectToNetwork(const String &Ssid, const String &Password);
