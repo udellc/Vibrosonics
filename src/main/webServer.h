@@ -32,6 +32,9 @@ namespace WebServer
   //! Sends a success status for the connection request to the given network
   void sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json);
 
+  //! Sends the network SSID
+  void sendNetworkSsid(AsyncWebServerRequest *req);
+
   //! Helper function for returning the content type
   String getContentType(const String &Path);
 

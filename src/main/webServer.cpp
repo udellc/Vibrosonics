@@ -75,6 +75,7 @@ inline void WebServer::setupWebApp()
   // Network APIs
   server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
   server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
+  server.on("/network/getSsid", HTTP_GET, sendNetworkSsid);
 }
 
 // TODO: add header comment
@@ -82,7 +83,7 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 {
   Serial.println("Getting available networks...");
   // Populate networks vector
-  std::vector<String> networks;
+  std::set<String> networks;
   Networking::scanAvailableNetworks(networks);
 
   // Convert networks into json for frontend to parse
@@ -104,20 +105,20 @@ void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVaria
   JsonObject payload = json.as<JsonObject>();
   const String NewSSID = payload["ssid"];
   const String NewPassword = payload["password"];
-
-  Serial.println(NewSSID);
-  Serial.println(NewPassword);
-
   const bool IsConnected = Networking::connectToNetwork(NewSSID, NewPassword);
+  int httpStatus = HTTP_ACCEPTED;
 
-  if (IsConnected)
+  if (!IsConnected)
   {
-    req->send(HTTP_OK, "text/plain", "Testing");
+    httpStatus = HTTP_BAD_REQUEST;
   }
-  else
-  {
-    req->send(HTTP_OK, "text/plain", "Testing1234");
-  }
+  req->send(httpStatus);
+}
+
+// TODO: add header comment
+void WebServer::sendNetworkSsid(AsyncWebServerRequest *req)
+{
+  req->send(HTTP_OK, "text/plain", Networking::getNetworkSsid());
 }
 
 /**
