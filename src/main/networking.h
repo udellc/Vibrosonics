@@ -13,7 +13,7 @@
 #ifndef NETWORKING_H
 #define NETWORKING_H
 
-#include <vector>
+#include <set>
 #include <Arduino.h>
 
 namespace Networking
@@ -25,7 +25,7 @@ namespace Networking
   bool initAccessPoint();
 
   //! Scans available networks and adds their SSID to the result vector
-  void scanAvailableNetworks(std::vector<String> &result);
+  void scanAvailableNetworks(std::set<String> &result);
   
   //! Starts the wifi connection
   void initiateWifiTimerConnect(TimerHandle_t timer);
@@ -33,9 +33,12 @@ namespace Networking
   //! Disconnects the ESP32 access point and attempts to reconnect to the new network
   bool connectToNetwork(const String &Ssid, const String &Password);
 
+  //! Returns the current WiFi SSID
+  String getNetworkSsid();
+
   enum Status : unsigned int
   {
-    ConnectedToAP = 0,
+    ConnectedToAP = 0u,
     ConnectedToWiFi,
     JoiningWiFi,
     NotConnected

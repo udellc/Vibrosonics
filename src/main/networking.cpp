@@ -32,7 +32,7 @@ const char *ApPassword = "1234567890";
 
 static TimerHandle_t wifiTimer;
 static SemaphoreHandle_t wifiMutex;
-Networking::Status wifiStatus;
+static Networking::Status wifiStatus;
 
 /**
  * @brief Initializes the WiFi settings, using saved settings if they exist.
@@ -79,6 +79,9 @@ bool Networking::init()
   // Fall back on AP mode if saved network settings DNE or couldn't connect
   if (initAccessPoint())
   {
+    currentWifi.ssid = "";
+    currentWifi.password = "";
+
     wifiStatus = Status::ConnectedToAP;
     return true;
   }
@@ -115,7 +118,7 @@ bool Networking::initAccessPoint()
 }
 
 // TODO: add header comment
-void Networking::scanAvailableNetworks(std::vector<String> &result)
+void Networking::scanAvailableNetworks(std::set<String> &result)
 {
   const int16_t NumNetworks = WiFi.scanNetworks();
 
@@ -128,7 +131,7 @@ void Networking::scanAvailableNetworks(std::vector<String> &result)
     // TODO: use a data structure to store networks and return it
     for (int16_t i = 0; i < NumNetworks; i++)
     {
-      result.push_back(WiFi.SSID(i));
+      result.insert(WiFi.SSID(i));
     }
     WiFi.scanDelete();
   }
@@ -158,7 +161,7 @@ void Networking::initiateWifiTimerConnect(TimerHandle_t timer)
   }
 }
 
-// TODO: save the network settings, so that the user can access the modules page on the selected own network
+// TODO: add header comment
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
   const uint DisconnectDelay_ms = 100u;
@@ -198,4 +201,10 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
     FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
   }
   return success;
+}
+
+// TODO: add header comment
+String Networking::getNetworkSsid()
+{
+  return (wifiStatus == Status::ConnectedToAP) ? ApSSID : currentWifi.ssid;
 }
