@@ -30,6 +30,7 @@ Formants vocals = Formants();
 void setup() {
     Serial.begin(115200);
     vapi.init();
+    vocals.setWindowSize(WINDOW_SIZE_OVERLAP);
     vapi.addModule(&vocals);
 }
 

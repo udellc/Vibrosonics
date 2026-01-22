@@ -18,8 +18,6 @@
 #include "Grain.h"
 #include "Wave.h"
 
-#define WINDOW_OVERLAP 2u
-
 constexpr uint16_t WINDOW_SIZE_OVERLAP = WINDOW_SIZE << WINDOW_OVERLAP;
 constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE_OVERLAP >> 1;
 
