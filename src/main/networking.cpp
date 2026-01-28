@@ -26,13 +26,18 @@ struct WiFiInfo
 WiFiInfo currentWifi;
 static JsonDocument settingsDoc;
 
+#ifdef DEV_MODE
+  const char *ApSSID = "Vibrosonics-Dev";
+#else
+  const char *ApSSID = "Vibrosonics-Unsecure";
+#endif
 const char *DefaultHostname = "vibrosonics";
-const char *ApSSID = "Vibrosonics-Unsecure";
 const char *ApPassword = "1234567890";
 
 static TimerHandle_t wifiTimer;
 static SemaphoreHandle_t wifiMutex;
 static Networking::Status wifiStatus;
+volatile bool isOutdatedSettings = false;
 
 /**
  * @brief Initializes the WiFi settings, using saved settings if they exist.
@@ -194,11 +199,7 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
     // TODO: may need to move this into a seperate function if writing to SD card takes too long
     currentWifi.ssid = Ssid;
     currentWifi.password = Password;
-    const String JsonWifi = "{\n"
-                            "  \"ssid\": \"" + Ssid + "\",\n"
-                            "  \"password\": \"" + Password + "\"\n"
-                            "}";
-    FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
+    isOutdatedSettings = true;
   }
   return success;
 }
@@ -207,4 +208,18 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 String Networking::getNetworkSsid()
 {
   return (wifiStatus == Status::ConnectedToAP) ? ApSSID : currentWifi.ssid;
+}
+
+// TODO: add header comment
+void Networking::saveSettings()
+{
+  if (isOutdatedSettings)
+  {
+    const String JsonWifi = "{\n"
+                              "  \"ssid\": \"" + currentWifi.ssid + "\",\n"
+                              "  \"password\": \"" + currentWifi.password + "\"\n"
+                              "}";
+    FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
+    isOutdatedSettings = false;
+  }
 }

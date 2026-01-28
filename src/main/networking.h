@@ -36,6 +36,9 @@ namespace Networking
   //! Returns the current WiFi SSID
   String getNetworkSsid();
 
+  //! Writes current wifi settings to SD memory
+  void saveSettings();
+
   enum Status : unsigned int
   {
     ConnectedToAP = 0u,

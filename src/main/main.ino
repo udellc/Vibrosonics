@@ -82,9 +82,7 @@ void setup()
  */
 void loop()
 {
-  Serial.print("void loop from core: ");
-  Serial.println(xPortGetCoreID());
-  delay(2000);
+  WebServer::updateServer();
 }
 
 void runVibrosonicsTask(void *pvParams)

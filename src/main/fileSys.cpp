@@ -102,7 +102,7 @@ String FileSys::readFile(const String &Path)
   return Data;
 }
 
-#ifdef UPLOAD_MODE
+#ifdef DEV_MODE
 
 // TODO: add header comment
 void FileSys::traverseFiles(File start, FSCallback callback)

@@ -139,7 +139,12 @@ String WebServer::getContentType(const String &Path) {
   return "text/plain";
 }
 
-#ifdef UPLOAD_MODE
+void WebServer::updateServer()
+{
+  Networking::saveSettings();
+}
+
+#ifdef DEV_MODE
 
 static const char *uploadForm PROGMEM = R"(
 <!DOCTYPE html>

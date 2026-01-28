@@ -48,7 +48,7 @@ namespace FileSys
   //! Reads the contents of the given file and returns it as a string 
   String readFile(const String &Path);
 
-  #ifdef UPLOAD_MODE
+  #ifdef DEV_MODE
     //! Applies the callback function for every file in the SD card
     void traverseFiles(File start, FSCallback callback);
 

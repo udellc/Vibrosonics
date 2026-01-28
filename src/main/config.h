@@ -17,6 +17,6 @@
  * the SD file system, since we don't have a thumb drive for the SD card
  * to modify the data yet
  */
-#define UPLOAD_MODE
+#define DEV_MODE
 
 #endif
