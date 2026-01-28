@@ -20,7 +20,7 @@
 #define SCK_PIN 5
 #define MISO_PIN 19
 #define MOSI_PIN 18
-#define CS_PIN 16 
+#define CS_PIN 16
 
 // An alias for the traverseFiles function, this is called for each file in the SD card
 typedef void (*FSCallback)(File& file);

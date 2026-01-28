@@ -25,8 +25,10 @@ bool FileSys::init()
     Serial.println("SD File system failed to initialize.");
     success = false;
   }
-  Serial.println("SD File system successfully initialized.");
-
+  else
+  {
+    Serial.println("SD File system successfully initialized.");
+  }
   return success;
 }
 
