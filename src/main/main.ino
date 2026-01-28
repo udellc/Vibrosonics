@@ -13,8 +13,9 @@
 #include "networking.h"
 #include "fileSys.h"
 #include "config.h"
+#include "VibrosonicsAPI.h"
 
-bool boot();
+static VibrosonicsAPI vapi = VibrosonicsAPI();
 
 /**
  * @brief 
@@ -22,10 +23,15 @@ bool boot();
  */
 void setup()
 {
+  bool success = true;
+
   Serial.begin(115200);
+  success &= FileSys::init();
+  success &= Networking::init();
+  success &= WebServer::init();
 
   // On setup failure, do nothing 
-  if (!boot())
+  if (!success)
   {
     Serial.println("Setup failure. Looping...");
     
@@ -41,20 +47,4 @@ void setup()
 void loop()
 {
 
-}
-
-/**
- * @brief boot() initializes the major components needed for the WiFI web app to run
- * 
- * @return success - Bool indicating of all components initialized successfully
- */
-bool boot()
-{
-  bool success = true;
-  
-  success &= FileSys::init();
-  success &= Networking::initAccessPoint();
-  success &= WebServer::init();
-
-  return success;
 }

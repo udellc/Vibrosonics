@@ -42,7 +42,7 @@ bool FileSys::init()
  */
 bool FileSys::writeFile(const String &Path, const String &Data)
 {
-  File file = SD.open(Path, FILE_WRITE);
+  File file = SD.open(Path, FILE_WRITE, true);
 
   if (!file)
   {
@@ -66,7 +66,7 @@ bool FileSys::writeFile(const String &Path, const String &Data)
  */
 bool FileSys::appendFile(const String &Path, const String &Data)
 {
-  File file = SD.open(Path, FILE_APPEND);
+  File file = SD.open(Path, FILE_APPEND, true);
 
   if (!file)
   {

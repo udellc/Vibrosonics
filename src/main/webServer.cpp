@@ -44,6 +44,10 @@ bool WebServer::init()
   #endif
     setupWebApp();
 
+  if (!success)
+  {
+    Serial.println("/index.html not found. Missing web app files.");
+  }
   server.begin();
   Serial.println("Web server started.");
 
@@ -70,7 +74,8 @@ inline void WebServer::setupWebApp()
 
   // Network APIs
   server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
-  // server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
+  server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
+  server.on("/network/getSsid", HTTP_GET, sendNetworkSsid);
 }
 
 // TODO: add header comment
@@ -78,7 +83,7 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 {
   Serial.println("Getting available networks...");
   // Populate networks vector
-  std::vector<String> networks;
+  std::set<String> networks;
   Networking::scanAvailableNetworks(networks);
 
   // Convert networks into json for frontend to parse
@@ -98,14 +103,22 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json)
 {
   JsonObject payload = json.as<JsonObject>();
-
-  const String NewSsid = payload["ssid"];
+  const String NewSSID = payload["ssid"];
   const String NewPassword = payload["password"];
+  const bool IsConnected = Networking::connectToNetwork(NewSSID, NewPassword);
+  int httpStatus = HTTP_ACCEPTED;
 
-  Serial.println(NewSsid);
-  Serial.println(NewPassword);
+  if (!IsConnected)
+  {
+    httpStatus = HTTP_BAD_REQUEST;
+  }
+  req->send(httpStatus);
+}
 
-  req->send(HTTP_OK, "text/plain", "Testing");
+// TODO: add header comment
+void WebServer::sendNetworkSsid(AsyncWebServerRequest *req)
+{
+  req->send(HTTP_OK, "text/plain", Networking::getNetworkSsid());
 }
 
 /**

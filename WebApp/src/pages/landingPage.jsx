@@ -9,15 +9,28 @@
  ***************************************************************/
 
 import { route } from "preact-router";
+import { useState, useEffect } from "preact/hooks";
+import { api } from "../utils/utils";
 
 /**
  * @brief Displays the landing page for the Vibrosonics web app
  */
 const LandingPage = () => {
-  const handleConnectNetwork = () => {
-    // Redirect to the network page, but do not replace the prev content yet
-    route("/network", false);
-  };
+  const [isAudioSettingBtnVisible, setAudioSettingBtnVisible] = useState(false);
+
+  /**
+   * @brief Gets the network SSID on mount, making the audio settings button visible if not connected to AP mode
+   */
+  useEffect( () => {
+    const checkNetwork = async () => {
+      const ssid = await api("GET", "/network/getSsid");
+
+      if (ssid.data !== "Vibrosonics-Unsecure") {
+        setAudioSettingBtnVisible(true);
+      }
+    };
+    checkNetwork();
+  }, []);
 
   return (
     <div className="mt-20 ml-10 mr-10">
@@ -44,12 +57,20 @@ const LandingPage = () => {
               powerful beat.
             </p>
           </div>
-          <button
-            className="border-2 border-amber-500 cursor-pointer max-h-[30px]"
-            onClick={handleConnectNetwork}
-          >
-            Connect to Network
-          </button>
+          <div className="flex flex-col">
+            <button
+              className="border-2 border-amber-500 cursor-pointer mb-5"
+              onClick={ () => route("/network", false) }
+            >
+              Connect to Network
+            </button>
+            <button
+              className={`border-2 border-amber-500 cursor-pointer ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
+              onClick={ () => route("/modules", false) }
+            >
+              Adjust Audio Settings
+            </button>
+          </div>
         </div>
       </div>
     </div>

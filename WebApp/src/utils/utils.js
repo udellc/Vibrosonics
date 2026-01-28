@@ -10,33 +10,44 @@
 
 import axios from "axios";
 
+export const HTTP_STATUS = Object.freeze({
+  OK: 200,
+  ACCEPTED: 202,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  METHOD_NOT_ALLOWED: 405,
+  UNPROCESSABLE: 422,
+  INTERNAL_ERROR: 500,
+  UNAVAILABLE: 503
+});
+
 /**
  * @brief The api util provides an generic interface for making API calls to the
  * backend web server
  *
- * @param method
- * @param endpoint
- * @param data
+ * @param method - HTTP method to be used for the client request
+ * @param endpoint - API endpoint we want to invoke from the web server
+ * @param data - Optional param for data
  *
  */
 export const api = async (method, endpoint, data = null) => {
-  // TODO: replace this with the actual backend url, this is the current default for ESP32 in AP mode -- has no internet
+  // TODO: this might change whe connecting to a different network
   const backendUrl = "http://vibrosonics";
   const url = `${backendUrl}${endpoint}`;
 
   try {
     switch (method) {
       case "GET": {
-        return (await axios.get(url)).data;
+        return (await axios.get(url));
       }
       case "POST": {
-        return (await axios.post(url, data)).data;
+        return (await axios.post(url, data));
       }
       case "PATCH": {
-        return (await axios.patch(url, data)).data;
+        return (await axios.patch(url, data));
       }
       case "DELETE": {
-        return (await axios.delete(url)).data;
+        return (await axios.delete(url));
       }
       default: {
         throw new Error(`Unknown HTTP method: ${method}`);

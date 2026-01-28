@@ -10,8 +10,8 @@
  ***************************************************************/
 
 import { useEffect, useState } from "preact/hooks";
-// import { route } from "preact-router";
-import { api } from "../utils/utils";
+import { route } from "preact-router";
+import { api, HTTP_STATUS } from "../utils/utils";
 import NetworkCard from "../components/networkCard";
 import TextEntry from "../components/textEntry";
 
@@ -31,25 +31,13 @@ const NetworkPage = () => {
     try {
       const res = await api("GET", "/network/scanNetworks");
 
-      if (res) {
-        setAvailableNetworks(res.ssid);
+      if (res.status == HTTP_STATUS.OK) {
+        setAvailableNetworks(res.data.ssid);
       }
     } catch (err) {
       console.error("Failed to scan networks", err);
     }
   };
-  /**
-   * @brief Gets the reponse to a network conenction request
-   */
-  const getNetworkResponse = async () => {
-    const payload = {
-      selectedNetwork,
-      password,
-    };
-    const res = await api("POST", "/network/connect", payload);
-
-    return res;
-  }
   /**
    * @brief Shows the password form and sets the selected network
    *
@@ -63,10 +51,17 @@ const NetworkPage = () => {
    * @brief Sends a connection request to the web server for the selected network SSID and password.
    * Routes to the modules page on successful connection
    */
-  const handleNetworkRequest = () => {
-    const res = getNetworkResponse();
+  const handleNetworkRequest = async () => {
+    const payload = {
+      selectedNetwork,
+      password,
+    };
+    const res = await api("POST", "/network/connect", payload);
 
-    console.log(res);
+    if (res.status == HTTP_STATUS.ACCEPTED) {
+      // TODO: update some sort of context that the header/footer use to show disconnect option
+      route("/modules", true);
+    }
   };
   // Scan for networks on mount
   useEffect(() => {

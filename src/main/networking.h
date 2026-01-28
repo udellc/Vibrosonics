@@ -13,20 +13,36 @@
 #ifndef NETWORKING_H
 #define NETWORKING_H
 
-#include <vector>
+#include <set>
 #include <Arduino.h>
 
 namespace Networking
 {
-  //! Init Wi-Fi in access point mode
+  //! Initializes the Wi-Fi settings for the web app
+  bool init();
+
   //! NOTE: This is insecure, only use this to open the landing and network pages from the hostname for the ESP32
   bool initAccessPoint();
 
   //! Scans available networks and adds their SSID to the result vector
-  void scanAvailableNetworks(std::vector<String> &result);
+  void scanAvailableNetworks(std::set<String> &result);
   
+  //! Starts the wifi connection
+  void initiateWifiTimerConnect(TimerHandle_t timer);
+
   //! Disconnects the ESP32 access point and attempts to reconnect to the new network
   bool connectToNetwork(const String &Ssid, const String &Password);
+
+  //! Returns the current WiFi SSID
+  String getNetworkSsid();
+
+  enum Status : unsigned int
+  {
+    ConnectedToAP = 0u,
+    ConnectedToWiFi,
+    JoiningWiFi,
+    NotConnected
+  };
 }
 
 #endif
