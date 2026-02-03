@@ -96,10 +96,17 @@ inline void WebServer::setupWebApp()
 
 void WebServer::queueRequest(const RequestId_T Id, AsyncWebServerRequest *req, JsonVariant *data)
 {
-  requestBuffer.id = Id;
-  requestBuffer.req = req;
-  requestBuffer.data = data;
-  isRequestQueued = true;
+  if (!isRequestQueued)
+  {
+    requestBuffer.id = Id;
+    requestBuffer.req = req;
+    requestBuffer.data = data;
+    isRequestQueued = true;
+  }
+  else
+  {
+    Serial.println("Request is already queued, consider increasing queue size");
+  }
 }
 
 bool WebServer::hasQueuedRequest()
