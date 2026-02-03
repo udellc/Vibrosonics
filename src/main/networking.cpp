@@ -216,7 +216,11 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
     // TODO: may need to move this into a seperate function if writing to SD card takes too long
     currentWifi.ssid = Ssid;
     currentWifi.password = Password;
-    isOutdatedSettings = true;
+    const String JsonWifi = "{\n"
+                              "  \"ssid\": \"" + currentWifi.ssid + "\",\n"
+                              "  \"password\": \"" + currentWifi.password + "\"\n"
+                              "}";
+    FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
   }
   return isMonitored;
 }
@@ -225,18 +229,4 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 String Networking::getNetworkSsid()
 {
   return (wifiStatus == Status_T::ConnectedToAP) ? ApSSID : currentWifi.ssid;
-}
-
-// TODO: add header comment
-void Networking::saveSettings()
-{
-  if (isOutdatedSettings)
-  {
-    const String JsonWifi = "{\n"
-                              "  \"ssid\": \"" + currentWifi.ssid + "\",\n"
-                              "  \"password\": \"" + currentWifi.password + "\"\n"
-                              "}";
-    FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
-    isOutdatedSettings = false;
-  }
 }
