@@ -13,7 +13,10 @@
 #include "networking.h"
 #include "fileSys.h"
 #include "config.h"
+
+#ifdef ENABLE_VAPI
 #include "VibrosonicsAPI.h"
+#define NUM_PEAKS 32
 
 #define VIBROSONICS_STACK_SIZE 8192u
 #define NUM_PEAKS 4
@@ -33,6 +36,11 @@ MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
 void runVibrosonicsTask(void *pvParams);
 
+float windowData[WINDOW_SIZE_BY_2];
+Spectrogram spectrogram = Spectrogram(1, WINDOW_SIZE_OVERLAP);
+MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
+
+#endif
 /**
  * @brief 
  * 
@@ -46,7 +54,7 @@ void setup()
   success &= Networking::init();
   success &= WebServer::init();
 
-  // On setup failure, do nothing 
+  // On setup failure, do nothing
   if (!success)
   {
     Serial.println("Setup failure. Looping...");
@@ -54,69 +62,78 @@ void setup()
     while (true)
       delay(1000);
   }
-  const auto Created = xTaskCreateStaticPinnedToCore
-  (
-    runVibrosonicsTask,
-    "VibrosonicsTask",
-    VIBROSONICS_STACK_SIZE,
-    nullptr,
-    5u,
-    vibrosonicsStack,
-    &vibrosonicsTaskBuffer,
-    0
-  );
-  if (!Created)
-  {
-    Serial.println("Failed to create task, looping...");
-    while(true)
-      delay(2000);
-  }
-  vapi.init();
-  majorPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
-  modules.addModule(&majorPeaks, 20, 3000);
+  #ifdef ENABLE_VAPI
+    Serial.println("Initializing VAPI")
+    vapi.init();
+    majorPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
+    majorPeaks.setSpectrogram(&spectrogram);
+  #endif
 }
 
 /**
  * @brief 
  * 
  */
-void loop()
-{
-  WebServer::updateServer();
-}
-
-void runVibrosonicsTask(void *pvParams)
-{
-  while (true)
-  {
+void loop() {
+  #ifdef ENABLE_VAPI
+    // skip if new audio window has not been recorded
     if (!vapi.isAudioLabReady())
     {
-      vTaskDelay(1);
+      return;
     }
-    else
-    {
-      // Process the input data
-      vapi.processAudioInput(windowData);
-      // Using this noise flooring function helps with getting a clear
-      // sounding output. This is more useful on the original prototype.
-      // You may not need this if you are using the latest hardware.
-      vapi.noiseFloorCFAR(windowData, 4, 1, 1.6);
-      // Push the processed data to the processed spectrogram
-      processedSpectrogram.pushWindow(windowData);
-      // Analyze the data with the added AudioPrism modules
-      modules.runAnalysis();
-      // Get the analyzed data from MajorPeaks module
-      float** peaksData = majorPeaks.getOutput();
-      // Print out peak data
-      // Serial.printf("Major Peaks:\n");
-      // for (int i = 0; i < NUM_PEAKS; i++)
-      // {
-      //   Serial.printf("Peak: %i Frequency: %fHz Amplitude: %f\n", i, FREQ_RES * peaksData[MP_FREQ][i], peaksData[MP_AMP][i]);
-      // }
-      // Generate waves to be outputted on the hardware on channel 0
-      vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], NUM_PEAKS, 0);
-      // Synthesize all created waves through AudioLab
-      AudioLab.synthesize();
-    }
+  #endif
+  if (WebServer::hasQueuedRequest())
+  {
+    Serial.println("In here!!!");
+    uint cur, prev = micros();
+    #ifdef ENABLE_VAPI
+      vapi.pause();
+    #endif
+    WebServer::processRequest();
+    #ifdef ENABLE_VAPI
+      vapi.resume();
+    #endif
+    cur = micros();
+    Serial.print("It took ");
+    Serial.print(cur - prev);
+    Serial.println("microseconds to execute request");
+  }
+  #ifdef ENABLE_VAPI
+    // process the raw audio signal into frequency domain data
+    vapi.processAudioInput(windowData);
+    vapi.noiseFloorCFAR(windowData, 4, 1, 1.8);
+    spectrogram.pushWindow(windowData);
+    majorPeaks.doAnalysis();
+    synthesizePeaks(&majorPeaks);
+    AudioLab.synthesize();
+  #endif
+}
+
+#ifdef ENABLE_VAPI
+int interpolateAroundPeak(float* data, int indexOfPeak)
+{
+  float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
+  float atPeak = data[indexOfPeak];
+  float postPeak = indexOfPeak == WINDOW_SIZE_BY_2 ? 0.0 : data[indexOfPeak + 1];
+  // summing around the index of maximum amplitude to normalize magnitudeOfChange
+  float peakSum = prePeak + atPeak + postPeak;
+  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
+  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1.0);
+
+  // return interpolated frequency
+  return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
+}
+
+void synthesizePeaks(MajorPeaks* peaks)
+{
+  float** peaksData = peaks->getOutput();
+  // interpolate around peaks
+  vapi.mapAmplitudes(peaksData[MP_AMP], NUM_PEAKS, 20000);
+
+  for (int i = 0; i < NUM_PEAKS; i++) {
+    int freq = interpolateAroundPeak(spectrogram.getCurrentWindow(), round(int(peaksData[MP_FREQ][i] * FREQ_WIDTH)));
+    vapi.assignWave(freq, peaksData[MP_AMP][i], 0);
+    vapi.assignWave(freq, peaksData[MP_AMP][i], 1);
   }
 }
+#endif

@@ -20,12 +20,26 @@
 
 namespace WebServer
 {
+  enum RequestId_T : unsigned int
+  {
+    LoadWebPage = 0u,
+    ScanNetworks,
+    ConnectToNetwork,
+    GetSSID,
+
+  };
   //! Initializes the web server before starting it
   bool init();
 
   //! Initializes the web server assuming the web app is setup correctly on the SD card
   inline void setupWebApp();
 
+  void queueRequest(const RequestId_T Id, AsyncWebServerRequest *req, JsonVariant *data = nullptr);
+  bool hasQueuedRequest();
+  void processRequest();
+
+  //----------------------------------
+  // API handlers
   //! Sends the discovered networks found from the ESP32
   void sendScannedNetworks(AsyncWebServerRequest *req);
 
@@ -38,9 +52,6 @@ namespace WebServer
   //! Helper function for returning the content type
   String getContentType(const String &Path);
 
-  //! Updates marked-as-outdated settings
-  void updateServer();
-  
   #ifdef DEV_MODE
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();

@@ -12,11 +12,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-/**
- * NOTE: This macro makes the ESP32 display a web page for interacting with
- * the SD file system, since we don't have a thumb drive for the SD card
- * to modify the data yet
- */
 #define DEV_MODE
+// #define ENABLE_VAPI
 
 #endif

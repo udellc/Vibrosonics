@@ -13,16 +13,23 @@
 #include "fileSys.h"
 #include "networking.h"
 
+struct HttpRequest_T
+{
+  WebServer::RequestId_T id;
+  AsyncWebServerRequest *req;
+  JsonVariant *data;
+};
+
 // HTTP defines
 constexpr int HTTP_OK = 200;
 constexpr int HTTP_ACCEPTED = 202;
 constexpr int HTTP_BAD_REQUEST = 400;
-constexpr int HTTP_UNAUTHORIZED = 401;
-constexpr int HTTP_METHOD_NOT_ALLOWED = 405;
 constexpr int HTTP_UNPROCESSABLE = 422;
 constexpr int HTTP_INTERNAL_ERROR = 500;
 constexpr int HTTP_UNAVAILABLE = 503;
 
+static HttpRequest_T requestBuffer;
+volatile bool isRequestQueued = false; 
 static AsyncWebServer server(80);
 
 /**
@@ -39,7 +46,7 @@ bool WebServer::init()
 
   success &= FileSys::exists("/index.html");
 
-  #ifdef UPLOAD_MODE
+  #ifdef DEV_MODE
     setupUploadMode();
   #endif
     setupWebApp();
@@ -68,14 +75,72 @@ inline void WebServer::setupWebApp()
   // Lambda for the initial request to the URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
   {
-    req->send(SD, "/index.html", getContentType("/index.html"));
+    queueRequest(RequestId_T::LoadWebPage, req);
   });
   server.serveStatic("/", SD, "/");
 
   // Network APIs
-  server.on("/network/scanNetworks", HTTP_GET, sendScannedNetworks);
-  server.on("/network/connect", HTTP_POST, sendNetworkConnectResponse);
-  server.on("/network/getSsid", HTTP_GET, sendNetworkSsid);
+  server.on("/network/scanNetworks", HTTP_GET, [](AsyncWebServerRequest *req)
+  {
+    queueRequest(RequestId_T::ScanNetworks, req);
+  });
+  server.on("/network/connect", HTTP_POST, [](AsyncWebServerRequest *req, JsonVariant &json)
+  {
+    queueRequest(RequestId_T::ConnectToNetwork, req, &json);
+  });
+  server.on("/network/getSsid", HTTP_GET, [](AsyncWebServerRequest *req)
+  {
+    queueRequest(RequestId_T::GetSSID, req);
+  });
+}
+
+void WebServer::queueRequest(const RequestId_T Id, AsyncWebServerRequest *req, JsonVariant *data)
+{
+  requestBuffer.id = Id;
+  requestBuffer.req = req;
+  requestBuffer.data = data;
+  isRequestQueued = true;
+}
+
+bool WebServer::hasQueuedRequest()
+{
+  return isRequestQueued;
+}
+
+void WebServer::processRequest()
+{
+  if (!isRequestQueued)
+  {
+    Serial.println("Returning from processRequest");
+    return;
+  }
+  switch (requestBuffer.id)
+  {
+    case LoadWebPage:
+      Serial.println("Sending web page");
+      requestBuffer.req->send(SD, "/index.html", getContentType("/index.html"));
+      break;
+
+    case ScanNetworks:
+      Serial.println("scanning networks");
+      sendScannedNetworks(requestBuffer.req);
+      break;
+
+    case ConnectToNetwork:
+      Serial.println("Connecting to network");
+      sendNetworkConnectResponse(requestBuffer.req, *requestBuffer.data);
+      Serial.println("Sent response");
+      break;
+
+    case GetSSID:
+      sendNetworkSsid(requestBuffer.req);
+      break;
+
+    default:
+      Serial.println("Process Request Error: Message ID not defined");
+      return;
+  }
+  isRequestQueued = false;
 }
 
 // TODO: add header comment
@@ -137,11 +202,6 @@ String WebServer::getContentType(const String &Path) {
   if (Path.endsWith(".ico"))  return "image/x-icon";
   if (Path.endsWith(".json")) return "application/json";
   return "text/plain";
-}
-
-void WebServer::updateServer()
-{
-  Networking::saveSettings();
 }
 
 #ifdef DEV_MODE
