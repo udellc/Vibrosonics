@@ -12,12 +12,13 @@
 #include "webServer.h"
 #include "fileSys.h"
 #include "networking.h"
+#include <queue>
 
 struct HttpRequest_T
 {
   WebServer::RequestId_T id;
   AsyncWebServerRequest *req;
-  JsonVariant *data;
+  String data;
 };
 
 // HTTP defines
@@ -28,8 +29,7 @@ constexpr int HTTP_UNPROCESSABLE = 422;
 constexpr int HTTP_INTERNAL_ERROR = 500;
 constexpr int HTTP_UNAVAILABLE = 503;
 
-static HttpRequest_T requestBuffer;
-volatile bool isRequestQueued = false; 
+static std::queue<HttpRequest_T> reqQueue;
 static AsyncWebServer server(80);
 
 /**
@@ -75,7 +75,8 @@ inline void WebServer::setupWebApp()
   // Lambda for the initial request to the URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *req)
   {
-    queueRequest(RequestId_T::LoadWebPage, req);
+    req->send(SD, "/index.html", getContentType("/index.html"));
+    // queueRequest(RequestId_T::LoadWebPage, req);
   });
   server.serveStatic("/", SD, "/");
 
@@ -96,64 +97,64 @@ inline void WebServer::setupWebApp()
 
 void WebServer::queueRequest(const RequestId_T Id, AsyncWebServerRequest *req, JsonVariant *data)
 {
-  if (!isRequestQueued)
-  {
-    requestBuffer.id = Id;
-    requestBuffer.req = req;
-    requestBuffer.data = data;
-    isRequestQueued = true;
-  }
-  else
-  {
-    Serial.println("Request is already queued, consider increasing queue size");
-  }
+  HttpRequest_T incomingReq;
+  JsonObject dataObject = data->as<JsonObject>();
+
+  incomingReq.id = Id;
+  incomingReq.req = req;
+  (void) serializeJson(dataObject, incomingReq.data);
+
+  reqQueue.push(incomingReq);
 }
 
 bool WebServer::hasQueuedRequest()
 {
-  return isRequestQueued;
+  return !(reqQueue.empty());
 }
 
 void WebServer::processRequest()
 {
-  if (!isRequestQueued)
+  if (reqQueue.empty())
   {
-    Serial.println("Returning from processRequest");
+    Serial.println("Req Queue empty");
     return;
   }
-  switch (requestBuffer.id)
+  auto latestReq = reqQueue.front();
+
+  switch (latestReq.id)
   {
     case LoadWebPage:
       Serial.println("Sending web page");
-      requestBuffer.req->send(SD, "/index.html", getContentType("/index.html"));
+      latestReq.req->send(SD, "/index.html", getContentType("/index.html"));
       break;
 
     case ScanNetworks:
       Serial.println("scanning networks");
-      sendScannedNetworks(requestBuffer.req);
+      sendScannedNetworks(latestReq.req);
       break;
 
     case ConnectToNetwork:
       Serial.println("Connecting to network");
-      sendNetworkConnectResponse(requestBuffer.req, *requestBuffer.data);
+      sendNetworkConnectResponse(latestReq.req, latestReq.data);
       Serial.println("Sent response");
       break;
 
     case GetSSID:
-      sendNetworkSsid(requestBuffer.req);
+      sendNetworkSsid(latestReq.req);
       break;
 
     default:
       Serial.println("Process Request Error: Message ID not defined");
       return;
   }
-  isRequestQueued = false;
+  reqQueue.pop();
 }
 
 // TODO: add header comment
 void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 {
   Serial.println("Getting available networks...");
+
   // Populate networks vector
   std::set<String> networks;
   Networking::scanAvailableNetworks(networks);
@@ -172,9 +173,11 @@ void WebServer::sendScannedNetworks(AsyncWebServerRequest *req)
 }
 
 // TODO: add header comment
-void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json)
+void WebServer::sendNetworkConnectResponse(AsyncWebServerRequest *req, String jsonData)
 {
-  JsonObject payload = json.as<JsonObject>();
+  JsonDocument payload;
+  deserializeJson(payload, jsonData);
+
   const String NewSSID = payload["ssid"];
   const String NewPassword = payload["password"];
   const bool IsConnected = Networking::connectToNetwork(NewSSID, NewPassword);

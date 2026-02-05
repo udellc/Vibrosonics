@@ -15,17 +15,9 @@
 #include "config.h"
 
 #ifdef ENABLE_VAPI
+
 #include "VibrosonicsAPI.h"
 #define NUM_PEAKS 32
-
-#define VIBROSONICS_STACK_SIZE 8192u
-#define NUM_PEAKS 4
-#define LOW_FREQ 20
-#define HIGH_FREQ 3000
-
-// ESP32 Config globals
-StaticTask_t vibrosonicsTaskBuffer;
-StackType_t vibrosonicsStack[VIBROSONICS_STACK_SIZE];
 
 // Vibrosonics audio analysis globals
 static VibrosonicsAPI vapi = VibrosonicsAPI();
@@ -34,13 +26,8 @@ Spectrogram processedSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup modules = ModuleGroup(&processedSpectrogram);
 MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
-void runVibrosonicsTask(void *pvParams);
-
-float windowData[WINDOW_SIZE_BY_2];
-Spectrogram spectrogram = Spectrogram(1, WINDOW_SIZE_OVERLAP);
-MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
-
 #endif
+
 /**
  * @brief 
  * 
@@ -86,13 +73,17 @@ void loop() {
   {
     Serial.println("In here!!!");
     uint cur, prev = micros();
+    
     #ifdef ENABLE_VAPI
       vapi.pause();
     #endif
+
     WebServer::processRequest();
+    
     #ifdef ENABLE_VAPI
       vapi.resume();
     #endif
+    
     cur = micros();
     Serial.print("It took ");
     Serial.print(cur - prev);

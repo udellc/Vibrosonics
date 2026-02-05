@@ -16,7 +16,7 @@
 #include <ArduinoJson.h>
 
 #define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
-#define MAX_CONNECTION_TRIES 5u
+#define MAX_CONNECTION_TRIES 10u
 
 struct WiFiInfo
 {
@@ -30,7 +30,7 @@ static JsonDocument settingsDoc;
 #ifdef DEV_MODE
   const char *ApSSID = "Vibrosonics-Dev";
 #else
-  const char *ApSSID = "Vibrosonics-Dev";
+  const char *ApSSID = "Vibrosonics-Unsecure";
 #endif
 
 const char *DefaultHostname = "vibrosonics";
@@ -80,7 +80,7 @@ bool Networking::init()
       while (wifiStatus != Status_T::ConnectedToWiFi && numTries != MAX_CONNECTION_TRIES)
       {
         numTries++;
-        delay(1000u);
+        delay(500u);
       }
       if (wifiStatus == Status_T::ConnectedToWiFi)
       {
@@ -169,7 +169,7 @@ void Networking::initiateWifiTimerConnect(TimerHandle_t timer)
       else if (status == WL_CONNECT_FAILED || status == WL_NO_SSID_AVAIL || status == WL_CONNECTION_LOST)
       {
         Serial.printf("WiFi Connection Failed (Status: %d)\n", status);
-        wifiStatus = Status_T::NotConnected; 
+        wifiStatus = Status_T::NotConnected;
         xTimerStop(wifiTimer, 0);
       }
       // Safety: If it's not connected and not currently trying (Idle/No Shield), abort

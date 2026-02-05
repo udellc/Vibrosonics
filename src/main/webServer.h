@@ -44,7 +44,7 @@ namespace WebServer
   void sendScannedNetworks(AsyncWebServerRequest *req);
 
   //! Sends a success status for the connection request to the given network
-  void sendNetworkConnectResponse(AsyncWebServerRequest *req, JsonVariant &json);
+  void sendNetworkConnectResponse(AsyncWebServerRequest *req, String jsonData);
 
   //! Sends the network SSID
   void sendNetworkSsid(AsyncWebServerRequest *req);
