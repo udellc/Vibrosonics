@@ -1,12 +1,29 @@
 #include "VibrosonicsAPI.h"
 #include "storage.h"
 
-#define MID_FREQ_LO 400
-#define MID_FREQ_HI 1000
-#define HIGH_FREQ_LO 1000
-#define HIGH_FREQ_HI 3600
-
-AnalysisConfig loaded_config;
+AnalysisConfig loadedConfig = {
+  280,
+  6,
+  1,
+  1.4,
+  0.4,
+  {
+    {
+      EMPTY,
+      400,
+      1000,
+      OCTAVE,
+      10000
+    },
+    {
+      MAJORPEAKS,
+      1000,
+      3600,
+      OCTAVE,
+      10000
+    },
+  }
+};
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
@@ -17,8 +34,9 @@ float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 
 Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
-MajorPeaks midPeak = MajorPeaks(1);
-MajorPeaks highPeak = MajorPeaks(1);
+
+// NOTE: using float** for the type here is going to cause issues when adding percussion - find more elegant solution
+ModuleInterface<float**>* modules[NUM_OUT_CH];
 
 void setup() {
   Serial.begin(115200);
@@ -26,12 +44,13 @@ void setup() {
   // call the API setup function
   vapi.init();
 
-  midPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
-  highPeak.setWindowSize(WINDOW_SIZE_OVERLAP);
-
-  // add melody peak modules to the melodic group
-  melodic.addModule(&midPeak, MID_FREQ_LO, MID_FREQ_HI);
-  melodic.addModule(&highPeak, HIGH_FREQ_LO, HIGH_FREQ_HI);
+  for (int i = 0; i < NUM_OUT_CH; i++){
+    if (loadedConfig.outputs[i].moduleType == MAJORPEAKS){
+      modules[i] = new MajorPeaks(1);
+      modules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      melodic.addModule(modules[i], loadedConfig.outputs[i].freqLow, loadedConfig.outputs[i].freqHigh);
+    }
+  }
 }
 
 void loop() {
@@ -46,16 +65,16 @@ void loop() {
   // process the freqeuncy domain data
 
   // floor the noise from the wire using a set threshold
-  vapi.noiseFloor(windowData, loaded_config.noiseFloor);
+  vapi.noiseFloor(windowData, loadedConfig.noiseFloor);
 
   // copy the windowData to filterdData
   memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
 
   // apply CFAR to filter the data
-  vapi.noiseFloorCFAR(filteredData, loaded_config.cfarRefCount, loaded_config.cfarGuardCount, loaded_config.cfarBias);
+  vapi.noiseFloorCFAR(filteredData, loadedConfig.cfarRefCount, loadedConfig.cfarGuardCount, loadedConfig.cfarBias);
 
   // smooth the filtered data over a long and short period of time
-  AudioPrism::smooth_window_over_time(filteredData, smoothedData, loaded_config.smoothingFactor, WINDOW_SIZE_OVERLAP);
+  AudioPrism::smooth_window_over_time(filteredData, smoothedData, loadedConfig.smoothingFactor, WINDOW_SIZE_OVERLAP);
 
   // calculate the percussive and melodic data
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++) {
@@ -63,7 +82,7 @@ void loop() {
     // case that windowData dropped quickly (becomes less than the
     // smoothedData) we want to adapt to that
     melodicData[i] = min(windowData[i], smoothedData[i]);
-    if (melodicData[i] < loaded_config.noiseFloor) {
+    if (melodicData[i] < loadedConfig.noiseFloor) {
       melodicData[i] = 0.;
     }
   }
@@ -74,24 +93,16 @@ void loop() {
   // have analysis modules analyze the frequency domain data
   melodic.runAnalysis();
 
-  float **midPeakData = midPeak.getOutput();
-  float **highPeakData = highPeak.getOutput();
-
-  // synthesize the mid peak to the left speaker, ignoring percussion
-  synthesizePeak(0, midPeakData[MP_FREQ][0], midPeakData[MP_AMP][0], MID_FREQ_LO, MID_FREQ_HI);
-
-  // synthesize the high peak to the right speaker, ducking with percussive
-  // hits
-  synthesizePeak(1, highPeakData[MP_FREQ][0], highPeakData[MP_AMP][0], HIGH_FREQ_LO, HIGH_FREQ_HI);
-
-  // map the amplitudes of waves in both channels
-  AudioLab.mapAmplitudes(0, 10000);
-  AudioLab.mapAmplitudes(1, 10000);
+  for (int i = 0; i < NUM_OUT_CH; i++){
+    if (loadedConfig.outputs[i].moduleType != EMPTY){
+      float **analysisData = modules[i]->getOutput();
+      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.outputs[i].freqLow, loadedConfig.outputs[i].freqHigh, loadedConfig.outputs[i].frequencyMapping);
+      AudioLab.mapAmplitudes(i, loadedConfig.outputs[i].minAmpNorm);
+    }
+  }
 
   // synthesize the waves created
   AudioLab.synthesize();
-
-  // AudioLab.printWaves();
 }
 
 int interpolateAroundPeak(float *data, int indexOfPeak) {
@@ -107,7 +118,7 @@ int interpolateAroundPeak(float *data, int indexOfPeak) {
   return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
 }
 
-void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax) {
+void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption) {
   // interpolate the frequency around the peak to get a more accurate measure
   float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
 
@@ -116,11 +127,11 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
   // frequency than 3800Hz+ since we can divide one less time and the output is
   // closer to the full haptic range.
   float haptic_freq = interp_freq;
-  if (loaded_config.frequencyMapping == OCTAVE)
+  if (mappingOption == OCTAVE)
   {
     haptic_freq = vapi.mapFrequencyByOctaves(interp_freq, freqMax);
   }
-  else if (loaded_config.frequencyMapping == MIDI)
+  else if (mappingOption == MIDI)
   {
     haptic_freq = vapi.mapFrequencyMIDI(interp_freq, freqMin, freqMax);
   }

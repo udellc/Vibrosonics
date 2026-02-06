@@ -9,19 +9,27 @@ enum FrequencyMapping{
   MIDI
 };
 
+// note: add more and update sketch as more support is added
+enum ModuleType{
+  EMPTY,
+  MAJORPEAKS,
+  PERCUSSION
+};
+
 typedef struct {
-  uint8_t freqLow;
-  uint8_t freqHigh;
+  ModuleType moduleType = EMPTY;
+  uint16_t freqLow;
+  uint16_t freqHigh;
+  FrequencyMapping frequencyMapping;
   float minAmpNorm;
 } OutputConfig;
 
 typedef struct {
-  float noiseFloor = 0;
-  uint8_t cfarRefCount = 6;
-  uint8_t cfarGuardCount = 1;
+  float noiseFloor = 280;
+  uint16_t cfarRefCount = 6;
+  uint16_t cfarGuardCount = 1;
   float cfarBias = 1.4;
   float smoothingFactor = 0.3;
-  FrequencyMapping frequencyMapping = OCTAVE;
   OutputConfig outputs[NUM_OUT_CH];
 } AnalysisConfig;
 
