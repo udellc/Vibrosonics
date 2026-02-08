@@ -13,7 +13,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WebServer.h>
-#include <set>
 #include "config.h"
 #include "fileSys.h"
 #include "networking.h"
@@ -59,19 +58,19 @@ bool WebInterface::init()
 {
   bool success = true;
 
-  Serial.println("Starting web server...");
+  DEBUG_PRINTLN("DEBUG: Starting web server...");
 
   success &= FileSys::exists("/index.html");
 
-  #ifdef DEV_MODE
+  #ifdef DEV_MODE_EN
     setupUploadMode();
   #endif
     setupServer();
 
-  if (!success) Serial.println("/index.html not found. Missing web app files.");
+  if (!success) DEBUG_PRINTLN("FATAL: /index.html not found. Missing web app files.");
   
   server.begin();
-  Serial.println("Web server started.");
+  DEBUG_PRINTLN("DEBUG: Web server started.");
 
   return success;
 }
@@ -120,12 +119,12 @@ void WebInterface::onNotFoundHandler()
   
   else
   {
-    Serial.println("DEBUG: im here in onFoundHandler");
+    DEBUG_PRINTLN("DEBUG: im here in onFoundHandler");
     File file = FileSys::getFile(Path);
 
     if (file)
     {
-      Serial.printf("DEBUG: file name %s\n", file.path());
+      DEBUG_PRINTF("DEBUG: file name %s\n", file.path());
       server.streamFile(file, getContentType(Path));
       file.close();
     }
@@ -140,12 +139,11 @@ void WebInterface::onScanNetworks()
   std::set<String> networks;
 
   Networking::scanAvailableNetworks(networks);
-
   // Convert networks into json for frontend to parse
   JsonArray jsonNetworks = doc["ssid"].to<JsonArray>();
 
   for (const auto &ssid : networks) jsonNetworks.add(ssid);
-  
+
   serializeJson(doc, json);
   server.send(HTTP_OK, APP_JSON, json);
 }
@@ -198,14 +196,14 @@ static bool parsePayload(JsonDocument &output)
 
   if (ParsingError)
   {
-    Serial.println("DEBUG: parsing error in parsePayload");
+    DEBUG_PRINTLN("DEBUG: parsing error in parsePayload");
 
     return false;
   }
   return true;
 }
 
-#ifdef DEV_MODE
+#ifdef DEV_MODE_EN
 
 static const char *uploadForm PROGMEM = R"(
 <!DOCTYPE html>
@@ -270,7 +268,7 @@ void WebInterface::uploadFile()
     String filename = upload.filename;
     String fullPath = dir + filename;
 
-    Serial.printf("Uploading to: %s\n", fullPath.c_str());
+    DEBUG_PRINTF("DEBUG: Uploading to: %s\n", fullPath.c_str());
     _uploadFile = FileSys::getFile(fullPath, FILE_WRITE);
   } 
   else if (upload.status == UPLOAD_FILE_WRITE)
@@ -282,7 +280,7 @@ void WebInterface::uploadFile()
     if (_uploadFile)
     {
       _uploadFile.close();
-      Serial.printf("Upload Success: %u bytes\n", upload.totalSize);
+      DEBUG_PRINTF("DEBUG: Upload Success: %u bytes\n", upload.totalSize);
     }
   }
 }
@@ -290,7 +288,7 @@ void WebInterface::uploadFile()
 // TODO: add header comment
 void WebInterface::printFiles()
 {
-  Serial.println("Printing files...");
+  DEBUG_PRINTLN("DEBUG: Printing files...");
   File root = FileSys::getFile();
 
   if (root)
@@ -308,7 +306,7 @@ void WebInterface::printFiles()
 
 void WebInterface::clearSd()
 {
-  Serial.println("Clearing SD memory...");
+  DEBUG_PRINTLN("DEBUG: Clearing SD memory...");
   File root = FileSys::getFile();
 
   if (root)
@@ -324,4 +322,4 @@ void WebInterface::clearSd()
   }
 }
 
-#endif // DEV_MODE
+#endif // DEV_MODE_EN

@@ -18,16 +18,16 @@
 bool FileSys::init()
 {
   bool success = true;
-  Serial.println("File system initializing...");
+  DEBUG_PRINTLN("DEBUG: File system initializing...");
 
   if (!SD.begin(CS_PIN))
   {
-    Serial.println("SD File system failed to initialize.");
+    DEBUG_PRINTLN("DEBUG: SD File system failed to initialize.");
     success = false;
   }
   else
   {
-    Serial.println("SD File system successfully initialized.");
+    DEBUG_PRINTLN("DEBUG: SD File system successfully initialized.");
   }
   return success;
 }
@@ -102,7 +102,7 @@ String FileSys::readFile(const String &Path)
   return Data;
 }
 
-#ifdef DEV_MODE
+#ifdef DEV_MODE_EN
 
 // TODO: add header comment
 void FileSys::traverseFiles(File start, FSCallback callback)
@@ -131,7 +131,7 @@ void FileSys::traverseFiles(File start, FSCallback callback)
 void FileSys::printFile(File &file)
 {
   const String FileType = (file.isDirectory()) ? "Directory" : "File";
-  Serial.printf("Type: %s\tName: %s\tPath: %s\n", FileType, file.name(), file.path());
+  DEBUG_PRINTF("DEBUG: Type: %s\tName: %s\tPath: %s\n", FileType, file.name(), file.path());
 }
 
 void FileSys::removeFile(File &file)

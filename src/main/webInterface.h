@@ -19,10 +19,13 @@ namespace WebInterface
   //! Initializes the web server before starting it
   bool init();
 
+  //! Function call for the server to handle requests via polling
   void run();
 
+  //! Adds API endpoints for the web server
   inline void setupServer();
 
+  // 
   void sendWebApp();
 
   void onNotFoundHandler();
@@ -31,7 +34,7 @@ namespace WebInterface
 
   void onConnectToNetwork();
 
-  #ifdef DEV_MODE
+  #ifdef DEV_MODE_EN
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();
 
@@ -44,7 +47,7 @@ namespace WebInterface
     //! Removes all files from the SD card
     void clearSd();
 
-  #endif  // DEV_MODE
+  #endif  // DEV_MODE_EN
 }
 
 #endif // WEB_INTERFACE_H

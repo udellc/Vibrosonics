@@ -14,7 +14,7 @@
 #include "fileSys.h"
 #include "config.h"
 
-#ifdef ENABLE_VAPI
+#ifdef VAPI_EN
 
 #include "VibrosonicsAPI.h"
 #define NUM_PEAKS 12
@@ -51,8 +51,7 @@ void webRunner(void *params)
 void setup()
 {
   bool success = true;
-
-  Serial.begin(115200);
+  DEBUG_BEGIN(115200);
   success &= FileSys::init();
   success &= Networking::init();
   success &= WebInterface::init();
@@ -69,18 +68,18 @@ void setup()
   if (CreatedTask != pdPASS)
   {
     success = false;
-    Serial.println("Could not create web server task");
+    DEBUG_PRINTLN("DEBUG: Could not create web server task");
   }
   // On setup failure, do nothing
   if (!success)
   {
-    Serial.println("Setup failure. Looping...");
+    DEBUG_PRINTLN("FATAL: Setup failure. Looping...");
 
     while (true)
       delay(3000u);
   }
-  #ifdef ENABLE_VAPI
-    Serial.println("Initializing VAPI");
+  #ifdef VAPI_EN
+    DEBUG_PRINTLN("DEBUG: Initializing VAPI");
     vapi.init();
     majorPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
     modules.addModule(&majorPeaks, 20, 3000);
@@ -93,7 +92,7 @@ void setup()
  */
 void loop()
 {
-#ifdef ENABLE_VAPI
+#ifdef VAPI_EN
   // Check to make sure that the AudioLab input buffer has been filled
   if (!vapi.isAudioLabReady())
   {
@@ -136,5 +135,5 @@ void loop()
 
   // Synthesize all created waves through AudioLab
   AudioLab.synthesize();
-#endif // ENABLE_VAPI
+#endif // VAPI_EN
 }

@@ -20,7 +20,7 @@
 #define WIFI_CONNECTION_DELAY_INTERVAL_MS 500u
 #define MAX_CONNECTION_TRIES 10u
 
-#ifdef DEV_MODE
+#ifdef DEV_MODE_EN
   const char *ApSSID = "Vibrosonics-Dev";
 #else
   const char *ApSSID = "Vibrosonics-Unsecure";
@@ -71,7 +71,7 @@ bool Networking::init()
         currentWifi.ssid = String(ssid);
         currentWifi.password = String(password);
         wifiStatus = Status_T::ConnectedToWiFi;
-        Serial.println("Successfully connected to saved Wi-Fi");
+        DEBUG_PRINTLN("DEBUG: Successfully connected to saved Wi-Fi");
         
         return true;
       }
@@ -99,20 +99,20 @@ bool Networking::init()
  */
 bool Networking::initAccessPoint()
 {
-  Serial.println("Starting WiFi access point...");
+  DEBUG_PRINTLN("DEBUG: Starting WiFi access point...");
 
   bool success = WiFi.softAP(ApSSID, ApPassword);
   success &= MDNS.begin(DefaultHostname);
 
   if (!success)
   {
-    Serial.println("Access point creation failed.");
+    DEBUG_PRINTLN("DEBUG: Access point creation failed.");
   }
   else
   {
-    Serial.print("Access point created. Accessible at ");
-    Serial.print(WiFi.softAPIP());
-    Serial.printf(" or http://%s\n", DefaultHostname);
+    DEBUG_PRINT("DEBUG: Access point created. Accessible at ");
+    DEBUG_PRINT(WiFi.softAPIP());
+    DEBUG_PRINTF(" or http://%s\n", DefaultHostname);
   }
   return success;
 }
@@ -124,7 +124,7 @@ void Networking::scanAvailableNetworks(std::set<String> &result)
 
   if (NumNetworks == 0)
   {
-    Serial.println("No networks");
+    DEBUG_PRINTLN("DEBUG: No networks");
   }
   else
   {
@@ -143,10 +143,10 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
  
   if (Ssid.length() == 0)
   {
-    Serial.println("Empty SSID provided");
+    DEBUG_PRINTLN("WARNING: Empty SSID provided");
     return false;
   }
-  Serial.printf("Attempting to connect to %s\n", Ssid);
+  DEBUG_PRINTF("DEBUG: Attempting to connect to %s\n", Ssid);
   WiFi.begin(Ssid.c_str(), Password.c_str());
 
   // Wait for connection with 10 sec timeout
@@ -165,7 +165,7 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 
     return true;
   }
-  Serial.printf("Connection attempt to %s failed\n", Ssid);
+  DEBUG_PRINTF("DEBUG: Connection attempt to %s failed\n", Ssid);
   return false;
 }
 
