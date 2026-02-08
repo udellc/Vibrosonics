@@ -34,7 +34,15 @@ MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
 
-// TODO: add header comment
+/**
+ * @brief Function to be pinned to core 0. Handles the clients for the web server
+ *        every TASK_DELAY_MS.
+ * 
+ * @param params - Parameters used
+ * 
+ * NOTE: params is UNUSED but needed to match the function signature for
+ *       xTaskCreatePinnedToCore()
+ */
 void webRunner(void *params)
 {
   while (true)
