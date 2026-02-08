@@ -25,13 +25,16 @@ namespace WebInterface
   //! Adds API endpoints for the web server
   inline void setupServer();
 
-  // 
+  //! Looks for index.html file on the SD card and send it
   void sendWebApp();
 
+  //! Handler for invalid URI requests
   void onNotFoundHandler();
 
+  //! Handler for sending ESP32 scanned WiFi networks
   void onScanNetworks();
 
+  //! Handler for connncting to user selected network
   void onConnectToNetwork();
 
   #ifdef DEV_MODE_EN
@@ -47,7 +50,7 @@ namespace WebInterface
     //! Removes all files from the SD card
     void clearSd();
 
-  #endif  // DEV_MODE_EN
+  #endif // DEV_MODE_EN
 }
 
 #endif // WEB_INTERFACE_H

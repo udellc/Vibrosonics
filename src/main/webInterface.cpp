@@ -50,9 +50,10 @@ File _uploadFile;
 
 /**
  * @brief Initializes the web server with file uploading capabilities,
- *        depending on the config file
+ *        depending on the config file.
  * 
- * @return Bool inidicating if the web server is live
+ * @return Bool inidicating if the web server is live.
+ * 
  */
 bool WebInterface::init()
 {
@@ -75,13 +76,19 @@ bool WebInterface::init()
   return success;
 }
 
-// TODO: add header comment
+/**
+ * @brief Function call for running the web server via polling method.
+ * 
+ */
 void WebInterface::run()
 {
   server.handleClient();
 }
 
-// TODO: add header comment
+/**
+ * @brief Adds web server API endpoints and sets up WebServer settings.
+ * 
+ */
 inline void WebInterface::setupServer()
 {
   server.on("/", HTTP_GET, sendWebApp);
@@ -97,7 +104,11 @@ inline void WebInterface::setupServer()
   server.onNotFound(onNotFoundHandler);
 }
 
-// TODO: add header comment
+/**
+ * @brief Finds the index.html file for the web app on the
+ *        SD card and sends it.
+ * 
+ */
 void WebInterface::sendWebApp()
 {
   File entryFile = FileSys::getFile("/index.html");
@@ -110,7 +121,12 @@ void WebInterface::sendWebApp()
   else server.send(HTTP_NOT_FOUND, TEXT_PLAIN, "File not found");
 }
 
-// TODO: add header comment
+/**
+ * @brief Sends 404 error when URI endpoint is not defined.
+ *        If not defined, it searches the SD card for a matching file name
+ *        and sends it.
+ * 
+ */
 void WebInterface::onNotFoundHandler()
 {
   const String Path = server.uri();
@@ -132,6 +148,11 @@ void WebInterface::onNotFoundHandler()
   }
 }
 
+/**
+ * @brief Gets scanned networks, packages the SSIDs,
+ *        and sends the data.
+ * 
+ */
 void WebInterface::onScanNetworks()
 {
   String json;
@@ -148,6 +169,11 @@ void WebInterface::onScanNetworks()
   server.send(HTTP_OK, APP_JSON, json);
 }
 
+/**
+ * @brief Gets the user selected network SSID and password,
+ *        attempts to connect to the network and sends the response status.
+ * 
+ */
 void WebInterface::onConnectToNetwork()
 {
   JsonDocument payload;
@@ -185,7 +211,14 @@ static String getContentType(const String &Path)
   return TEXT_PLAIN;
 }
 
-// TODO: add header comment
+/**
+ * @brief Formats the data section of the HTTP request into
+ *        the passed in reference to the Json structure.
+ * 
+ * @param output - Reference to the Json structure to populate
+ *
+ * @return Bool indicating if the data exists and was parsed correctly 
+ */
 static bool parsePayload(JsonDocument &output)
 {
   // "plain" is used to specify the reuqest body holding the data
@@ -253,7 +286,10 @@ inline void WebInterface::setupUploadMode()
   server.on("/dev/clearSd", HTTP_POST, clearSd);
 }
 
-// TODO: add header comment
+/**
+ * @brief Uploads the user selected file to the desired directory.
+ * 
+ */
 void WebInterface::uploadFile()
 {
   HTTPUpload& upload = server.upload();
@@ -285,7 +321,10 @@ void WebInterface::uploadFile()
   }
 }
 
-// TODO: add header comment
+/**
+ * @brief Traverses the SD card files recursively and prints the name and location.
+ * 
+ */
 void WebInterface::printFiles()
 {
   DEBUG_PRINTLN("DEBUG: Printing files...");
@@ -304,6 +343,10 @@ void WebInterface::printFiles()
   }
 }
 
+/**
+ * @brief Traverses the SD files recursively and removes all files.
+ * 
+ */
 void WebInterface::clearSd()
 {
   DEBUG_PRINTLN("DEBUG: Clearing SD memory...");

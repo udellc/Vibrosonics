@@ -117,7 +117,14 @@ bool Networking::initAccessPoint()
   return success;
 }
 
-// TODO: add header comment
+/**
+ * @brief Scans for discoverable networks on ESP32 and stores the found
+ *        SSIDs in the result parameter.
+ * 
+ * @param result - Reference to the set to be populated
+ * 
+ * NOTE: A set is used over a vector because the ESP32 can sometimes scan the same network twice.
+ */
 void Networking::scanAvailableNetworks(std::set<String> &result)
 {
   const auto NumNetworks = WiFi.scanNetworks();
@@ -136,7 +143,15 @@ void Networking::scanAvailableNetworks(std::set<String> &result)
   WiFi.scanDelete();
 }
 
-// TODO: add header comment
+/**
+ * @brief Blocking function to connect to the desired network, saving the credentials
+ *        on success.
+ * 
+ * @param Ssid - Name of the network to connect to
+ * @param Password - Password for the SSID
+ *  
+ * @return Bool indicating if the network was successfully connected to 
+ */
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
   int numTries = 0u;
@@ -169,6 +184,11 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
   return false;
 }
 
+/**
+ * @brief Getter for the name of the current network SSID
+ * 
+ * @return String indicating the connected SSID
+ */
 String Networking::getNetworkSsid()
 {
   return (wifiStatus == Status_T::ConnectedToWiFi) ? currentWifi.ssid : String(ApSSID);

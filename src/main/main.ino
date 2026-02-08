@@ -45,7 +45,7 @@ void webRunner(void *params)
 }
 
 /**
- * @brief 
+ * @brief Initializes system components
  * 
  */
 void setup()
@@ -68,7 +68,7 @@ void setup()
   if (CreatedTask != pdPASS)
   {
     success = false;
-    DEBUG_PRINTLN("DEBUG: Could not create web server task");
+    DEBUG_PRINTLN("FATAL: Could not create web server task");
   }
   // On setup failure, do nothing
   if (!success)
@@ -87,7 +87,7 @@ void setup()
 }
 
 /**
- * @brief 
+ * @brief Audio analysis and synthesize running on core 1
  * 
  */
 void loop()
