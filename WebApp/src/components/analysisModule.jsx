@@ -43,9 +43,9 @@ export default function AnalysisModule() {
       <div className="flex gap-2.5 mb-8">
         {Object.keys(EQ_PRESETS).map((genre) => (
           <button
-            className={`p-3 border border-[#ccc] rounded-lg cursor-pointer
+            className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
             ${
-              activeGenre
+              activeGenre === genre
                 ? "bg-[#fcd34d] font-bold"
                 : "bg-[#e5e7eb] font-normal"
             }`}

@@ -40,6 +40,7 @@ export default function Slider({
   // Calls the custom callback function when the value settles to a number
   const handleInputChanged = (e) => {
     const updatedVal = Number(e.target.value);
+    updateValueText(e);
     onInput?.(updatedVal);
   };
 
