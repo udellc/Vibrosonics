@@ -13,6 +13,6 @@
 #define CONFIG_H
 
 #define DEV_MODE
-// #define ENABLE_VAPI
+#define ENABLE_VAPI
 
 #endif

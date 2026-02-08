@@ -15,8 +15,18 @@
 #include <ESPmDNS.h>
 #include <ArduinoJson.h>
 
+// Networking globals
 #define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
+#define WIFI_CONNECTION_DELAY_INTERVAL_MS 500u
 #define MAX_CONNECTION_TRIES 10u
+
+#ifdef DEV_MODE
+  const char *ApSSID = "Vibrosonics-Dev";
+#else
+  const char *ApSSID = "Vibrosonics-Unsecure";
+#endif
+const char *DefaultHostname = "vibrosonics";
+const char *ApPassword = "1234567890";
 
 struct WiFiInfo
 {
@@ -25,20 +35,8 @@ struct WiFiInfo
 };
 
 WiFiInfo currentWifi;
+Networking::Status_T wifiStatus;
 static JsonDocument settingsDoc;
-
-#ifdef DEV_MODE
-  const char *ApSSID = "Vibrosonics-Dev";
-#else
-  const char *ApSSID = "Vibrosonics-Unsecure";
-#endif
-
-const char *DefaultHostname = "vibrosonics";
-const char *ApPassword = "1234567890";
-
-static TimerHandle_t wifiTimer;
-static SemaphoreHandle_t wifiMutex;
-volatile static Networking::Status_T wifiStatus;
 
 /**
  * @brief Initializes the WiFi settings, using saved settings if they exist.
@@ -50,22 +48,16 @@ volatile static Networking::Status_T wifiStatus;
  */
 bool Networking::init()
 {
-  WiFi.mode(WIFI_MODE_APSTA);
-  wifiMutex = xSemaphoreCreateMutex();
-  wifiTimer = xTimerCreate
-  (
-    "WiFiTimer",
-    pdMS_TO_TICKS(200),
-    pdTRUE,   // Auto re-trigger.
-    nullptr,  // Timer ID pointer, not used.
-    initiateWifiTimerConnect
-  );
+  // Prevents Flash write when WiFi.begin() is called
+  WiFi.persistent(false);
+
+  // Operate in AP and station mode
+  WiFi.mode(WIFI_AP_STA);
   const bool HasSettings = FileSys::exists(WIFI_SETTINGS_PATH);
 
-  // Try connecting to a saved network
   if (HasSettings)
   {
-    auto settingsFile = FileSys::getFile(WIFI_SETTINGS_PATH);
+    File settingsFile = FileSys::getFile(WIFI_SETTINGS_PATH);
     const auto Error = deserializeJson(settingsDoc, settingsFile);
     settingsFile.close();
 
@@ -74,19 +66,13 @@ bool Networking::init()
       auto ssid = settingsDoc["ssid"];
       auto password = settingsDoc["password"];
 
-      (void) connectToNetwork(ssid, password);
-      uint numTries = 0u;
-      
-      while (wifiStatus != Status_T::ConnectedToWiFi && numTries != MAX_CONNECTION_TRIES)
-      {
-        numTries++;
-        delay(500u);
-      }
-      if (wifiStatus == Status_T::ConnectedToWiFi)
+      if (connectToNetwork(ssid, password))
       {
         currentWifi.ssid = String(ssid);
         currentWifi.password = String(password);
+        wifiStatus = Status_T::ConnectedToWiFi;
         Serial.println("Successfully connected to saved Wi-Fi");
+        
         return true;
       }
     }
@@ -96,8 +82,8 @@ bool Networking::init()
   {
     currentWifi.ssid = "";
     currentWifi.password = "";
-
     wifiStatus = Status_T::ConnectedToAP;
+
     return true;
   }
   // Complete failure
@@ -134,7 +120,7 @@ bool Networking::initAccessPoint()
 // TODO: add header comment
 void Networking::scanAvailableNetworks(std::set<String> &result)
 {
-  const int16_t NumNetworks = WiFi.scanNetworks();
+  const auto NumNetworks = WiFi.scanNetworks();
 
   if (NumNetworks == 0)
   {
@@ -142,78 +128,33 @@ void Networking::scanAvailableNetworks(std::set<String> &result)
   }
   else
   {
-    for (int16_t i = 0; i < NumNetworks; i++)
+    for (auto i = 0u; i < NumNetworks; i++)
     {
       result.insert(WiFi.SSID(i));
     }
-    WiFi.scanDelete();
   }
-}
-
-// TODO: add header comment
-void Networking::initiateWifiTimerConnect(TimerHandle_t timer)
-{
-  if (xSemaphoreTake(wifiMutex, pdMS_TO_TICKS(50)) == pdTRUE)
-  {
-    if (wifiStatus == Status_T::JoiningWiFi)
-    {
-      wl_status_t status = WiFi.status();
-
-      if (status == WL_CONNECTED)
-      {
-        Serial.println("Connected to WiFi");
-
-        wifiStatus = Status_T::ConnectedToWiFi;
-        xTimerStop(wifiTimer, 0);
-      }
-      else if (status == WL_CONNECT_FAILED || status == WL_NO_SSID_AVAIL || status == WL_CONNECTION_LOST)
-      {
-        Serial.printf("WiFi Connection Failed (Status: %d)\n", status);
-        wifiStatus = Status_T::NotConnected;
-        xTimerStop(wifiTimer, 0);
-      }
-      // Safety: If it's not connected and not currently trying (Idle/No Shield), abort
-      else if (status != WL_IDLE_STATUS && status != WL_DISCONNECTED)
-      {
-        wifiStatus = Status_T::NotConnected;
-        xTimerStop(wifiTimer, 0);
-      }
-    }
-    xSemaphoreGive(wifiMutex);
-  }
+  WiFi.scanDelete();
 }
 
 // TODO: add header comment
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
-  const uint DisconnectDelay_ms = 100u;
-  bool isMonitored = true;
-
-  WiFi.scanDelete();
-  WiFi.disconnect();
-  MDNS.end();
-  delay(DisconnectDelay_ms);
+  int numTries = 0u;
+ 
+  if (Ssid.length() == 0)
+  {
+    Serial.println("Empty SSID provided");
+    return false;
+  }
+  Serial.printf("Attempting to connect to %s\n", Ssid);
   WiFi.begin(Ssid.c_str(), Password.c_str());
 
-  if (xSemaphoreTake(wifiMutex, pdMS_TO_TICKS(50)) == pdTRUE)
-  {
-    wifiStatus = Status_T::JoiningWiFi;
-
-    if (xTimerStart(wifiTimer, 0) != pdPASS)
-    {
-      isMonitored = false;
-    }
-    xSemaphoreGive(wifiMutex);
-  }
-  else
-  {
-    isMonitored = false;
-  }
-  if (isMonitored)
+  // Wait for connection with 10 sec timeout
+  if (WiFi.waitForConnectResult(10000) == WL_CONNECTED)
   {
     (void) MDNS.begin(DefaultHostname);
 
-    // TODO: may need to move this into a seperate function if writing to SD card takes too long
+    wifiStatus == Status_T::ConnectedToWiFi;
     currentWifi.ssid = Ssid;
     currentWifi.password = Password;
     const String JsonWifi = "{\n"
@@ -221,12 +162,14 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
                               "  \"password\": \"" + currentWifi.password + "\"\n"
                               "}";
     FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
+
+    return true;
   }
-  return isMonitored;
+  Serial.printf("Connection attempt to %s failed\n", Ssid);
+  return false;
 }
 
-// TODO: add header comment
 String Networking::getNetworkSsid()
 {
-  return (wifiStatus == Status_T::ConnectedToAP) ? ApSSID : currentWifi.ssid;
+  return (wifiStatus == Status_T::ConnectedToWiFi) ? currentWifi.ssid : String(ApSSID);
 }

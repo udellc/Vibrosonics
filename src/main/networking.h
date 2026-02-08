@@ -24,14 +24,11 @@ namespace Networking
   //! NOTE: This is insecure, only use this to open the landing and network pages from the hostname for the ESP32
   bool initAccessPoint();
 
-  //! Scans available networks and adds their SSID to the result vector
-  void scanAvailableNetworks(std::set<String> &result);
-  
-  //! Starts the wifi connection
-  void initiateWifiTimerConnect(TimerHandle_t timer);
-
   //! Disconnects the ESP32 access point and attempts to reconnect to the new network
   bool connectToNetwork(const String &Ssid, const String &Password);
+
+  //! Scans available networks and adds their SSID to the result vector
+  void scanAvailableNetworks(std::set<String> &result);
 
   //! Returns the current WiFi SSID
   String getNetworkSsid();
@@ -40,7 +37,6 @@ namespace Networking
   {
     ConnectedToAP = 0u,
     ConnectedToWiFi,
-    JoiningWiFi,
     NotConnected
   };
 }
