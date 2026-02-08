@@ -281,7 +281,10 @@ inline void WebInterface::setupUploadMode()
   {
     server.send(HTTP_OK, TEXT_HTML, uploadForm);
   });
-  server.on("/dev/upload", HTTP_POST, uploadFile);
+  server.on("/dev/upload", HTTP_POST, []()
+  {
+      server.send(HTTP_OK, TEXT_PLAIN, "Successfully uploaded file");
+  }, uploadFile);
   server.on("/dev/printFiles", HTTP_POST, printFiles);
   server.on("/dev/clearSd", HTTP_POST, clearSd);
 }
@@ -334,12 +337,12 @@ void WebInterface::printFiles()
   {
     FileSys::traverseFiles(root, FileSys::printFile);
 
-    server.send(HTTP_OK, "text/plain", "Printed files to serial monitor");
+    server.send(HTTP_OK, TEXT_PLAIN, "Printed files to serial monitor");
     root.close();
   }
   else
   {
-    server.send(HTTP_BAD_REQUEST, "text/plain", "Invalid root provided");
+    server.send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
   }
 }
 
@@ -357,11 +360,11 @@ void WebInterface::clearSd()
     FileSys::traverseFiles(root, FileSys::removeFile);
 
     root.close();
-    server.send(HTTP_OK, "text/plain", "SD File System Cleared");
+    server.send(HTTP_OK, TEXT_PLAIN, "SD File System Cleared");
   }
   else
   {
-    server.send(HTTP_BAD_REQUEST, "text/plain", "Invalid root provided");
+    server.send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
   }
 }
 

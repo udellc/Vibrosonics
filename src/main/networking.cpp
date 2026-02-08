@@ -75,6 +75,10 @@ bool Networking::init()
         
         return true;
       }
+      else
+      {
+        DEBUG_PRINTLN("WARNING: Could not connect to saved WiFi")
+      }
     }
   }
   // Fall back on AP mode if saved network settings DNE or couldn't connect
@@ -176,7 +180,8 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
                               "  \"ssid\": \"" + currentWifi.ssid + "\",\n"
                               "  \"password\": \"" + currentWifi.password + "\"\n"
                               "}";
-    FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
+    (void) FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
+    DEBUG_PRINTF("DEBUG: Successfully connected to %s and saved info to SD card\n");
 
     return true;
   }

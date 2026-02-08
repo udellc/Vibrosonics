@@ -62,7 +62,14 @@ void setup()
   DEBUG_BEGIN(115200);
   success &= FileSys::init();
   success &= Networking::init();
+
+  // NOTE: Only fails if index.html is not found on SD card. If we're in dev
+  //       mode, we don't care if the web app is on it or not
+#ifndef DEV_MODE_EN
   success &= WebInterface::init();
+#else
+  (void) WebInterface::init();
+#endif
 
   const auto CreatedTask = xTaskCreatePinnedToCore(
     webRunner,
