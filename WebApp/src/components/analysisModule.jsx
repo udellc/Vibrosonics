@@ -14,6 +14,8 @@ import EQ_PRESETS from "../data/eqSettings.json";
 import { useState } from "react";
 import Checkbox from "../atomics/checkbox";
 import PERCUSSION_PRESETS from "../data/precussionSettings.json";
+import INITIAL_PRESETS from "../data/initalStates.json";
+import { createProject } from "../utils/configurations.js";
 
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
 export default function AnalysisModule() {
@@ -21,13 +23,14 @@ export default function AnalysisModule() {
   const [knobValue, setKnobValue] = useState({});
   const [sliderValue, setSliderValue] = useState({});
   const [isAdvanced, setIsAdvanced] = useState(false);
+  const [library, setLibrary] = useState([]);
+  const [currentProjectName, setCurrentProjectName] = useState("New Project");
 
-  const currentSliders = EQ_PRESETS[activeGenre];
-  const currentKnobs = EQ_PRESETS[activeGenre];
+  const currentModData = EQ_PRESETS[activeGenre];
+  const inits = INITIAL_PRESETS;
 
   const modeKey = isAdvanced ? "Advanced Percussion" : "Percussion";
   const percussionData = PERCUSSION_PRESETS[modeKey];
-  const percussionKnobs = PERCUSSION_PRESETS[modeKey];
 
   const handleKnobChange = (id, value) => {
     setKnobValue((prev) => ({ ...prev, [id]: value }));
@@ -47,76 +50,96 @@ export default function AnalysisModule() {
     setIsAdvanced(value);
   };
 
+  const saveProject = (name) => {
+    const newSave = createProject(name, library.length, {
+      id: Date.now(),
+      name: name || `Project ${library.length + 1}`,
+        knobValue: {...knobValue},
+        sliderValue: {...sliderValue},
+        isAdvanced,
+        activeGenre
+      });
+    setLibrary((prev) => [...prev, newSave]);
+  };
+
+  const startNewProj = () => {
+    if(window.confirm("Are you sure? Unsaved changes will be lost.")) {
+        setKnobValue({...INITIAL_PRESETS.knobs});
+        setSliderValue(INITIAL_PRESETS.sliders);
+        setIsAdvanced(INITIAL_PRESETS.isAdvanced);
+        setActiveGenre(INITIAL_PRESETS.activeGenre);
+    }
+  };
+
+  const applyProject = (projectData) => {
+    setKnobValue(projectData.knobs);
+    setSliderValue(projectData.sliders);
+    setIsAdvanced(projectData.isAdvanced);
+    setActiveGenre(projectData.activeGenre || 'Rock');
+  }
+
+  const loadProject = (project) => {
+    if(!project || !project.data) return;
+
+    const { knobValue, sliderValue, isAdvanced, activeGenre } = project.data;
+
+    setKnobValue(knobValue);
+    setSliderValue(sliderValue);
+    setIsAdvanced(isAdvanced);
+    setActiveGenre(activeGenre || 'Rock');
+    setCurrentProjectName(project.data.name);
+  }
+
+  const clearLibrary = () => {
+    if(window.confirm("This will permanently delete ALL saved projects. Continue?")) {
+      setLibrary([]);
+    }
+  };
+
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">EQ</h1>
-
-      <div className="flex gap-2.5 mb-8">
-        {Object.keys(EQ_PRESETS).map((genre) => (
-          <button
-            className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
-            ${
-              activeGenre === genre
-                ? "bg-[#fcd34d] font-bold"
-                : "bg-[#e5e7eb] font-normal"
-            }`}
-            key={genre}
-            onClick={() => setActiveGenre(genre)}
-          >
-            {` ${genre} `}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
-          {currentKnobs.map((knobData) => (
-            <div key={knobData.id} className="flex flex-col items-center gap-2">
-              <Knob
-                key={knobData.id}
-                title={knobData.title}
-                value={knobValue[knobData.id] ?? knobData.default ?? 0}
-                min={knobData.min}
-                max={knobData.max}
-                step={0.1}
-                onChange={(value) => handleKnobChange(knobData.id, value)}
-              />
-              <span className="font-bold text-gray-700">{knobData.label}</span>
-            </div>
-          ))}
-
-        <div className="flex flex-row gap-5 p-5">
-          {currentSliders.map((slider) => (
-            <Slider
-              key={slider.id}
-              title={slider.title}
-              initialValue={sliderValue[slider.id] ?? slider.default ?? 0}
-              min={slider.min}
-              max={slider.max}
-              step={2}
-              onInput={(sliderValue) =>
-                handleSliderChange(slider.id, sliderValue)
-              }
-            />
+      <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
+      
+      <div className="flex flex-row flex-wrap items-start gap-8 p-8 mt-8 rounded-xl shadow-md border border-gray-100">
+        {/*EQ Presets*/}
+        <h2 className="text-xl font-bold mb-4">EQ</h2>
+        <div className="flex gap-2.5 mb-8">
+          {Object.keys(EQ_PRESETS).map((genre) => (
+            <button
+              className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
+              ${
+                activeGenre === genre
+                  ? "bg-[#fcd34d] font-bold"
+                  : "bg-[#e5e7eb] font-normal"
+              }`}
+              key={genre}
+              onClick={() => setActiveGenre(genre)}
+            >
+              {` ${genre} `}
+            </button>
           ))}
         </div>
-      </div>
+      
 
-      <div className="p-4">
+        {/*Precussion Presets*/}
         <h2 className="text-xl font-bold mb-4">Percussion Settings
           <Checkbox
             label="Advanced Mode"
             onChange={(id, val) => handleCheckboxChange(id, val)}
           />
         </h2>
+      </div>
 
-        <div className={`${isAdvanced ? 'Advanced Percussion' : 'Percussion'} flex flex-row gap-5 p-5`}>
+      <div className="flex flex-row flex-wrap items-start gap-8 mt-8 rounded-xl shadow-md border border-gray-100">
+        {/*EQ Knobs and Sliders*/}
+        <div className="flex flex-row gap-5 p-5">
           <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
-              {percussionData.map((data) => (
-                <div key={data.id} className="flex flex-col items-center gap-8">
+              {currentModData.map((data) => (
+                <div key={data.id} className="flex flex-col items-center gap-2">
                   <Knob
                     key={data.id}
                     title={data.title}
-                    value={knobValue[data.id] ?? data.initialValue ?? 0}
+                    value={knobValue[data.id] ?? data.default ?? 0}
                     min={data.min}
                     max={data.max}
                     step={0.1}
@@ -126,15 +149,80 @@ export default function AnalysisModule() {
                   <Slider
                     key={data.id}
                     title={data.title}
-                    initialValue={sliderValue[data.id] ?? data.initialValue ?? 0}
+                    initialValue={sliderValue[data.id] ?? data.default ?? 0}
                     min={data.min}
                     max={data.max}
                     step={2}
-                    onInput={(val) => handleSliderChange(data.id, val)}
+                    onInput={(sliderValue) => handleSliderChange(data.id, sliderValue)}
                   />
+                  <span className="font-bold text-gray-700">{data.label}</span>
                 </div>
               ))}
           </div>
+        </div>
+
+        {/*Percussion Knobs and Sliders*/}
+        <div className="p-4">
+          <div className={`${isAdvanced ? 'Advanced Percussion' : 'Percussion'} flex flex-row gap-5 p-5`}>
+            <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
+                {percussionData.map((data) => (
+                  <div key={data.id} className="flex flex-col items-center gap-8">
+                    <Knob
+                      key={data.id}
+                      title={data.title}
+                      value={knobValue[data.id] ?? data.initialValue ?? 0}
+                      min={data.min}
+                      max={data.max}
+                      step={0.1}
+                      onChange={(value) => handleKnobChange(data.id, value)}
+                    />
+
+                    <Slider
+                      key={data.id}
+                      title={data.title}
+                      initialValue={sliderValue[data.id] ?? data.initialValue ?? 0}
+                      min={data.min}
+                      max={data.max}
+                      step={2}
+                      onInput={(val) => handleSliderChange(data.id, val)}
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-8 mt-8 bg-white rounded-xl shadow-md border border-gray-100">
+        <h2 className="text-2xl font-bold mb-6">Project Library</h2>
+        
+        <div className="flex gap-4 mb-6">
+          <button 
+            onClick={() => saveProject()} 
+            className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition"
+          >
+            Save Current Setup
+          </button>
+          <button 
+            onClick={startNewProj} 
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
+          >
+            + Start New Project
+          </button>
+          <button onClick={clearLibrary} className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold">
+            Clear All Projects
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {library.map((project) => (
+            <div key={project.id} className="p-4 border rounded-lg flex justify-between items-center bg-gray-50">
+              <span className="font-medium">{project.name}</span>
+              <button onClick={() => {loadProject(project)}} className="text-sm text-blue-600 hover:underline">
+                Load Settings
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>
