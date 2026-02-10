@@ -1,0 +1,12 @@
+{
+  "Percussion": [
+    { "id": "cymbal", "title": "Cymbal", "min": 0, "max": 100, "initialValue": 0 },
+    { "id": "snare", "title": "Snare", "min": 0, "max": 100, "initialValue": 0 },
+    { "id": "bass", "title": "Bass", "min": 0, "max": 10, "initialValue": 0 }
+  ],
+  "Advanced Percussion": [
+    { "id": "fluxThreshold", "title": "Flux Threshold", "min": 0, "max": 100, "initialValue": 0 },
+    { "id": "energyThreshold", "title": "Energy Threshold", "min": 0, "max": 100, "initialValue": 0 },
+    { "id": "entropyThreshold", "title": "Entropy Threshold", "min": 0, "max": 100, "initialValue": 0 }
+  ]
+}
