@@ -1,6 +1,13 @@
 #include "VibrosonicsAPI.h"
 #include "storage.h"
 
+MajorPeaksConfig exampleMajorPeaksConfigs[4] = {
+  { 400, 1000, OCTAVE, 10000, 1 },
+  { 1000, 3600, OCTAVE, 10000, 1 },
+  { 0, 3600, NONE, 10000, 32 },
+  { 0, 3600, NONE, 10000, 1 },
+};
+
 AnalysisConfig exampleConfigs[3] = {
   {
     280,
@@ -9,20 +16,8 @@ AnalysisConfig exampleConfigs[3] = {
     1.4,
     0.4,
     {
-      {
-        MAJORPEAKS,
-        400,
-        1000,
-        OCTAVE,
-        10000
-      },
-      {
-        MAJORPEAKS,
-        1000,
-        3600,
-        OCTAVE,
-        10000
-      },
+      &exampleMajorPeaksConfigs[0],
+      &exampleMajorPeaksConfigs[1],
     }
   },
   {
@@ -32,20 +27,8 @@ AnalysisConfig exampleConfigs[3] = {
     1.4,
     0.4,
     {
-      {
-        MAJORPEAKS,
-        1000,
-        3600,
-        OCTAVE,
-        10000
-      },
-      {
-        MAJORPEAKS,
-        400,
-        1000,
-        OCTAVE,
-        10000
-      }
+      &exampleMajorPeaksConfigs[1],
+      &exampleMajorPeaksConfigs[0],
     }
   },
   {
@@ -55,22 +38,10 @@ AnalysisConfig exampleConfigs[3] = {
     1.4,
     0.4,
     {
-      {
-        MAJORPEAKS,
-        400,
-        1000,
-        NONE,
-        10000
-      },
-      {
-        MAJORPEAKS,
-        1000,
-        3600,
-        NONE,
-        10000
-      },
+      &exampleMajorPeaksConfigs[2],
+      &exampleMajorPeaksConfigs[3],
     }
-  },
+  }
 };
 
 AnalysisConfig loadedConfig = exampleConfigs[0];
@@ -106,9 +77,6 @@ void loop() {
     if (exampleToLoad >= 1 && exampleToLoad <= 3) {
       loadedConfig = exampleConfigs[exampleToLoad - 1];
       dirty = true;
-    }
-    else{
-      Serial.print("out of example range");
     }
   }
 
@@ -168,10 +136,10 @@ void loop() {
   melodic.runAnalysis();
 
   for (int i = 0; i < NUM_OUT_CH; i++){
-    if (loadedConfig.outputs[i].moduleType != EMPTY){
+    if (loadedConfig.outputs[i]->moduleType == MAJORPEAKS){
       float **analysisData = modules[i]->getOutput();
-      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.outputs[i].freqLow, loadedConfig.outputs[i].freqHigh, loadedConfig.outputs[i].frequencyMapping);
-      AudioLab.mapAmplitudes(i, loadedConfig.outputs[i].minAmpNorm);
+      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.outputs[i]->freqLow, loadedConfig.outputs[i]->freqHigh, loadedConfig.outputs[i]->frequencyMapping);
+      AudioLab.mapAmplitudes(i, loadedConfig.outputs[i]->minAmpNorm);
     }
   }
 
@@ -181,10 +149,11 @@ void loop() {
 
 void assignOutputModules(){
   for (int i = 0; i < NUM_OUT_CH; i++){
-    if (loadedConfig.outputs[i].moduleType == MAJORPEAKS){
-      modules[i] = new MajorPeaks(1);
+    if (loadedConfig.outputs[i]->moduleType == MAJORPEAKS){
+      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(loadedConfig.outputs[i]);
+      modules[i] = new MajorPeaks(majorPeaks->maxPeaks);
       modules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      melodic.addModule(modules[i], loadedConfig.outputs[i].freqLow, loadedConfig.outputs[i].freqHigh);
+      melodic.addModule(modules[i], loadedConfig.outputs[i]->freqLow, loadedConfig.outputs[i]->freqHigh);
     }
   }
 }
@@ -206,10 +175,6 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
   // interpolate the frequency around the peak to get a more accurate measure
   float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
 
-  // map the frequency to the haptic range by dividing it by 2 (transposing by
-  // octaves) until it is below 230Hz. This is why 3600Hz is a better max
-  // frequency than 3800Hz+ since we can divide one less time and the output is
-  // closer to the full haptic range.
   float haptic_freq = interp_freq;
   if (mappingOption == OCTAVE)
   {
