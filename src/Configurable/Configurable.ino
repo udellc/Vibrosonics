@@ -4,17 +4,17 @@
 MajorPeaksConfig exampleMajorPeaksConfigs[4] = {
   { 400, 1000, OCTAVE, 10000, 1 },
   { 1000, 3600, OCTAVE, 10000, 1 },
-  { 0, 3600, NONE, 10000, 32 },
-  { 0, 3600, NONE, 10000, 1 },
+  { 0, 4000, NONE, 10000, 32 },
+  { 0, 4000, NONE, 10000, 32 },
 };
 
 AnalysisConfig exampleConfigs[3] = {
   {
-    280,
-    6,
-    1,
-    1.4,
-    0.4,
+    280,    // noise floor
+    6,      // cfar number of reference cells
+    1,      // cfar number of guard cells
+    1.4,    // cfar bias
+    0.2,    // smoothing factor 
     {
       &exampleMajorPeaksConfigs[0],
       &exampleMajorPeaksConfigs[1],
@@ -25,18 +25,18 @@ AnalysisConfig exampleConfigs[3] = {
     6,
     1,
     1.4,
-    0.4,
+    0.2,
     {
       &exampleMajorPeaksConfigs[1],
       &exampleMajorPeaksConfigs[0],
     }
   },
   {
-    280,
+    100,
     6,
     1,
     1.4,
-    0.4,
+    1,
     {
       &exampleMajorPeaksConfigs[2],
       &exampleMajorPeaksConfigs[3],
@@ -87,14 +87,9 @@ void loop() {
 
   // if output modules have changed since last window, need to reassign outputs
   if (dirty == true) {
-    melodic.clearModules();
-    // delete old modules
-    for (int i = 0; i < NUM_OUT_CH; i++) {
-      if (modules[i] != nullptr){
-        delete modules[i];
-        modules[i] = nullptr;
-      }
-    }
+    // delete old output modules
+    clearOutputModules();
+
     // reassign modules to outputs
     assignOutputModules();
 
@@ -145,6 +140,17 @@ void loop() {
 
   // synthesize the waves created
   AudioLab.synthesize();
+}
+
+void clearOutputModules(){
+  melodic.clearModules();
+  // delete old modules
+  for (int i = 0; i < NUM_OUT_CH; i++) {
+    if (modules[i] != nullptr){
+      delete modules[i];
+      modules[i] = nullptr;
+    }
+  }
 }
 
 void assignOutputModules(){
