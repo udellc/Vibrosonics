@@ -25,7 +25,8 @@ export default function AnalysisModule() {
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [library, setLibrary] = useState([]);
   const [projectCount, setProjectCount] = useState(1);
-  const [currentProjectName, setCurrentProjectName] = useState("Project 1");
+  const [setupCount, setSetupCount] = useState(1);
+  const [currentProjectName, setCurrentProjectName] = useState("Project 1: Setup 1");
 
   const currentModData = EQ_PRESETS[activeGenre];
   const modeKey = isAdvanced ? "Advanced Percussion" : "Percussion";
@@ -77,8 +78,11 @@ export default function AnalysisModule() {
   const startNewProj = () => {
     if(window.confirm("Are you sure? Unsaved changes will be lost.")) {
         const nextCount = projectCount + 1;
+        const initialSetup = 1;
+
         setProjectCount(nextCount);
-        setCurrentProjectName(`Project ${nextCount}`);
+        setSetupCount(initialSetup);
+        setCurrentProjectName(`Project ${nextCount}: Setup ${initialSetup}`);
 
         setKnobValue({...INITIAL_PRESETS.knobs});
         setSliderValue(INITIAL_PRESETS.sliders);
@@ -87,9 +91,26 @@ export default function AnalysisModule() {
     }
   };
 
+  const saveProj = () => {
+    // 1. Save the CURRENT name (e.g., "Project 2: Setup 1") to the library
+    const newSave = {
+      id: Date.now(),
+      name: currentProjectName,
+      data: { knobValue, sliderValue, isAdvanced, activeGenre }
+    };
+    setLibrary((prev) => [...prev, newSave]);
+
+    // 2. Prepare the name for the NEXT save within this same project
+    const nextSetupNumber = setupCount + 1;
+    setSetupCount(nextSetupNumber);
+    setCurrentProjectName(`Project ${projectCount}: Setup ${nextSetupNumber}`);
+  };
+
   const clearCurrentSettings = () => {
     setKnobValue({...INITIAL_PRESETS.knobs});
     handleValueChange(0);
+    setIsAdvanced(!isAdvanced);
+    setActiveGenre('Rock');
   }
 
   const loadProject = (project) => {
@@ -107,7 +128,9 @@ export default function AnalysisModule() {
   const clearLibrary = () => {
     if(window.confirm("This will permanently delete ALL saved projects. Continue?")) {
       setLibrary([]);
-      setCurrentProjectName("Project 1");
+      setProjectCount(1);
+      setSetupCount(1);
+      setCurrentProjectName("Project 1: Setup 1");
     }
   };
 
@@ -213,7 +236,7 @@ export default function AnalysisModule() {
         
         <div className="flex gap-4 mb-6">
           <button 
-            onClick={() => saveProject()} 
+            onClick={saveProj}
             className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition"
           >
             Save Current Setup
