@@ -80,7 +80,7 @@ export default function Knob({
       <div className="w-[100px] h-[100px] flex items-center justify-center relative">
         <div
           onMouseDown={handleMouseDown}
-          className="w-[75px] h-[75px] bg-gray-800 border-2 border-gray-600 rounded-full relative cursor-ns-resize shadow-lg active:border-yellow-400 transition-colors"
+          className="group w-[75px] h-[75px] bg-gray-800 border-2 border-gray-600 rounded-full relative cursor-ns-resize shadow-lg active:border-yellow-400 active:border-yellow-400 transition-colors"
         >
           {/* Knob */}
           <div className="w-[75px] h-[75px] bg-gray-800 border-2 rounded-full">
@@ -90,7 +90,7 @@ export default function Knob({
               // FIXME: convert to tailwindcss, `rotate-${rotation}` does not work as expected
               style={{ transform: `rotate(${rotation}deg)` }}
             >
-              <div className="w-1.5 h-3 bg-white mx-auto mt-2 rounded-full shadow-[0_0_5px_white]" />
+              <div className="w-1.5 h-3 bg-white mx-auto mt-2 rounded-full group-active:bg-yellow-400 shadow-[0_0_5px_white]" />
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@
 const Footer = () => {
   return (
     <div className="font-bold mt-10 border-t-2 border-black p-4 flex w-full h-[60px]">
-      <p>footer</p>      
+      <p>Developed by the 2024-26 Vibrosonics Software Teams under the leadership of Dr. Chet Udell, in collaboration with Cymaspace and contributors Ivan Wong, Danielle Chang, Bella Mann, Allyson Aoki, and alumni.</p>      
     </div>
   );
 };

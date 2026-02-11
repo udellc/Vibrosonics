@@ -76,7 +76,7 @@ const NetworkPage = () => {
 
         {/* Scan network button */}
         <button
-          className="border-3 border-amber-500 p-1 cursor-pointer mt-3 text-xl font-semibold rounded-sm"
+          className="p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24]"
           onClick={getNetworks}
         >
           Scan Networks

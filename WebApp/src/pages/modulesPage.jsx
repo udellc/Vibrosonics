@@ -15,7 +15,6 @@ const ModulesPage = () => {
   return (
     <div>
       <h1 className="font-bold mt-10">
-        Modules page
         <AnalysisModule />
       </h1>
     </div>

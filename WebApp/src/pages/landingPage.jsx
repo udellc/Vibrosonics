@@ -59,13 +59,13 @@ const LandingPage = () => {
           </div>
           <div className="flex flex-col">
             <button
-              className="border-2 border-amber-500 cursor-pointer mb-5"
+              className="p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24]"
               onClick={ () => route("/network", false) }
             >
               Connect to Network
             </button>
             <button
-              className={`border-2 border-amber-500 cursor-pointer ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
+              className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
               onClick={ () => route("/modules", false) }
             >
               Adjust Audio Settings
