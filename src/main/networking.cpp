@@ -77,7 +77,7 @@ bool Networking::init()
       }
       else
       {
-        DEBUG_PRINTLN("WARNING: Could not connect to saved WiFi")
+        DEBUG_PRINTLN("WARNING: Could not connect to saved WiFi");
       }
     }
   }
