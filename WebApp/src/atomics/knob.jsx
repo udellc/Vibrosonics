@@ -75,12 +75,12 @@ export default function Knob({
 
   return (
     // Parent container
-    <div className="flex items-center font-bold text-sm">
+    <div className="flex flex-col items-center font-bold text-sm">
       {/* Outside slider */}
-      <div className="w-[100px] h-[100px] flex items-center justify-center border-2 relative">
+      <div className="w-[100px] h-[100px] flex items-center justify-center relative">
         <div
           onMouseDown={handleMouseDown}
-          className="w-[75px] h-[75px] bg-gray-800 border-2 border-gray-600 rounded-full relative cursor-ns-resize shadow-lg active:border-yellow-400 transition-colors"
+          className="group w-[75px] h-[75px] bg-gray-800 border-2 border-gray-600 rounded-full relative cursor-ns-resize shadow-lg active:border-yellow-400 active:border-yellow-400 transition-colors"
         >
           {/* Knob */}
           <div className="w-[75px] h-[75px] bg-gray-800 border-2 rounded-full">
@@ -90,17 +90,16 @@ export default function Knob({
               // FIXME: convert to tailwindcss, `rotate-${rotation}` does not work as expected
               style={{ transform: `rotate(${rotation}deg)` }}
             >
-              <div className="w-1.5 h-3 bg-white mx-auto mt-2 rounded-full shadow-[0_0_5px_white]" />
-            </div>
-
-            {/* Text value */}
-            <div className="absolute inset-0 flex items-center justify-center text-white pointer-events-none">
-              {title}
+              <div className="w-1.5 h-3 bg-white mx-auto mt-2 rounded-full group-active:bg-yellow-400 shadow-[0_0_5px_white]" />
             </div>
           </div>
         </div>
       </div>
-      Value: {Math.round(value)} {/* change this to be below*/}
+
+      {/* Text values */}
+      <div className="mt-2 justify-center">
+       {title}: {Math.round(value)}
+      </div>
     </div>
   );
 }
