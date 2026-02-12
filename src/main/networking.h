@@ -18,6 +18,12 @@
 
 namespace Networking
 {
+  enum Status_T : unsigned int
+  {
+    ConnectedToAP = 0u,
+    ConnectedToWiFi,
+    NotConnected
+  };
   //! Initializes the Wi-Fi settings for the web app
   bool init();
 
@@ -32,13 +38,6 @@ namespace Networking
 
   //! Returns the current WiFi SSID
   String getNetworkSsid();
-
-  enum Status_T : unsigned int
-  {
-    ConnectedToAP = 0u,
-    ConnectedToWiFi,
-    NotConnected
-  };
 }
 
 #endif
