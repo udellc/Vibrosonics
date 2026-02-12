@@ -1,0 +1,7 @@
+{
+  "Noise Cancellation": [
+    { "id": "referenceCells", "title": "Reference Cells", "min": 0, "max": 100 },
+    { "id": "guardCells", "title": "Guard Cells", "min": 0, "max": 100 },
+    { "id": "bias", "title": "Biass", "min": 0, "max": 100 }
+  ]
+}
