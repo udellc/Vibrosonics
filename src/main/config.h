@@ -28,6 +28,7 @@
   #define DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__)
 #else
   // If DEBUG_EN not defined,  macros expand to nothing, and compiler optimizes them away
+  #define DEBUG_BEGIN(baudRate)
   #define DEBUG_PRINTF(...)
   #define DEBUG_PRINT(...)
   #define DEBUG_PRINTLN(...)
