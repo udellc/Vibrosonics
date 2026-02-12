@@ -17,8 +17,6 @@
 
 // Networking globals
 #define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
-#define WIFI_CONNECTION_DELAY_INTERVAL_MS 500u
-#define MAX_CONNECTION_TRIES 10u
 
 #ifdef DEV_MODE_EN
   const char *ApSSID = "Vibrosonics-Dev";
@@ -37,6 +35,9 @@ struct WiFiInfo
 WiFiInfo currentWifi;
 Networking::Status_T wifiStatus;
 static JsonDocument settingsDoc;
+
+// Internal function helpers
+static void inline resetWifi();
 
 /**
  * @brief Initializes the WiFi settings, using saved settings if they exist.
@@ -72,7 +73,7 @@ bool Networking::init()
         currentWifi.password = String(password);
         wifiStatus = Status_T::ConnectedToWiFi;
         DEBUG_PRINTLN("DEBUG: Successfully connected to saved Wi-Fi");
-        
+
         return true;
       }
       else
@@ -110,7 +111,7 @@ bool Networking::initAccessPoint()
 
   if (!success)
   {
-    DEBUG_PRINTLN("DEBUG: Access point creation failed.");
+    DEBUG_PRINTLN("FATAL: Access point creation failed.");
   }
   else
   {
@@ -132,15 +133,17 @@ bool Networking::initAccessPoint()
 void Networking::scanAvailableNetworks(std::set<String> &result)
 {
   const auto NumNetworks = WiFi.scanNetworks();
+  DEBUG_PRINTLN("DEBUG: Getting networks...");
 
   if (NumNetworks == 0)
   {
-    DEBUG_PRINTLN("DEBUG: No networks");
+    DEBUG_PRINTLN("DEBUG: No networks found");
   }
   else
   {
     for (auto i = 0u; i < NumNetworks; i++)
     {
+      DEBUG_PRINTF("DEBUG: Network SSID %d %s\n", i+1, String(WiFi.SSID(i)));
       result.insert(WiFi.SSID(i));
     }
   }
@@ -186,6 +189,8 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
     return true;
   }
   DEBUG_PRINTF("DEBUG: Connection attempt to %s failed\n", Ssid);
+  resetWifi();
+  
   return false;
 }
 
@@ -197,4 +202,17 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 String Networking::getNetworkSsid()
 {
   return (wifiStatus == Status_T::ConnectedToWiFi) ? currentWifi.ssid : String(ApSSID);
+}
+
+/**
+ * @brief Restarts the WiFi signal from the ESP32 in AP and STation mode.
+ *
+ * NOTE: This function should only be called after failing to connect to an alternative network
+ */
+void resetWifi()
+{
+  // Failed to connect, so reset network configs before using AP mode
+  WiFi.disconnect(true);
+  delay(100u);
+  WiFi.mode(WIFI_AP_STA);
 }
