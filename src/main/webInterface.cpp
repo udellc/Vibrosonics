@@ -36,10 +36,6 @@ constexpr char IMAGE_JPEG[] = "image/jpeg";
 constexpr char IMAGE_X_ICON[] = "image/x-icon";
 constexpr char APP_JSON[] = "application/json";
 
-// Internal web server functions
-static String getContentType(const String &Path);
-static bool parsePayload(JsonDocument &output);
-
 // Web server global stuff
 #define SERVER_PORT 80u
 
@@ -47,6 +43,21 @@ static WebServer server(SERVER_PORT);
 
 // File buffer object for uploading files from machine to ESP32 
 File _uploadFile;
+
+// Internal web server functions
+static String getContentType(const String &Path);
+static bool parsePayload(JsonDocument &output);
+
+// TODO: add header comment
+void inline send(const int Code, const char* ContentType = NULL, const String& Content = String(""))
+{
+#ifdef DEV_MODE_EN
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "*");
+  server.sendHeader("Access-Control-Allow-Headers", "*");
+#endif
+  server.send(Code, ContentType, Content);
+}
 
 /**
  * @brief Initializes the web server with file uploading capabilities,
@@ -68,7 +79,8 @@ bool WebInterface::init()
   #endif
     setupServer();
 
-  if (!success) DEBUG_PRINTLN("FATAL: /index.html not found. Missing web app files.");
+  if (!success)
+    DEBUG_PRINTLN("FATAL: /index.html not found. Missing web app files.");
   
   server.begin();
   DEBUG_PRINTLN("DEBUG: Web server started.");
@@ -98,16 +110,16 @@ inline void WebInterface::setupServer()
   server.on("/network/connect", HTTP_POST, onConnectToNetwork);
   server.on("/network/getSsid", HTTP_GET, []()
   {
-    server.send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
+    send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
   });
-  server.serveStatic("/", SD, "/");
+  // Make /assets/ public for the server
+  server.serveStatic("/", SD, "/assets/");
   server.onNotFound(onNotFoundHandler);
 }
 
 /**
  * @brief Finds the index.html file for the web app on the
  *        SD card and sends it.
- * 
  */
 void WebInterface::sendWebApp()
 {
@@ -118,7 +130,8 @@ void WebInterface::sendWebApp()
     server.streamFile(entryFile, TEXT_HTML);
     entryFile.close();
   }
-  else server.send(HTTP_NOT_FOUND, TEXT_PLAIN, "File not found");
+  else
+    send(HTTP_NOT_FOUND, TEXT_PLAIN, "File not found");
 }
 
 /**
@@ -131,7 +144,8 @@ void WebInterface::onNotFoundHandler()
 {
   const String Path = server.uri();
 
-  if (!FileSys::exists(Path)) server.send(HTTP_NOT_FOUND, TEXT_PLAIN, "404: Not found");
+  if (!FileSys::exists(Path))
+    send(HTTP_NOT_FOUND, TEXT_PLAIN, "404: Not found");
   
   else
   {
@@ -144,7 +158,8 @@ void WebInterface::onNotFoundHandler()
       server.streamFile(file, getContentType(Path));
       file.close();
     }
-    else server.send(HTTP_NOT_FOUND, TEXT_PLAIN, "404: Not found");
+    else
+      send(HTTP_NOT_FOUND, TEXT_PLAIN, "404: Not found");
   }
 }
 
@@ -163,10 +178,11 @@ void WebInterface::onScanNetworks()
   // Convert networks into json for frontend to parse
   JsonArray jsonNetworks = doc["ssid"].to<JsonArray>();
 
-  for (const auto &ssid : networks) jsonNetworks.add(ssid);
+  for (const auto &ssid : networks)
+    jsonNetworks.add(ssid);
 
   serializeJson(doc, json);
-  server.send(HTTP_OK, APP_JSON, json);
+  send(HTTP_OK, APP_JSON, json);
 }
 
 /**
@@ -186,9 +202,10 @@ void WebInterface::onConnectToNetwork()
     const String Password = payload["password"] | "";
     hasConnected = Networking::connectToNetwork(SelectedNetwork, Password);
   }
-  if (hasConnected) resStatus = HTTP_ACCEPTED;
+  if (hasConnected)
+    resStatus = HTTP_ACCEPTED;
 
-  server.send(resStatus);
+  send(resStatus);
 }
 
 /**
@@ -222,7 +239,8 @@ static String getContentType(const String &Path)
 static bool parsePayload(JsonDocument &output)
 {
   // "plain" is used to specify the reuqest body holding the data
-  if (!server.hasArg("plain")) return false;
+  if (!server.hasArg("plain"))
+    return false;
 
   String body = server.arg("plain");
   const auto ParsingError = deserializeJson(output, body);
@@ -283,7 +301,7 @@ inline void WebInterface::setupUploadMode()
   });
   server.on("/dev/upload", HTTP_POST, []()
   {
-      server.send(HTTP_OK, TEXT_PLAIN, "Successfully uploaded file");
+      send(HTTP_OK, TEXT_PLAIN, "Successfully uploaded file");
   }, uploadFile);
   server.on("/dev/printFiles", HTTP_POST, printFiles);
   server.on("/dev/clearSd", HTTP_POST, clearSd);
@@ -312,7 +330,8 @@ void WebInterface::uploadFile()
   } 
   else if (upload.status == UPLOAD_FILE_WRITE)
   {
-    if (_uploadFile) _uploadFile.write(upload.buf, upload.currentSize);
+    if (_uploadFile)
+      _uploadFile.write(upload.buf, upload.currentSize);
   }
   else if (upload.status == UPLOAD_FILE_END)
   {
@@ -337,13 +356,11 @@ void WebInterface::printFiles()
   {
     FileSys::traverseFiles(root, FileSys::printFile);
 
-    server.send(HTTP_OK, TEXT_PLAIN, "Printed files to serial monitor");
+    send(HTTP_OK, TEXT_PLAIN, "Printed files to serial monitor");
     root.close();
   }
   else
-  {
-    server.send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
-  }
+    send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
 }
 
 /**
@@ -360,12 +377,10 @@ void WebInterface::clearSd()
     FileSys::traverseFiles(root, FileSys::removeFile);
 
     root.close();
-    server.send(HTTP_OK, TEXT_PLAIN, "SD File System Cleared");
+    send(HTTP_OK, TEXT_PLAIN, "SD File System Cleared");
   }
   else
-  {
-    server.send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
-  }
+    send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
 }
 
 #endif // DEV_MODE_EN
