@@ -16,15 +16,10 @@
 
 #ifdef VAPI_EN
 
-#include "VibrosonicsAPI.h"
-#define NUM_PEAKS 12
+#include <VibrosonicsAPI.h>
 
 // Vibrosonics audio analysis globals
 VibrosonicsAPI vapi = VibrosonicsAPI();
-float windowData[WINDOW_SIZE_BY_2];
-Spectrogram processedSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
-ModuleGroup modules = ModuleGroup(&processedSpectrogram);
-MajorPeaks majorPeaks = MajorPeaks(NUM_PEAKS);
 
 #endif
 
@@ -96,8 +91,6 @@ void setup()
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
     vapi.init();
-    majorPeaks.setWindowSize(WINDOW_SIZE_OVERLAP);
-    modules.addModule(&majorPeaks, 20, 3000);
   #endif
 }
 
@@ -110,45 +103,9 @@ void loop()
 #ifdef VAPI_EN
   // Check to make sure that the AudioLab input buffer has been filled
   if (!vapi.isAudioLabReady())
-  {
     return;
-  }
-  // Process the input data
-  vapi.processAudioInput(windowData);
 
-  // Using this noise flooring function helps with getting a clear
-  // sounding output. This is more useful on the original prototype.
-  // You may not need this if you are using the latest hardware.
-  vapi.noiseFloorCFAR(windowData, 4, 1, 1.6);
+    // TODO: add VAPI processing here
 
-  // Push the processed data to the processed spectrogram
-  processedSpectrogram.pushWindow(windowData);
-
-  // Analyze the data with the added AudioPrism modules
-  modules.runAnalysis();
-
-  // Get the analyzed data from MajorPeaks module
-  float** peaksData = majorPeaks.getOutput();
-
-  /**
-   * Now that we have the data from MajorPeaks' analysis, we can
-   * decide what to do with that data.
-   * Some examples of what to do with the data are:
-   * -- Output the wave peaks
-   * -- Print out the info about the found peaks
-   * Both of these examples are shown below
-   */
-
-  // Print out peak data
-  // Serial.printf("Major Peaks:\n");
-  // for (int i = 0; i < NUM_PEAKS; i++){
-  //   Serial.printf("Peak: %i Frequency: %fHz Amplitude: %f\n", i, FREQ_RES * peaksData[MP_FREQ][i], peaksData[MP_AMP][i]);
-  // }
-
-  // Generate waves to be outputted on the hardware on channel 0
-  vapi.assignWaves(peaksData[MP_FREQ], peaksData[MP_AMP], NUM_PEAKS, 0);
-
-  // Synthesize all created waves through AudioLab
-  AudioLab.synthesize();
 #endif // VAPI_EN
 }
