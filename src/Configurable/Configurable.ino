@@ -59,7 +59,7 @@ Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 
 // NOTE: using float** for the type here is going to cause issues when adding percussion - find more elegant solution
-ModuleInterface<float**>* modules[NUM_OUT_CH] = { nullptr };
+ModuleInterface<float**>* analysisModules[NUM_OUT_CH] = { nullptr };
 
 void setup() {
   Serial.begin(115200);
@@ -131,10 +131,10 @@ void loop() {
   melodic.runAnalysis();
 
   for (int i = 0; i < NUM_OUT_CH; i++){
-    if (loadedConfig.outputs[i]->moduleType == MAJORPEAKS){
-      float **analysisData = modules[i]->getOutput();
-      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.outputs[i]->freqLow, loadedConfig.outputs[i]->freqHigh, loadedConfig.outputs[i]->frequencyMapping);
-      AudioLab.mapAmplitudes(i, loadedConfig.outputs[i]->minAmpNorm);
+    if (loadedConfig.modules[i]->moduleType == MAJORPEAKS){
+      float **analysisData = analysisModules[i]->getOutput();
+      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh, loadedConfig.modules[i]->frequencyMapping);
+      AudioLab.mapAmplitudes(i, loadedConfig.modules[i]->minAmpNorm);
     }
   }
 
@@ -146,20 +146,20 @@ void clearOutputModules(){
   melodic.clearModules();
   // delete old modules
   for (int i = 0; i < NUM_OUT_CH; i++) {
-    if (modules[i] != nullptr){
-      delete modules[i];
-      modules[i] = nullptr;
+    if (analysisModules[i] != nullptr){
+      delete analysisModules[i];
+      analysisModules[i] = nullptr;
     }
   }
 }
 
 void assignOutputModules(){
   for (int i = 0; i < NUM_OUT_CH; i++){
-    if (loadedConfig.outputs[i]->moduleType == MAJORPEAKS){
-      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(loadedConfig.outputs[i]);
-      modules[i] = new MajorPeaks(majorPeaks->maxPeaks);
-      modules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      melodic.addModule(modules[i], loadedConfig.outputs[i]->freqLow, loadedConfig.outputs[i]->freqHigh);
+    if (loadedConfig.modules[i]->moduleType == MAJORPEAKS){
+      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(loadedConfig.modules[i]);
+      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
+      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      melodic.addModule(analysisModules[i], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh);
     }
   }
 }
