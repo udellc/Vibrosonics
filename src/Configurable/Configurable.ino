@@ -1,13 +1,14 @@
 #include "VibrosonicsAPI.h"
 #include "storage.h"
 
-MajorPeaksConfig exampleMajorPeaksConfigs[4] = {
+// array of possible configurations for single outputs
+MajorPeaksConfig exampleMajorPeaksConfigs[3] = {
   { 400, 1000, OCTAVE, 10000, 1 },
   { 1000, 3600, OCTAVE, 10000, 1 },
   { 0, 4000, NONE, 10000, 32 },
-  { 0, 4000, NONE, 10000, 32 },
 };
 
+// array of possible configurations for the whole analysis - placeholder for web app config
 AnalysisConfig exampleConfigs[3] = {
   {
     280,    // noise floor
@@ -39,7 +40,7 @@ AnalysisConfig exampleConfigs[3] = {
     1,
     {
       &exampleMajorPeaksConfigs[2],
-      &exampleMajorPeaksConfigs[3],
+      &exampleMajorPeaksConfigs[2],
     }
   }
 };
@@ -48,6 +49,7 @@ AnalysisConfig loadedConfig = exampleConfigs[0];
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
+// bool to keep track of when past configs are no longer valid
 bool dirty = false;
 
 float windowData[WINDOW_SIZE_BY_2] = { 0 };
@@ -58,8 +60,9 @@ float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 
-// NOTE: using float** for the type here is going to cause issues when adding percussion - find more elegant solution
-ModuleInterface<float**>* analysisModules[NUM_OUT_CH] = { nullptr };
+// array of modules being used - current length is NUM_OUT_CH as we only support 1 module
+// per output at the moment
+AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
 
 void setup() {
   Serial.begin(115200);
@@ -130,9 +133,12 @@ void loop() {
   // have analysis modules analyze the frequency domain data
   melodic.runAnalysis();
 
+  // loop to get and synthesize results for each analysis module
   for (int i = 0; i < NUM_OUT_CH; i++){
     if (loadedConfig.modules[i]->moduleType == MAJORPEAKS){
-      float **analysisData = analysisModules[i]->getOutput();
+      // for major peaks modules, we can cast as ModuleInterface<float**>*
+      ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
+      float **analysisData = mpModuleInterface->getOutput();
       synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh, loadedConfig.modules[i]->frequencyMapping);
       AudioLab.mapAmplitudes(i, loadedConfig.modules[i]->minAmpNorm);
     }

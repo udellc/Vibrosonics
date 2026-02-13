@@ -1,3 +1,14 @@
+/***************************************************************
+ * FILE: storage.h
+ * 
+ * DATE: 2/12/2026
+ * 
+ * DESCRIPTION: This namespace contains structs and enums needed
+ * to store analysis configurations for Configurable.ino
+ * 
+ * AUTHOR: Danielle Chang
+ ***************************************************************/
+
 #ifndef STORAGE_H
 #define STORAGE_H
 
@@ -15,7 +26,8 @@ enum ModuleType{
   PERCUSSION
 };
 
-// configuration for a single analysis module
+// configuration for a single analysis module. constructor is protected as we only
+// want to instantiate derived structs
 struct ModuleConfig {
   virtual ~ModuleConfig() = default;
 protected:
