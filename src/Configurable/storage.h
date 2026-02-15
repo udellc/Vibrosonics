@@ -42,10 +42,15 @@ protected:
       frequencyMapping(frequencyMapping),
       minAmpNorm(minAmpNorm) {}
 public:
+  // type of the analysis module. see ModuleType enum for options
   const ModuleType moduleType;
+  // low value of the frequency range to pick up. must be positive 
   uint16_t freqLow;
+  // high value of the frequency range to pick up. must be positive and should be larger than freqLow
   uint16_t freqHigh;
+  // what type of frequency mapping to use. see FrequencyMapping enum for options
   FrequencyMapping frequencyMapping;
+  // minimum value to use for amplitude mapping. must be positive
   float minAmpNorm;
 };
 
@@ -58,6 +63,7 @@ struct MajorPeaksConfig : ModuleConfig {
                    int maxPeaks)
     : ModuleConfig(MAJORPEAKS, freqLow, freqHigh, frequencyMapping, minAmpNorm),
       maxPeaks(maxPeaks) {}
+  // number of peaks to pick up in analysis. minimum of 1
   int maxPeaks;
 };
 
@@ -65,10 +71,15 @@ struct MajorPeaksConfig : ModuleConfig {
 
 // configuration for our entire analysis
 struct AnalysisConfig {
+  // frequency to use for the noise floor. minimum of 0
   float noiseFloor = 280;
+  // number of reference cells to use for CFAR noise cancellation. minimum of 1
   uint16_t cfarRefCount = 6;
+  // number of guard cells to use for CFAR noise cancellation algorithm. minimum of 1
   uint16_t cfarGuardCount = 1;
+  // bias to use for CFAR noise cancellation algorithm. minimum of 0 (no CFAR)
   float cfarBias = 1.4;
+  // smoothing factor for smooth_window_over_time. value from 0-1 (0 high smoothing, 1 no smoothing)
   float smoothingFactor = 0.3;
   ModuleConfig* modules[NUM_OUT_CH];
 } ;
