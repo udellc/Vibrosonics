@@ -161,8 +161,6 @@ void Networking::scanAvailableNetworks(std::set<String> &result)
  */
 bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
-  int numTries = 0u;
- 
   if (Ssid.length() == 0)
   {
     DEBUG_PRINTLN("WARNING: Empty SSID provided");
@@ -211,7 +209,6 @@ String Networking::getNetworkSsid()
  */
 void resetWifi()
 {
-  // Failed to connect, so reset network configs before using AP mode
   WiFi.disconnect(true);
   delay(100u);
   WiFi.mode(WIFI_AP_STA);
