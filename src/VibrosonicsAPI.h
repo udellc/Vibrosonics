@@ -133,6 +133,10 @@ public:
     //! Sets the duration envelope paramaters for an array of grains.
     void setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv);
 
+    void pause() { AudioLab.pauseSampling(); }
+
+    void resume() { AudioLab.resumeSampling(); }
+
 private:
     // Fast Fourier Transform uses complex numbers
     float   vReal[WINDOW_SIZE_BY_2];   //!< Real component of cosine amplitude of each frequency.

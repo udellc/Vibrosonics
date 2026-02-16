@@ -14,8 +14,6 @@ export const HTTP_STATUS = Object.freeze({
   OK: 200,
   ACCEPTED: 202,
   BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  METHOD_NOT_ALLOWED: 405,
   UNPROCESSABLE: 422,
   INTERNAL_ERROR: 500,
   UNAVAILABLE: 503
@@ -31,9 +29,8 @@ export const HTTP_STATUS = Object.freeze({
  *
  */
 export const api = async (method, endpoint, data = null) => {
-  // TODO: this might change whe connecting to a different network
-  const backendUrl = "http://vibrosonics";
-  const url = `${backendUrl}${endpoint}`;
+  const BASE_URL = "http://vibrosonics";
+  const url = `${BASE_URL}${endpoint}`;
 
   try {
     switch (method) {
@@ -43,8 +40,8 @@ export const api = async (method, endpoint, data = null) => {
       case "POST": {
         return (await axios.post(url, data));
       }
-      case "PATCH": {
-        return (await axios.patch(url, data));
+      case "PUT": {
+        return (await axios.put(url, data));
       }
       case "DELETE": {
         return (await axios.delete(url));

@@ -18,15 +18,17 @@
 bool FileSys::init()
 {
   bool success = true;
-  Serial.println("File system initializing...");
+  DEBUG_PRINTLN("DEBUG: File system initializing...");
 
   if (!SD.begin(CS_PIN))
   {
-    Serial.println("SD File system failed to initialize.");
+    DEBUG_PRINTLN("DEBUG: SD File system failed to initialize.");
     success = false;
   }
-  Serial.println("SD File system successfully initialized.");
-
+  else
+  {
+    DEBUG_PRINTLN("DEBUG: SD File system successfully initialized.");
+  }
   return success;
 }
 
@@ -100,9 +102,14 @@ String FileSys::readFile(const String &Path)
   return Data;
 }
 
-#ifdef UPLOAD_MODE
+#ifdef DEV_MODE_EN
 
-// TODO: add header comment
+/**
+ * @brief Helper function to access all files in the SD card and apply a callback to each file.
+ * 
+ * @param start - File or directory to start from
+ * @param callback - Function to be applied for every file it sees
+ */
 void FileSys::traverseFiles(File start, FSCallback callback)
 {
   while (1)
@@ -125,13 +132,22 @@ void FileSys::traverseFiles(File start, FSCallback callback)
   }
 }
 
-// TODO: add header comment
+/**
+ * @brief Prints the file to the Serial monitor.
+ * 
+ * @param file - File we want to be printed
+ */
 void FileSys::printFile(File &file)
 {
   const String FileType = (file.isDirectory()) ? "Directory" : "File";
-  Serial.printf("Type: %s\tName: %s\tPath: %s\n", FileType, file.name(), file.path());
+  DEBUG_PRINTF("DEBUG: Type: %s\tName: %s\tPath: %s\n", FileType, file.name(), file.path());
 }
 
+/**
+ * @brief Removes the file form the SD card
+ * 
+ * @param file - File we want to remove
+ */
 void FileSys::removeFile(File &file)
 {
   (void) remove(file.path()); 

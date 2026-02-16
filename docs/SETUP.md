@@ -146,7 +146,7 @@ To deploy the WiFi web app onto the ESP32, we'll need to store the web app onto 
 - Navigate to the `WebApp/main/config.h` file and uncomment the following line to setup the ESP32 in upload mode
 
 ```cpp
-#define UPLOAD_MODE
+#define DEV_MODE_EN
 ```
 
 - Build and upload `main.ino` in the ArduinoIDE once connected to a COM port.
@@ -154,7 +154,7 @@ To deploy the WiFi web app onto the ESP32, we'll need to store the web app onto 
 - Open a web browser and open `http://vibrosonics/dev`.
 - Enter the directory you want to write to and select the file to upload.
 - Click the upload button to write the file. **Note:** Open the Serial monitor in ArduinoIDE to view the files on the SD card.
-- Once successful, exit the web app, comment out the `UPLOAD_MODE` macro and rebuild and upload `main.ino`.
+- Once successful, exit the web app, comment out the `DEV_MODE_EN` macro and rebuild and upload `main.ino`.
 
 ### 2. Connect to the Web App
 
