@@ -25,7 +25,7 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 
 // FreeRTOS stuff for the web server running on core 0
 #define TASK_DELAY_MS 100u
-#define WEB_SERVER_STACK_SIZE 8182u
+#define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
 

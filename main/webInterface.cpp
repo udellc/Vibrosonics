@@ -238,7 +238,7 @@ static String getContentType(const String &Path)
  */
 static bool parsePayload(JsonDocument &output)
 {
-  // "plain" is used to specify the reuqest body holding the data
+  // "plain" is used to specify the request body holding the data
   if (!server.hasArg("plain"))
     return false;
 
