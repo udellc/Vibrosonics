@@ -13,6 +13,7 @@
 #include "networking.h"
 #include "fileSys.h"
 #include "config.h"
+#include "hapticSettings.h"
 
 #ifdef VAPI_EN
 
