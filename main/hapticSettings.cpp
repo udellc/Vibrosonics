@@ -13,7 +13,8 @@
 #include "config.h"
 #include <Arduino.h>
 
-HapticSettings::HapticSettings()
+HapticSettings::HapticSettings() :
+  counter{ 0 }
 {
   DEBUG_PRINTLN("DEBUG: initialized HapticSettings class");
 }

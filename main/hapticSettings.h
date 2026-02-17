@@ -15,7 +15,6 @@
 
 class HapticSettings {
 public:
-  // Use HapticSettings::Instance() to reference the class
   static HapticSettings& Instance()
   {
     // NOTE: This way of creating a singleton is thread safe and prevents any potential 

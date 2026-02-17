@@ -25,10 +25,14 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 #endif
 
 // FreeRTOS stuff for the web server running on core 0
-#define TASK_DELAY_MS 100u
+// TODO: set TASK_DELAY_MS back to 100u when done testing
+#define TASK_DELAY_MS 1000u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
+
+// TODO: remove when done testing
+volatile int core0Counter = 0;
 
 /**
  * @brief Function to be pinned to core 0. Handles the clients for the web server
@@ -44,7 +48,10 @@ void webRunner(void *params)
   while (true)
   {
     WebInterface::run();
+    DEBUG_PRINTF("Core %d | updating val\n", xTaskGetCoreID(NULL));
+    HapticSettings::Instance().updateCounter();
     vTaskDelay(pdMS_TO_TICKS(TASK_DELAY_MS));
+    DEBUG_PRINTF("Core %d | reading val: %d\n", xTaskGetCoreID(NULL), HapticSettings::Instance().readCounter());
   }
 }
 
@@ -106,7 +113,13 @@ void loop()
   if (!vapi.isAudioLabReady())
     return;
 
-    // TODO: add VAPI processing here
+  // TODO: add VAPI processing here and remove core0Counter when done
+  core0Counter = HapticSettings::Instance().readCounter();
+  DEBUG_PRINTF("Core %d | Value read: %d\n",xTaskGetCoreID(NULL), core0Counter);
+  HapticSettings::Instance().updateCounter();
+  core0Counter = HapticSettings::Instance().readCounter();
+  DEBUG_PRINTF("Core %d | Value read2: %d\n",xTaskGetCoreID(NULL), core0Counter);
+  delay(500u);
 
 #endif // VAPI_EN
 }
