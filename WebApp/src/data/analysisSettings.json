@@ -1,0 +1,10 @@
+{
+  "global": {
+    "noiseFloor": 0,
+    "cfarRefCells": 1,
+    "cfarGuardCells": 1,
+    "cfarBias": 1.2,
+    "smoothingFactor": 0.2
+  },
+  "modules": []
+}
