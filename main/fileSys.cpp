@@ -27,14 +27,14 @@ bool FileSys::init()
   }
   else
   {
+    // Create necessary directories if not found on SD card
+    if (!SD.exists("/assets"))
+      SD.mkdir("/assets");
+    if (!SD.exists("/data"))
+      SD.mkdir("/data");
+
     DEBUG_PRINTLN("DEBUG: SD File system successfully initialized.");
   }
-  // Create necessary directories if not found on SD card
-  if (!SD.exists("/assets"))
-    SD.mkdir("/assets");
-  if (!SD.exists("/data"))
-    SD.mkdir("/data");
-
   return success;
 }
 
