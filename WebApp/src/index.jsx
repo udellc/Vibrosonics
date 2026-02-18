@@ -17,11 +17,12 @@ import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
+import { AudioSettingsProvider } from "./utils/configurations";
 
 /**
- * @brief
+ * @brief Defines the different pages for the main App
  *
- * @returns
+ * @returns Routes to each page component
  */
 const AppContent = () => {
   return (
@@ -39,11 +40,15 @@ const AppContent = () => {
  * @returns
  */
 export function App() {
+
   return (
     // FIXME: align the footer to the bottom with the header and content filling the rest of space
     <div className="min-w-lvw min-h-lvh flex flex-col">
       <Header />
-      <AppContent />
+      {/* Wrap the app content with the audio context */}
+      <AudioSettingsProvider>
+        <AppContent />
+      </AudioSettingsProvider>
       <Footer/>
     </div>
   );
