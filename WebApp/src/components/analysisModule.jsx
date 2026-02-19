@@ -39,13 +39,6 @@ export default function AnalysisModule() {
     );
   };
 
-  const handleSliderChange = (id, value) => {
-    setSliderValue((prev) => ({ ...prev, [id]: value }));
-    console.log(
-      String("Slider") + String(id) + String("Value: ") + String(value)
-    );
-  };
-
   const handleValueChange = (id, value) => {
     const numValue = Number(value);
 
