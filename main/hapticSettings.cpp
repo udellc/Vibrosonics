@@ -11,10 +11,23 @@
 
 #include "hapticSettings.h"
 #include "config.h"
+#include "storage.h"
 #include <Arduino.h>
+#include <memory>
 
-HapticSettings::HapticSettings() :
-  counter{ 0 }
+HapticSettings::HapticSettings()
 {
-  DEBUG_PRINTLN("DEBUG: initialized HapticSettings class");
+  this->curConfig = std::make_shared<AnalysisConfig>();
+}
+
+// TODO: implement
+bool HapticSettings::loadConfig()
+{
+  return false;
+}
+
+// TODO: implement
+bool HapticSettings::updateConfig(AnalysisConfig& other)
+{
+  return false;
 }
