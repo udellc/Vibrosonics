@@ -22,17 +22,21 @@
 // Vibrosonics audio analysis globals
 VibrosonicsAPI vapi = VibrosonicsAPI();
 
+float windowData[WINDOW_SIZE_BY_2] = { 0 };
+float filteredData[WINDOW_SIZE_BY_2] = { 0 };
+float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
+float melodicData[WINDOW_SIZE_BY_2] = { 0 };
+
+Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
+ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
+
 #endif
 
 // FreeRTOS stuff for the web server running on core 0
-// TODO: set TASK_DELAY_MS back to 100u when done testing
-#define TASK_DELAY_MS 1000u
+#define TASK_DELAY_MS 100u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
-
-// TODO: remove when done testing
-volatile int core0Counter = 0;
 
 /**
  * @brief Function to be pinned to core 0. Handles the clients for the web server
@@ -48,10 +52,7 @@ void webRunner(void *params)
   while (true)
   {
     WebInterface::run();
-    DEBUG_PRINTF("Core %d | updating val\n", xTaskGetCoreID(NULL));
-    HapticSettings::Instance().updateCounter();
     vTaskDelay(pdMS_TO_TICKS(TASK_DELAY_MS));
-    DEBUG_PRINTF("Core %d | reading val: %d\n", xTaskGetCoreID(NULL), HapticSettings::Instance().readCounter());
   }
 }
 
@@ -96,8 +97,10 @@ void setup()
     while (true)
       delay(3000u);
   }
+  (void) HapticSettings::Instance();
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
+    // TODO: add some sort of HapticSettings init/load settings 
     vapi.init();
   #endif
 }
@@ -109,17 +112,92 @@ void setup()
 void loop()
 {
 #ifdef VAPI_EN
-  // Check to make sure that the AudioLab input buffer has been filled
   if (!vapi.isAudioLabReady())
     return;
 
-  // TODO: add VAPI processing here and remove core0Counter when done
-  core0Counter = HapticSettings::Instance().readCounter();
-  DEBUG_PRINTF("Core %d | Value read: %d\n",xTaskGetCoreID(NULL), core0Counter);
-  HapticSettings::Instance().updateCounter();
-  core0Counter = HapticSettings::Instance().readCounter();
-  DEBUG_PRINTF("Core %d | Value read2: %d\n",xTaskGetCoreID(NULL), core0Counter);
-  delay(500u);
+  vapi.processAudioInput(windowData);
+  vapi.noiseFloor(windowData, loadedConfig.noiseFloor);
+  memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
+  vapi.noiseFloorCFAR(filteredData, loadedConfig.cfarRefCount, loadedConfig.cfarGuardCount, loadedConfig.cfarBias);
+  AudioPrism::smooth_window_over_time(filteredData, smoothedData, loadedConfig.smoothingFactor, WINDOW_SIZE_OVERLAP);
 
+  for (int i = 0; i < WINDOW_SIZE_BY_2; i++)
+  {
+    melodicData[i] = min(windowData[i], smoothedData[i]);
+    
+    if (melodicData[i] < loadedConfig.noiseFloor)
+      melodicData[i] = 0.;
+  }
+  melodicSpectrogram.pushWindow(melodicData);
+  melodic.runAnalysis();
+
+  // TODO: refactor this section
+  for (int i = 0; i < NUM_OUT_CH; i++)
+  {
+    if (loadedConfig.modules[i]->moduleType == MAJORPEAKS)
+    {
+      ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
+      float **analysisData = mpModuleInterface->getOutput();
+      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh, loadedConfig.modules[i]->frequencyMapping);
+      AudioLab.mapAmplitudes(i, loadedConfig.modules[i]->minAmpNorm);
+    }
+  }
+  AudioLab.synthesize();
 #endif // VAPI_EN
 }
+
+#ifdef VAPI_EN
+// TODO: refactor this section
+void clearOutputModules(){
+  melodic.clearModules();
+  // delete old modules
+  for (int i = 0; i < NUM_OUT_CH; i++) {
+    if (analysisModules[i] != nullptr){
+      delete analysisModules[i];
+      analysisModules[i] = nullptr;
+    }
+  }
+}
+
+// TODO: refactor this section
+void assignOutputModules(){
+  for (int i = 0; i < NUM_OUT_CH; i++){
+    if (loadedConfig.modules[i]->moduleType == MAJORPEAKS){
+      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(loadedConfig.modules[i]);
+      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
+      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      melodic.addModule(analysisModules[i], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh);
+    }
+  }
+}
+
+int interpolateAroundPeak(float *data, int indexOfPeak) {
+  float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
+  float atPeak = data[indexOfPeak];
+  float postPeak = indexOfPeak == WINDOW_SIZE_BY_2 ? 0.0 : data[indexOfPeak + 1];
+  // summing around the index of maximum amplitude to normalize magnitudeOfChange
+  float peakSum = prePeak + atPeak + postPeak;
+  // interpolating the direction and magnitude of change, and normalizing from -1.0 to 1.0
+  float magnitudeOfChange = ((atPeak + postPeak) - (atPeak + prePeak)) / (peakSum > 0.0 ? peakSum : 1.0);
+  
+  // return interpolated frequency
+  return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
+}
+
+void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption) {
+  // interpolate the frequency around the peak to get a more accurate measure
+  float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
+  float haptic_freq = interp_freq;
+
+  if (mappingOption == OCTAVE)
+  {
+    haptic_freq = vapi.mapFrequencyByOctaves(interp_freq, freqMax);
+  }
+  else if (mappingOption == MIDI)
+  {
+    haptic_freq = vapi.mapFrequencyMIDI(interp_freq, freqMin, freqMax);
+  }
+  vapi.assignWave(haptic_freq, amp, channel);
+}
+
+#endif // VAPI_EN
