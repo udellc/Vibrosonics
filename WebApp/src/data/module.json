@@ -1,8 +1,26 @@
 {
-  "type": "Base",
-  "lowFreq": 0,
-  "highFreq": 0,
-  "frequencyMap": "NA",
-  "minAmpNorm": 1,
-  "params": {}
+  "module": {
+    "title": "Base",
+    "lowFreq": {
+      "title": "Low Cut Frequency",
+      "description": "Minimum frequency picked used for audio analysis.",
+      "value": 0
+    },
+    "highFreq": {
+        "title": "Low Cut Frequency",
+        "description": "Maximum frequency picked used for audio analysis.",
+        "value": 0
+    },
+    "frequencyMap": {
+        "title": "Frequency Map",
+        "description": "TODO add",
+        "value": "NA"
+    },
+    "minAmpNorm": {
+        "title": "Minimum Amplitude Norm",
+        "description": "TODO add",
+        "value": 1
+    },
+    "params": {}
+  }
 }
