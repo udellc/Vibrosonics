@@ -37,6 +37,9 @@ namespace WebInterface
   //! Handler for connncting to user selected network
   void onConnectToNetwork();
 
+  //! Handler for updating the HapticSettings config
+  void updateHapticSettings();
+
   #ifdef DEV_MODE_EN
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();

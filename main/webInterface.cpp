@@ -48,7 +48,13 @@ File _uploadFile;
 static String getContentType(const String &Path);
 static bool parsePayload(JsonDocument &output);
 
-// TODO: add header comment
+/**
+ * @brief Function that bypasses CORS restrictions when DEV_MODE_EN is enabled.
+ * 
+ * @param Code - HTTP status code to send
+ * @param ContentType - Content type of the data to send
+ * @param Content - Content to send. Should be parsed into a JSON string by the caller
+ */
 void inline send(const int Code, const char* ContentType = NULL, const String& Content = String(""))
 {
 #ifdef DEV_MODE_EN
@@ -112,6 +118,9 @@ inline void WebInterface::setupServer()
   {
     send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
   });
+  // Haptic settings API
+  server.on("/audio/update", HTTP_POST, updateHapticSettings);
+
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
   server.onNotFound(onNotFoundHandler);
@@ -142,6 +151,8 @@ void WebInterface::sendWebApp()
  */
 void WebInterface::onNotFoundHandler()
 {
+  DEBUG_PRINTLN("DEBUG: onFoundHandler() called");
+
   const String Path = server.uri();
 
   if (!FileSys::exists(Path))
@@ -149,17 +160,16 @@ void WebInterface::onNotFoundHandler()
   
   else
   {
-    DEBUG_PRINTLN("DEBUG: im here in onFoundHandler");
     File file = FileSys::getFile(Path);
 
     if (file)
     {
-      DEBUG_PRINTF("DEBUG: file name %s\n", file.path());
+      DEBUG_PRINTF("DEBUG: file name %s found\n", file.path());
       server.streamFile(file, getContentType(Path));
       file.close();
     }
     else
-      send(HTTP_NOT_FOUND, TEXT_PLAIN, "404: Not found");
+      send(HTTP_NOT_FOUND, TEXT_PLAIN, "Not found");
   }
 }
 
@@ -206,6 +216,18 @@ void WebInterface::onConnectToNetwork()
     resStatus = HTTP_ACCEPTED;
 
   send(resStatus);
+}
+
+// TODO: add header comment
+void WebInterface::updateHapticSettings()
+{
+  JsonDocument payload;
+
+  if (parsePayload(payload))
+  {
+    // TODO: print data for now
+  }
+  send(HTTP_OK);
 }
 
 /**
