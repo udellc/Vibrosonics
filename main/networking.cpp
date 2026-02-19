@@ -182,7 +182,7 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
                               "  \"password\": \"" + currentWifi.password + "\"\n"
                               "}";
     (void) FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
-    DEBUG_PRINTF("DEBUG: Successfully connected to %s and saved info to SD card\n");
+    DEBUG_PRINTF("DEBUG: Successfully connected to %s and saved info to SD card\n", currentWifi.ssid);
 
     return true;
   }
