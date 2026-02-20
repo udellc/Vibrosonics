@@ -1,7 +1,7 @@
 {
   "global": {
     "title": "Global Settings",
-    "global": {
+    "settings": {
       "noiseFloor": {
         "title": "Noise Floor",
         "description": "",
