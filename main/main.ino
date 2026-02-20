@@ -14,6 +14,7 @@
 #include "fileSys.h"
 #include "config.h"
 #include "hapticSettings.h"
+#include <memory>
 
 #ifdef VAPI_EN
 
@@ -29,6 +30,8 @@ float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 
 Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
+
+AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
 
 #endif
 
@@ -104,6 +107,10 @@ void setup()
   }
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
+    
+    // FIX: temporary
+    auto loadedConfig = HapticSettings::Instance().getConfig_mut();
+    assignOutputModules(loadedConfig);
     vapi.init();
   #endif
 }
@@ -152,6 +159,17 @@ void loop()
 }
 
 #ifdef VAPI_EN
+
+void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
+  for (int i = 0; i < NUM_OUT_CH; i++){
+    if (target->modules[i]->moduleType == MAJORPEAKS){
+      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i]);
+      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
+      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      melodic.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
+    }
+  }
+}
 
 int interpolateAroundPeak(float *data, int indexOfPeak) {
   float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
