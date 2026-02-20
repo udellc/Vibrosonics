@@ -7,14 +7,14 @@
       "value": 0
     },
     "highFreq": {
-        "title": "Low Cut Frequency",
+        "title": "High Cut Frequency",
         "description": "Maximum frequency picked used for audio analysis.",
         "value": 0
     },
     "frequencyMap": {
         "title": "Frequency Map",
         "description": "TODO add",
-        "value": "NA"
+        "value": "NONE"
     },
     "minAmpNorm": {
         "title": "Minimum Amplitude Norm",
