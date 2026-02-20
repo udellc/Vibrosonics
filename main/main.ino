@@ -36,7 +36,7 @@ AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
 #endif
 
 // FreeRTOS stuff for the web server running on core 0
-#define TASK_DELAY_MS 75u
+#define TASK_DELAY_MS 100u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
@@ -94,8 +94,7 @@ void setup()
   }
   if (!HapticSettings::Instance().loadConfig())
   {
-    DEBUG_PRINTLN("WARNING: Could not load previous analysis configuration from SD card");
-    success = false;
+    DEBUG_PRINTLN("WARNING: Could not load previous analysis configuration from SD card. Using preset instead");
   }
   // On setup failure, do nothing
   if (!success)
