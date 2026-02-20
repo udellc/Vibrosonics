@@ -13,9 +13,12 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WebServer.h>
+#include <memory>
 #include "config.h"
 #include "fileSys.h"
+#include "hapticSettings.h"
 #include "networking.h"
+#include "storage.h"
 
 // HTTP defines
 constexpr int HTTP_OK = 200;
@@ -119,6 +122,7 @@ inline void WebInterface::setupServer()
     send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
   });
   // Haptic settings API
+  server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
   server.on("/analysis/config", HTTP_PUT, onSubmitConfig);
 
   // Make /assets/ public for the server
@@ -219,6 +223,25 @@ void WebInterface::onConnectToNetwork()
 }
 
 /**
+ * @brief TODO: add header comment and implement
+ */
+void WebInterface::sendAnalysisConfig()
+{
+  String json;
+  JsonDocument doc;
+  // AnalysisConfig curConfig = HapticSettings::Instance().getConfig();
+
+  // Get analysis config from HapticSettings class
+  // parse the config into json
+  // if succesful
+    // send package
+  // else
+    // send error
+
+  send(HTTP_OK);
+}
+
+/**
  * @brief Parses the submitted analysis configuration, updates the config
  *        being used in main.ino, and sends the response status.
  * 
@@ -231,18 +254,20 @@ void WebInterface::onSubmitConfig()
 
   if (parsePayload(payload))
   {
-    loadedConfig.noiseFloor = payload["noiseFloor"] | 0;
-    loadedConfig.cfarRefCount = payload["cfarRefCount"] | 1;
-    loadedConfig.cfarGuardCount = payload["cfarGuardCount"] | 1;
-    loadedConfig.cfarBias = payload["cfarBias"] | 0;
-    loadedConfig.smoothingFactor = payload["smoothingFactor"] | 1;
+    auto newConfig = std::make_shared<AnalysisConfig>();
+
+    newConfig->noiseFloor = payload["noiseFloor"] | 0;
+    newConfig->cfarRefCount = payload["cfarRefCount"] | 1;
+    newConfig->cfarGuardCount = payload["cfarGuardCount"] | 1;
+    newConfig->cfarBias = payload["cfarBias"] | 0;
+    newConfig->smoothingFactor = payload["smoothingFactor"] | 1;
 
     for (int i = 0; i < NUM_OUT_CH; i++)
     {
-      if (loadedConfig.modules[i] != nullptr)
+      if (newConfig->modules[i] != nullptr)
       {
-        delete loadedConfig.modules[i];
-        loadedConfig.modules[i] = nullptr;
+        delete newConfig->modules[i];
+        newConfig->modules[i] = nullptr;
       }
     }
 
@@ -271,7 +296,7 @@ void WebInterface::onSubmitConfig()
       {
         int maxPeaks = moduleObj["maxPeaks"] | 1;
 
-        loadedConfig.modules[index] =
+        newConfig->modules[index] =
           new MajorPeaksConfig(
             freqLow,
             freqHigh,
@@ -287,10 +312,8 @@ void WebInterface::onSubmitConfig()
 
       index++;
     }
-
-    // TODO: add check to set dirty bool in main.ino
-
     hasConnected = true;
+    HapticSettings::Instance().updateConfig(newConfig);
   }
   if (hasConnected)
     resStatus = HTTP_ACCEPTED;

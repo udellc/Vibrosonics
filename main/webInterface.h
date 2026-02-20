@@ -37,6 +37,9 @@ namespace WebInterface
   //! Handler for connncting to user selected network
   void onConnectToNetwork();
 
+  //! Handler for getting the current analysis config settings
+  void sendAnalysisConfig();
+
   //! Handler for updating the HapticSettings config
   void onSubmitConfig();
 
