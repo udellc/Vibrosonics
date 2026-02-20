@@ -15,7 +15,8 @@
 #include <Arduino.h>
 #include <memory>
 
-HapticSettings::HapticSettings()
+HapticSettings::HapticSettings() :
+  curConfig{ nullptr }
 {
   this->curConfig = std::make_shared<AnalysisConfig>();
 }
@@ -23,11 +24,11 @@ HapticSettings::HapticSettings()
 // TODO: implement
 bool HapticSettings::loadConfig()
 {
-  return false;
-}
-
-// TODO: implement
-bool HapticSettings::updateConfig(AnalysisConfig& other)
-{
+  // Get and parse JSON file with the settings into variable curConfig
+  // If no error,
+    // load the settings
+  // if there is an error,
+    // load a preset thats in storage.h
+    // NOTE: we could have a "safe" preset in the code just in case the SD card fails
   return false;
 }
