@@ -16,7 +16,6 @@ import { AudioSettingsContext } from "../utils/configurations";
 
 const ModulesPage = () => {
   const { analysisSettings } = useContext(AudioSettingsContext);
-
   const [globalSettings, setGlobalSettings] = useState({});
   const [modules, setModules] = useState([]);
 
@@ -24,13 +23,13 @@ const ModulesPage = () => {
    * @brief
    */
   const getSettings = async () => {
-    // const res = await api("GET", "/audio/getSettings");
+    const res = await api("GET", "/analysis/getSettings");
 
-    // if (res.status == HTTP_STATUS.OK) {
-      // console.log(analysisSettings);
-      // setGlobalSettings(res.data.globalSettings);
-      // setModules(res.data.modules);
-    // }
+    if (res.status == HTTP_STATUS.OK) {
+      console.log(analysisSettings);
+      setGlobalSettings(res.data.globalSettings);
+      setModules(res.data.modules);
+    }
   };
 
   useEffect( () => {
@@ -41,9 +40,14 @@ const ModulesPage = () => {
 
   return (
     <div>
-      <h1 className="font-bold mt-10">
-        <AnalysisModule />
-      </h1>
+      {/* Global settings here */}
+
+      {modules.map((module) => {
+        <AnalysisModule
+          moduleParams={module}
+        />
+      })}
+      <AnalysisModule />
     </div>
   );
 };
