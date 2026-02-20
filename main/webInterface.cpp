@@ -119,7 +119,7 @@ inline void WebInterface::setupServer()
     send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
   });
   // Haptic settings API
-  server.on("/audio/update", HTTP_POST, updateHapticSettings);
+  server.on("/analysis/config", HTTP_PUT, onSubmitConfig);
 
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
@@ -218,16 +218,84 @@ void WebInterface::onConnectToNetwork()
   send(resStatus);
 }
 
-// TODO: add header comment
-void WebInterface::updateHapticSettings()
+/**
+ * @brief Parses the submitted analysis configuration, updates the config
+ *        being used in main.ino, and sends the response status.
+ * 
+ */
+void WebInterface::onSubmitConfig()
 {
   JsonDocument payload;
+  int resStatus = HTTP_UNPROCESSABLE;
+  bool hasConnected = false;
 
   if (parsePayload(payload))
   {
-    // TODO: print data for now
+    loadedConfig.noiseFloor = payload["noiseFloor"] | 0;
+    loadedConfig.cfarRefCount = payload["cfarRefCount"] | 1;
+    loadedConfig.cfarGuardCount = payload["cfarGuardCount"] | 1;
+    loadedConfig.cfarBias = payload["cfarBias"] | 0;
+    loadedConfig.smoothingFactor = payload["smoothingFactor"] | 1;
+
+    for (int i = 0; i < NUM_OUT_CH; i++)
+    {
+      if (loadedConfig.modules[i] != nullptr)
+      {
+        delete loadedConfig.modules[i];
+        loadedConfig.modules[i] = nullptr;
+      }
+    }
+
+    JsonArray modules = payload["modules"].as<JsonArray>();
+    int index = 0;
+
+    for (JsonObject moduleObj : modules)
+    {
+      if (index >= NUM_OUT_CH)
+        break;
+
+      const char* typeStr = moduleObj["type"];
+
+      uint16_t freqLow  = moduleObj["freqLow"] | 0;
+      uint16_t freqHigh = moduleObj["freqHigh"] | 0;
+      float minAmpNorm  = moduleObj["minAmpNorm"] | 0;
+
+      FrequencyMapping mapping = NONE;
+      const char* mappingStr = moduleObj["frequencyMapping"];
+      if (strcmp(mappingStr, "OCTAVE") == 0)
+        mapping = OCTAVE;
+      else if (strcmp(mappingStr, "MIDI") == 0)
+        mapping = MIDI;
+
+      if (strcmp(typeStr, "MAJORPEAKS") == 0)
+      {
+        int maxPeaks = moduleObj["maxPeaks"] | 1;
+
+        loadedConfig.modules[index] =
+          new MajorPeaksConfig(
+            freqLow,
+            freqHigh,
+            mapping,
+            minAmpNorm,
+            maxPeaks
+          );
+      }
+      else if (strcmp(typeStr, "PERCUSSION") == 0)
+      {
+        // TODO
+      }
+
+      index++;
+    }
+
+    // TODO: add check to set dirty bool in main.ino
+
+    hasConnected = true;
   }
-  send(HTTP_OK);
+  if (hasConnected)
+    resStatus = HTTP_ACCEPTED;
+
+  send(resStatus);
 }
 
 /**
