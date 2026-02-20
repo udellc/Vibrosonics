@@ -11,12 +11,17 @@
 
 #include "hapticSettings.h"
 #include "config.h"
+#include "fileSys.h"
 #include "storage.h"
+#include "utils.h"
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <memory>
 
-HapticSettings::HapticSettings() :
-  curConfig{ nullptr }
+#define MAIN_ANALYSIS_PATH "/data/mainConfig.json"
+
+HapticSettings::HapticSettings()
+    : curConfig { nullptr }
 {
   this->curConfig = std::make_shared<AnalysisConfig>();
 }
@@ -24,11 +29,41 @@ HapticSettings::HapticSettings() :
 // TODO: implement
 bool HapticSettings::loadConfig()
 {
-  // Get and parse JSON file with the settings into variable curConfig
-  // If no error,
-    // load the settings
-  // if there is an error,
-    // load a preset thats in storage.h
-    // NOTE: we could have a "safe" preset in the code just in case the SD card fails
-  return false;
+  JsonDocument doc;
+  bool useSavedConfig {false};
+  const bool HasConfig = FileSys::exists(MAIN_ANALYSIS_PATH);
+
+  if (HasConfig)
+  {
+    File configFile = FileSys::getFile(MAIN_ANALYSIS_PATH);
+    const auto Error = deserializeJson(doc, configFile);
+
+    if (!Error)
+    {
+      JsonObject globalSettings = doc["global"]["settings"].as<JsonObject>();
+      JsonArray modulesList = doc["modules"]["list"].as<JsonArray>();
+
+      Utils::populateGlobalSettings(globalSettings, this->curConfig.get());
+      Utils::populateModulesList(modulesList, this->curConfig.get());
+
+      useSavedConfig = true;
+    }
+    else
+      DEBUG_PRINTLN("WARNING: Saved analysis config could not be serialized");
+  }
+  if (!useSavedConfig)
+  {
+    DEBUG_PRINTLN("WARNING: Using preset for analysis config");
+
+    this->curConfig = std::make_shared<AnalysisConfig>(
+      AnalysisConfig(
+        280, 6, 1, 1.4, 0.2,
+        {
+          new MajorPeaksConfig(400, 1000, OCTAVE, 10000.0, 5),
+          new MajorPeaksConfig(1000, 3600, OCTAVE, 10000.0, 5)
+        }
+      )
+    );
+  }
+  return useSavedConfig;
 }
