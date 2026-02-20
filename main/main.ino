@@ -33,7 +33,7 @@ ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 #endif
 
 // FreeRTOS stuff for the web server running on core 0
-#define TASK_DELAY_MS 100u
+#define TASK_DELAY_MS 75u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
@@ -89,6 +89,11 @@ void setup()
     success = false;
     DEBUG_PRINTLN("FATAL: Could not create web server task");
   }
+  if (!HapticSettings::Instance().loadConfig())
+  {
+    DEBUG_PRINTLN("WARNING: Could not load previous analysis configuration from SD card");
+    success = false;
+  }
   // On setup failure, do nothing
   if (!success)
   {
@@ -97,10 +102,8 @@ void setup()
     while (true)
       delay(3000u);
   }
-  (void) HapticSettings::Instance();
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
-    // TODO: add some sort of HapticSettings init/load settings 
     vapi.init();
   #endif
 }
@@ -114,32 +117,34 @@ void loop()
 #ifdef VAPI_EN
   if (!vapi.isAudioLabReady())
     return;
+  
+  auto activeConfig = HapticSettings::Instance().getConfig_r();
 
+  // Get input data and clean it
   vapi.processAudioInput(windowData);
-  vapi.noiseFloor(windowData, loadedConfig.noiseFloor);
+  vapi.noiseFloor(windowData, activeConfig->noiseFloor);
   memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
-  vapi.noiseFloorCFAR(filteredData, loadedConfig.cfarRefCount, loadedConfig.cfarGuardCount, loadedConfig.cfarBias);
-  AudioPrism::smooth_window_over_time(filteredData, smoothedData, loadedConfig.smoothingFactor, WINDOW_SIZE_OVERLAP);
+  vapi.noiseFloorCFAR(filteredData, activeConfig->cfarRefCount, activeConfig->cfarGuardCount, activeConfig->cfarBias);
+  AudioPrism::smooth_window_over_time(filteredData, smoothedData, activeConfig->smoothingFactor, WINDOW_SIZE_OVERLAP);
 
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++)
   {
     melodicData[i] = min(windowData[i], smoothedData[i]);
     
-    if (melodicData[i] < loadedConfig.noiseFloor)
+    if (melodicData[i] < activeConfig->noiseFloor)
       melodicData[i] = 0.;
   }
   melodicSpectrogram.pushWindow(melodicData);
   melodic.runAnalysis();
 
-  // TODO: refactor this section
   for (int i = 0; i < NUM_OUT_CH; i++)
   {
-    if (loadedConfig.modules[i]->moduleType == MAJORPEAKS)
+    if (activeConfig->modules[i]->moduleType == MAJORPEAKS)
     {
       ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
       float **analysisData = mpModuleInterface->getOutput();
-      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh, loadedConfig.modules[i]->frequencyMapping);
-      AudioLab.mapAmplitudes(i, loadedConfig.modules[i]->minAmpNorm);
+      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, activeConfig->modules[i]->frequencyMapping);
+      AudioLab.mapAmplitudes(i, activeConfig->modules[i]->minAmpNorm);
     }
   }
   AudioLab.synthesize();
@@ -147,29 +152,6 @@ void loop()
 }
 
 #ifdef VAPI_EN
-// TODO: refactor this section
-void clearOutputModules(){
-  melodic.clearModules();
-  // delete old modules
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    if (analysisModules[i] != nullptr){
-      delete analysisModules[i];
-      analysisModules[i] = nullptr;
-    }
-  }
-}
-
-// TODO: refactor this section
-void assignOutputModules(){
-  for (int i = 0; i < NUM_OUT_CH; i++){
-    if (loadedConfig.modules[i]->moduleType == MAJORPEAKS){
-      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(loadedConfig.modules[i]);
-      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
-      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      melodic.addModule(analysisModules[i], loadedConfig.modules[i]->freqLow, loadedConfig.modules[i]->freqHigh);
-    }
-  }
-}
 
 int interpolateAroundPeak(float *data, int indexOfPeak) {
   float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];
