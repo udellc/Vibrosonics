@@ -30,7 +30,7 @@ HapticSettings::HapticSettings()
 bool HapticSettings::loadConfig()
 {
   JsonDocument doc;
-  bool useSavedConfig {false};
+  bool usingSavedConfig {false};
   const bool HasConfig = FileSys::exists(MAIN_ANALYSIS_PATH);
 
   if (HasConfig)
@@ -40,18 +40,18 @@ bool HapticSettings::loadConfig()
 
     if (!Error)
     {
-      JsonObject globalSettings = doc["global"]["settings"].as<JsonObject>();
-      JsonArray modulesList = doc["modules"]["list"].as<JsonArray>();
+      JsonObject globalSettings = doc["global"].as<JsonObject>();
+      JsonArray modulesList = doc["modules"].as<JsonArray>();
 
       Utils::populateGlobalSettings(globalSettings, this->curConfig.get());
       Utils::populateModulesList(modulesList, this->curConfig.get());
 
-      useSavedConfig = true;
+      usingSavedConfig = true;
     }
     else
       DEBUG_PRINTLN("WARNING: Saved analysis config could not be serialized");
   }
-  if (!useSavedConfig)
+  if (!usingSavedConfig)
   {
     DEBUG_PRINTLN("WARNING: Using preset for analysis config");
 
@@ -59,11 +59,11 @@ bool HapticSettings::loadConfig()
       AnalysisConfig(
         280, 6, 1, 1.4, 0.2,
         {
-          new MajorPeaksConfig(400, 1000, OCTAVE, 10000.0, 5),
-          new MajorPeaksConfig(1000, 3600, OCTAVE, 10000.0, 5)
+          std::make_unique<MajorPeaksConfig>(400, 1000, OCTAVE, 10000.0, 5),
+          std::make_unique<MajorPeaksConfig>(1000, 3600, OCTAVE, 10000.0, 5)
         }
       )
     );
   }
-  return useSavedConfig;
+  return usingSavedConfig;
 }
