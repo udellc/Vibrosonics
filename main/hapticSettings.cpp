@@ -59,8 +59,8 @@ bool HapticSettings::loadConfig()
       AnalysisConfig(
         280, 6, 1, 1.4, 0.2,
         {
-          std::make_unique<MajorPeaksConfig>(400, 1000, OCTAVE, 10000.0, 5),
-          std::make_unique<MajorPeaksConfig>(1000, 3600, OCTAVE, 10000.0, 5)
+          std::make_unique<MajorPeaksConfig>(400, 1000, OCTAVE, 10000.0, 1),
+          std::make_unique<MajorPeaksConfig>(1000, 3600, OCTAVE, 10000.0, 1)
         }
       )
     );
