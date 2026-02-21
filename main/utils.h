@@ -16,6 +16,8 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+using ModulePtr = std::unique_ptr<ModuleConfig>;
+
 namespace Utils
 {
   //! Helper function to parse the global settings Json object into an analysis module
@@ -27,6 +29,9 @@ namespace Utils
   //! NOTE: This function assumes that the modulesList object is pulled using the schema from
   //        WebApp/data json files
   void populateModulesList(JsonArray& modulesList, AnalysisConfig* config);
+
+  //! Creates an instance of ModulePtr based on the module type
+  inline ModulePtr createModule(const ModuleType Type);
 }
 
 #endif

@@ -229,8 +229,6 @@ void WebInterface::sendAnalysisConfig()
 {
   String json;
   JsonDocument doc;
-  // AnalysisConfig curConfig = HapticSettings::Instance().getConfig();
-
   // Get analysis config from HapticSettings class
   // parse the config into json
   // if succesful
@@ -243,79 +241,28 @@ void WebInterface::sendAnalysisConfig()
 
 /**
  * @brief Parses the submitted analysis configuration, updates the config
- *        being used in main.ino, and sends the response status.
+ *        in HapticSettings, and sends the response status.
  * 
  */
 void WebInterface::onSubmitConfig()
 {
   JsonDocument payload;
   int resStatus = HTTP_UNPROCESSABLE;
-  bool hasConnected = false;
+  bool hasUpdated = false;
 
   if (parsePayload(payload))
   {
     auto newConfig = std::make_shared<AnalysisConfig>();
+    auto globalSettings = payload["global"].as<JsonObject>();
+    auto modulesList = payload["modules"].as<JsonArray>;
 
-    newConfig->noiseFloor = payload["noiseFloor"] | 0;
-    newConfig->cfarRefCount = payload["cfarRefCount"] | 1;
-    newConfig->cfarGuardCount = payload["cfarGuardCount"] | 1;
-    newConfig->cfarBias = payload["cfarBias"] | 0;
-    newConfig->smoothingFactor = payload["smoothingFactor"] | 1;
+    Utils::populateGlobalSettings(globalSettings, newConfig.get());
+    Utils::populateModulesList(modulesList, newConfig.get());
 
-    for (int i = 0; i < NUM_OUT_CH; i++)
-    {
-      if (newConfig->modules[i] != nullptr)
-      {
-        delete newConfig->modules[i];
-        newConfig->modules[i] = nullptr;
-      }
-    }
-
-    JsonArray modules = payload["modules"].as<JsonArray>();
-    int index = 0;
-
-    for (JsonObject moduleObj : modules)
-    {
-      if (index >= NUM_OUT_CH)
-        break;
-
-      const char* typeStr = moduleObj["type"];
-
-      uint16_t freqLow  = moduleObj["freqLow"] | 0;
-      uint16_t freqHigh = moduleObj["freqHigh"] | 0;
-      float minAmpNorm  = moduleObj["minAmpNorm"] | 0;
-
-      FrequencyMapping mapping = NONE;
-      const char* mappingStr = moduleObj["frequencyMapping"];
-      if (strcmp(mappingStr, "OCTAVE") == 0)
-        mapping = OCTAVE;
-      else if (strcmp(mappingStr, "MIDI") == 0)
-        mapping = MIDI;
-
-      if (strcmp(typeStr, "MAJORPEAKS") == 0)
-      {
-        int maxPeaks = moduleObj["maxPeaks"] | 1;
-
-        newConfig->modules[index] =
-          new MajorPeaksConfig(
-            freqLow,
-            freqHigh,
-            mapping,
-            minAmpNorm,
-            maxPeaks
-          );
-      }
-      else if (strcmp(typeStr, "PERCUSSION") == 0)
-      {
-        // TODO
-      }
-
-      index++;
-    }
-    hasConnected = true;
-    HapticSettings::Instance().updateConfig(newConfig);
+    hasUpdated = true;
+    // HapticSettings::Instance().updateConfig(newConfig);
   }
-  if (hasConnected)
+  if (hasUpdated)
     resStatus = HTTP_ACCEPTED;
 
   send(resStatus);

@@ -13,6 +13,7 @@
 #define STORAGE_H
 
 #include <AudioLab.h>
+#include <memory>
 
 enum FrequencyMapping{
   NONE,
@@ -81,7 +82,7 @@ struct AnalysisConfig {
   float cfarBias = 1.4;
   // smoothing factor for smooth_window_over_time. value from 0-1 (0 high smoothing, 1 no smoothing)
   float smoothingFactor = 0.3;
-  ModuleConfig* modules[NUM_OUT_CH];
+  std::unique_ptr<ModuleConfig> modules[NUM_OUT_CH];
 };
 
 #endif
