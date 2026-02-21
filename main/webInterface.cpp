@@ -19,6 +19,7 @@
 #include "hapticSettings.h"
 #include "networking.h"
 #include "storage.h"
+#include "utils.h"
 
 // HTTP defines
 constexpr int HTTP_OK = 200;
@@ -254,7 +255,7 @@ void WebInterface::onSubmitConfig()
   {
     auto newConfig = std::make_shared<AnalysisConfig>();
     auto globalSettings = payload["global"].as<JsonObject>();
-    auto modulesList = payload["modules"].as<JsonArray>;
+    auto modulesList = payload["modules"].as<JsonArray>();
 
     Utils::populateGlobalSettings(globalSettings, newConfig.get());
     Utils::populateModulesList(modulesList, newConfig.get());
