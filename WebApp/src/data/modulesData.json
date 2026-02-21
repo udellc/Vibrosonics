@@ -1,7 +1,8 @@
 {
-    "lowFreq": 0,
-    "highFreq": 0,
-    "frequencyMap": "NONE",
-    "minAmpNorm": 1,
-    "params": {}
+  "type": "NONE",
+  "lowFreq": 0,
+  "highFreq": 0,
+  "frequencyMap": "NONE",
+  "minAmpNorm": 1,
+  "params": {}
 }

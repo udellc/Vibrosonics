@@ -1,6 +1,8 @@
 {
   "module": {
     "title": "Base",
+    "description": "TODO",
+    "type": "NONE",
     "lowFreq": {
       "title": "Low Cut Frequency",
       "description": "Minimum frequency picked used for audio analysis.",
