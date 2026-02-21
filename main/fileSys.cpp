@@ -32,6 +32,8 @@ bool FileSys::init()
       SD.mkdir("/assets");
     if (!SD.exists("/data"))
       SD.mkdir("/data");
+    if (!SD.exists("/data/presetConfigs"))
+      SD.mkdir("/data/presetConfigs");
 
     DEBUG_PRINTLN("DEBUG: SD File system successfully initialized.");
   }
