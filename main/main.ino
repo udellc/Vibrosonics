@@ -162,7 +162,7 @@ void loop()
 void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
   for (int i = 0; i < NUM_OUT_CH; i++){
     if (target->modules[i]->moduleType == MAJORPEAKS){
-      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i]);
+      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i].get());
       analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
       analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
       melodic.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
