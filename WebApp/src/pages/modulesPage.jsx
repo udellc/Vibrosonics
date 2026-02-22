@@ -41,7 +41,7 @@ const ModulesPage = () => {
       activeGenre,
     });
     console.log("Save project herererer!!!");
-    console.log(...globalSettings);
+    console.log(globalSettings);
     setLibrary((prev) => [...prev, newSave]);
   };
 
@@ -126,6 +126,9 @@ const ModulesPage = () => {
     getSettings();
   }, []);
 
+  /**
+   * @brief Sends the global settings and modules to the web server
+   */
   const sendData = async () => {
     const payload = {
       global: globalSettings,

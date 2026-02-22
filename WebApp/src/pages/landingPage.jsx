@@ -33,7 +33,7 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="mt-20 ml-10 mr-10">
+    <div className="mt-20 ml-10 mr-10 min-h-[60vh]">
       {/* Vertical layout */}
       <div className="flex flex-col">
         <h2 className="text-4xl font-bold mb-10">Welcome</h2>
@@ -57,16 +57,16 @@ const LandingPage = () => {
               powerful beat.
             </p>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-10">
             <button
               className="p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24]"
-              onClick={ () => route("/network", false) }
+              onClick={() => route("/network", false)}
             >
               Connect to Network
             </button>
             <button
               className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
-              onClick={ () => route("/modules", false) }
+              onClick={() => route("/modules", false)}
             >
               Adjust Audio Settings
             </button>

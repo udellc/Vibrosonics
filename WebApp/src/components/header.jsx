@@ -9,13 +9,13 @@
  ***************************************************************/
 
 /**
- * @brief
+ * @brief Displays the app header
  *
- * @returns
+ * @returns Header component
  */
 const Header = () => {
   return (
-    <div className="p-4 flex w-full h-[60px] border-b-2 border-black justify-between">
+    <div className="p-4 flex w-full h-[10vh] border-b-2 border-black justify-between">
 
       {/* Left side */}
       <div className="flex flex-row justify-between">
@@ -29,7 +29,7 @@ const Header = () => {
 
       {/* Right side */}
       <div>
-        {/* The tabs will go here */}
+        <div>Network stuff</div>
       </div>
     </div>
   );
