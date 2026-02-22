@@ -8,268 +8,134 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-//import Slider from "../atomics/slider";
+import { useEffect, useState } from "preact/hooks";
 import Knob from "../atomics/knob";
-import EQ_PRESETS from "../data/eqSettings.json";
-import { useState } from "react";
-import Checkbox from "../atomics/checkbox";
-import PERCUSSION_PRESETS from "../data/precussionSettings.json";
-import INITIAL_PRESETS from "../data/initalStates.json";
-import { createProject } from "../utils/configurations.js";
+import ModuleDisplay from "../data/moduleDisplay.json";
+import { FREQUENCY_MAPPING, MODULE_TYPE } from "../utils/utils";
 
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
-export default function AnalysisModule(moduleParams) {
+export default function AnalysisModule({ channel, module, setModules }) {
+  const moduleSettingsDisplay = ModuleDisplay.module.settings;
+  const knobSettings = ["freqLow", "freqHigh", "minAmpNorm"];
+  const [isValid, setIsValid] = useState(true);
+
+  const updateValue = (id, val) => {
+    setModules((prev) => {
+      const updated = [...prev];
+      updated[channel] = {
+        ...updated[channel],
+        [id]: val,
+      };
+      return updated;
+    });
+  };
+
+  const handleKnobChange = (id, val) => {
+    updateValue(id, val);
+  };
+  const handleValueChange = (id, value) => {
+    const numValue = Number(value);
+    const maxValue = moduleSettingsDisplay.knobs[id].max;
+    const minValue = moduleSettingsDisplay.knobs[id].min;
+    const clampedVal = Math.max(minValue, Math.min(maxValue, numValue));
+
+    console.log(clampedVal);
+
+    updateValue(id, clampedVal);
+  };
+  // Ensure frequency ranges are valid for low/high
+  useEffect(() => {
+    const freqLow = module["freqLow"];
+    const freqHigh = module["freqHigh"];
+    const isValidFreqRanges = freqLow < freqHigh && freqHigh > freqLow;
+
+    // Only update is value is flipped
+    if (isValidFreqRanges !== isValid) {
+      setIsValid(!isValid);
+    }
+  }, [module["freqLow"], module["freqHigh"]]);
   return (
-    <div>
-      hello im testing here
+    <div className="p-8 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
+      <h3 className="font-bold text-lg">
+        Module: {MODULE_TYPE[module.moduleType]}
+      </h3>
+      <h3 className="font-bold text-lg">Output Channel {channel}</h3>
+
+      {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
+      <div>
+        {isValid === true ? (
+          <div>TODO: Valid ranges</div>
+        ) : (
+          <div className="text-red-500">TODO: Not valid ranges</div>
+        )}
+      </div>
+
+      {/* Row layout */}
+      <div className="flex flex-row">
+        {/* Knobs for base module */}
+        <div className="flex flex-col gap-1">
+          {knobSettings.map((key) => {
+            return (
+              <div>
+                <Knob
+                  min={moduleSettingsDisplay.knobs[key].min}
+                  max={moduleSettingsDisplay.knobs[key].max}
+                  title={moduleSettingsDisplay.knobs[key].title}
+                  step={moduleSettingsDisplay.knobs[key].step}
+                  onChange={(value) => handleKnobChange(key, value)}
+                  value={Number(parseFloat(module[key] ?? 0).toFixed(2))}
+                />
+                <div className="flex flex-col items-center gap-1">
+                  <input
+                    type="number"
+                    className="w-fit pt-1 pb-1 pl-2 pr-2 text-center bg-white border border-gray-400 rounded text-sm"
+                    value={Number(parseFloat(module[key] ?? 0).toFixed(2))}
+                    onChange={(e) =>
+                      handleValueChange(
+                        key,
+                        e.target instanceof HTMLInputElement
+                          ? Number(e.target.value)
+                          : 0,
+                      )
+                    }
+                    min={moduleSettingsDisplay.knobs[key].min}
+                    max={moduleSettingsDisplay.knobs[key].max}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {/* Frequency mapping */}
+        <div className="p-6 flex flex-col gap-2 items-center">
+          <div className="flex-col items-center">
+            <h4 className="font-bold">Frequency Mapping</h4>
+            <select name="Frequency Mapping">
+              <option value="0">None</option>
+              <option value="1">Octave</option>
+              <option value="2">Midi</option>
+            </select>
+          </div>
+          <div>
+            {/* Module specific params, just max peaks for now */}
+            <h4 className="font-bold">Max Peaks</h4>
+            <input
+              type="number"
+              value={1}
+              onChange={(e) =>
+                handleValueChange(
+                  "maxPeaks",
+                  e.target instanceof HTMLInputElement
+                    ? Number(e.target.value)
+                    : 1,
+                )
+              }
+              min={1}
+              max={32}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
-
-  // const [activeGenre, setActiveGenre] = useState("Rock");
-  // const [knobValue, setKnobValue] = useState({});
-  // const [sliderValue, setSliderValue] = useState({});
-  // const [isAdvanced, setIsAdvanced] = useState(false);
-  // const [library, setLibrary] = useState([]);
-  // const [projectCount, setProjectCount] = useState(1);
-  // const [setupCount, setSetupCount] = useState(1);
-  // const [currentProjectName, setCurrentProjectName] = useState("Project 1: Setup 1");
-
-  // const currentModData = EQ_PRESETS[activeGenre];
-  // const modeKey = isAdvanced ? "Advanced Percussion" : "Percussion";
-  // const percussionData = PERCUSSION_PRESETS[modeKey];
-
-  // const handleKnobChange = (id, value) => {
-  //   setKnobValue((prev) => ({ ...prev, [id]: value }));
-  //   console.log(
-  //     String("Knob") + String(id) + String("Value: ") + String(value)
-  //   );
-  // };
-
-  // const handleValueChange = (id, value) => {
-  //   const numValue = Number(value);
-
-  //   const allPresets = [...percussionData, ...currentModData] // ADD MORE PRESETS HERE
-  //   const preset = allPresets.find(p => p.id === id);
-  //   const maxValue = preset ? preset.max : 100;
-  //   const minValue = preset ? preset.min : 0;
-
-  //   const clampedVal = Math.max(minValue, Math.min(maxValue, numValue));
-
-  //   setKnobValue((prev) => ({ ...prev, [id]: clampedVal }));
-  // }
-
-  // const handleCheckboxChange = (value) => {
-  //   setIsAdvanced(value);
-  // };
-
-  // const saveProject = (name) => {
-  //   const newSave = createProject(name, library.length, {
-  //     id: Date.now(),
-  //     name: name || `Project ${library.length + 1}`,
-  //       knobValue: {...knobValue},
-  //       sliderValue: {...sliderValue},
-  //       isAdvanced,
-  //       activeGenre
-  //     });
-  //   setLibrary((prev) => [...prev, newSave]);
-  // };
-
-  // const startNewProj = () => {
-  //   if(window.confirm("Are you sure? Unsaved changes will be lost.")) {
-  //       const nextCount = projectCount + 1;
-  //       const initialSetup = 1;
-
-  //       setProjectCount(nextCount);
-  //       setSetupCount(initialSetup);
-  //       setCurrentProjectName(`Project ${nextCount}: Setup ${initialSetup}`);
-
-  //       setKnobValue({...INITIAL_PRESETS.knobs});
-  //       setSliderValue(INITIAL_PRESETS.sliders);
-  //       setIsAdvanced(INITIAL_PRESETS.isAdvanced);
-  //       setActiveGenre(INITIAL_PRESETS.activeGenre);
-  //   }
-  // };
-
-  // const saveProj = () => {
-  //   // 1. Save the CURRENT name (e.g., "Project 2: Setup 1") to the library
-  //   const newSave = {
-  //     id: Date.now(),
-  //     name: currentProjectName,
-  //     data: { knobValue, sliderValue, isAdvanced, activeGenre }
-  //   };
-  //   setLibrary((prev) => [...prev, newSave]);
-
-  //   // 2. Prepare the name for the NEXT save within this same project
-  //   const nextSetupNumber = setupCount + 1;
-  //   setSetupCount(nextSetupNumber);
-  //   setCurrentProjectName(`Project ${projectCount}: Setup ${nextSetupNumber}`);
-  // };
-
-  // const clearCurrentSettings = () => {
-  //   setKnobValue({...INITIAL_PRESETS.knobs});
-  //   handleValueChange(0);
-  //   setIsAdvanced(!isAdvanced);
-  //   setActiveGenre('Rock');
-  // }
-
-  // const loadProject = (project) => {
-  //   if(!project || !project.data) return;
-
-  //   const { knobValue, sliderValue, isAdvanced, activeGenre } = project.data;
-
-  //   setKnobValue(knobValue);
-  //   setSliderValue(sliderValue);
-  //   setIsAdvanced(isAdvanced);
-  //   setActiveGenre(activeGenre || 'Rock');
-  //   setCurrentProjectName(project.name);
-  // }
-
-  // const clearLibrary = () => {
-  //   if(window.confirm("This will permanently delete ALL saved projects. Continue?")) {
-  //     setLibrary([]);
-  //     setProjectCount(1);
-  //     setSetupCount(1);
-  //     setCurrentProjectName("Project 1: Setup 1");
-  //   }
-  // };
-
-  // return (
-  //   <div className="p-4">
-  //     <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
-      
-  //     <div className="flex flex-row flex-wrap items-start gap-8 p-8 mt-8 rounded-xl shadow-md border border-gray-100">
-  //       {/*EQ Presets*/}
-  //       <h2 className="text-xl font-bold mb-4">EQ</h2>
-  //       <div className="flex gap-2.5 mb-8">
-  //         {Object.keys(EQ_PRESETS).map((genre) => (
-  //           <button
-  //             className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
-  //             ${
-  //               activeGenre === genre
-  //                 ? "bg-[#fcd34d] font-bold"
-  //                 : "bg-[#e5e7eb] font-normal"
-  //             }`}
-  //             key={genre}
-  //             onClick={() => setActiveGenre(genre)}
-  //           >
-  //             {` ${genre} `}
-  //           </button>
-  //         ))}
-  //       </div>
-      
-  //       {/*Precussion Presets*/}
-  //       <h2 className="text-xl font-bold mb-4">Percussion Settings
-  //         <Checkbox
-  //           label="Advanced Mode"
-  //           onChange={(id, val) => handleCheckboxChange(val)}
-  //         />
-  //       </h2>
-  //     </div>
-
-  //     <div className="flex flex-row items-center items-stretch gap-8 mt-8 rounded-xl shadow-md border border-gray-100">
-  //       {/*EQ Knobs and User Input*/}
-  //       <div className="flex flex-row gap-5 p-5">
-  //         <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
-  //             {currentModData.map((data) => (
-  //               <div key={data.id} className="flex flex-col items-center gap-2">
-  //                 <Knob
-  //                   key={data.id}
-  //                   title={data.title}
-  //                   value={knobValue[data.id] ?? data.default ?? 0}
-  //                   min={data.min}
-  //                   max={data.max}
-  //                   step={0.1}
-  //                   onChange={(value) => handleKnobChange(data.id, value)}
-  //                 />
-
-  //                 <div className="flex flex-col items-center gap-1">
-  //                   <input
-  //                       type="number"
-  //                       className="w-16 p-1 text-center bg-white border border-gray-400 rounded text-sm"
-  //                       value={Math.round(knobValue[data.id] ?? data.initialValue ?? 0)}
-  //                       onChange={(e) => handleValueChange(data.id, (e.target instanceof HTMLInputElement ? e.target.value : ""))}
-  //                       min={data.min}
-  //                       max={data.max}
-  //                     />
-  //                   </div>
-  //                 <span className="font-bold text-gray-700">{data.label}</span>
-  //               </div>
-  //             ))}
-  //         </div>
-  //       </div>
-
-  //       {/*Percussion Knobs and User Input*/}
-  //         <div className={`${isAdvanced ? 'Advanced Percussion' : 'Percussion'} flex flex-row gap-5 p-5`}>
-  //           <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
-  //               {percussionData.map((data) => (
-  //                 <div key={data.id} className="flex flex-col items-center gap-2">
-  //                   <Knob
-  //                     key={data.id}
-  //                     title={data.title}
-  //                     value={knobValue[data.id] ?? data.initialValue ?? 0}
-  //                     min={data.min}
-  //                     max={data.max}
-  //                     step={0.1}
-  //                     onChange={(value) => handleKnobChange(data.id, value)}
-  //                   />
-
-  //                   <div className="flex flex-col items-center gap-1">
-  //                     <input
-  //                       type="number"
-  //                       className="w-16 p-1 text-center bg-white border border-gray-400 rounded text-sm"
-  //                       value={Math.round(knobValue[data.id] ?? data.initialValue ?? 0)}
-  //                       onChange={(e) => handleValueChange(data.id, (e.target instanceof HTMLInputElement ? e.target.value : ""))}
-  //                       min={data.min}
-  //                       max={data.max}
-  //                     />
-  //                   </div>
-  //                 </div>
-  //               ))}
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //     {/*Project Library Buttons*/}
-  //     <div className="p-8 mt-8 bg-white rounded-xl shadow-md border border-gray-100">
-  //       <h2 className="text-2xl font-bold mb-6">Project Library</h2>
-        
-  //       <div className="flex gap-4 mb-6">
-  //         <button 
-  //           onClick={saveProj}
-  //           className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition"
-  //         >
-  //           Save Current Setup
-  //         </button>
-  //         <button 
-  //           onClick={startNewProj} 
-  //           className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-  //         >
-  //           + Start New Project
-  //         </button>
-  //         <button onClick={clearLibrary} className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold">
-  //           Clear All Projects
-  //         </button>
-
-  //         <button 
-  //           onClick={clearCurrentSettings} 
-  //           className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition"
-  //         >
-  //           Clear Current Settings
-  //         </button>
-  //       </div>
-
-  //       {/*Load Settings Button*/}
-  //       <div className="flex flex-col md:grid-cols-2 gap-4">
-  //         {library.map((project) => (
-  //           <div key={project.id} className="p-4 border rounded-lg flex justify-between items-center bg-gray-50">
-  //             <span className="font-medium">{project.name}</span>
-  //             <button onClick={() => {loadProject(project)}} className="text-sm text-blue-600 hover:underline">
-  //               Load Settings
-  //             </button>
-  //           </div>
-  //         ))}
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
 }
