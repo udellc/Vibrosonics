@@ -124,7 +124,7 @@ inline void WebInterface::setupServer()
   });
   // Haptic settings API
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
-  server.on("/analysis/config", HTTP_PUT, onSubmitConfig);
+  server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
 
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
@@ -158,6 +158,9 @@ void WebInterface::onNotFoundHandler()
 {
   DEBUG_PRINTLN("DEBUG: onFoundHandler() called");
 
+  if (server.method() == HTTP_OPTIONS)
+    send(HTTP_OK);
+
   const String Path = server.uri();
 
   if (!FileSys::exists(Path))
@@ -190,6 +193,7 @@ void WebInterface::onScanNetworks()
   std::set<String> networks;
 
   Networking::scanAvailableNetworks(networks);
+
   // Convert networks into json for frontend to parse
   JsonArray jsonNetworks = doc["ssid"].to<JsonArray>();
 
@@ -250,6 +254,7 @@ void WebInterface::sendAnalysisConfig()
  */
 void WebInterface::onSubmitConfig()
 {
+  DEBUG_PRINTLN("DEBUG: Submit config requested");
   JsonDocument payload;
   int resStatus = HTTP_UNPROCESSABLE;
   bool hasUpdated = false;
@@ -264,10 +269,10 @@ void WebInterface::onSubmitConfig()
     Utils::populateModulesList(modulesList, newConfig.get());
 
     hasUpdated = true;
-    // HapticSettings::Instance().updateConfig(newConfig);
+    HapticSettings::Instance().updateConfig(newConfig);
   }
   if (hasUpdated)
-    resStatus = HTTP_ACCEPTED;
+    resStatus = HTTP_OK;
 
   send(resStatus);
 }
