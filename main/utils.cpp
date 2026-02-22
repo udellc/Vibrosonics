@@ -43,6 +43,22 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 }
 
 // TODO: add header comment
+void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
+{
+  global["noiseFloor"] = config->noiseFloor;
+  global["cfarRefCount"] = config->cfarRefCount;
+  global["cfarGuardCount"] = config->cfarGuardCount;
+  global["cfarBias"] = config->cfarBias;
+  global["smoothingFactor"] = config->smoothingFactor;
+}
+
+// TODO: add header comment
+void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
+{
+  
+}
+
+// TODO: add header comment
 inline ModulePtr Utils::createModule(const ModuleType Type)
 {
   // Used to create module configs
