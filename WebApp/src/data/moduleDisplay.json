@@ -2,27 +2,36 @@
   "module": {
     "title": "Base",
     "description": "TODO",
-    "type": "NONE",
-    "lowFreq": {
-      "title": "Low Cut Frequency",
-      "description": "Minimum frequency picked used for audio analysis.",
-      "value": 0
-    },
-    "highFreq": {
-        "title": "High Cut Frequency",
-        "description": "Maximum frequency picked used for audio analysis.",
-        "value": 0
-    },
-    "frequencyMap": {
-        "title": "Frequency Map",
-        "description": "TODO add",
-        "value": "NONE"
-    },
-    "minAmpNorm": {
-        "title": "Minimum Amplitude Norm",
-        "description": "TODO add",
-        "value": 1
-    },
-    "params": {}
+    "type": 0,
+    "settings": {
+      "knobs": {
+        "freqLow": {
+          "title": "Low Cut Frequency",
+          "description": "Minimum frequency picked used for audio analysis.",
+          "min": 0,
+          "max": 8192,
+          "step": 1
+        },
+        "freqHigh": {
+          "title": "High Cut Frequency",
+          "description": "Maximum frequency picked used for audio analysis.",
+          "min": 0,
+          "max": 8192,
+          "step": 1
+        },
+        "minAmpNorm": {
+          "title": "Minimum Amplitude Norm",
+          "description": "TODO add",
+          "min": 0,
+          "max": 20000,
+          "step": 0.01
+        }
+      },
+      "frequencyMapping": {
+          "title": "Frequency Map",
+          "description": "TODO add"
+      },
+      "params": {}
+    }
   }
 }

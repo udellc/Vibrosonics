@@ -1,6 +1,6 @@
 {
   "global": {
-    "title": "Global Settings",
+    "title": "Global Configurations",
     "settings": {
       "noiseFloor": {
         "title": "Noise Floor",
@@ -38,9 +38,5 @@
         "step": 0.01
       }
     }
-  },
-  "modules": {
-    "title": "Modules",
-    "list": []
   }
 }
