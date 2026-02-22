@@ -31,14 +31,35 @@ void Utils::populateGlobalSettings(JsonObject& global, AnalysisConfig* config)
 // TODO: add header comment and implement
 void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
-  // ModuleConfig** modules = config->modules.get();
+  int ch {0};
 
-  for (const auto module : modulesList)
+  for (auto module : modulesList)
   {
-    const auto Type = module["type"];
-    // DEBUG_PRINTF("DEBUG: module type: %s\n", Type);
+    if (ch >= NUM_OUT_CH) break;
 
-    // TODO: use createModule then add params then add to config argument
+    const auto Type = static_cast<ModuleType>(module["moduleType"]);
+    auto newModule = createModule(Type);
+
+    if (!newModule)
+    {
+      DEBUG_PRINTLN("WARNING: Memory could not be allocated for new module in populateModulesList");
+      continue;
+    }
+    auto* modulePtr = newModule.get();
+    modulePtr->freqLow = module["freqLow"]; 
+    modulePtr->freqHigh = module["freqHigh"];
+    modulePtr->frequencyMapping = static_cast<FrequencyMapping>(module["frequencyMapping"]);
+    modulePtr->minAmpNorm = module["minAmpNorm"];
+
+    // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
+    if (Type == MAJORPEAKS)
+    {
+      auto* majorPeaksConfig = static_cast<MajorPeaksConfig*>(newModule.get());
+
+      majorPeaksConfig->maxPeaks = module["maxPeaks"];
+    }
+    config->modules[ch] = std::move(newModule);
+    ch++;
   }
 }
 
@@ -55,7 +76,27 @@ void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
 // TODO: add header comment
 void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
-  
+ for (auto i {0u}; i < NUM_OUT_CH; i++)
+ {
+  if (config->modules[i] == nullptr) continue;
+
+  // Allocate memory in the list
+  JsonObject module = modulesList.add<JsonObject>();
+
+  module["moduleType"] = static_cast<int>(config->modules[i]->moduleType);
+  module["freqLow"] = static_cast<int>(config->modules[i]->freqLow);
+  module["freqHigh"] = static_cast<int>(config->modules[i]->freqHigh);
+  module["frequencyMapping"] = static_cast<int>(config->modules[i]->frequencyMapping);
+  module["minAmpNorm"] = static_cast<float>(config->modules[i]->minAmpNorm);
+
+  // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
+  if (config->modules[i]->moduleType == MAJORPEAKS)
+  {
+    auto* modulePtr = static_cast<MajorPeaksConfig*>(config->modules[i].get());
+
+    module["maxPeaks"] = modulePtr->maxPeaks;
+  }
+ } 
 }
 
 // TODO: add header comment
