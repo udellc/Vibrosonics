@@ -228,16 +228,19 @@ void WebInterface::onConnectToNetwork()
  */
 void WebInterface::sendAnalysisConfig()
 {
+  DEBUG_PRINTLN("DEBUG: Sending analysis config settings");
+
   String json;
   JsonDocument doc;
-  // Get analysis config from HapticSettings class
-  // parse the config into json
-  // if succesful
-    // send package
-  // else
-    // send error
+  JsonObject global = doc["global"].to<JsonObject>();
+  JsonArray modulesList = doc["modules"].to<JsonArray>();
+  auto curConfig = HapticSettings::Instance().getConfig_mut();
 
-  send(HTTP_OK);
+  Utils::packageGlobalSettings(global, curConfig.get());
+  Utils::packageModulesList(modulesList, curConfig.get());
+
+  serializeJson(doc, json);
+  send(HTTP_OK, APP_JSON, json);
 }
 
 /**
