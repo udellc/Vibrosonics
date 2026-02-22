@@ -156,11 +156,11 @@ void WebInterface::sendWebApp()
  */
 void WebInterface::onNotFoundHandler()
 {
-  DEBUG_PRINTLN("DEBUG: onFoundHandler() called");
-
+  // Needed to bypass some CORS requests
   if (server.method() == HTTP_OPTIONS)
     send(HTTP_OK);
 
+  DEBUG_PRINTLN("DEBUG: onFoundHandler() called");
   const String Path = server.uri();
 
   if (!FileSys::exists(Path))
@@ -255,6 +255,7 @@ void WebInterface::sendAnalysisConfig()
 void WebInterface::onSubmitConfig()
 {
   DEBUG_PRINTLN("DEBUG: Submit config requested");
+  
   JsonDocument payload;
   int resStatus = HTTP_UNPROCESSABLE;
   bool hasUpdated = false;

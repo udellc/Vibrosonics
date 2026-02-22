@@ -18,7 +18,13 @@
 using CreateModule = std::function<ModulePtr()>;
 using ModuleFactory = std::map<ModuleType, CreateModule>;
 
-// TODO: add header comment
+/**
+ * @brief Populates the global analysis configuration settings using
+ *        the JSON structure found in /WebApp/src/data.
+ * 
+ * @param global - Reference to the JSON object to get the global data from.
+ * @param config - Pointer to the AnalysisConfig to update.
+ */
 void Utils::populateGlobalSettings(JsonObject& global, AnalysisConfig* config)
 {
   config->noiseFloor = global["noiseFloor"] | 280.0f;
@@ -28,15 +34,24 @@ void Utils::populateGlobalSettings(JsonObject& global, AnalysisConfig* config)
   config->smoothingFactor = global["smoothingFactor"] | 0.2f;
 }
 
-// TODO: add header comment and implement
+/**
+ * @brief Populates the analysis config with the JSON array holding the
+ *        modules using the base structure found in /WebApp/src/data and
+ *        derived structures found in /main/storage.h
+ * 
+ * @param modulesList - Reference to the JSON array holding the modules info
+ * @param config - Pointer to the AnalysisConfig to update
+ */
 void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
+  // Channel count
   int ch {0};
 
   for (auto module : modulesList)
   {
     if (ch >= NUM_OUT_CH) break;
 
+    // newModule type is ModuleConfig at the moment
     const auto Type = static_cast<ModuleType>(module["moduleType"]);
     auto newModule = createModule(Type);
 
@@ -45,6 +60,7 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
       DEBUG_PRINTLN("WARNING: Memory could not be allocated for new module in populateModulesList");
       continue;
     }
+    // Update base data
     auto* modulePtr = newModule.get();
     modulePtr->freqLow = module["freqLow"]; 
     modulePtr->freqHigh = module["freqHigh"];
@@ -58,12 +74,19 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 
       majorPeaksConfig->maxPeaks = module["maxPeaks"];
     }
+    // The old module memory will be deleted automatically since the ptr now has no references
     config->modules[ch] = std::move(newModule);
     ch++;
   }
 }
 
-// TODO: add header comment
+/**
+ * @brief Populates the referenced JSON object with global data from the
+ *        AnalysisConfig using the JSON structure found in /WebApp/src/data.
+ * 
+ * @param global - Reference to the JSON object to be populated.
+ * @param config - Pointer to the AnalysisConfig to pull data from.
+ */
 void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
 {
   global["noiseFloor"] = config->noiseFloor;
@@ -73,14 +96,21 @@ void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
   global["smoothingFactor"] = config->smoothingFactor;
 }
 
-// TODO: add header comment
+/**
+ * @brief Populates the references JSON array with module data from the
+ *        AnalysisConfig using the JSON structure found in /WebApp/src/data.
+ * 
+ * @param modulesList - Reference to the modules array to populate.
+ * @param config - Pointer to the AnalysisConfig to pull data from.
+ */
 void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
  for (auto i {0u}; i < NUM_OUT_CH; i++)
  {
-  if (config->modules[i] == nullptr) continue;
+  if (config->modules[i] == nullptr)
+    continue;
 
-  // Allocate memory in the list
+  // Allocate memory in the array
   JsonObject module = modulesList.add<JsonObject>();
 
   module["moduleType"] = static_cast<int>(config->modules[i]->moduleType);
@@ -99,13 +129,19 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
  } 
 }
 
-// TODO: add header comment
+/**
+ * @brief Creates a unique pointer of the passed in module type using
+ *        the factory method w/ a map.
+ * 
+ * @param Type - Type of module config to create.
+ * @return ModulePtr - Unique pointer of the passed in module type.
+ */
 inline ModulePtr Utils::createModule(const ModuleType Type)
 {
   // Used to create module configs
-  // TODO: add more modules types as we create structs for them
   static const ModuleFactory Map =
   {
+    // TODO: add more modules types as we create structs for them
     { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, NONE, 10000.0, 1); } }
   };
   auto itr = Map.find(Type);

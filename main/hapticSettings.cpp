@@ -26,7 +26,15 @@ HapticSettings::HapticSettings()
   this->curConfig = std::make_shared<AnalysisConfig>();
 }
 
-// TODO: implement
+/**
+ * @brief Populates the analysis configurations using the data found in the
+ *        SD card, falling back onto an internal preset of the data file is not
+ *        found.
+ * 
+ * @return Bool indicating if the loaded configuration was found from SD card.
+ *         True if found on SD card.
+ *         False if using preset.
+ */
 bool HapticSettings::loadConfig()
 {
   JsonDocument doc;
