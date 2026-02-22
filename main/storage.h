@@ -16,14 +16,14 @@
 #include <memory>
 
 enum FrequencyMapping{
-  NONE,
+  NONE = 0,
   OCTAVE,
   MIDI
 };
 
 // note: add more and update sketch as more support is added
 enum ModuleType{
-  MAJORPEAKS,
+  MAJORPEAKS = 0,
   PERCUSSION
 };
 
