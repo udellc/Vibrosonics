@@ -53,7 +53,7 @@ bool HapticSettings::loadConfig()
   }
   if (!usingSavedConfig)
   {
-    DEBUG_PRINTLN("WARNING: Using preset for analysis config");
+    DEBUG_PRINTLN("WARNING: Using internal preset for analysis config");
 
     this->curConfig = std::make_shared<AnalysisConfig>(
       AnalysisConfig(
