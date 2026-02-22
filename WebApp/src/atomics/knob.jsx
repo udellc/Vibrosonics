@@ -87,7 +87,6 @@ export default function Knob({
             {/* Rotator */}
             <div
               className="w-full h-full absolute top-0 left-0 rounded-full pointer-events-none"
-              // FIXME: convert to tailwindcss, `rotate-${rotation}` does not work as expected
               style={{ transform: `rotate(${rotation}deg)` }}
             >
               <div className="w-1.5 h-3 bg-white mx-auto mt-2 rounded-full group-active:bg-yellow-400 shadow-[0_0_5px_white]" />
@@ -95,11 +94,7 @@ export default function Knob({
           </div>
         </div>
       </div>
-
-      {/* Text values */}
-      <div className="mt-2 justify-center">
-       {title}
-      </div>
+      <div className="mt-1 justify-center">{title}</div>
     </div>
   );
 }
