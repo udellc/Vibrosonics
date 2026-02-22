@@ -10,11 +10,10 @@
  ***************************************************************/
 
 import Knob from "../atomics/knob";
-import AnalysisSettingsDisplay from "../data/analysisSettingsDisplay.json";
+import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
 
 const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
-  const settingsDisplay = AnalysisSettingsDisplay.global.settings;
-
+  const settingsDisplay = GlobalSettingsDisplay.global.settings;
   /**
    * @brief Handles the knob display when value is changed
    *
@@ -38,9 +37,17 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
 
     setGlobalSettings((prev) => ({ ...prev, [id]: clampedVal }));
   };
+  if (Object.keys(globalSettings).length == 0) {
+    // TODO: add UI component for failed to get settings
+    return (
+      <div>
+        Error fetching analysis configs
+      </div>
+    );
+  }
   return (
-    <div className="flex flex-col items-center p-8 text-xl bg-gray-200 rounded-xl shadow-inner max-h-fit">
-      <h1 className="font-bold text-2xl">Global Configurations</h1>
+    <div className="flex flex-col items-center p-8 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
+      <h3 className="font-bold text-xl">{GlobalSettingsDisplay.global.title}</h3>
 
       <div className="grid grid-cols-2 gap-y-10">
         {Object.entries(globalSettings).map(([key, val]) => {
