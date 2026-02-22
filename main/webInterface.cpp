@@ -158,7 +158,11 @@ void WebInterface::onNotFoundHandler()
 {
   // Needed to bypass some CORS requests
   if (server.method() == HTTP_OPTIONS)
+  {
     send(HTTP_OK);
+    
+    return;
+  }
 
   DEBUG_PRINTLN("DEBUG: onFoundHandler() called");
   const String Path = server.uri();
