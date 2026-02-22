@@ -12,6 +12,7 @@ import axios from "axios";
 
 /**
  * The frozen objects must match the enumeration in storage.h under /main/
+ * and HTTP status codes in webInterface.cpp under /main/
  */
 export const HTTP_STATUS = Object.freeze({
   OK: 200,
@@ -30,6 +31,13 @@ export const MODULE_TYPE = Object.freeze({
   0: "Major Peaks",
   1: "Percussion"
 });
+
+// Internal
+export const PAGE = {
+  LANDING: 0,
+  NETWORK: 1,
+  MODULES: 2
+};
 
 /**
  * @brief The api util provides an generic interface for making API calls to the
