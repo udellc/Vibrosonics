@@ -98,7 +98,7 @@ export default function Knob({
 
       {/* Text values */}
       <div className="mt-2 justify-center">
-       {title}: {Math.round(value)}
+       {title}
       </div>
     </div>
   );
