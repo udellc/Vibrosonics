@@ -34,11 +34,13 @@ export const AudioSettingsContext = createContext(null);
  * 
  * @param {Object} children - Children components
  */
-export const AudioSettingsProvider = ({children}) => {
-  const [analysisSettings, setAnalysisSettings] = useState(null);
+export const AnalysisSettingsProvider = ({children}) => {
+  const [globalSettings, setGlobalSettings] = useState({});
+  const [modules, setModules] = useState([]);
+
   const data = {
-    analysisSettings,
-    setAnalysisSettings
+    globalSettings, setGlobalSettings,
+    modules, setModules
   };
   return (
     <AudioSettingsContext.Provider value={data}>

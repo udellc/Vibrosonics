@@ -17,7 +17,7 @@ import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
-import { AudioSettingsProvider } from "./utils/configurations";
+import { AnalysisSettingsProvider } from "./utils/configurations";
 
 /**
  * @brief Defines the different pages for the main App
@@ -46,9 +46,9 @@ export function App() {
     <div className="min-w-lvw min-h-lvh flex flex-col">
       <Header />
       {/* Wrap the app content with the audio context */}
-      <AudioSettingsProvider>
+      <AnalysisSettingsProvider>
         <AppContent />
-      </AudioSettingsProvider>
+      </AnalysisSettingsProvider>
       <Footer/>
     </div>
   );
