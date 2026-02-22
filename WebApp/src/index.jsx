@@ -17,7 +17,9 @@ import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
-import { AnalysisSettingsProvider } from "./utils/configurations";
+import { AnalysisSettingsProvider, SystemContext } from "./utils/configurations";
+import { useContext, useEffect, useState } from "preact/hooks";
+import { api, PAGE } from "./utils/utils";
 
 /**
  * @brief Defines the different pages for the main App
@@ -25,8 +27,16 @@ import { AnalysisSettingsProvider } from "./utils/configurations";
  * @returns Routes to each page component
  */
 const AppContent = () => {
+  const { setPageInfo } = useContext(SystemContext);
+
+  // Used to update header when page changes
+  const onPageChange = (e) => {
+    if (e.url === "/") setPageInfo(PAGE.LANDING);
+    else if (e.url === "/network") setPageInfo(PAGE.NETWORK);
+    else if (e.url === "/modules") setPageInfo(PAGE.MODULES);
+  };
   return (
-    <Router>
+    <Router onChange={onPageChange}>
       <Route path="/" component={LandingPage} />
       <Route path="/network" component={NetworkPage} />
       <Route path="/modules" component={ModulesPage} />
