@@ -1,8 +1,8 @@
 {
   "global": {
     "noiseFloor": 280,
-    "cfarRefCells": 6,
-    "cfarGuardCells": 1,
+    "cfarRefCount": 6,
+    "cfarGuardCount": 1,
     "cfarBias": 1.4,
     "smoothingFactor": 0.2
   },

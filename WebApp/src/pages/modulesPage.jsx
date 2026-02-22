@@ -13,41 +13,43 @@ import { useContext, useEffect, useState } from "preact/hooks";
 import AnalysisModule from "../components/analysisModule";
 import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
+import GlobalSettings from "../components/globalSettings";
 
 const ModulesPage = () => {
-  const { analysisSettings } = useContext(AudioSettingsContext);
-  const [globalSettings, setGlobalSettings] = useState({});
-  const [modules, setModules] = useState([]);
+  const {globalSettings, setGlobalSettings} = useContext(AudioSettingsContext);
+  const {modules, setModules} = useContext(AudioSettingsContext);
 
   /**
-   * @brief
+   * @brief Gets the analysis config from the web server
    */
   const getSettings = async () => {
     const res = await api("GET", "/analysis/getSettings");
 
     if (res.status == HTTP_STATUS.OK) {
-      console.log(analysisSettings);
-      setGlobalSettings(res.data.globalSettings);
-      setModules(res.data.modules);
+      setGlobalSettings(res.data?.global);
+      setModules(res.data?.modules);
     }
   };
-
+  /**
+   * @brief Gets the analysis configurations on mount
+   */
   useEffect( () => {
-    // TODO: add API to get loaded settings
-    getSettings();    
+    getSettings();
   }
   ,[]);
 
   return (
-    <div>
-      {/* Global settings here */}
-
-      {modules.map((module) => {
+    <div className="flex flex-row m-8">
+      <GlobalSettings 
+        globalSettings={globalSettings}
+        setGlobalSettings={setGlobalSettings}
+      />
+      {/* {modules.map((module) => {
         <AnalysisModule
           moduleParams={module}
         />
-      })}
-      <AnalysisModule />
+      })} */}
+      {/* <AnalysisModule /> */}
     </div>
   );
 };
