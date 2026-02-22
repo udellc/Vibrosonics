@@ -10,6 +10,9 @@
 
 import axios from "axios";
 
+/**
+ * The frozen objects must match the enumeration in storage.h under /main/
+ */
 export const HTTP_STATUS = Object.freeze({
   OK: 200,
   ACCEPTED: 202,
@@ -17,6 +20,15 @@ export const HTTP_STATUS = Object.freeze({
   UNPROCESSABLE: 422,
   INTERNAL_ERROR: 500,
   UNAVAILABLE: 503
+});
+export const FREQUENCY_MAPPING = Object.freeze({
+  0: "None",
+  1: "Octave",
+  2: "Midi"
+});
+export const MODULE_TYPE = Object.freeze({
+  0: "Major Peaks",
+  1: "Percussion"
 });
 
 /**
