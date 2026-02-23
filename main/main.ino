@@ -106,10 +106,6 @@ void setup()
   }
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
-    
-    // FIX: temporary
-    auto loadedConfig = HapticSettings::Instance().getConfig_mut();
-    assignOutputModules(loadedConfig);
     vapi.init();
   #endif
 }
@@ -125,6 +121,13 @@ void loop()
     return;
   
   auto activeConfig = HapticSettings::Instance().getConfig_r();
+
+  if (HapticSettings::Instance().isDirty())
+  {
+    clearOutputModules();
+    assignOutputModules(activeConfig.get());
+    HapticSettings::Instance().setIsDirty(false);
+  }
 
   // Get input data and clean it
   vapi.processAudioInput(windowData);
@@ -159,7 +162,7 @@ void loop()
 
 #ifdef VAPI_EN
 
-void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
+void assignOutputModules(const AnalysisConfig* target) {
   for (int i = 0; i < NUM_OUT_CH; i++){
     if (target->modules[i]->moduleType == MAJORPEAKS){
       MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i].get());
@@ -169,6 +172,19 @@ void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
     }
   }
 }
+
+void clearOutputModules()
+{
+  melodic.clearModules();
+  // delete old modules
+  for (int i = 0; i < NUM_OUT_CH; i++) {
+    if (analysisModules[i] != nullptr){
+      delete analysisModules[i];
+      analysisModules[i] = nullptr;
+    }
+  }
+}
+
 
 int interpolateAroundPeak(float *data, int indexOfPeak) {
   float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];

@@ -275,6 +275,7 @@ void WebInterface::onSubmitConfig()
 
     hasUpdated = true;
     HapticSettings::Instance().updateConfig(newConfig);
+    HapticSettings::Instance().setIsDirty(true);
   }
   if (hasUpdated)
     resStatus = HTTP_OK;
