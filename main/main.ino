@@ -26,6 +26,7 @@ VibrosonicsAPI vapi = VibrosonicsAPI();
 float windowData[WINDOW_SIZE_BY_2] = { 0 };
 float filteredData[WINDOW_SIZE_BY_2] = { 0 };
 float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
+float percussionSmoothedData[WINDOW_SIZE_BY_2] = { 0 };
 float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 float percussiveData[WINDOW_SIZE_BY_2] = { 0 };
 
@@ -135,74 +136,19 @@ void loop()
   
   auto activeConfig = HapticSettings::Instance().getConfig_r();
 
-  // Get input data and clean it
-  vapi.processAudioInput(windowData);
-  vapi.noiseFloor(windowData, activeConfig->noiseFloor);
-  memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
-  vapi.noiseFloorCFAR(filteredData, activeConfig->cfarRefCount, activeConfig->cfarGuardCount, activeConfig->cfarBias);
-  AudioPrism::smooth_window_over_time(filteredData, smoothedData, activeConfig->smoothingFactor, WINDOW_SIZE_OVERLAP);
+  processData(activeConfig);
 
-  for (int i = 0; i < WINDOW_SIZE_BY_2; i++)
-  {
-    percussiveData[i] = max((float)0., windowData[i] - smoothedData[i]);
-
-    melodicData[i] = min(windowData[i], smoothedData[i]);
-    
-    if (melodicData[i] < activeConfig->noiseFloor)
-      melodicData[i] = 0.;
-  }
-  melodicSpectrogram.pushWindow(melodicData);
   melodic.runAnalysis();
-
-  percussiveSpectrogram.pushWindow(percussiveData);
   percussive.runAnalysis();
 
   for (int i = 0; i < NUM_OUT_CH * 2; i++)
   {
-    if (activeConfig->modules[i]->moduleType == MAJORPEAKS)
-    {
-      ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
-      MajorPeaksConfig* majorPeaksConfig = static_cast<MajorPeaksConfig*>(activeConfig->modules[i].get());
-      float **analysisData = mpModuleInterface->getOutput();
-      synthesizePeak(activeConfig->modules[i]->outputNumber, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, majorPeaksConfig->frequencyMapping);
+    if (analysisModules[i] && activeConfig->modules[i]) {
+      performModuleAnalysis(
+        analysisModules[i],
+        activeConfig->modules[i].get()
+      );
     }
-    else if (activeConfig->modules[i]->moduleType == PERCUSSION)
-    {
-      ModuleInterface<bool>* percModuleInterface = static_cast<ModuleInterface<bool>*>(analysisModules[i]);
-      PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(activeConfig->modules[i].get());
-      if (percModuleInterface->getOutput()) {
-        // Get the energy, entropy and positive flux for the percussive hit. These
-        // values are used to synthesize the haptic feedback of the percussion.
-        float energy = AudioPrism::energy(windowData, activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, WINDOW_SIZE_OVERLAP);
-        float entropy = AudioPrism::entropy(windowData, activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, WINDOW_SIZE_OVERLAP);
-        float flux = AudioPrism::positive_flux(windowData,
-                                           percussiveSpectrogram.getPreviousWindow(),
-                                           activeConfig->modules[i]->freqLow, 
-                                           activeConfig->modules[i]->freqHigh, 
-                                           WINDOW_SIZE_OVERLAP);
-
-        // Normalize the flux [0.0, 1.0] by the total energy
-        flux /= energy;
-
-        // Create the frequency and amplitude envelopes for the percussive hit,
-        // using a set frequency of 160 and the energy of the detected hit as the
-        // amplitude.
-        freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
-        ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
-
-        vapi.createDynamicGrain(activeConfig->modules[i]->outputNumber, percussionConfig->waveType, freqEnv, ampEnv, durEnv);
-
-        // For particularily noisy hits, synthesize another hit with less energy
-        // to create a rougher feeling.
-        if (entropy > 0.9) {
-          energy *= 0.3;
-          freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
-          ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
-          vapi.createDynamicGrain(activeConfig->modules[i]->outputNumber, percussionConfig->waveType, freqEnv, ampEnv, durEnv);
-        }
-      }
-    }
-    AudioLab.mapAmplitudes(activeConfig->modules[i]->outputNumber, activeConfig->modules[i]->minAmpNorm);
   }
   vapi.updateGrains();
   AudioLab.synthesize();
@@ -211,8 +157,104 @@ void loop()
 
 #ifdef VAPI_EN
 
+void processData(std::shared_ptr<const AnalysisConfig> target){
+  // Get input data and clean it
+  vapi.processAudioInput(windowData);
+  vapi.noiseFloor(windowData, target->noiseFloor);
+  memcpy(filteredData, windowData, WINDOW_SIZE_BY_2 * sizeof(float));
+  vapi.noiseFloorCFAR(filteredData, target->cfarRefCount, target->cfarGuardCount, target->cfarBias);
+  AudioPrism::smooth_window_over_time(filteredData, smoothedData, target->smoothingFactor, WINDOW_SIZE_OVERLAP);
+  // smooth data being used to create percussive data. we don't want the smoothing factor to be adjustable here
+  AudioPrism::smooth_window_over_time(filteredData, percussionSmoothedData, 0.2, WINDOW_SIZE_OVERLAP);
+
+  for (int i = 0; i < WINDOW_SIZE_BY_2; i++)
+  {
+    percussiveData[i] = max((float)0., windowData[i] - percussionSmoothedData[i]);
+    
+    melodicData[i] = min(windowData[i], smoothedData[i]);
+    if (melodicData[i] < target->noiseFloor)
+      melodicData[i] = 0.;
+  }
+  melodicSpectrogram.pushWindow(melodicData);
+  percussiveSpectrogram.pushWindow(percussiveData);
+}
+
+void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig){
+  switch(moduleConfig->moduleType){
+    case MAJORPEAKS:
+      {
+        ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
+        const MajorPeaksConfig* majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
+        float **analysisData = mpModuleInterface->getOutput();
+        synthesizePeak(moduleConfig->outputNumber, 
+                        analysisData[MP_FREQ][0], 
+                        analysisData[MP_AMP][0], 
+                        moduleConfig->freqLow, 
+                        moduleConfig->freqHigh, 
+                        majorPeaksConfig->frequencyMapping);
+        break;
+      }
+    case PERCUSSION:
+      {
+        ModuleInterface<bool>* percModuleInterface = static_cast<ModuleInterface<bool>*>(module);
+        const PercussionConfig* percussionConfig = static_cast<const PercussionConfig*>(moduleConfig);
+        // If percussion was detected, synthesize a hit
+        if (percModuleInterface->getOutput()) {
+          // Get the energy, entropy and positive flux for the percussive hit. These
+          // values are used to synthesize the haptic feedback of the percussion.
+          float energy = AudioPrism::energy(windowData, 
+                                            moduleConfig->freqLow, 
+                                            moduleConfig->freqHigh, 
+                                            WINDOW_SIZE_OVERLAP);
+          float entropy = AudioPrism::entropy(windowData, 
+                                            moduleConfig->freqLow, 
+                                            moduleConfig->freqHigh, 
+                                            WINDOW_SIZE_OVERLAP);
+          float flux = AudioPrism::positive_flux(windowData,
+                                            percussiveSpectrogram.getPreviousWindow(),
+                                            moduleConfig->freqLow, 
+                                            moduleConfig->freqHigh, 
+                                            WINDOW_SIZE_OVERLAP);
+
+          // Normalize the flux [0.0, 1.0] by the total energy
+          if (energy > 0.0f)
+              flux /= energy;
+          else
+              flux = 0.0f;
+
+          // Create the frequency and amplitude envelopes for the percussive hit,
+          // using a set frequency of 160 and the energy of the detected hit as the
+          // amplitude.
+          freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
+          ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
+
+          vapi.createDynamicGrain(moduleConfig->outputNumber, 
+                                  percussionConfig->waveType, 
+                                  freqEnv, 
+                                  ampEnv, 
+                                  durEnv);
+
+          // For particularily noisy hits, synthesize another hit with less energy
+          // to create a rougher feeling.
+          if (entropy > 0.9) {
+            energy *= 0.3;
+            freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
+            ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
+            vapi.createDynamicGrain(moduleConfig->outputNumber, 
+                                    percussionConfig->waveType, 
+                                    freqEnv, 
+                                    ampEnv, 
+                                    durEnv);
+          }
+        }
+        break;
+      }
+  }
+  AudioLab.mapAmplitudes(moduleConfig->outputNumber, moduleConfig->minAmpNorm);
+}
+
 void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
-  for (int i = 0; i < NUM_OUT_CH; i++){
+  for (int i = 0; i < NUM_OUT_CH * 2; i++){
     if (target->modules[i]->moduleType == MAJORPEAKS){
       MajorPeaksConfig* majorPeaksConfig = static_cast<MajorPeaksConfig*>(target->modules[i].get());
       analysisModules[i] = new MajorPeaks(majorPeaksConfig->maxPeaks);
@@ -221,7 +263,9 @@ void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
     }
     else if (target->modules[i]->moduleType == PERCUSSION){
       PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(target->modules[i].get());
-      analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, percussionConfig->energyThresh, percussionConfig->entropyThresh);
+      analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, 
+                                                  percussionConfig->energyThresh, 
+                                                  percussionConfig->entropyThresh);
       analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
       percussive.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
     }
