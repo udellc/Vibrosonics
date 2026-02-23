@@ -9,14 +9,14 @@
           "title": "Low Cut Frequency",
           "description": "Minimum frequency picked used for audio analysis.",
           "min": 0,
-          "max": 8192,
+          "max": 4096,
           "step": 1
         },
         "freqHigh": {
           "title": "High Cut Frequency",
           "description": "Maximum frequency picked used for audio analysis.",
           "min": 0,
-          "max": 8192,
+          "max": 4096,
           "step": 1
         },
         "minAmpNorm": {
