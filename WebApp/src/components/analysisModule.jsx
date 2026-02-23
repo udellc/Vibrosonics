@@ -34,12 +34,15 @@ export default function AnalysisModule({ channel, module, setModules }) {
     updateValue(id, val);
   };
   const handleValueChange = (id, value) => {
+    // TODO: fix later
+    if (id === "maxPeaks") {
+      updateValue(id, value);
+      return;
+    }
     const numValue = Number(value);
     const maxValue = moduleSettingsDisplay.knobs[id].max;
     const minValue = moduleSettingsDisplay.knobs[id].min;
     const clampedVal = Math.max(minValue, Math.min(maxValue, numValue));
-
-    console.log(clampedVal);
 
     updateValue(id, clampedVal);
   };
@@ -55,7 +58,7 @@ export default function AnalysisModule({ channel, module, setModules }) {
     }
   }, [module["freqLow"], module["freqHigh"]]);
   return (
-    <div className="p-8 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
+    <div className="p-6 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <h3 className="font-bold text-lg">
         Module: {MODULE_TYPE[module.moduleType]}
       </h3>
@@ -66,7 +69,7 @@ export default function AnalysisModule({ channel, module, setModules }) {
         {isValid === true ? (
           <div>TODO: Valid ranges</div>
         ) : (
-          <div className="text-red-500">TODO: Not valid ranges</div>
+          <div className="font-bold text-red-500">TODO: Not valid ranges</div>
         )}
       </div>
 
@@ -121,7 +124,7 @@ export default function AnalysisModule({ channel, module, setModules }) {
             <h4 className="font-bold">Max Peaks</h4>
             <input
               type="number"
-              value={1}
+              value={module["maxPeaks"] ?? 1}
               onChange={(e) =>
                 handleValueChange(
                   "maxPeaks",
