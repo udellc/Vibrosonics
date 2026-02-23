@@ -46,7 +46,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
     );
   }
   return (
-    <div className="flex flex-col items-center p-8 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
+    <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
       <h3 className="font-bold text-xl">{GlobalSettingsDisplay.global.title}</h3>
 
       <div className="grid grid-cols-2 gap-y-10">
