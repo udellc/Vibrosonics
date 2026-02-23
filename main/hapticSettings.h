@@ -37,7 +37,7 @@ public:
   auto getConfig_mut() const { return std::atomic_load(&curConfig); }
 
   //! Atomically swaps the current config with the new config
-  void updateConfig(std::shared_ptr<AnalysisConfig> other) { std::atomic_store(&curConfig, other); }
+  void updateConfig(std::shared_ptr<AnalysisConfig>& other) { auto temp = std::atomic_exchange(&curConfig, other) }
 
   //! Atomically get whether or not settings have been changed
   bool isDirty() const { return _isDirty.load(std::memory_order_acquire); }

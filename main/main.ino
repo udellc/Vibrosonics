@@ -36,7 +36,7 @@ AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
 #endif
 
 // FreeRTOS stuff for the web server running on core 0
-#define TASK_DELAY_MS 100u
+#define TASK_DELAY_MS 150u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
@@ -119,7 +119,7 @@ void loop()
 #ifdef VAPI_EN
   if (!vapi.isAudioLabReady())
     return;
-  
+
   auto activeConfig = HapticSettings::Instance().getConfig_r();
 
   if (HapticSettings::Instance().isDirty())
@@ -128,7 +128,6 @@ void loop()
     assignOutputModules(activeConfig.get());
     HapticSettings::Instance().setIsDirty(false);
   }
-
   // Get input data and clean it
   vapi.processAudioInput(windowData);
   vapi.noiseFloor(windowData, activeConfig->noiseFloor);
@@ -162,7 +161,7 @@ void loop()
 
 #ifdef VAPI_EN
 
-void assignOutputModules(const AnalysisConfig* target) {
+inline void assignOutputModules(const AnalysisConfig* target) {
   for (int i = 0; i < NUM_OUT_CH; i++){
     if (target->modules[i]->moduleType == MAJORPEAKS){
       MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i].get());
@@ -173,13 +172,14 @@ void assignOutputModules(const AnalysisConfig* target) {
   }
 }
 
-void clearOutputModules()
+inline void clearOutputModules()
 {
   melodic.clearModules();
   // delete old modules
   for (int i = 0; i < NUM_OUT_CH; i++) {
     if (analysisModules[i] != nullptr){
-      delete analysisModules[i];
+      DEBUG_PRINTLN("DEBUG: deleted module");
+      delete[] analysisModules[i];
       analysisModules[i] = nullptr;
     }
   }
