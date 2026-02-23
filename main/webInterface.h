@@ -56,6 +56,8 @@ namespace WebInterface
     //! Removes all files from the SD card
     void clearSd();
 
+    //! Prints the heap memory stats to the serial monitor    
+    void getMemory();
   #endif // DEV_MODE_EN
 }
 
