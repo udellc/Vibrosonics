@@ -1,12 +1,12 @@
 /***************************************************************
  * FILE: main.ino
  * 
- * DATE: 11/4/2025
+ * DATE: 2/22/2026
  * 
  * DESCRIPTION: Entry point for starting the Vibrosonics audio
  * analysis and web app.
  * 
- * AUTHOR: Ivan Wong
+ * AUTHOR: Ivan Wong, Danielle Chang
  ***************************************************************/
 
 #include "webInterface.h"
@@ -27,11 +27,20 @@ float windowData[WINDOW_SIZE_BY_2] = { 0 };
 float filteredData[WINDOW_SIZE_BY_2] = { 0 };
 float smoothedData[WINDOW_SIZE_BY_2] = { 0 };
 float melodicData[WINDOW_SIZE_BY_2] = { 0 };
+float percussiveData[WINDOW_SIZE_BY_2] = { 0 };
 
 Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
+Spectrogram percussiveSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
+ModuleGroup percussive = ModuleGroup(&percussiveSpectrogram);
 
-AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
+FreqEnv freqEnv = {};
+AmpEnv ampEnv = {};
+DurEnv durEnv = {};
+
+// list of our analysis modules. the maximum number of possible modules is currently
+// NUM_OUT_CH * 2 as each output can have one non-percussion module and one percussion module
+AnalysisModule* analysisModules[NUM_OUT_CH * 2] = { nullptr };
 
 #endif
 
@@ -135,6 +144,8 @@ void loop()
 
   for (int i = 0; i < WINDOW_SIZE_BY_2; i++)
   {
+    percussiveData[i] = max((float)0., windowData[i] - smoothedData[i]);
+
     melodicData[i] = min(windowData[i], smoothedData[i]);
     
     if (melodicData[i] < activeConfig->noiseFloor)
@@ -143,16 +154,57 @@ void loop()
   melodicSpectrogram.pushWindow(melodicData);
   melodic.runAnalysis();
 
-  for (int i = 0; i < NUM_OUT_CH; i++)
+  percussiveSpectrogram.pushWindow(percussiveData);
+  percussive.runAnalysis();
+
+  for (int i = 0; i < NUM_OUT_CH * 2; i++)
   {
     if (activeConfig->modules[i]->moduleType == MAJORPEAKS)
     {
       ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
+      MajorPeaksConfig* majorPeaksConfig = static_cast<MajorPeaksConfig*>(activeConfig->modules[i].get());
       float **analysisData = mpModuleInterface->getOutput();
-      synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, activeConfig->modules[i]->frequencyMapping);
-      AudioLab.mapAmplitudes(i, activeConfig->modules[i]->minAmpNorm);
+      synthesizePeak(activeConfig->modules[i]->outputNumber, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, majorPeaksConfig->frequencyMapping);
     }
+    else if (activeConfig->modules[i]->moduleType == PERCUSSION)
+    {
+      ModuleInterface<bool>* percModuleInterface = static_cast<ModuleInterface<bool>*>(analysisModules[i]);
+      PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(activeConfig->modules[i].get());
+      if (percModuleInterface->getOutput()) {
+        // Get the energy, entropy and positive flux for the percussive hit. These
+        // values are used to synthesize the haptic feedback of the percussion.
+        float energy = AudioPrism::energy(windowData, activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, WINDOW_SIZE_OVERLAP);
+        float entropy = AudioPrism::entropy(windowData, activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, WINDOW_SIZE_OVERLAP);
+        float flux = AudioPrism::positive_flux(windowData,
+                                           percussiveSpectrogram.getPreviousWindow(),
+                                           activeConfig->modules[i]->freqLow, 
+                                           activeConfig->modules[i]->freqHigh, 
+                                           WINDOW_SIZE_OVERLAP);
+
+        // Normalize the flux [0.0, 1.0] by the total energy
+        flux /= energy;
+
+        // Create the frequency and amplitude envelopes for the percussive hit,
+        // using a set frequency of 160 and the energy of the detected hit as the
+        // amplitude.
+        freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
+        ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
+
+        vapi.createDynamicGrain(activeConfig->modules[i]->outputNumber, percussionConfig->waveType, freqEnv, ampEnv, durEnv);
+
+        // For particularily noisy hits, synthesize another hit with less energy
+        // to create a rougher feeling.
+        if (entropy > 0.9) {
+          energy *= 0.3;
+          freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
+          ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
+          vapi.createDynamicGrain(activeConfig->modules[i]->outputNumber, percussionConfig->waveType, freqEnv, ampEnv, durEnv);
+        }
+      }
+    }
+    AudioLab.mapAmplitudes(activeConfig->modules[i]->outputNumber, activeConfig->modules[i]->minAmpNorm);
   }
+  vapi.updateGrains();
   AudioLab.synthesize();
 #endif // VAPI_EN
 }
@@ -162,10 +214,16 @@ void loop()
 void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
   for (int i = 0; i < NUM_OUT_CH; i++){
     if (target->modules[i]->moduleType == MAJORPEAKS){
-      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i].get());
-      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
+      MajorPeaksConfig* majorPeaksConfig = static_cast<MajorPeaksConfig*>(target->modules[i].get());
+      analysisModules[i] = new MajorPeaks(majorPeaksConfig->maxPeaks);
       analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
       melodic.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
+    }
+    else if (target->modules[i]->moduleType == PERCUSSION){
+      PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(target->modules[i].get());
+      analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, percussionConfig->energyThresh, percussionConfig->entropyThresh);
+      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      percussive.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
     }
   }
 }

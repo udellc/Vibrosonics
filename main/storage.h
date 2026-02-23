@@ -32,43 +32,67 @@ enum ModuleType{
 struct ModuleConfig {
   virtual ~ModuleConfig() = default;
 protected:
-  ModuleConfig(ModuleType moduleType,
-               uint16_t freqLow,
-               uint16_t freqHigh,
-               FrequencyMapping frequencyMapping,
-               float minAmpNorm)
-    : moduleType(moduleType),
+  ModuleConfig(
+              int outputNumber,
+              ModuleType moduleType,
+              uint16_t freqLow,
+              uint16_t freqHigh,
+              float minAmpNorm)
+    : outputNumber(outputNumber),
+      moduleType(moduleType),
       freqLow(freqLow),
       freqHigh(freqHigh),
-      frequencyMapping(frequencyMapping),
       minAmpNorm(minAmpNorm) {}
 public:
+  // the output number that the module is assigned to
+  int outputNumber;
   // type of the analysis module. see ModuleType enum for options
   const ModuleType moduleType;
   // low value of the frequency range to pick up. must be positive 
   uint16_t freqLow;
   // high value of the frequency range to pick up. must be positive and should be larger than freqLow
   uint16_t freqHigh;
-  // what type of frequency mapping to use. see FrequencyMapping enum for options
-  FrequencyMapping frequencyMapping;
   // minimum value to use for amplitude mapping. must be positive
   float minAmpNorm;
 };
 
 // configuration unique to the major peaks analysis module
 struct MajorPeaksConfig : ModuleConfig {
-  MajorPeaksConfig(uint16_t freqLow,
-                   uint16_t freqHigh,
-                   FrequencyMapping frequencyMapping,
-                   float minAmpNorm,
-                   int maxPeaks)
-    : ModuleConfig(MAJORPEAKS, freqLow, freqHigh, frequencyMapping, minAmpNorm),
-      maxPeaks(maxPeaks) {}
+  MajorPeaksConfig(int outputNumber,
+                  uint16_t freqLow,
+                  uint16_t freqHigh,
+                  float minAmpNorm,
+                  FrequencyMapping frequencyMapping,
+                  int maxPeaks)
+    : ModuleConfig(outputNumber, MAJORPEAKS, freqLow, freqHigh, minAmpNorm),
+      maxPeaks(maxPeaks),
+      frequencyMapping(frequencyMapping) {}
+  // what type of frequency mapping to use. see FrequencyMapping enum for options
+  FrequencyMapping frequencyMapping;
   // number of peaks to pick up in analysis. minimum of 1
   int maxPeaks;
 };
 
-// TODO: add percussion config as a child of ModuleConfig
+// configuration unique to the percussion analysis module
+struct PercussionConfig : ModuleConfig {
+  PercussionConfig(int outputNumber,
+                  uint16_t freqLow,
+                  uint16_t freqHigh,
+                  float minAmpNorm,
+                  float fluxThresh,
+                  float energyThresh,
+                  float entropyThresh,
+                  WaveType waveType)
+    : ModuleConfig(outputNumber, PERCUSSION, freqLow, freqHigh, minAmpNorm),
+      fluxThresh(fluxThresh),
+      energyThresh(energyThresh),
+      entropyThresh(entropyThresh),
+      waveType(waveType) {}
+  float fluxThresh;
+  float energyThresh;
+  float entropyThresh;
+  WaveType waveType;
+};
 
 // configuration for our entire analysis
 struct AnalysisConfig {

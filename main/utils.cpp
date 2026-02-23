@@ -62,9 +62,9 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
     }
     // Update base data
     auto* modulePtr = newModule.get();
+    modulePtr->outputNumber = module["outputNumber"]; 
     modulePtr->freqLow = module["freqLow"]; 
     modulePtr->freqHigh = module["freqHigh"];
-    modulePtr->frequencyMapping = static_cast<FrequencyMapping>(module["frequencyMapping"]);
     modulePtr->minAmpNorm = module["minAmpNorm"];
 
     // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
@@ -72,7 +72,17 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
     {
       auto* majorPeaksConfig = static_cast<MajorPeaksConfig*>(newModule.get());
 
+      majorPeaksConfig->frequencyMapping = static_cast<FrequencyMapping>(module["frequencyMapping"]);
       majorPeaksConfig->maxPeaks = module["maxPeaks"];
+    }
+    else if (Type == PERCUSSION)
+    {
+      auto* percussionConfig = static_cast<PercussionConfig*>(newModule.get());
+
+      percussionConfig->fluxThresh = module["fluxThresh"];
+      percussionConfig->energyThresh = module["energyThresh"];
+      percussionConfig->entropyThresh = module["entropyThresh"];
+      percussionConfig->waveType = static_cast<WaveType>(module["waveType"]);
     }
     // The old module memory will be deleted automatically since the ptr now has no references
     config->modules[ch] = std::move(newModule);
@@ -113,18 +123,26 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
   // Allocate memory in the array
   JsonObject module = modulesList.add<JsonObject>();
 
+  module["outputNumber"] = static_cast<int>(config->modules[i]->outputNumber);
   module["moduleType"] = static_cast<int>(config->modules[i]->moduleType);
   module["freqLow"] = static_cast<int>(config->modules[i]->freqLow);
   module["freqHigh"] = static_cast<int>(config->modules[i]->freqHigh);
-  module["frequencyMapping"] = static_cast<int>(config->modules[i]->frequencyMapping);
   module["minAmpNorm"] = static_cast<float>(config->modules[i]->minAmpNorm);
 
   // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
   if (config->modules[i]->moduleType == MAJORPEAKS)
   {
     auto* modulePtr = static_cast<MajorPeaksConfig*>(config->modules[i].get());
-
+    module["frequencyMapping"] = modulePtr->frequencyMapping;
     module["maxPeaks"] = modulePtr->maxPeaks;
+  }
+  else if (config->modules[i]->moduleType == PERCUSSION)
+  {
+    auto* modulePtr = static_cast<PercussionConfig*>(config->modules[i].get());
+    module["fluxThresh"] = modulePtr->fluxThresh;
+    module["energyThresh"] = modulePtr->energyThresh;
+    module["entropyThresh"] = modulePtr->entropyThresh;
+    module["waveType"] = modulePtr->waveType;
   }
  } 
 }
@@ -142,7 +160,8 @@ inline ModulePtr Utils::createModule(const ModuleType Type)
   static const ModuleFactory Map =
   {
     // TODO: add more modules types as we create structs for them
-    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, NONE, 10000.0, 1); } }
+    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, 10000.0, NONE, 1); } },
+    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 10000.0, 0.0, 0.0, 0.0, SINE); } },
   };
   auto itr = Map.find(Type);
   return (itr == Map.end() ? nullptr : itr->second());

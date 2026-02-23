@@ -63,15 +63,19 @@ bool HapticSettings::loadConfig()
   {
     DEBUG_PRINTLN("WARNING: Using internal preset for analysis config");
 
-    this->curConfig = std::make_shared<AnalysisConfig>(
-      AnalysisConfig(
-        280, 6, 1, 1.4, 0.2,
-        {
-          std::make_unique<MajorPeaksConfig>(400, 1000, OCTAVE, 10000.0, 1),
-          std::make_unique<MajorPeaksConfig>(1000, 3600, OCTAVE, 10000.0, 1)
-        }
-      )
-    );
+    this->curConfig = std::make_shared<AnalysisConfig>();
+
+    this->curConfig->noiseFloor = 280;
+    this->curConfig->cfarRefCount = 6;
+    this->curConfig->cfarGuardCount = 1;
+    this->curConfig->cfarBias = 1.4;
+    this->curConfig->smoothingFactor = 0.2;
+
+    this->curConfig->modules[0] =
+        std::make_unique<MajorPeaksConfig>(0, 400, 1000, 10000.0, OCTAVE, 1);
+
+    this->curConfig->modules[1] =
+        std::make_unique<MajorPeaksConfig>(1, 1000, 3600, 10000.0, OCTAVE, 1);
   }
   return usingSavedConfig;
 }
