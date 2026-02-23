@@ -33,7 +33,6 @@ public:
   std::shared_ptr<const AnalysisConfig> getConfig_r() const { return std::atomic_load(&curConfig); }
 
   //! Atomically get a mutable pointer to the current config
-  //! NOTE: may not need this
   auto getConfig_mut() const { return std::atomic_load(&curConfig); }
 
   //! Atomically swaps the current config with the new config

@@ -28,6 +28,9 @@ export const createProject = (name, libraryLength, currentValues) => {
 // Persistant audio settings data
 export const AudioSettingsContext = createContext(null);
 
+// Persistant system data
+export const SystemContext = createContext(null);
+
 /**
  * @brief Wrapper function that provides the children components
  * access to the audio settings data.
@@ -38,13 +41,32 @@ export const AnalysisSettingsProvider = ({children}) => {
   const [globalSettings, setGlobalSettings] = useState({});
   const [modules, setModules] = useState([]);
 
-  const data = {
+  const audioData = {
     globalSettings, setGlobalSettings,
     modules, setModules
   };
   return (
-    <AudioSettingsContext.Provider value={data}>
+    <AudioSettingsContext.Provider value={audioData}>
       {children}
     </AudioSettingsContext.Provider>
   );
 };
+
+/**
+ * @brief Wrapper function that provides children components access to
+ * system data
+ * 
+ * @param {Object} children - Children components
+ */
+export const SystemContextProvider = ({children}) => {
+  const [pageInfo, setPageInfo] = useState({});
+
+  const systemData = {
+    pageInfo, setPageInfo
+  };
+  return (
+    <SystemContext.Provider value={systemData}>
+      {children}
+    </SystemContext.Provider>
+  );
+}
