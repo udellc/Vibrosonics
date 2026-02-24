@@ -39,9 +39,12 @@ FreqEnv freqEnv = {};
 AmpEnv ampEnv = {};
 DurEnv durEnv = {};
 
+int windowsSinceHit = 0;
+
 // list of our analysis modules. the maximum number of possible modules is currently
 // NUM_OUT_CH * 2 as each output can have one non-percussion module and one percussion module
 AnalysisModule* analysisModules[NUM_OUT_CH * 2] = { nullptr };
+bool outputHasPercussion[NUM_OUT_CH] = { false };
 
 #endif
 
@@ -136,6 +139,7 @@ void loop()
     rebuildOutputModules(activeConfig.get());
     HapticSettings::Instance().setIsDirty(false);
   }
+  
   processData(activeConfig);
 
   melodic.runAnalysis();
@@ -181,25 +185,13 @@ void processData(std::shared_ptr<const AnalysisConfig> target){
 
 void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig){
   switch(moduleConfig->moduleType){
-    case MAJORPEAKS:
-      {
-        ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
-        const MajorPeaksConfig* majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
-        float **analysisData = mpModuleInterface->getOutput();
-        synthesizePeak(moduleConfig->outputNumber, 
-                        analysisData[MP_FREQ][0], 
-                        analysisData[MP_AMP][0], 
-                        moduleConfig->freqLow, 
-                        moduleConfig->freqHigh, 
-                        majorPeaksConfig->frequencyMapping);
-        break;
-      }
     case PERCUSSION:
       {
         ModuleInterface<bool>* percModuleInterface = static_cast<ModuleInterface<bool>*>(module);
         const PercussionConfig* percussionConfig = static_cast<const PercussionConfig*>(moduleConfig);
         // If percussion was detected, synthesize a hit
         if (percModuleInterface->getOutput()) {
+          DEBUG_PRINTLN("Percussion hit detected");
           // Get the energy, entropy and positive flux for the percussive hit. These
           // values are used to synthesize the haptic feedback of the percussion.
           float energy = AudioPrism::energy(windowData, 
@@ -246,7 +238,25 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
                                     ampEnv, 
                                     durEnv);
           }
+          windowsSinceHit = 0;
         }
+        else {
+          windowsSinceHit++;
+        }
+        break;
+      }
+    case MAJORPEAKS:
+      {
+        ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
+        const MajorPeaksConfig* majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
+        float **analysisData = mpModuleInterface->getOutput();
+        synthesizePeak(moduleConfig->outputNumber, 
+                        analysisData[MP_FREQ][0], 
+                        analysisData[MP_AMP][0], 
+                        moduleConfig->freqLow, 
+                        moduleConfig->freqHigh, 
+                        majorPeaksConfig->frequencyMapping,
+                        outputHasPercussion[moduleConfig->outputNumber]);
         break;
       }
   }
@@ -256,37 +266,41 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
 void rebuildOutputModules(const AnalysisConfig* Config)
 {
   melodic.clearModules();
+  percussive.clearModules();
 
-  for (int i = 0; i < NUM_OUT_CH; i++)
+  for (int ch = 0; ch < NUM_OUT_CH; ch++)
+    outputHasPercussion[ch] = false;
+
+  for (int i = 0; i < NUM_OUT_CH * 2; i++)
   {
     if (analysisModules[i])
     {
       delete analysisModules[i];
       analysisModules[i] = nullptr;
     }
-    if (Config->modules[i]->moduleType == MAJORPEAKS)
-    {
-      auto* majorPeaks = static_cast<MajorPeaksConfig*>(Config->modules[i].get());
 
-      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
-      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      melodic.addModule(analysisModules[i], Config->modules[i]->freqLow, Config->modules[i]->freqHigh);
-    }
-    else if (target->modules[i]->moduleType == PERCUSSION){
-      PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(target->modules[i].get());
-      analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, 
-                                                  percussionConfig->energyThresh, 
-                                                  percussionConfig->entropyThresh);
-      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      percussive.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
-    }
-    else if (target->modules[i]->moduleType == PERCUSSION){
-      PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(target->modules[i].get());
-      analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, 
-                                                  percussionConfig->energyThresh, 
-                                                  percussionConfig->entropyThresh);
-      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      percussive.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
+    switch(Config->modules[i]->moduleType){
+      case MAJORPEAKS:
+      {
+        auto* majorPeaks = static_cast<MajorPeaksConfig*>(Config->modules[i].get());
+
+        analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
+        analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+        melodic.addModule(analysisModules[i], Config->modules[i]->freqLow, Config->modules[i]->freqHigh);
+        break;
+      }
+      case PERCUSSION:
+      {
+        auto* percussionConfig = static_cast<PercussionConfig*>(Config->modules[i].get());
+
+        analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, 
+                                                    percussionConfig->energyThresh, 
+                                                    percussionConfig->entropyThresh);
+        analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+        percussive.addModule(analysisModules[i], Config->modules[i]->freqLow, Config->modules[i]->freqHigh);
+        outputHasPercussion[Config->modules[i].get()->outputNumber] = true;
+        break;
+      }
     }
   }
 }
@@ -304,7 +318,11 @@ int interpolateAroundPeak(float *data, int indexOfPeak) {
   return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
 }
 
-void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption) {
+float linear_interpolation(float a, float b, float t) {
+    return a + t * (b - a);
+}
+
+void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption, bool hasPercussion) {
   // interpolate the frequency around the peak to get a more accurate measure
   float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
   float haptic_freq = interp_freq;
@@ -317,7 +335,23 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
   {
     haptic_freq = vapi.mapFrequencyMIDI(interp_freq, freqMin, freqMax);
   }
-  vapi.assignWave(haptic_freq, amp, channel);
+
+  // duck the amplitude to highlight percussive hits based on how long it has
+  // been since the percussive hit
+  float adjusted_amp = amp;
+  if (hasPercussion) {
+    const float minDiv = 4.0f;
+    const float maxDiv = 1.0f;
+    const float maxWindows = 5.0f;
+
+    // uses linear interpolation to determine how much to duck the amplitude
+    float t = min((float)windowsSinceHit / maxWindows, 1.0f);
+    float divisor = linear_interpolation(minDiv, maxDiv, t);
+
+    adjusted_amp /= divisor;
+  }
+
+  vapi.assignWave(haptic_freq, adjusted_amp, channel);
 }
 
 #endif // VAPI_EN
