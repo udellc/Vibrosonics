@@ -21,11 +21,13 @@ import EQ_PRESETS from "../data/eqSettings.json";
 
 const ModulesPage = () => {
   // Persistant memory/data
-  const { globalSettings, setGlobalSettings } = useContext(AudioSettingsContext);
+  const { globalSettings, setGlobalSettings } =
+    useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
 
   // Project management
-  const [currentProjectName, setCurrentProjectName] = useState("Project 1: Setup 1");
+  const [currentProjectName, setCurrentProjectName] =
+    useState("Project 1: Setup 1");
   const [activeGenre, setActiveGenre] = useState("Rock");
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [library, setLibrary] = useState([]);
@@ -51,7 +53,7 @@ const ModulesPage = () => {
   };
   const handleDropdownChange = (val) => {
     // TODO: implement
-    console.log(val);
+    console.log(val.target.value);
     setSelectedChannel(val);
   };
 
@@ -142,15 +144,13 @@ const ModulesPage = () => {
   const sendData = async () => {
     const payload = {
       global: globalSettings,
-      modules
-    }
+      modules,
+    };
     const res = await api("PUT", "/analysis/submitSettings", payload);
 
     if (res.status == HTTP_STATUS.OK) {
       console.log("worked");
-    }
-    else
-      console.log(res.status);
+    } else console.log(res.status);
   };
   return (
     <div className="flex flex-col m-8">
@@ -186,26 +186,31 @@ const ModulesPage = () => {
         </h2>
         {/* TODO: testing this out rq */}
         <div>
-          <button className="bg-amber-500 cursor-pointer"
-          onClick={sendData}>
+          <button className="bg-amber-500 cursor-pointer" onClick={sendData}>
             SEND ITTTTTTTTTTT
           </button>
-          <button className="ml-6 bg-amber-500 cursor-pointer"
-          onClick={() => {
-            console.log(modules);
-            console.log(globalSettings);
-          }}>
+          <button
+            className="ml-6 bg-amber-500 cursor-pointer"
+            onClick={() => {
+              console.log(modules);
+              console.log(globalSettings);
+            }}
+          >
             Print data
           </button>
         </div>
       </div>
 
       {/* analysis settings stuff */}
-      <div className="w-lg rounded-b-none shadow-none border-b-0 p-5">
-        <DropDown
-          label="Output Channels"
-          options={['0','1']}
-          onChange={(val) => handleDropdownChange(val)}/>
+      <div className="flex flex-col">
+        <h4 className="font-bold text-lg">Output Channel:</h4>
+        <select
+          className="p-1 h-10 w-20 bg-blue-300"
+          onChange={(val) => handleDropdownChange(val)}
+        >
+          <option value={0}>0</option>
+          <option value={1}>1</option>
+        </select>
       </div>
       <div className="flex flex-row gap-4">
         <GlobalSettings
