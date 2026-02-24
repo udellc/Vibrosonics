@@ -14,7 +14,7 @@ import ModuleDisplay from "../data/moduleDisplay.json";
 import { FREQUENCY_MAPPING, MODULE_TYPE } from "../utils/utils";
 
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
-export default function AnalysisModule({ channel, module, setModules }) {
+export default function AnalysisModule({ index, module, setModules }) {
   const moduleSettingsDisplay = ModuleDisplay.module.settings;
   const knobSettings = ["freqLow", "freqHigh", "minAmpNorm"];
   const [isValid, setIsValid] = useState(true);
@@ -22,8 +22,8 @@ export default function AnalysisModule({ channel, module, setModules }) {
   const updateValue = (id, val) => {
     setModules((prev) => {
       const updated = [...prev];
-      updated[channel] = {
-        ...updated[channel],
+      updated[index] = {
+        ...updated[index],
         [id]: val,
       };
       return updated;
@@ -48,25 +48,25 @@ export default function AnalysisModule({ channel, module, setModules }) {
   };
   // Ensure frequency ranges are valid for low/high
   useEffect(() => {
-    const freqLow = module["freqLow"];
-    const freqHigh = module["freqHigh"];
-    const isValidFreqRanges = freqLow < freqHigh && freqHigh > freqLow;
+    const freqLow = module.freqLow;
+    const freqHigh = module.freqHigh;
+    const isValidFreqRanges = (freqLow < freqHigh) && (freqHigh > freqLow);
 
     // Only update is value is flipped
     if (isValidFreqRanges !== isValid) {
       setIsValid(!isValid);
     }
-  }, [module["freqLow"], module["freqHigh"]]);
+  }, [module.freqLow, module.freqHigh]);
   return (
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <h3 className="font-bold text-lg">
         Module: {MODULE_TYPE[module.moduleType]}
       </h3>
-      <h3 className="font-bold text-lg">Output Channel {channel}</h3>
+      <h3 className="font-bold text-lg">TODO: Index {index}</h3>
 
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
       <div>
-        {isValid === true ? (
+        {isValid? (
           <div>TODO: Valid ranges</div>
         ) : (
           <div className="font-bold text-red-500">TODO: Not valid ranges</div>
@@ -109,6 +109,8 @@ export default function AnalysisModule({ channel, module, setModules }) {
             );
           })}
         </div>
+        {/* Module specific params */}
+
         {/* Frequency mapping */}
         <div className="p-6 flex flex-col gap-2 items-center">
           <div className="flex-col items-center bg-amber-100 max-w-fit">
@@ -120,7 +122,6 @@ export default function AnalysisModule({ channel, module, setModules }) {
             </select>
           </div>
           <div>
-            {/* Module specific params, just max peaks for now */}
             <h4 className="font-bold">Max Peaks</h4>
             <input
               type="number"
