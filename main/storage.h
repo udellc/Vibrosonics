@@ -94,6 +94,8 @@ struct PercussionConfig : ModuleConfig {
   WaveType waveType;
 };
 
+using ModulePtr = std::unique_ptr<ModuleConfig>;
+
 // configuration for our entire analysis
 struct AnalysisConfig {
   // frequency to use for the noise floor. minimum of 0
@@ -106,7 +108,9 @@ struct AnalysisConfig {
   float cfarBias = 1.4;
   // smoothing factor for smooth_window_over_time. value from 0-1 (0 high smoothing, 1 no smoothing)
   float smoothingFactor = 0.3;
-  std::unique_ptr<ModuleConfig> modules[NUM_OUT_CH];
+
+  // TODO: temporary?
+  ModulePtr modules[NUM_OUT_CH * 2];
 };
 
 #endif

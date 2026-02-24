@@ -16,8 +16,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-using ModulePtr = std::unique_ptr<ModuleConfig>;
-
 namespace Utils
 {
   //! Helper function to parse the global settings Json object into an analysis module
