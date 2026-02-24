@@ -20,11 +20,10 @@
 
 #define MAIN_ANALYSIS_PATH "/data/mainConfig.json"
 
-HapticSettings::HapticSettings()
-    : curConfig { nullptr }
-{
-  this->curConfig = std::make_shared<AnalysisConfig>();
-}
+HapticSettings::HapticSettings() :
+  curConfig{ nullptr },
+  _isDirty{ false }
+{}
 
 /**
  * @brief Populates the analysis configurations using the data found in the
@@ -48,6 +47,7 @@ bool HapticSettings::loadConfig()
 
     if (!Error)
     {
+      this->curConfig = std::make_shared<AnalysisConfig>();
       JsonObject globalSettings = doc["global"].as<JsonObject>();
       JsonArray modulesList = doc["modules"].as<JsonArray>();
 
@@ -77,5 +77,7 @@ bool HapticSettings::loadConfig()
     this->curConfig->modules[1] =
         std::make_unique<MajorPeaksConfig>(1, 1000, 3600, 10000.0, OCTAVE, 1);
   }
+  this->setIsDirty(true);
+
   return usingSavedConfig;
 }

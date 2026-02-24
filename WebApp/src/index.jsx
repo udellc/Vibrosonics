@@ -17,7 +17,11 @@ import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
-import { AnalysisSettingsProvider, SystemContext } from "./utils/configurations";
+import {
+  AnalysisSettingsProvider,
+  SystemContext,
+  SystemContextProvider,
+} from "./utils/configurations";
 import { useContext, useEffect, useState } from "preact/hooks";
 import { api, PAGE } from "./utils/utils";
 
@@ -50,16 +54,17 @@ const AppContent = () => {
  * @returns
  */
 export function App() {
-
   return (
-    // FIXME: align the footer to the bottom with the header and content filling the rest of space
     <div className="min-w-lvw min-h-lvh flex flex-col">
-      <Header />
-      {/* Wrap the app content with the audio context */}
-      <AnalysisSettingsProvider>
-        <AppContent />
-      </AnalysisSettingsProvider>
-      <Footer/>
+      
+      {/* Wrap the app content with the contexts */}
+      <SystemContextProvider>
+        <Header />
+        <AnalysisSettingsProvider>
+          <AppContent />
+        </AnalysisSettingsProvider>
+        <Footer />
+      </SystemContextProvider>
     </div>
   );
 }

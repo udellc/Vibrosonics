@@ -275,6 +275,7 @@ void WebInterface::onSubmitConfig()
 
     hasUpdated = true;
     HapticSettings::Instance().updateConfig(newConfig);
+    HapticSettings::Instance().setIsDirty(true);
   }
   if (hasUpdated)
     resStatus = HTTP_OK;
@@ -379,6 +380,7 @@ inline void WebInterface::setupUploadMode()
   }, uploadFile);
   server.on("/dev/printFiles", HTTP_POST, printFiles);
   server.on("/dev/clearSd", HTTP_POST, clearSd);
+  server.on("/dev/getMemory", HTTP_GET, getMemory);
 }
 
 /**
@@ -455,6 +457,26 @@ void WebInterface::clearSd()
   }
   else
     send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
+}
+
+/**
+ * @brief Prints heap memory stats to the serial monitor
+ */
+void WebInterface::getMemory()
+{
+  // Tracks the largest block to provide info on heap fragmentation as well
+  // The more fragmented, the slower the code runs
+  static size_t lastMaxBlock = 0;
+  size_t currentMaxBlock = ESP.getMaxAllocHeap();
+
+  DEBUG_PRINTF("Free Heap: %u | Max Block: %u | Diff: %d\n", 
+                ESP.getFreeHeap(), 
+                currentMaxBlock, 
+                (int)(currentMaxBlock - lastMaxBlock));
+  
+  lastMaxBlock = currentMaxBlock;
+
+  send(HTTP_OK);
 }
 
 #endif // DEV_MODE_EN

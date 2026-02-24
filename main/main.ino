@@ -102,10 +102,6 @@ void setup()
     success = false;
     DEBUG_PRINTLN("FATAL: Could not create web server task");
   }
-  if (!HapticSettings::Instance().loadConfig())
-  {
-    DEBUG_PRINTLN("WARNING: Could not load previous analysis configuration from SD card. Using preset instead");
-  }
   // On setup failure, do nothing
   if (!success)
   {
@@ -116,10 +112,9 @@ void setup()
   }
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
-    
-    // FIX: temporary
-    auto loadedConfig = HapticSettings::Instance().getConfig_mut();
-    assignOutputModules(loadedConfig);
+
+    // TODO: maybe change this to init() that calls loadConfig()
+    (void) HapticSettings::Instance().loadConfig();
     vapi.init();
   #endif
 }
@@ -133,9 +128,14 @@ void loop()
 #ifdef VAPI_EN
   if (!vapi.isAudioLabReady())
     return;
-  
+
   auto activeConfig = HapticSettings::Instance().getConfig_r();
 
+  if (HapticSettings::Instance().isDirty())
+  {
+    rebuildOutputModules(activeConfig.get());
+    HapticSettings::Instance().setIsDirty(false);
+  }
   processData(activeConfig);
 
   melodic.runAnalysis();
@@ -253,13 +253,32 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
   AudioLab.mapAmplitudes(moduleConfig->outputNumber, moduleConfig->minAmpNorm);
 }
 
-void assignOutputModules(std::shared_ptr<AnalysisConfig> target) {
-  for (int i = 0; i < NUM_OUT_CH * 2; i++){
-    if (target->modules[i]->moduleType == MAJORPEAKS){
-      MajorPeaksConfig* majorPeaksConfig = static_cast<MajorPeaksConfig*>(target->modules[i].get());
-      analysisModules[i] = new MajorPeaks(majorPeaksConfig->maxPeaks);
+void rebuildOutputModules(const AnalysisConfig* Config)
+{
+  melodic.clearModules();
+
+  for (int i = 0; i < NUM_OUT_CH; i++)
+  {
+    if (analysisModules[i])
+    {
+      delete analysisModules[i];
+      analysisModules[i] = nullptr;
+    }
+    if (Config->modules[i]->moduleType == MAJORPEAKS)
+    {
+      auto* majorPeaks = static_cast<MajorPeaksConfig*>(Config->modules[i].get());
+
+      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
       analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      melodic.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
+      melodic.addModule(analysisModules[i], Config->modules[i]->freqLow, Config->modules[i]->freqHigh);
+    }
+    else if (target->modules[i]->moduleType == PERCUSSION){
+      PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(target->modules[i].get());
+      analysisModules[i] = new PercussionDetection(percussionConfig->fluxThresh, 
+                                                  percussionConfig->energyThresh, 
+                                                  percussionConfig->entropyThresh);
+      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      percussive.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
     }
     else if (target->modules[i]->moduleType == PERCUSSION){
       PercussionConfig* percussionConfig = static_cast<PercussionConfig*>(target->modules[i].get());
