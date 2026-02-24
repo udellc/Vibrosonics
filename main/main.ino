@@ -258,6 +258,8 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
                         majorPeaksConfig->frequencyMapping);
         break;
       }
+    default:
+      break;
   }
   AudioLab.mapAmplitudes(moduleConfig->outputNumber, moduleConfig->minAmpNorm);
 }
@@ -300,6 +302,8 @@ void rebuildOutputModules(const AnalysisConfig* Config)
         outputHasPercussion[Config->modules[i].get()->outputNumber] = true;
         break;
       }
+      default:
+        break;
     }
   }
 }
