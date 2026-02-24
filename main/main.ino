@@ -31,12 +31,12 @@ float melodicData[WINDOW_SIZE_BY_2] = { 0 };
 Spectrogram melodicSpectrogram = Spectrogram(2, WINDOW_SIZE_OVERLAP);
 ModuleGroup melodic = ModuleGroup(&melodicSpectrogram);
 
-AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
+AnalysisModule* analysisModules[NUM_OUT_CH] { nullptr };
 
 #endif
 
 // FreeRTOS stuff for the web server running on core 0
-#define TASK_DELAY_MS 150u
+#define TASK_DELAY_MS 100u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
@@ -92,10 +92,6 @@ void setup()
     success = false;
     DEBUG_PRINTLN("FATAL: Could not create web server task");
   }
-  if (!HapticSettings::Instance().loadConfig())
-  {
-    DEBUG_PRINTLN("WARNING: Could not load previous analysis configuration from SD card. Using preset instead");
-  }
   // On setup failure, do nothing
   if (!success)
   {
@@ -106,6 +102,9 @@ void setup()
   }
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
+
+    // TODO: maybe change this to init() that calls loadConfig()
+    (void) HapticSettings::Instance().loadConfig();
     vapi.init();
   #endif
 }
@@ -124,8 +123,7 @@ void loop()
 
   if (HapticSettings::Instance().isDirty())
   {
-    clearOutputModules();
-    assignOutputModules(activeConfig.get());
+    rebuildOutputModules(activeConfig.get());
     HapticSettings::Instance().setIsDirty(false);
   }
   // Get input data and clean it
@@ -149,8 +147,8 @@ void loop()
   {
     if (activeConfig->modules[i]->moduleType == MAJORPEAKS)
     {
-      ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
-      float **analysisData = mpModuleInterface->getOutput();
+      auto* mpModuleInterface = static_cast<ModuleInterface<float**>*>(analysisModules[i]);
+      auto* analysisData = mpModuleInterface->getOutput();
       synthesizePeak(i, analysisData[MP_FREQ][0], analysisData[MP_AMP][0], activeConfig->modules[i]->freqLow, activeConfig->modules[i]->freqHigh, activeConfig->modules[i]->frequencyMapping);
       AudioLab.mapAmplitudes(i, activeConfig->modules[i]->minAmpNorm);
     }
@@ -161,30 +159,27 @@ void loop()
 
 #ifdef VAPI_EN
 
-inline void assignOutputModules(const AnalysisConfig* target) {
-  for (int i = 0; i < NUM_OUT_CH; i++){
-    if (target->modules[i]->moduleType == MAJORPEAKS){
-      MajorPeaksConfig* majorPeaks = static_cast<MajorPeaksConfig*>(target->modules[i].get());
-      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
-      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
-      melodic.addModule(analysisModules[i], target->modules[i]->freqLow, target->modules[i]->freqHigh);
-    }
-  }
-}
-
-inline void clearOutputModules()
+void rebuildOutputModules(const AnalysisConfig* Config)
 {
   melodic.clearModules();
-  // delete old modules
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    if (analysisModules[i] != nullptr){
-      DEBUG_PRINTLN("DEBUG: deleted module");
-      delete[] analysisModules[i];
+
+  for (int i = 0; i < NUM_OUT_CH; i++)
+  {
+    if (analysisModules[i])
+    {
+      delete analysisModules[i];
       analysisModules[i] = nullptr;
+    }
+    if (Config->modules[i]->moduleType == MAJORPEAKS)
+    {
+      auto* majorPeaks = static_cast<MajorPeaksConfig*>(Config->modules[i].get());
+
+      analysisModules[i] = new MajorPeaks(majorPeaks->maxPeaks);
+      analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
+      melodic.addModule(analysisModules[i], Config->modules[i]->freqLow, Config->modules[i]->freqHigh);
     }
   }
 }
-
 
 int interpolateAroundPeak(float *data, int indexOfPeak) {
   float prePeak = indexOfPeak == 0 ? 0.0 : data[indexOfPeak - 1];

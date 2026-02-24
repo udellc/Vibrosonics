@@ -459,8 +459,13 @@ void WebInterface::clearSd()
     send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
 }
 
+/**
+ * @brief Prints heap memory stats to the serial monitor
+ */
 void WebInterface::getMemory()
 {
+  // Tracks the largest block to provide info on heap fragmentation as well
+  // The more fragmented, the slower the code runs
   static size_t lastMaxBlock = 0;
   size_t currentMaxBlock = ESP.getMaxAllocHeap();
 
@@ -470,6 +475,8 @@ void WebInterface::getMemory()
                 (int)(currentMaxBlock - lastMaxBlock));
   
   lastMaxBlock = currentMaxBlock;
+
+  send(HTTP_OK);
 }
 
 #endif // DEV_MODE_EN

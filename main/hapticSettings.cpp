@@ -20,7 +20,9 @@
 
 #define MAIN_ANALYSIS_PATH "/data/mainConfig.json"
 
-HapticSettings::HapticSettings()
+HapticSettings::HapticSettings() :
+  curConfig{ nullptr },
+  _isDirty{ false }
 {}
 
 /**
@@ -71,5 +73,7 @@ bool HapticSettings::loadConfig()
       )
     );
   }
+  this->setIsDirty(true);
+
   return usingSavedConfig;
 }

@@ -48,7 +48,7 @@ public:
 private:
   // Use shared ptr, so that we can update the settings fast/safe across cores
   std::shared_ptr<AnalysisConfig> curConfig;
-  std::atomic<bool> _isDirty {true};
+  std::atomic<bool> _isDirty;
 
   // Disable any sort of initialization for the HapticSettings class
   HapticSettings();
