@@ -13,6 +13,7 @@ import Knob from "../atomics/knob";
 import EQ_PRESETS from "../data/eqSettings.json";
 import { useState } from "react";
 import Checkbox from "../atomics/checkbox";
+import DropDown from "../atomics/dropdown";
 import PERCUSSION_PRESETS from "../data/precussionSettings.json";
 import INITIAL_PRESETS from "../data/initalStates.json";
 import { createProject } from "../utils/configurations.js";
@@ -20,6 +21,7 @@ import { createProject } from "../utils/configurations.js";
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
 export default function AnalysisModule() {
   const [activeGenre, setActiveGenre] = useState("Rock");
+  const [numChannels, setNumChannels] = useState(1);
   const [knobValue, setKnobValue] = useState({});
   const [sliderValue, setSliderValue] = useState({});
   const [isAdvanced, setIsAdvanced] = useState(false);
@@ -62,6 +64,10 @@ export default function AnalysisModule() {
   const handleCheckboxChange = (value) => {
     setIsAdvanced(value);
   };
+
+  const handleDropdownChange = (selectedValue) => {
+    setNumChannels(parseInt(selectedValue, 10));
+  }
 
   const saveProject = (name) => {
     const newSave = createProject(name, library.length, {
@@ -137,7 +143,7 @@ export default function AnalysisModule() {
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
-      
+
       <div className="flex flex-row flex-wrap items-start gap-8 p-8 mt-8 rounded-xl shadow-md border border-gray-100">
         {/*EQ Presets*/}
         <h2 className="text-xl font-bold mb-4">EQ</h2>
@@ -167,39 +173,83 @@ export default function AnalysisModule() {
         </h2>
       </div>
 
-      <div className="flex flex-row items-center items-stretch gap-8 mt-8 rounded-xl shadow-md border border-gray-100">
-        {/*EQ Knobs and User Input*/}
-        <div className="flex flex-row gap-5 p-5">
-          <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
-              {currentModData.map((data) => (
-                <div key={data.id} className="flex flex-col items-center gap-2">
-                  <Knob
-                    key={data.id}
-                    title={data.title}
-                    value={knobValue[data.id] ?? data.default ?? 0}
-                    min={data.min}
-                    max={data.max}
-                    step={0.1}
-                    onChange={(value) => handleKnobChange(data.id, value)}
-                  />
+      <div className="w-128 rounded-b-none shadow-none border-b-0 p-5">
+        <DropDown
+          label="Channels"
+          options={['2', '4', '6', '8']}
+          onChange={(val) => handleDropdownChange(val)}/>
+      </div>
 
-                  <div className="flex flex-col items-center gap-1">
-                    <input
-                        type="number"
-                        className="w-16 p-1 text-center bg-white border border-gray-400 rounded text-sm"
-                        value={Math.round(knobValue[data.id] ?? data.initialValue ?? 0)}
-                        onChange={(e) => handleValueChange(data.id, (e.target instanceof HTMLInputElement ? e.target.value : ""))}
+      {/*EQ Knobs and User Input*/}
+      
+        {Array.from({length: numChannels}).map((_, index) => {
+          const channelA = (index * 2) + 1; 
+          const channelB = (index * 2) + 2;
+
+          return(
+              <div className="flex flex-wrap gap-8 p-8 mb-8 bg-gray-200 rounded-xl shadow-inner w-fit">
+                  <p className="w-full text-xl font-bold text-gray-800">Channel {channelA} and Channel {channelB}</p>
+                  {currentModData.map((data) => (
+                  <div key={`pair${index}-${data.id}`} className="flex flex-col items-center gap-2 mb-8 w-fit">
+                    <div className="flex flex-col items-center gap-2 w-full">
+                      <Knob
+                        key={data.id}
+                        title={data.title}
+                        value={knobValue[`ch${channelA}_${data.id}`] ?? data.default ?? 0}
                         min={data.min}
                         max={data.max}
+                        step={0.1}
+                        onChange={(value) => handleKnobChange(`ch${channelA}_${data.id}`, value)}
                       />
-                    </div>
-                  <span className="font-bold text-gray-700">{data.label}</span>
-                </div>
-              ))}
-          </div>
-        </div>
 
-        {/*Percussion Knobs and User Input*/}
+                      <div className="flex flex-col items-center gap-1">
+                        <input
+                            type="number"
+                            className="w-16 p-1 text-center bg-white border border-gray-400 rounded text-sm"
+                            value={Math.round(knobValue[`ch${channelA}_${data.id}`] ?? data.initialValue ?? 0)}
+                            onChange={(e) => handleValueChange(`ch${channelA}_${data.id}`, (e.target instanceof HTMLInputElement ? e.target.value : ""))}
+                            min={data.min}
+                            max={data.max}
+                          />
+                      </div>
+
+                      <span className="font-bold text-gray-700">{data.label}</span>
+                    </div>
+                  
+                    <div className="flex flex-col items-center gap-2">
+                      <Knob
+                        key={data.id}
+                        title={data.title}
+                        value={knobValue[`ch${channelA}_${data.id}`] ?? data.default ?? 0}
+                        min={data.min}
+                        max={data.max}
+                        step={0.1}
+                        onChange={(value) => handleKnobChange(`ch${channelA}_${data.id}`, value)}
+                      />
+
+                      <div className="flex flex-col items-center gap-1">
+                        <input
+                            type="number"
+                            className="w-16 p-1 text-center bg-white border border-gray-400 rounded text-sm"
+                            value={Math.round(knobValue[`ch${channelA}_${data.id}`] ?? data.initialValue ?? 0)}
+                            onChange={(e) => handleValueChange(`ch${channelA}_${data.id}`, (e.target instanceof HTMLInputElement ? e.target.value : ""))}
+                            min={data.min}
+                            max={data.max}
+                          />
+                      </div>
+                      
+                      <span className="font-bold text-gray-700">{data.label}</span>
+                    </div>
+                    
+                  </div>
+
+                  
+                ))}
+              </div>
+          );
+        })}
+
+        {/*Percussion Knobs and User Input
           <div className={`${isAdvanced ? 'Advanced Percussion' : 'Percussion'} flex flex-row gap-5 p-5`}>
             <div className="flex flex-wrap gap-8 p-8 bg-gray-200 rounded-xl shadow-inner max-w-3xl">
                 {percussionData.map((data) => (
@@ -228,7 +278,7 @@ export default function AnalysisModule() {
                 ))}
             </div>
           </div>
-        </div>
+          */}
 
       {/*Project Library Buttons*/}
       <div className="p-8 mt-8 bg-white rounded-xl shadow-md border border-gray-100">
