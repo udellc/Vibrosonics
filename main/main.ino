@@ -255,8 +255,7 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
                         analysisData[MP_AMP][0], 
                         moduleConfig->freqLow, 
                         moduleConfig->freqHigh, 
-                        majorPeaksConfig->frequencyMapping,
-                        outputHasPercussion[moduleConfig->outputNumber]);
+                        majorPeaksConfig->frequencyMapping);
         break;
       }
   }
@@ -322,7 +321,7 @@ float linear_interpolation(float a, float b, float t) {
     return a + t * (b - a);
 }
 
-void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption, bool hasPercussion) {
+void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption) {
   // interpolate the frequency around the peak to get a more accurate measure
   float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
   float haptic_freq = interp_freq;
@@ -339,7 +338,7 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
   // duck the amplitude to highlight percussive hits based on how long it has
   // been since the percussive hit
   float adjusted_amp = amp;
-  if (hasPercussion) {
+  if (outputHasPercussion[channel]) {
     const float minDiv = 4.0f;
     const float maxDiv = 1.0f;
     const float maxWindows = 5.0f;
