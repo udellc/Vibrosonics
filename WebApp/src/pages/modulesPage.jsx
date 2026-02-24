@@ -11,6 +11,7 @@
 
 import { useContext, useEffect, useState } from "preact/hooks";
 import AnalysisModule from "../components/analysisModule";
+import DropDown from "../atomics/dropdown";
 import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
 import { createProject } from "../utils/configurations.js";
@@ -32,6 +33,10 @@ const ModulesPage = () => {
   const [setupCount, setSetupCount] = useState(1);
   const handleCheckboxChange = (value) => setIsAdvanced(value);
 
+  // UI stuff
+  const [selectedChannel, setSelectedChannel] = useState(0);
+  const [displayedModules, setDisplayedModules] = useState([]);
+
   const saveProject = (name) => {
     const newSave = createProject(name, library.length, {
       id: Date.now(),
@@ -43,6 +48,11 @@ const ModulesPage = () => {
     console.log("Save project herererer!!!");
     console.log(globalSettings);
     setLibrary((prev) => [...prev, newSave]);
+  };
+  const handleDropdownChange = (val) => {
+    // TODO: implement
+    console.log(val);
+    setSelectedChannel(val);
   };
 
   const startNewProj = () => {
@@ -115,8 +125,8 @@ const ModulesPage = () => {
     const res = await api("GET", "/analysis/getSettings");
 
     if (res.status == HTTP_STATUS.OK) {
-      setGlobalSettings(res.data?.global);
-      setModules(res.data?.modules);
+      setGlobalSettings(res.data?.global || {});
+      setModules(res.data?.modules || []);
     }
   };
   /**
@@ -147,9 +157,9 @@ const ModulesPage = () => {
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
 
       {/* preset stuff */}
-      <div className="flex flex-row flex-wrap items-start gap-8 p-8 mt-8 mb-8 rounded-xl shadow-md border border-gray-100">
+      <div className="flex flex-row flex-wrap items-start gap-8 p-4 mt-8 mb-4 rounded-xl shadow-md border border-gray-100">
         <h2 className="text-xl font-bold mb-4">Presets</h2>
-        <div className="flex gap-2.5 mb-8">
+        <div className="flex gap-2.5 mb-4">
           {Object.keys(EQ_PRESETS).map((genre) => (
             <button
               className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
@@ -167,7 +177,7 @@ const ModulesPage = () => {
         </div>
 
         {/*Precussion Presets*/}
-        <h2 className="text-xl font-bold mb-4">
+        <h2 className="text-xl font-bold">
           Percussion Settings
           <Checkbox
             label="Advanced Mode"
@@ -185,23 +195,29 @@ const ModulesPage = () => {
             console.log(modules);
             console.log(globalSettings);
           }}>
-            Printint
+            Print data
           </button>
         </div>
       </div>
 
       {/* analysis settings stuff */}
+      <div className="w-lg rounded-b-none shadow-none border-b-0 p-5">
+        <DropDown
+          label="Output Channels"
+          options={['0','1']}
+          onChange={(val) => handleDropdownChange(val)}/>
+      </div>
       <div className="flex flex-row gap-4">
         <GlobalSettings
           globalSettings={globalSettings}
           setGlobalSettings={setGlobalSettings}
         />
-        {modules.map((module, index) => {
+        {modules.map((m, index) => {
           return (
             <div className="gap-3">
               <AnalysisModule
-                channel={index}
-                module={module}
+                index={index}
+                module={m}
                 setModules={setModules}
               />
             </div>

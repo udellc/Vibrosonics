@@ -49,7 +49,7 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 
   for (auto module : modulesList)
   {
-    if (ch >= NUM_OUT_CH) break;
+    if (ch >= (NUM_OUT_CH * 2)) break;
 
     // newModule type is ModuleConfig at the moment
     const auto Type = static_cast<ModuleType>(module["moduleType"]);
@@ -115,7 +115,7 @@ void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
  */
 void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
- for (auto i {0u}; i < NUM_OUT_CH; i++)
+ for (auto i {0u}; i < NUM_OUT_CH * 2; i++)
  {
   if (config->modules[i] == nullptr)
     continue;
