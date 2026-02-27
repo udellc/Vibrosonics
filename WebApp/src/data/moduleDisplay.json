@@ -47,13 +47,13 @@
         "freqLow": {
           "title": "Low Cut Frequency",
           "min": 0,
-          "max": 4096,
+          "max": 20000,
           "step": 1
         },
         "freqHigh": {
           "title": "High Cut Frequency",
           "min": 0,
-          "max": 4096,
+          "max": 20000,
           "step": 1
         },
         "minAmpNorm": {
@@ -71,7 +71,7 @@
         "energyThresh": {
           "title": "Energy Threshold",
           "min": 1,
-          "max": 200000000,
+          "max": 50000000,
           "step": 1
         },
         "entropyThresh": {

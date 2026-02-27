@@ -23,7 +23,6 @@ const ConfigManager = ({ children }) => {
   const [currentProjectName, setCurrentProjectName] =
     useState("Project 1: Setup 1");
   const [activeGenre, setActiveGenre] = useState("Rock");
-  const [isAdvanced, setIsAdvanced] = useState(false);
   const [library, setLibrary] = useState([]);
   const [projectCount, setProjectCount] = useState(1);
   const [setupCount, setSetupCount] = useState(1);
@@ -36,7 +35,6 @@ const ConfigManager = ({ children }) => {
       setProjectCount(nextCount);
       setSetupCount(initialSetup);
       setCurrentProjectName(`Project ${nextCount}: Setup ${initialSetup}`);
-      setIsAdvanced(false);
 
       // TODO: replaced initial states with this
     //   getSettings();
@@ -63,7 +61,6 @@ const ConfigManager = ({ children }) => {
 
   const clearCurrentSettings = () => {
     // getSettings();
-    setIsAdvanced(false);
     setActiveGenre("Rock");
   };
 
@@ -73,7 +70,6 @@ const ConfigManager = ({ children }) => {
     const { knobValue, isAdvanced, activeGenre } = project.data;
 
     // setKnobValue(knobValue);
-    setIsAdvanced(isAdvanced);
     setActiveGenre(activeGenre || "Rock");
     setCurrentProjectName(project.name);
   };
@@ -127,12 +123,6 @@ const ConfigManager = ({ children }) => {
             </button>
           ))}
         </div>
-
-        {/*Precussion Presets*/}
-        <h2 className="text-xl font-bold">
-          Percussion Settings
-          <Checkbox label="Advanced Mode" onChange={(val) => {}} />
-        </h2>
         
         {/* TODO: testing this out rq */}
         <div>

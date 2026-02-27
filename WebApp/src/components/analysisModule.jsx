@@ -13,7 +13,16 @@ import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
 import { FREQUENCY_MAPPING, MODULE_TYPE, WAVE_TYPE } from "../utils/utils";
 
-// TODO: pass in a interface prop to define different knobs, sliders, etc.
+/**
+ * @brief The AnalysisModule component describe a full module that can be modified
+ * 
+ * @param {Object} _ - Object describing the configurations
+ * @param {Number} _.index - Index of module to be updated using the modules context
+ * @param {Object} _.module - Module configuration to modify
+ * @param {CallableFunction} _.setModules - Callback for actually updating the module settings and UI
+ * 
+ * @returns AnalysisModule component describing the configs
+ */
 export default function AnalysisModule({ index, module, setModules }) {
   const [isValid, setIsValid] = useState(true);
 
@@ -32,6 +41,12 @@ export default function AnalysisModule({ index, module, setModules }) {
   }
   const dropdownOptions = getDropdownOptions();
 
+  /**
+   * @brief Updates the module field in the UI and module context
+   * 
+   * @param {String} id - The field we want to be updated
+   * @param {any} val - New value we want to set
+   */
   const handleValueChange = (id, val) => {
     setModules((prev) => {
       const updated = [...prev];
@@ -43,7 +58,10 @@ export default function AnalysisModule({ index, module, setModules }) {
     });
   };
 
-  // Ensure frequency ranges are valid for low/high
+  /**
+   * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
+   * @brief Error handling invalid frequency ranges low and high
+   */
   useEffect(() => {
     const freqLow = module.freqLow;
     const freqHigh = module.freqHigh;
@@ -54,6 +72,7 @@ export default function AnalysisModule({ index, module, setModules }) {
       setIsValid(!isValid);
     }
   }, [module.freqLow, module.freqHigh]);
+
   return (
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <h3 className="font-bold text-lg">
@@ -91,21 +110,25 @@ export default function AnalysisModule({ index, module, setModules }) {
         <div className="flex flex-col gap-2">
           {Object.entries(dropdowns)?.map( ([key, _]) => {
             return (
-              <>
+              <div className="bg-blue-300">
                 <h4>{dropdowns[key].title}</h4>
-                <select value={module[key] ?? 0}>
+                <select value={module[key] ?? 0}
+                  onChange={(e) => handleValueChange(key, e.target instanceof HTMLSelectElement
+                    ? Number(e.target.value)
+                    : 1
+                   )}>
 
                   {Object.entries(dropdownOptions)?.map( ([val, name]) => {
                     return <option value={val}>{name}</option>
                   })}
 
                 </select>
-              </>
+              </div>
             );
           })}
           {Object.entries(spinboxes)?.map( ([key, val]) => {
             return (
-              <>
+              <div className="bg-blue-300">
                 <h4>{spinboxes[key].title}</h4>
                 <input type="number" 
                   value={module[key] ?? 1}
@@ -117,7 +140,7 @@ export default function AnalysisModule({ index, module, setModules }) {
                       : 1
                   )}
                 />
-              </>
+              </div>
             );
           })}
         </div>

@@ -24,8 +24,13 @@ const ModulesPage = () => {
 
   // UI stuff
   const [selectedChannel, setSelectedChannel] = useState(0);
-  const [displayedModules, setDisplayedModules] = useState([])
+  const [displayedModules, setDisplayedModules] = useState([]);
 
+  /**
+   * @brief Updates the selected channel for displayed modules
+   * 
+   * @param {*} e - Changed event for the channel dropdown component
+   */
   const handleDropdownChange = (e) => {
     setSelectedChannel(e.target.value);
   };
@@ -41,14 +46,21 @@ const ModulesPage = () => {
       setModules(res.data?.modules ?? []);
     }
   };
+  /**
+   * @brief Updates the indices of the displayed modules according to the selected channel number
+   */
   useEffect(() => {
-    // Get filtered modules based on channel, preserving the index number for updates to the context
-    const filtered = modules
-      .map((m, index) => ({ ...m, index }))
-      .filter(m => Number(m.outputNumber) === Number(selectedChannel));
+    // Get filtered modules based on channel, saving the index for the modules context
+    const displayedIndices = modules
+      .map((m, index) =>
+        Number(m.outputNumber) === Number(selectedChannel) ? index : -1,
+      )
+      .filter((index) => index !== -1);
 
-    setDisplayedModules(filtered);
-  }, [modules, selectedChannel]);
+    setDisplayedModules(displayedIndices);
+
+    // FIXME: the length may not be a good indicator, but this works for now
+  }, [modules.length, selectedChannel]);
 
   /**
    * @brief Gets the analysis configurations on mount
@@ -76,12 +88,12 @@ const ModulesPage = () => {
               globalSettings={globalSettings}
               setGlobalSettings={setGlobalSettings}
             />
-            {displayedModules?.map((m) => {
+            {displayedModules?.map((index) => {
               return (
-                <div key={m.index} className="gap-3">
+                <div key={index} className="gap-3">
                   <AnalysisModule
-                    index={m.index}
-                    module={modules[m.index]}
+                    index={index}
+                    module={modules[index]}
                     setModules={setModules}
                   />
                 </div>

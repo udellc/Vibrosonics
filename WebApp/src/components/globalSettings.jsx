@@ -12,8 +12,18 @@
 import Knob from "../atomics/knob";
 import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
 
+/**
+ * @brief Displays the global configuration fields and updates them when changed
+ * 
+ * @param {Object} _ - Object containing required fields 
+ * @param {Object} _.globalSettings - Global settings we want to display and modify 
+ * @param {CallableFunction} _.setGlobalSettings - Callback that updates the global settings config and UI 
+ * 
+ * @returns Global settings UI component
+ */
 const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
   const settingsDisplay = GlobalSettingsDisplay.settings;
+ 
   /**
    * @brief Handles the knob display when value is changed
    *
