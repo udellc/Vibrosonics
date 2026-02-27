@@ -1,42 +1,40 @@
 {
-  "global": {
-    "title": "Global Configurations",
-    "settings": {
-      "noiseFloor": {
-        "title": "Noise Floor",
-        "description": "",
-        "min": 0,
-        "max": 600,
-        "step": 1
-      },
-      "smoothingFactor": {
-        "title": "Smoothing Factor",
-        "description": "",
-        "min": 0,
-        "max": 1,
-        "step": 0.01
-      },
-      "cfarRefCount": {
-        "title": "CFAR Reference Cells",
-        "description": "",
-        "min": 1,
-        "max": 25,
-        "step": 1
-      },
-      "cfarGuardCount": {
-        "title": "CFAR Guard Cells",
-        "description": "",
-        "min": 1,
-        "max": 25,
-        "step": 1
-      },
-      "cfarBias": {
-        "title": "CFAR Bias",
-        "description": "",
-        "min": 0,
-        "max": 10,
-        "step": 0.01
-      }
+  "title": "Global Configurations",
+  "settings": {
+    "noiseFloor": {
+      "title": "Noise Floor",
+      "description": "",
+      "min": 0,
+      "max": 600,
+      "step": 1
+    },
+    "smoothingFactor": {
+      "title": "Smoothing Factor",
+      "description": "",
+      "min": 0,
+      "max": 1,
+      "step": 0.01
+    },
+    "cfarRefCount": {
+      "title": "CFAR Reference Cells",
+      "description": "",
+      "min": 1,
+      "max": 25,
+      "step": 1
+    },
+    "cfarGuardCount": {
+      "title": "CFAR Guard Cells",
+      "description": "",
+      "min": 1,
+      "max": 25,
+      "step": 1
+    },
+    "cfarBias": {
+      "title": "CFAR Bias",
+      "description": "",
+      "min": 0,
+      "max": 10,
+      "step": 0.01
     }
   }
 }
