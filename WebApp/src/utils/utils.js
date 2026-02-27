@@ -11,8 +11,10 @@
 import axios from "axios";
 
 /**
- * The frozen objects must match the enumeration in storage.h under /main/
- * and HTTP status codes in webInterface.cpp under /main/
+ * The frozen objects must match the 
+ *  enumerations in storage.h under /main/,
+ *  HTTP status codes in webInterface.cpp under /main/
+ *  enumerations in Wave.h /src/ in the AudioLab respository
  */
 export const HTTP_STATUS = Object.freeze({
   OK: 200,
@@ -31,6 +33,14 @@ export const MODULE_TYPE = Object.freeze({
   0: "Major Peaks",
   1: "Percussion"
 });
+export const WAVE_TYPE = Object.freeze({
+  0: "Sine",
+  1: "Cosine",
+  2: "Square",
+  3: "Sawtooth",
+  4: "Triangle"
+});
+
 
 // Internal
 export const PAGE = {
