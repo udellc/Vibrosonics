@@ -11,15 +11,28 @@
 import { useEffect, useState } from "preact/hooks";
 import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
-import { FREQUENCY_MAPPING, MODULE_TYPE } from "../utils/utils";
+import { FREQUENCY_MAPPING, MODULE_TYPE, WAVE_TYPE } from "../utils/utils";
 
 // TODO: pass in a interface prop to define different knobs, sliders, etc.
 export default function AnalysisModule({ index, module, setModules }) {
-  const moduleSettingsDisplay = ModuleDisplay.module.settings;
-  const knobSettings = ["freqLow", "freqHigh", "minAmpNorm"];
   const [isValid, setIsValid] = useState(true);
 
-  const updateValue = (id, val) => {
+  const settings = ModuleDisplay[module.moduleType].settings;
+  const knobs = settings.knob ?? null;
+  const dropdowns = settings.dropdown ?? null;
+  const spinboxes = settings.spinbox ?? null;
+
+  // FIXME: temp solution to dynamic dropdown options
+  const getDropdownOptions = () => {
+    // Major peaks
+    if (module.moduleType === 0) return FREQUENCY_MAPPING;
+
+    // Percussion
+    else if (module.moduleType === 1) return WAVE_TYPE;
+  }
+  const dropdownOptions = getDropdownOptions();
+
+  const handleValueChange = (id, val) => {
     setModules((prev) => {
       const updated = [...prev];
       updated[index] = {
@@ -30,27 +43,11 @@ export default function AnalysisModule({ index, module, setModules }) {
     });
   };
 
-  const handleKnobChange = (id, val) => {
-    updateValue(id, val);
-  };
-  const handleValueChange = (id, value) => {
-    // TODO: fix later
-    if (id === "maxPeaks") {
-      updateValue(id, value);
-      return;
-    }
-    const numValue = Number(value);
-    const maxValue = moduleSettingsDisplay.knobs[id].max;
-    const minValue = moduleSettingsDisplay.knobs[id].min;
-    const clampedVal = Math.max(minValue, Math.min(maxValue, numValue));
-
-    updateValue(id, clampedVal);
-  };
   // Ensure frequency ranges are valid for low/high
   useEffect(() => {
     const freqLow = module.freqLow;
     const freqHigh = module.freqHigh;
-    const isValidFreqRanges = (freqLow < freqHigh) && (freqHigh > freqLow);
+    const isValidFreqRanges = (freqLow < freqHigh);
 
     // Only update is value is flipped
     if (isValidFreqRanges !== isValid) {
@@ -74,70 +71,55 @@ export default function AnalysisModule({ index, module, setModules }) {
       </div>
 
       {/* Row layout */}
-      <div className="flex flex-row">
-        {/* Knobs for base module */}
-        <div className="flex flex-col gap-1">
-          {knobSettings.map((key) => {
+      <div className="flex flex-row gap-x-3">
+
+        <div className="grid grid-rows-3 grid-flow-col gap-5">
+          {Object.entries(knobs)?.map( ([key, val]) => {
             return (
-              <div>
-                <Knob
-                  min={moduleSettingsDisplay.knobs[key].min}
-                  max={moduleSettingsDisplay.knobs[key].max}
-                  title={moduleSettingsDisplay.knobs[key].title}
-                  step={moduleSettingsDisplay.knobs[key].step}
-                  onChange={(value) => handleKnobChange(key, value)}
-                  value={Number(parseFloat(module[key] ?? 0).toFixed(2))}
-                />
-                <div className="flex flex-col items-center gap-1">
-                  <input
-                    type="number"
-                    className="w-fit pt-1 pb-1 pl-2 pr-2 text-center bg-white border border-gray-400 rounded text-sm"
-                    value={Number(parseFloat(module[key] ?? 0).toFixed(2))}
-                    onChange={(e) =>
-                      handleValueChange(
-                        key,
-                        e.target instanceof HTMLInputElement
-                          ? Number(e.target.value)
-                          : 0,
-                      )
-                    }
-                    min={moduleSettingsDisplay.knobs[key].min}
-                    max={moduleSettingsDisplay.knobs[key].max}
-                  />
-                </div>
-              </div>
+              <Knob 
+                min={val.min}
+                max={val.max}
+                step={val.step}
+                onChange={(value) => handleValueChange(key, value)}
+                title={val.title}
+                value={module[key] ?? 0}
+              />
             );
           })}
         </div>
-        {/* Module specific params */}
 
-        {/* Frequency mapping */}
-        <div className="p-6 flex flex-col gap-2 items-center">
-          <div className="flex-col items-center bg-amber-100 max-w-fit">
-            <h4 className="font-bold">Frequency<br/>Mapping</h4>
-            <select name="freqMaps" value={module["frequencyMapping"] ?? 0}>
-              <option value={0}>None</option>
-              <option value={1}>Octave</option>
-              <option value={2}>Midi</option>
-            </select>
-          </div>
-          <div>
-            <h4 className="font-bold">Max Peaks</h4>
-            <input
-              type="number"
-              value={module["maxPeaks"] ?? 1}
-              onChange={(e) =>
-                handleValueChange(
-                  "maxPeaks",
-                  e.target instanceof HTMLInputElement
-                    ? Number(e.target.value)
-                    : 1,
-                )
-              }
-              min={1}
-              max={32}
-            />
-          </div>
+        <div className="flex flex-col gap-2">
+          {Object.entries(dropdowns)?.map( ([key, _]) => {
+            return (
+              <>
+                <h4>{dropdowns[key].title}</h4>
+                <select value={module[key] ?? 0}>
+
+                  {Object.entries(dropdownOptions)?.map( ([val, name]) => {
+                    return <option value={val}>{name}</option>
+                  })}
+
+                </select>
+              </>
+            );
+          })}
+          {Object.entries(spinboxes)?.map( ([key, val]) => {
+            return (
+              <>
+                <h4>{spinboxes[key].title}</h4>
+                <input type="number" 
+                  value={module[key] ?? 1}
+                  min={val.min}
+                  max={val.max}
+                  onChange={(e) => handleValueChange(key,
+                    e.target instanceof HTMLInputElement
+                      ? Number(e.target.value)
+                      : 1
+                  )}
+                />
+              </>
+            );
+          })}
         </div>
       </div>
     </div>
