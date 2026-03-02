@@ -37,6 +37,12 @@ namespace WebInterface
   //! Handler for connncting to user selected network
   void onConnectToNetwork();
 
+  //! Handler for getting the current analysis config settings
+  void sendAnalysisConfig();
+
+  //! Handler for updating the HapticSettings config
+  void onSubmitConfig();
+
   #ifdef DEV_MODE_EN
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();
@@ -50,6 +56,8 @@ namespace WebInterface
     //! Removes all files from the SD card
     void clearSd();
 
+    //! Prints the heap memory stats to the serial monitor    
+    void getMemory();
   #endif // DEV_MODE_EN
 }
 

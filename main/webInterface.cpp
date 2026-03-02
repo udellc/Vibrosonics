@@ -13,9 +13,13 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WebServer.h>
+#include <memory>
 #include "config.h"
 #include "fileSys.h"
+#include "hapticSettings.h"
 #include "networking.h"
+#include "storage.h"
+#include "utils.h"
 
 // HTTP defines
 constexpr int HTTP_OK = 200;
@@ -48,7 +52,13 @@ File _uploadFile;
 static String getContentType(const String &Path);
 static bool parsePayload(JsonDocument &output);
 
-// TODO: add header comment
+/**
+ * @brief Function that bypasses CORS restrictions when DEV_MODE_EN is enabled.
+ * 
+ * @param Code - HTTP status code to send
+ * @param ContentType - Content type of the data to send
+ * @param Content - Content to send. Should be parsed into a JSON string by the caller
+ */
 void inline send(const int Code, const char* ContentType = NULL, const String& Content = String(""))
 {
 #ifdef DEV_MODE_EN
@@ -112,6 +122,10 @@ inline void WebInterface::setupServer()
   {
     send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
   });
+  // Haptic settings API
+  server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
+  server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
+
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
   server.onNotFound(onNotFoundHandler);
@@ -142,6 +156,15 @@ void WebInterface::sendWebApp()
  */
 void WebInterface::onNotFoundHandler()
 {
+  // Needed to bypass some CORS requests
+  if (server.method() == HTTP_OPTIONS)
+  {
+    send(HTTP_OK);
+    
+    return;
+  }
+
+  DEBUG_PRINTLN("DEBUG: onFoundHandler() called");
   const String Path = server.uri();
 
   if (!FileSys::exists(Path))
@@ -149,17 +172,16 @@ void WebInterface::onNotFoundHandler()
   
   else
   {
-    DEBUG_PRINTLN("DEBUG: im here in onFoundHandler");
     File file = FileSys::getFile(Path);
 
     if (file)
     {
-      DEBUG_PRINTF("DEBUG: file name %s\n", file.path());
+      DEBUG_PRINTF("DEBUG: file name %s found\n", file.path());
       server.streamFile(file, getContentType(Path));
       file.close();
     }
     else
-      send(HTTP_NOT_FOUND, TEXT_PLAIN, "404: Not found");
+      send(HTTP_NOT_FOUND, TEXT_PLAIN, "Not found");
   }
 }
 
@@ -175,6 +197,7 @@ void WebInterface::onScanNetworks()
   std::set<String> networks;
 
   Networking::scanAvailableNetworks(networks);
+
   // Convert networks into json for frontend to parse
   JsonArray jsonNetworks = doc["ssid"].to<JsonArray>();
 
@@ -204,6 +227,67 @@ void WebInterface::onConnectToNetwork()
   }
   if (hasConnected)
     resStatus = HTTP_ACCEPTED;
+
+  send(resStatus);
+}
+
+/**
+ * @brief Parses the current AnalysisConfig settings into a JSON string
+ *        to send in response to the HTTP request.
+ */
+void WebInterface::sendAnalysisConfig()
+{
+  DEBUG_PRINTLN("DEBUG: Sending analysis config settings");
+
+  String json;
+  JsonDocument doc;
+  JsonObject global = doc["global"].to<JsonObject>();
+  JsonArray modulesList = doc["modules"].to<JsonArray>();
+  auto curConfig = HapticSettings::Instance().getConfig_mut();
+
+  Utils::packageGlobalSettings(global, curConfig.get());
+  Utils::packageModulesList(modulesList, curConfig.get());
+
+  serializeJson(doc, json);
+  send(HTTP_OK, APP_JSON, json);
+}
+
+/**
+ * @brief Parses the submitted analysis configuration, updates the config
+ *        in HapticSettings, and sends the response status.
+ * 
+ */
+void WebInterface::onSubmitConfig()
+{
+  DEBUG_PRINTLN("DEBUG: Submit config requested");
+  
+  JsonDocument payload;
+  int resStatus = HTTP_UNPROCESSABLE;
+  bool hasUpdated = false;
+
+  if (parsePayload(payload))
+  {
+    // Creating a new AnalysisConfig for the audio loop and adding settings. Once loop() is done,
+    // it calls HapticSettings::Instance().getConfig_r() again, which then deletes the old config
+    // since there are no more owners of that pointer
+    auto newConfig = std::make_shared<AnalysisConfig>();
+    auto globalSettings = payload["global"].as<JsonObject>();
+    auto modulesList = payload["modules"].as<JsonArray>();
+
+    Utils::populateGlobalSettings(globalSettings, newConfig.get());
+    Utils::populateModulesList(modulesList, newConfig.get());
+
+    hasUpdated = true;
+    HapticSettings::Instance().updateConfig(newConfig);
+
+    // FIXME: technically only has to get set in specific situations that would require the 
+    //        modules to get reconstructed (like a module changing from major peaks to percussion,
+    //        the flux threshold changing, etc.). If we notice that rebuilding the modules every time 
+    //        is causing lag or other issues, we should add logic to handle it more gracefully
+    HapticSettings::Instance().setIsDirty(true);
+  }
+  if (hasUpdated)
+    resStatus = HTTP_OK;
 
   send(resStatus);
 }
@@ -305,6 +389,7 @@ inline void WebInterface::setupUploadMode()
   }, uploadFile);
   server.on("/dev/printFiles", HTTP_POST, printFiles);
   server.on("/dev/clearSd", HTTP_POST, clearSd);
+  server.on("/dev/getMemory", HTTP_GET, getMemory);
 }
 
 /**
@@ -381,6 +466,26 @@ void WebInterface::clearSd()
   }
   else
     send(HTTP_BAD_REQUEST, TEXT_PLAIN, "Invalid root provided");
+}
+
+/**
+ * @brief Prints heap memory stats to the serial monitor
+ */
+void WebInterface::getMemory()
+{
+  // Tracks the largest block to provide info on heap fragmentation as well
+  // The more fragmented, the slower the code runs
+  static size_t lastMaxBlock = 0;
+  size_t currentMaxBlock = ESP.getMaxAllocHeap();
+
+  DEBUG_PRINTF("Free Heap: %u | Max Block: %u | Diff: %d\n", 
+                ESP.getFreeHeap(), 
+                currentMaxBlock, 
+                (int)(currentMaxBlock - lastMaxBlock));
+  
+  lastMaxBlock = currentMaxBlock;
+
+  send(HTTP_OK);
 }
 
 #endif // DEV_MODE_EN

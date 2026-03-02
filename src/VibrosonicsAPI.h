@@ -133,8 +133,10 @@ public:
     //! Sets the duration envelope paramaters for an array of grains.
     void setGrainDurEnv(Grain* grains, int numGrains, DurEnv durEnv);
 
+    //! Stops the audio input sampling interrupt
     void pause() { AudioLab.pauseSampling(); }
 
+    //! Resumes the audio input sample interrupt
     void resume() { AudioLab.resumeSampling(); }
 
 private:

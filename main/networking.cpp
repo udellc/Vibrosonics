@@ -141,9 +141,9 @@ void Networking::scanAvailableNetworks(std::set<String> &result)
   }
   else
   {
+    DEBUG_PRINTF("DEBUG: %d networks found\n", NumNetworks);
     for (auto i = 0u; i < NumNetworks; i++)
     {
-      DEBUG_PRINTF("DEBUG: Network SSID %d %s\n", i+1, String(WiFi.SSID(i)));
       result.insert(WiFi.SSID(i));
     }
   }
@@ -182,7 +182,7 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
                               "  \"password\": \"" + currentWifi.password + "\"\n"
                               "}";
     (void) FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
-    DEBUG_PRINTF("DEBUG: Successfully connected to %s and saved info to SD card\n");
+    DEBUG_PRINTF("DEBUG: Successfully connected to %s and saved info to SD card\n", currentWifi.ssid);
 
     return true;
   }

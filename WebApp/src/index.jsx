@@ -17,15 +17,30 @@ import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
+import {
+  AnalysisSettingsProvider,
+  SystemContext,
+  SystemContextProvider,
+} from "./utils/configurations";
+import { useContext, useEffect, useState } from "preact/hooks";
+import { api, PAGE } from "./utils/utils";
 
 /**
- * @brief
+ * @brief Defines the different pages for the main App
  *
- * @returns
+ * @returns Routes to each page component
  */
 const AppContent = () => {
+  const { setPageInfo } = useContext(SystemContext);
+
+  // Used to update header when page changes
+  const onPageChange = (e) => {
+    if (e.url === "/") setPageInfo(PAGE.LANDING);
+    else if (e.url === "/network") setPageInfo(PAGE.NETWORK);
+    else if (e.url === "/modules") setPageInfo(PAGE.MODULES);
+  };
   return (
-    <Router>
+    <Router onChange={onPageChange}>
       <Route path="/" component={LandingPage} />
       <Route path="/network" component={NetworkPage} />
       <Route path="/modules" component={ModulesPage} />
@@ -40,11 +55,16 @@ const AppContent = () => {
  */
 export function App() {
   return (
-    // FIXME: align the footer to the bottom with the header and content filling the rest of space
     <div className="min-w-lvw min-h-lvh flex flex-col">
-      <Header />
-      <AppContent />
-      <Footer/>
+      
+      {/* Wrap the app content with the contexts */}
+      <SystemContextProvider>
+        <Header />
+        <AnalysisSettingsProvider>
+          <AppContent />
+        </AnalysisSettingsProvider>
+        <Footer />
+      </SystemContextProvider>
     </div>
   );
 }

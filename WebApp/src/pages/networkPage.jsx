@@ -69,7 +69,7 @@ const NetworkPage = () => {
   }, []);
 
   return (
-    <div className="mt-20 ml-10 mr-10">
+    <div className="mt-20 min-h-[60vh] ml-10 mr-10">
       {/* Centered vertical layout */}
       <div className="flex flex-col items-center">
         <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
