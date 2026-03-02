@@ -34,6 +34,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
     setGlobalSettings((prev) => ({ ...prev, [id]: value }));
   };
 
+  // Check if the settings exists/ were retrieved
   if (Object.keys(globalSettings).length == 0) {
     // TODO: add UI component for failed to get settings
     return (

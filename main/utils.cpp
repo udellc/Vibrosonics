@@ -163,6 +163,8 @@ inline ModulePtr Utils::createModule(const ModuleType Type)
     { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, 10000.0, NONE, 1); } },
     { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 10000.0, 0.0, 0.0, 0.0, SINE); } },
   };
+  // If the module type is defined, we return the second element since the Map carries a pair:
+  // Ex: ( ModuleType, unique_ptr for module )
   auto itr = Map.find(Type);
   return (itr == Map.end() ? nullptr : itr->second());
 }

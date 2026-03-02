@@ -94,6 +94,12 @@ struct PercussionConfig : ModuleConfig {
   WaveType waveType;
 };
 
+/*
+Storing the modules configs using a unique_ptr, since the current method of updating settings
+is using a pointer swap with shared_ptr. The logic here is that once the web server loop creates a
+new shared_ptr instance of the AnalysisConfig for the audio loop, the old AnalysisConfig is deleted, which
+then rolls over to the unique_ptrs since they no longer have any owners in scope.
+*/
 using ModulePtr = std::unique_ptr<ModuleConfig>;
 
 // configuration for our entire analysis

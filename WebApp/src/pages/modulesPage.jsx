@@ -88,6 +88,10 @@ const ModulesPage = () => {
               globalSettings={globalSettings}
               setGlobalSettings={setGlobalSettings}
             />
+            {/* Only display modules with the corresponding output channel number.
+                We pass in modules[index] because the actual modules being sent to the server
+                are updated here, rather than creating a copy of the module
+            */}
             {displayedModules?.map((index) => {
               return (
                 <div key={index} className="gap-3">

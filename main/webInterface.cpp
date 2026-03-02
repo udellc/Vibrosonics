@@ -232,7 +232,8 @@ void WebInterface::onConnectToNetwork()
 }
 
 /**
- * @brief TODO: add header comment and implement
+ * @brief Parses the current AnalysisConfig settings into a JSON string
+ *        to send in response to the HTTP request.
  */
 void WebInterface::sendAnalysisConfig()
 {
@@ -266,6 +267,9 @@ void WebInterface::onSubmitConfig()
 
   if (parsePayload(payload))
   {
+    // Creating a new AnalysisConfig for the audio loop and adding settings. Once loop() is done,
+    // it calls HapticSettings::Instance().getConfig_r() again, which then deletes the old config
+    // since there are no more owners of that pointer
     auto newConfig = std::make_shared<AnalysisConfig>();
     auto globalSettings = payload["global"].as<JsonObject>();
     auto modulesList = payload["modules"].as<JsonArray>();

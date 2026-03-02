@@ -26,6 +26,7 @@ import { FREQUENCY_MAPPING, MODULE_TYPE, WAVE_TYPE } from "../utils/utils";
 export default function AnalysisModule({ index, module, setModules }) {
   const [isValid, setIsValid] = useState(true);
 
+  // Getting the module specific settings display values and ranges from the /data/ directory
   const settings = ModuleDisplay[module.moduleType].settings;
   const knobs = settings.knob ?? null;
   const dropdowns = settings.dropdown ?? null;
@@ -92,6 +93,7 @@ export default function AnalysisModule({ index, module, setModules }) {
       {/* Row layout */}
       <div className="flex flex-row gap-x-3">
 
+        {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5">
           {Object.entries(knobs)?.map( ([key, val]) => {
             return (
@@ -107,6 +109,7 @@ export default function AnalysisModule({ index, module, setModules }) {
           })}
         </div>
 
+        {/* Create dropdown boxes for corresponding settings */}
         <div className="flex flex-col gap-2">
           {Object.entries(dropdowns)?.map( ([key, _]) => {
             return (
@@ -126,6 +129,8 @@ export default function AnalysisModule({ index, module, setModules }) {
               </div>
             );
           })}
+
+          {/* Create numerical text entries for the corresponding settings */}
           {Object.entries(spinboxes)?.map( ([key, val]) => {
             return (
               <div className="bg-blue-300">
