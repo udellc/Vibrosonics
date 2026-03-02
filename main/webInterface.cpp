@@ -275,6 +275,11 @@ void WebInterface::onSubmitConfig()
 
     hasUpdated = true;
     HapticSettings::Instance().updateConfig(newConfig);
+
+    // FIXME: technically only has to get set in specific situations that would require the 
+    //        modules to get reconstructed (like a module changing from major peaks to percussion,
+    //        the flux threshold changing, etc.). If we notice that rebuilding the modules every time 
+    //        is causing lag or other issues, we should add logic to handle it more gracefully
     HapticSettings::Instance().setIsDirty(true);
   }
   if (hasUpdated)
