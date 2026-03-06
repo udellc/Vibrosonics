@@ -116,7 +116,7 @@ struct AnalysisConfig {
   float smoothingFactor = 0.3;
 
   // TODO: temporary?
-  ModulePtr modules[NUM_OUT_CH * 2];
+  ModulePtr modules[NUM_OUT_CH * 2] = { nullptr };
 };
 
 #endif
