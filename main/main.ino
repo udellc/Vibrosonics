@@ -159,7 +159,7 @@ void loop()
 
   for (int ch = 0; ch < NUM_OUT_CH; ch++)
   {
-      AudioLab.mapAmplitudes(ch, 10000000);
+      AudioLab.mapAmplitudes(ch, activeConfig->minAmpNorm);
   }
   AudioLab.synthesize();
 #endif // VAPI_EN

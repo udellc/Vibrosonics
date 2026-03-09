@@ -32,6 +32,7 @@ void Utils::populateGlobalSettings(JsonObject& global, AnalysisConfig* config)
   config->cfarGuardCount = global["cfarGuardCount"] | 1;
   config->cfarBias = global["cfarBias"] | 1.2f;
   config->smoothingFactor = global["smoothingFactor"] | 0.2f;
+  config->minAmpNorm = global["minAmpNorm"] | 10000.0f;
 }
 
 /**
@@ -65,7 +66,6 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
     modulePtr->outputNumber = module["outputNumber"]; 
     modulePtr->freqLow = module["freqLow"]; 
     modulePtr->freqHigh = module["freqHigh"];
-    modulePtr->minAmpNorm = module["minAmpNorm"];
 
     // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
     if (Type == MAJORPEAKS)
@@ -104,6 +104,7 @@ void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
   global["cfarGuardCount"] = config->cfarGuardCount;
   global["cfarBias"] = config->cfarBias;
   global["smoothingFactor"] = config->smoothingFactor;
+  global["minAmpNorm"] = config->minAmpNorm;
 }
 
 /**
@@ -127,7 +128,6 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
   module["moduleType"] = static_cast<int>(config->modules[i]->moduleType);
   module["freqLow"] = static_cast<int>(config->modules[i]->freqLow);
   module["freqHigh"] = static_cast<int>(config->modules[i]->freqHigh);
-  module["minAmpNorm"] = static_cast<float>(config->modules[i]->minAmpNorm);
 
   // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
   if (config->modules[i]->moduleType == MAJORPEAKS)
@@ -160,8 +160,8 @@ inline ModulePtr Utils::createModule(const ModuleType Type)
   static const ModuleFactory Map =
   {
     // TODO: add more modules types as we create structs for them
-    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, 10000.0, NONE, 1); } },
-    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 10000.0, 0.0, 0.0, 0.0, SINE); } },
+    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, NONE, 1); } },
+    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 0.0, 0.0, 0.0, SINE); } },
   };
   // If the module type is defined, we return the second element since the Map carries a pair:
   // Ex: ( ModuleType, unique_ptr for module )
