@@ -24,13 +24,18 @@ import { FREQUENCY_MAPPING, MODULE_TYPE, WAVE_TYPE } from "../utils/utils";
  * @returns AnalysisModule component describing the configs
  */
 export default function AnalysisModule({ index, module, setModules }) {
+  if (!module) return null;
   const [isValid, setIsValid] = useState(true);
 
   // Getting the module specific settings display values and ranges from the /data/ directory
-  const settings = ModuleDisplay[module.moduleType].settings;
-  const knobs = settings.knob ?? null;
-  const dropdowns = settings.dropdown ?? null;
-  const spinboxes = settings.spinbox ?? null;
+  const moduleType = module.moduleType ?? module.type;
+  const settings = ModuleDisplay[moduleType]?.settings;
+  
+  if (!settings) return null;
+
+  const knobs = settings.knob ?? {};
+  const dropdowns = settings.dropdown ?? {};
+  const spinboxes = settings.spinbox ?? {};
 
   // FIXME: temp solution to dynamic dropdown options
   const getDropdownOptions = () => {

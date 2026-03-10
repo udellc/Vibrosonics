@@ -9,7 +9,7 @@
  ***************************************************************/
 
 import { useContext, useState } from "preact/hooks";
-import EQ_PRESETS from "../data/eqSettings.json";
+import GLOBAL_PRESETS from "../data/globalSettingsData.json";
 import Checkbox from "../atomics/checkbox";
 import { AudioSettingsContext } from "../utils/configurations";
 import { api, HTTP_STATUS } from "../utils/utils";
@@ -26,6 +26,32 @@ const ConfigManager = ({ children }) => {
   const [library, setLibrary] = useState([]);
   const [projectCount, setProjectCount] = useState(1);
   const [setupCount, setSetupCount] = useState(1);
+
+  const handlePresetClick = async (genre) => {
+    setActiveGenre(genre);
+
+    const preset = GLOBAL_PRESETS[genre];
+    if(!preset) return;
+
+    setGlobalSettings(preset.global);
+    setModules(preset.modules);
+
+    const payload = {
+      global: preset.global,
+      modules: preset.modules,
+    };
+
+    console.log("Sending preset:", genre);
+    console.log("Payload:", JSON.stringify(payload, null, 2));
+    
+    const res = await api("PUT", "/analysis/submitSettings", payload);
+
+    if (res?.status == HTTP_STATUS.OK){
+      console.log("Preset applied:", genre);
+    } else {
+      console.log("Failed to apply preset", res?.status);
+    }
+  };
 
   const startNewProj = () => {
     if (window.confirm("Are you sure? Unsaved changes will be lost.")) {
@@ -108,7 +134,7 @@ const ConfigManager = ({ children }) => {
       <div className="flex flex-row flex-wrap items-start gap-8 p-4 mt-8 mb-4 rounded-xl shadow-md border border-gray-100">
         <h2 className="text-xl font-bold mb-4">Presets</h2>
         <div className="flex gap-2.5 mb-4">
-          {Object.keys(EQ_PRESETS).map((genre) => (
+          {Object.keys(GLOBAL_PRESETS).map((genre) => (
             <button
               className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
               ${
@@ -117,7 +143,7 @@ const ConfigManager = ({ children }) => {
                   : "bg-[#e5e7eb] font-normal"
               }`}
               key={genre}
-              onClick={() => setActiveGenre(genre)}
+              onClick={() => handlePresetClick(genre)}
             >
               {` ${genre} `}
             </button>

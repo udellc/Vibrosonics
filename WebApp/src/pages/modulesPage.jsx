@@ -60,7 +60,7 @@ const ModulesPage = () => {
     setDisplayedModules(displayedIndices);
 
     // FIXME: the length may not be a good indicator, but this works for now
-  }, [modules.length, selectedChannel]);
+  }, [modules, selectedChannel]);
 
   /**
    * @brief Gets the analysis configurations on mount
