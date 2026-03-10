@@ -70,7 +70,7 @@ const LandingPage = () => {
             >
               Connect to Network
             </button>
-            <InfoButton onClick={handleInfoClick} />
+            <InfoButton onClick={handleInfoClick} /> {/*REMOVE WHEN DONE TESTING*/}
             <button
               className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
               onClick={() => route("/modules", false)}
