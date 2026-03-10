@@ -9,7 +9,12 @@
  ***************************************************************/
 
 import { useContext, useState } from "preact/hooks";
+<<<<<<< HEAD
 import EQ_PRESETS from "../data/eqSettings.json";
+=======
+import GLOBAL_PRESETS from "../data/globalSettingsData.json";
+import Checkbox from "../atomics/checkbox";
+>>>>>>> e782188 (feat: added rock and jazz presets to webapp)
 import { AudioSettingsContext } from "../utils/configurations";
 import { moduleRegistry } from "../data/defaultModules";
 
@@ -125,10 +130,17 @@ const ConfigManager = ({ children }) => {
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
+<<<<<<< HEAD
       <div className="flex flex-row flex-wrap items-center gap-8 p-4 pr-6 mt-8 mb-4 rounded-4xl border-gray-100 bg-gray-300 w-fit">
         <h2 className="text-xl font-bold">EQ Presets</h2>
         <div className="flex gap-2.5">
           {Object.keys(EQ_PRESETS).map((genre) => (
+=======
+      <div className="flex flex-row flex-wrap items-start gap-8 p-4 mt-8 mb-4 rounded-xl shadow-md border border-gray-100">
+        <h2 className="text-xl font-bold mb-4">Presets</h2>
+        <div className="flex gap-2.5 mb-4">
+          {Object.keys(GLOBAL_PRESETS).map((genre) => (
+>>>>>>> e782188 (feat: added rock and jazz presets to webapp)
             <button
               className={`py-1.5 px-8 rounded-lg cursor-pointer transition-colors
               ${

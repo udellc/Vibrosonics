@@ -27,13 +27,9 @@ import { moduleRegistry } from "../data/defaultModules";
  */
 export default function AnalysisModule({ outputNum, module, setModules }) {
   if (!module) return null;
-<<<<<<< HEAD
-
   const isValid = useRef(true);
   const { editSetting } = useEditSetting(QUEUE_MESSAGE_ID.EditModule, isValid);
-=======
   const [isValid, setIsValid] = useState(true);
->>>>>>> e782188 (feat: added rock and jazz presets to webapp)
 
   // Getting the module specific settings display values and ranges from the /data/ directory
   const moduleType = module.moduleType ?? module.type;

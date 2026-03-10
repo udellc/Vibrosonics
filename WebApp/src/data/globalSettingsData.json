@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "global": {
     "noiseFloor": 280,
     "cfarRefCount": 6,
@@ -7,6 +8,8 @@
     "cfarBias": 1.4,
     "smoothingFactor": 0.2
 =======
+=======
+>>>>>>> e782188 (feat: added rock and jazz presets to webapp)
   "Rock": {
     "global": {
       "noiseFloor": 280,
@@ -56,7 +59,10 @@
         "waveType": 4
       }
     ]
+<<<<<<< HEAD
 >>>>>>> 2a3e751 (feat: added rock and jazz presets to webapp)
+=======
+>>>>>>> e782188 (feat: added rock and jazz presets to webapp)
   },
   "Jazz": {
     "global": {
