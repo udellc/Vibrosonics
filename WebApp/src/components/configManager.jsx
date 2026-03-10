@@ -25,6 +25,32 @@ const ConfigManager = ({ children }) => {
   const [projectCount, setProjectCount] = useState(1);
   const [setupCount, setSetupCount] = useState(1);
 
+  const handlePresetClick = async (genre) => {
+    setActiveGenre(genre);
+
+    const preset = GLOBAL_PRESETS[genre];
+    if(!preset) return;
+
+    setGlobalSettings(preset.global);
+    setModules(preset.modules);
+
+    const payload = {
+      global: preset.global,
+      modules: preset.modules,
+    };
+
+    console.log("Sending preset:", genre);
+    console.log("Payload:", JSON.stringify(payload, null, 2));
+    
+    const res = await api("PUT", "/analysis/submitSettings", payload);
+
+    if (res?.status == HTTP_STATUS.OK){
+      console.log("Preset applied:", genre);
+    } else {
+      console.log("Failed to apply preset", res?.status);
+    }
+  };
+
   const startNewProj = () => {
     if (window.confirm("Are you sure? Unsaved changes will be lost.")) {
       const nextCount = projectCount + 1;
@@ -111,7 +137,7 @@ const ConfigManager = ({ children }) => {
                   : "bg-[#ffffff] font-normal border border-gray-400"
               }`}
               key={genre}
-              onClick={() => setActiveGenre(genre)}
+              onClick={() => handlePresetClick(genre)}
             >
               {` ${genre} `}
             </button>

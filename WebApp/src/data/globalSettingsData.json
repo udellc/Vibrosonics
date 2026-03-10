@@ -1,10 +1,111 @@
 {
+<<<<<<< HEAD
   "global": {
     "noiseFloor": 280,
     "cfarRefCount": 6,
     "cfarGuardCount": 1,
     "cfarBias": 1.4,
     "smoothingFactor": 0.2
+=======
+  "Rock": {
+    "global": {
+      "noiseFloor": 280,
+      "cfarRefCount": 8,
+      "cfarGuardCount": 2.0,
+      "cfarBias": 2.0,
+      "smoothingFactor": 0.4,
+      "minAmpNorm": 10000.0
+    },
+    "modules": [
+      {
+        "moduleType": 0,
+        "outputNumber": 0,
+        "freqLow": 80,
+        "freqHigh": 400,
+        "frequencyMapping": 1,
+        "maxPeaks": 1
+      },
+      {
+        "moduleType": 0,
+        "outputNumber": 1,
+        "freqLow": 400,
+        "freqHigh": 3600,
+        "frequencyMapping": 0,
+        "maxPeaks": 2
+      },
+      {
+        "moduleType": 1,
+        "outputNumber": 0,
+        "freqLow": 60,
+        "freqHigh": 200,
+        "frequencyMapping": 0,
+        "fluxThresh": 0.55,
+        "energyThresh": 50000000,
+        "entropyThresh": 0.65,
+        "waveType": 4
+      },
+      {
+        "moduleType": 1,
+        "outputNumber": 1,
+        "freqLow": 1800,
+        "freqHigh": 4000,
+        "frequencyMapping": 0,
+        "fluxThresh": 0.45,
+        "energyThresh": 80000000,
+        "entropyThresh": 0.75,
+        "waveType": 4
+      }
+    ]
+>>>>>>> 2a3e751 (feat: added rock and jazz presets to webapp)
   },
-  "modules": []
+  "Jazz": {
+    "global": {
+      "noiseFloor": 150,
+      "cfarRefCount": 8,
+      "cfarGuardCount": 2,
+      "cfarBias": 2.0,
+      "smoothingFactor": 0.4,
+      "minAmpNorm": 8000.0
+    },
+    "modules": [
+      {
+        "moduleType": 0,
+        "outputNumber": 0,
+        "freqLow": 40,
+        "freqHigh": 800,
+        "frequencyMapping": 2,
+        "maxPeaks": 1
+      },
+      {
+        "moduleType": 0,
+        "outputNumber": 1,
+        "freqLow": 800,
+        "freqHigh": 3000,
+        "frequencyMapping": 2,
+        "maxPeaks": 2
+      },
+      {
+        "moduleType": 1,
+        "outputNumber": 0,
+        "freqLow": 150,
+        "freqHigh": 800,
+        "frequencyMapping": 0,
+        "fluxThresh": 0.45,
+        "energyThresh": 40000000,
+        "entropyThresh": 0.7,
+        "waveType": 4
+      },
+      {
+        "moduleType": 1,
+        "outputNumber": 1,
+        "freqLow": 3000,
+        "freqHigh": 8000,
+        "frequencyMapping": 0,
+        "fluxThresh": 0.4,
+        "energyThresh": 20000000,
+        "entropyThresh": 0.8,
+        "waveType": 4
+      }
+    ]
+  }
 }
