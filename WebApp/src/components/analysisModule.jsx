@@ -25,15 +25,23 @@ import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELD
  */
 export default function AnalysisModule({ index, module, setModules }) {
   if (!module) return null;
+<<<<<<< HEAD
 
   const isValid = useRef(true);
   const { editSetting } = useEditSetting(QUEUE_MESSAGE_ID.EditModule, isValid);
+=======
+  const [isValid, setIsValid] = useState(true);
+>>>>>>> e782188 (feat: added rock and jazz presets to webapp)
 
   // Getting the module specific settings display values and ranges from the /data/ directory
-  const settings = ModuleDisplay[module.moduleType].settings;
-  const knobs = settings.knob ?? null;
-  const dropdowns = settings.dropdown ?? null;
-  const spinboxes = settings.spinbox ?? null;
+  const moduleType = module.moduleType ?? module.type;
+  const settings = ModuleDisplay[moduleType]?.settings;
+  
+  if (!settings) return null;
+
+  const knobs = settings.knob ?? {};
+  const dropdowns = settings.dropdown ?? {};
+  const spinboxes = settings.spinbox ?? {};
 
   // FIXME: temp solution to dynamic dropdown options
   const getDropdownOptions = () => {

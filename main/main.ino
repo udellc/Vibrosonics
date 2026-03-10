@@ -283,8 +283,8 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
 
 void rebuildOutputModules(const AnalysisConfig* Config)
 {
-  melodic.clearModules();
-  percussive.clearModules();
+  //melodic.clearModules();
+  //percussive.clearModules();
 
   for (int ch = 0; ch < NUM_OUT_CH; ch++)
     outputHasPercussion[ch] = false;
