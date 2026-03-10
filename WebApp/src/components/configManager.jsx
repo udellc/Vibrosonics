@@ -5,7 +5,7 @@
  *
  * Description: Component to manage whole configuration actions
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
 import { useContext, useState } from "preact/hooks";
@@ -130,7 +130,7 @@ const ConfigManager = ({ children }) => {
             className="bg-amber-500 cursor-pointer"
               onClick={sendData}
           >
-            SEND ITTTTTTTTTTT
+            Send Data
           </button>
         </div>
       </div>

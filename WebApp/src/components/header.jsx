@@ -5,10 +5,10 @@
  *
  * Description: The header component for the web app.
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { api, HTTP_STATUS } from "../utils/utils";
 
 /**
@@ -16,7 +16,37 @@ import { api, HTTP_STATUS } from "../utils/utils";
  *
  * @returns Header component
  */
+
 const Header = () => {
+  const [route, setRoute] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setRoute(window.location.pathname);
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  const navigate = (path) => {
+    window.history.pushState({}, '', path);
+    setRoute(path);
+  };
+
+  const NavLink = ({ to, children}) => (
+    <a
+      href={to}
+      onClick={(e) => {
+        e.preventDefault();
+        navigate(to);
+      }}
+      style={{ marginRight: '10px' }}
+    >
+      {children}
+    </a>
+  )
+
   const printMemory = async () => {
     const res = await api("GET", "/dev/getMemory");
 
@@ -26,7 +56,7 @@ const Header = () => {
   };
 
   return (
-    <div className="p-4 flex w-full min-h-[8vh] border-b-2 border-black justify-between">
+    <div className="p-4 flex w-full min-h-[8vh] justify-between">
       
       {/* Left side */}
       <div className="flex flex-row justify-between">
@@ -37,12 +67,17 @@ const Header = () => {
       {/* Right side */}
       <div>
         <div>
+          <nav>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/network">Networks</NavLink>
+            <NavLink to="/modules">Modules</NavLink>
+          </nav>
+
           DEBUGGING
           <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
             PRINT MEMORY BTN
           </button>
         </div>
-        <div>TODO: menu bar? Network stuff?</div>
       </div>
     </div>
   );
