@@ -1,7 +1,7 @@
 /***************************************************************
  * File: header.jsx
  *
- * Date: 11/18/2025
+ * Date: 03/10/2026
  *
  * Description: The header component for the web app.
  *
@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from "preact/hooks";
 import { api, HTTP_STATUS } from "../utils/utils";
+import { Match } from "preact-router/match";
 
 /**
  * @brief Displays the app header
@@ -18,34 +19,29 @@ import { api, HTTP_STATUS } from "../utils/utils";
  */
 
 const Header = () => {
-  const [route, setRoute] = useState(window.location.pathname);
+  const NavLink = ({ to, children }) => {
 
-  useEffect(() => {
-    const handleLocationChange = () => {
-      setRoute(window.location.pathname);
-    };
+    const baseClasses = "p-4 px-4 py-2 rounded-md font-medium transition-colors duration-200";
+    const activeClasses = "bg-blue-600 text-white shadow-sm";
+    const inactiveClasses = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
 
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
-  }, []);
+    return(
+      <Match path={to}>
+        {({ url }) => {
+          const isActive = url === to;
 
-  const navigate = (path) => {
-    window.history.pushState({}, '', path);
-    setRoute(path);
+          return(
+            <a
+              href={to}
+              className={`${baseClasses} ${isActive? activeClasses : inactiveClasses}`}
+            >
+              {children}
+            </a>
+          );
+        }}
+      </Match>
+    );
   };
-
-  const NavLink = ({ to, children}) => (
-    <a
-      href={to}
-      onClick={(e) => {
-        e.preventDefault();
-        navigate(to);
-      }}
-      style={{ marginRight: '10px' }}
-    >
-      {children}
-    </a>
-  )
 
   const printMemory = async () => {
     const res = await api("GET", "/dev/getMemory");
@@ -67,16 +63,18 @@ const Header = () => {
       {/* Right side */}
       <div>
         <div>
-          <nav>
+          <nav className="pt-2">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/network">Networks</NavLink>
             <NavLink to="/modules">Modules</NavLink>
           </nav>
 
-          DEBUGGING
-          <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
-            PRINT MEMORY BTN
-          </button>
+          <div className="pt-4">
+            DEBUGGING
+            <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
+              PRINT MEMORY BTN
+            </button>
+          </div>
         </div>
       </div>
     </div>
