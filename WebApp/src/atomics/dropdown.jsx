@@ -11,7 +11,7 @@
 import { useState } from "preact/hooks";
 
 /**
- * @brief The Checkbox component is a skeleton for an audio analysis setting which uses checkbox
+ * @brief The dropdown component is a skeleton for an audio analysis setting which uses dropdown
  *        for reconfiguration
  *
  * @param {Object} props - Expanded object for the checkbox settings

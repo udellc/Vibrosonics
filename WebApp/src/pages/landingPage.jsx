@@ -11,6 +11,7 @@
 import { route } from "preact-router";
 import { useState, useEffect } from "preact/hooks";
 import { api } from "../utils/utils";
+import InfoButton from "../atomics/infoButton";
 
 /**
  * @brief Displays the landing page for the Vibrosonics web app
@@ -31,6 +32,11 @@ const LandingPage = () => {
     };
     checkNetwork();
   }, []);
+
+  const handleInfoClick = () => {
+        // TODO: change to pop up rather than alert
+        alert("working!");
+    };
 
   return (
     <div className="mt-20 ml-10 mr-10 min-h-[60vh]">
@@ -64,6 +70,7 @@ const LandingPage = () => {
             >
               Connect to Network
             </button>
+            <InfoButton onClick={handleInfoClick} />
             <button
               className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
               onClick={() => route("/modules", false)}
