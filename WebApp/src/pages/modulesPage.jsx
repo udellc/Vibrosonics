@@ -15,6 +15,7 @@ import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
 import GlobalSettings from "../components/globalSettings";
 import ConfigManager from "../components/configManager";
+import { moduleRegistry } from "../utils/defaultModules";
 
 const ModulesPage = () => {
   // Persistant memory/data
@@ -59,8 +60,11 @@ const ModulesPage = () => {
 
     setDisplayedModules(displayedIndices);
 
-    // FIXME: the length may not be a good indicator, but this works for now
-  }, [modules.length, selectedChannel]);
+  }, [modules, selectedChannel]);
+
+  useEffect(() => {
+    console.log(modules);
+  }, modules);
 
   /**
    * @brief Gets the analysis configurations on mount
@@ -73,6 +77,10 @@ const ModulesPage = () => {
     <div className="flex flex-col m-8">
       <ConfigManager>
         <>
+          <GlobalSettings
+            globalSettings={globalSettings}
+            setGlobalSettings={setGlobalSettings}
+          />
           <div className="flex flex-col">
             <h4 className="font-bold text-lg">Output Channel:</h4>
             <select
@@ -84,10 +92,6 @@ const ModulesPage = () => {
             </select>
           </div>
           <div className="flex flex-row gap-4">
-            <GlobalSettings
-              globalSettings={globalSettings}
-              setGlobalSettings={setGlobalSettings}
-            />
             {/* Only display modules with the corresponding output channel number.
                 We pass in modules[index] because the actual modules being sent to the server
                 are updated here, rather than creating a copy of the module

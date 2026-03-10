@@ -280,6 +280,9 @@ void rebuildOutputModules(const AnalysisConfig* Config)
       analysisModules[i] = nullptr;
     }
 
+    if (!Config->modules[i])
+      continue;
+
     switch(Config->modules[i]->moduleType){
       case MAJORPEAKS:
       {

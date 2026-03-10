@@ -24,6 +24,8 @@ import { FREQUENCY_MAPPING, MODULE_TYPE, WAVE_TYPE } from "../utils/utils";
  * @returns AnalysisModule component describing the configs
  */
 export default function AnalysisModule({ index, module, setModules }) {
+  if (!module) return null;
+
   const [isValid, setIsValid] = useState(true);
 
   // Getting the module specific settings display values and ranges from the /data/ directory
@@ -60,6 +62,17 @@ export default function AnalysisModule({ index, module, setModules }) {
   };
 
   /**
+   * @brief Deletes the current module from the module list
+   */
+  const handleDeleteModule = () => {
+    setModules((prev) => {
+      const updated = [...prev];
+      updated.splice(index, 1); 
+      return updated;
+    });
+  };
+
+  /**
    * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
    * @brief Error handling invalid frequency ranges low and high
    */
@@ -76,6 +89,12 @@ export default function AnalysisModule({ index, module, setModules }) {
 
   return (
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
+      <button 
+        className="bg-amber-500 cursor-pointer"
+        onClick={handleDeleteModule}
+      >
+        Delete
+      </button>
       <h3 className="font-bold text-lg">
         Module: {MODULE_TYPE[module.moduleType]}
       </h3>
