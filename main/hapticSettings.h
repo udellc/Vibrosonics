@@ -13,6 +13,7 @@
 #define HAPTIC_SETTINGS_H
 
 #include "storage.h"
+#include "utils.h"
 #include <memory>
 #include <atomic>
 
@@ -26,9 +27,9 @@ public:
     static HapticSettings self;
     return self;
   };
-  //! Sets the current config to the saved main settings on the SD card
-  bool loadConfig();
-  
+  //! Loads a config and inits the message queue
+  bool init();
+
   //! Atomically gets the current config
   //! NOTE: this should only be called by audio analysis loop b/c it's read only
   std::shared_ptr<const AnalysisConfig> getConfig_r() const { return std::atomic_load(&curConfig); }
@@ -36,19 +37,27 @@ public:
   //! Atomically get a mutable pointer to the current config
   auto getConfig_mut() const { return std::atomic_load(&curConfig); }
 
+  //! Adds a message to the update queue for the audio core to use
+  bool addMessage(QueueMessage* toSend);
+  
+  //! Checks if the update queue has pending messages
+  bool needsUpdate();
+
   //! Atomically swaps the current config with the new config
   void updateConfig(std::shared_ptr<AnalysisConfig>& other) { std::atomic_store(&curConfig, other); }
 
-  //! Atomically get whether or not settings have been changed
-  bool isDirty() const { return _isDirty.load(std::memory_order_acquire); }
-
-  //! Atomically set the dirty boolean.
-  void setIsDirty(const bool NewVal) { _isDirty.store(NewVal, std::memory_order_release); }
+  //! Processes all messages in the update queue
+  bool processQueue();
 
 private:
-  // Use shared ptr, so that we can update the settings fast/safe across cores
+  // Use shared ptr, so that we can replace the settings fast/safe across cores
   std::shared_ptr<AnalysisConfig> curConfig;
-  std::atomic<bool> _isDirty;
+
+  //! Sets the current config to the saved main settings on the SD card
+  void loadConfig();
+
+  //! Gets a message from the update queue
+  bool getMessage(QueueMessage* toGet);
 
   // Disable any sort of initialization for the HapticSettings class
   HapticSettings();

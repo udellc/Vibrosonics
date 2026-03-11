@@ -11,6 +11,7 @@
 
 import Knob from "../atomics/knob";
 import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
+import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils";
 
 /**
  * @brief Displays the global configuration fields and updates them when changed
@@ -23,6 +24,9 @@ import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
  */
 const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
   const settingsDisplay = GlobalSettingsDisplay.settings;
+
+  // Hook used for real-time updates
+  const { editSetting } = useEditSetting(QUEUE_MESSAGE_ID.EditGlobal);
  
   /**
    * @brief Handles the knob display when value is changed
@@ -31,7 +35,14 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
    * @param {Number} value - Internal number in the Knob component
    */
   const handleKnobChange = (id, value) => {
+    // Update the UI
     setGlobalSettings((prev) => ({ ...prev, [id]: value }));
+
+    // Send a HTTP req for the modified setting
+    editSetting({
+      field: CONFIG_FIELDS[id],
+      value: value
+    });
   };
 
   // Check if the settings exists/ were retrieved

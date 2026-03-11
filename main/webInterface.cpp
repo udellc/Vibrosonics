@@ -27,6 +27,7 @@ constexpr int HTTP_ACCEPTED = 202;
 constexpr int HTTP_BAD_REQUEST = 400;
 constexpr int HTTP_NOT_FOUND = 404;
 constexpr int HTTP_UNPROCESSABLE = 422;
+constexpr int HTTP_TOO_MANY_REQUESTS = 429;
 constexpr int HTTP_INTERNAL_ERROR = 500;
 constexpr int HTTP_UNAVAILABLE = 503;
 
@@ -51,6 +52,7 @@ File _uploadFile;
 // Internal web server functions
 static String getContentType(const String &Path);
 static bool parsePayload(JsonDocument &output);
+inline void limitReqRate(const unsigned long Time_ms);
 
 /**
  * @brief Function that bypasses CORS restrictions when DEV_MODE_EN is enabled.
@@ -126,6 +128,9 @@ inline void WebInterface::setupServer()
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
   server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
 
+  // Real-time updates
+  server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
+
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
   server.onNotFound(onNotFoundHandler);
@@ -159,7 +164,7 @@ void WebInterface::onNotFoundHandler()
   // Needed to bypass some CORS requests
   if (server.method() == HTTP_OPTIONS)
   {
-    send(HTTP_OK);
+    send(HTTP_ACCEPTED);
     
     return;
   }
@@ -256,6 +261,8 @@ void WebInterface::sendAnalysisConfig()
  * @brief Parses the submitted analysis configuration, updates the config
  *        in HapticSettings, and sends the response status.
  * 
+ * TODO: this could prolly change to save config
+ * 
  */
 void WebInterface::onSubmitConfig()
 {
@@ -270,21 +277,46 @@ void WebInterface::onSubmitConfig()
     // Creating a new AnalysisConfig for the audio loop and adding settings. Once loop() is done,
     // it calls HapticSettings::Instance().getConfig_r() again, which then deletes the old config
     // since there are no more owners of that pointer
-    auto newConfig = std::make_shared<AnalysisConfig>();
-    auto globalSettings = payload["global"].as<JsonObject>();
-    auto modulesList = payload["modules"].as<JsonArray>();
+    // auto newConfig = std::make_shared<AnalysisConfig>();
+    // auto globalSettings = payload["global"].as<JsonObject>();
+    // auto modulesList = payload["modules"].as<JsonArray>();
 
-    Utils::populateGlobalSettings(globalSettings, newConfig.get());
-    Utils::populateModulesList(modulesList, newConfig.get());
+    // Utils::populateGlobalSettings(globalSettings, newConfig.get());
+    // Utils::populateModulesList(modulesList, newConfig.get());
 
     hasUpdated = true;
-    HapticSettings::Instance().updateConfig(newConfig);
+    // HapticSettings::Instance().updateConfig(newConfig);
 
-    // FIXME: technically only has to get set in specific situations that would require the 
-    //        modules to get reconstructed (like a module changing from major peaks to percussion,
-    //        the flux threshold changing, etc.). If we notice that rebuilding the modules every time 
-    //        is causing lag or other issues, we should add logic to handle it more gracefully
-    HapticSettings::Instance().setIsDirty(true);
+    // // FIXME: technically only has to get set in specific situations that would require the 
+    // //        modules to get reconstructed (like a module changing from major peaks to percussion,
+    // //        the flux threshold changing, etc.). If we notice that rebuilding the modules every time 
+    // //        is causing lag or other issues, we should add logic to handle it more gracefully
+  }
+  if (hasUpdated)
+    resStatus = HTTP_OK;
+
+  send(resStatus);
+}
+
+// TODO: add header comment
+void WebInterface::onEditSetting()
+{
+  limitReqRate(500u);
+
+  JsonDocument payload;
+  int resStatus = HTTP_UNPROCESSABLE;
+  bool hasUpdated = false;
+
+  if (parsePayload(payload))
+  {
+    QueueMessage msg {};
+    auto data = payload.as<JsonObject>();
+    auto type = static_cast<QueueMsgId>(payload["type"].as<uint>());
+
+    Utils::createMessage(type, data, msg);
+
+    if (HapticSettings::Instance().addMessage(&msg))
+      hasUpdated = true;
   }
   if (hasUpdated)
     resStatus = HTTP_OK;
@@ -336,6 +368,20 @@ static bool parsePayload(JsonDocument &output)
     return false;
   }
   return true;
+}
+
+// TODO: add comment
+inline void limitReqRate(const unsigned long Time_ms)
+{
+  static unsigned long lastReq_ms = 0;
+  auto now = millis();
+
+  if (now - lastReq_ms < Time_ms)
+  {
+    send(HTTP_TOO_MANY_REQUESTS);
+    return;
+  }
+  lastReq_ms = now;
 }
 
 #ifdef DEV_MODE_EN
