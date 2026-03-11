@@ -240,6 +240,7 @@ void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueM
           break;
       }
     }
+    case QueueMsgId::UpdateAll:   // Just needs the ID for a rebuild
     default:
       break;
   }

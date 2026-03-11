@@ -127,8 +127,6 @@ inline void WebInterface::setupServer()
   // Haptic settings API
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
   server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
-
-  // Real-time updates
   server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
 
   // Make /assets/ public for the server
@@ -277,20 +275,22 @@ void WebInterface::onSubmitConfig()
     // Creating a new AnalysisConfig for the audio loop and adding settings. Once loop() is done,
     // it calls HapticSettings::Instance().getConfig_r() again, which then deletes the old config
     // since there are no more owners of that pointer
-    // auto newConfig = std::make_shared<AnalysisConfig>();
-    // auto globalSettings = payload["global"].as<JsonObject>();
-    // auto modulesList = payload["modules"].as<JsonArray>();
+    auto newConfig = std::make_shared<AnalysisConfig>();
+    auto globalSettings = payload["global"].as<JsonObject>();
+    auto modulesList = payload["modules"].as<JsonArray>();
 
-    // Utils::populateGlobalSettings(globalSettings, newConfig.get());
-    // Utils::populateModulesList(modulesList, newConfig.get());
+    Utils::populateGlobalSettings(globalSettings, newConfig.get());
+    Utils::populateModulesList(modulesList, newConfig.get());
 
-    hasUpdated = true;
-    // HapticSettings::Instance().updateConfig(newConfig);
+    HapticSettings::Instance().updateConfig(newConfig);
 
-    // // FIXME: technically only has to get set in specific situations that would require the 
-    // //        modules to get reconstructed (like a module changing from major peaks to percussion,
-    // //        the flux threshold changing, etc.). If we notice that rebuilding the modules every time 
-    // //        is causing lag or other issues, we should add logic to handle it more gracefully
+    // Just needs the ID for a pointer swap, no need for a createMessage call
+    QueueMessage msg {
+      .id = QueueMsgId::UpdateAll
+    };
+
+    if (HapticSettings::Instance().addMessage(&msg))
+      hasUpdated = true;
   }
   if (hasUpdated)
     resStatus = HTTP_OK;

@@ -143,7 +143,11 @@ void loop()
 
     // NOTE: only returns true when it actually needs to be rebuilt, not every time it processes a request
     if (HapticSettings::Instance().processQueue())
+    {
+      // Get the most recent config incase some were deleted or added
+      activeConfig = HapticSettings::Instance().getConfig_mut();
       rebuildOutputModules(activeConfig.get());
+    }
   }
   processData(activeConfig);
 
@@ -201,7 +205,7 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
         const PercussionConfig* percussionConfig = static_cast<const PercussionConfig*>(moduleConfig);
         // If percussion was detected, synthesize a hit
         if (percModuleInterface->getOutput()) {
-          // DEBUG_PRINTLN("Percussion hit detected");
+          DEBUG_PRINTLN("Percussion hit detected");
           // Get the energy, entropy and positive flux for the percussive hit. These
           // values are used to synthesize the haptic feedback of the percussion.
           float energy = AudioPrism::energy(percussiveData, 
@@ -260,12 +264,16 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
         ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
         const MajorPeaksConfig* majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
         float **analysisData = mpModuleInterface->getOutput();
-        synthesizePeak(moduleConfig->outputNumber, 
-                        analysisData[MP_FREQ][0], 
-                        analysisData[MP_AMP][0], 
-                        moduleConfig->freqLow, 
-                        moduleConfig->freqHigh, 
-                        majorPeaksConfig->frequencyMapping);
+
+        for (auto i {0}; i < majorPeaksConfig->maxPeaks; i++)
+        {
+          synthesizePeak(moduleConfig->outputNumber, 
+                          analysisData[MP_FREQ][i], 
+                          analysisData[MP_AMP][i], 
+                          moduleConfig->freqLow, 
+                          moduleConfig->freqHigh, 
+                          majorPeaksConfig->frequencyMapping);
+        }
         break;
       }
     default:

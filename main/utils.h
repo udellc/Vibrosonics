@@ -21,7 +21,8 @@
 enum class QueueMsgId : uint
 {
   EditGlobal = 0u,
-  EditModule
+  EditModule,
+  UpdateAll
   // Create/delete module?
 };
 

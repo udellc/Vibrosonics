@@ -180,6 +180,9 @@ bool HapticSettings::processQueue()
         needsRebuild |= Utils::applyModuleEdit(curConfig.get(), msg);
         break;
 
+      case QueueMsgId::UpdateAll:
+        needsRebuild = true;
+
       default:
         break;
     }

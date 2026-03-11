@@ -55,6 +55,8 @@ export default function AnalysisModule({ index, module, setModules }) {
     // Update the UI
     setModules((prev) => {
       const updated = [...prev];
+
+      // This index is for the UI and may not be same for the web server
       updated[index] = {
         ...updated[index],
         [id]: val,
@@ -63,6 +65,7 @@ export default function AnalysisModule({ index, module, setModules }) {
     });
     // Send the updated val to the web server
     editSetting({
+      // This index is for the position in the web server array
       index: module.index,
       field: CONFIG_FIELDS[id],
       value: val
@@ -103,14 +106,13 @@ export default function AnalysisModule({ index, module, setModules }) {
       <h3 className="font-bold text-lg">
         Module: {MODULE_TYPE[module.moduleType]}
       </h3>
-      <h3 className="font-bold text-lg">TODO: Index {index}</h3>
 
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
       <div>
         {isValid?.current ? (
-          <div>TODO: Valid ranges</div>
+          <div>Valid ranges</div>
         ) : (
-          <div className="font-bold text-red-500">TODO: Not valid ranges</div>
+          <div className="font-bold text-red-500">Not valid ranges</div>
         )}
       </div>
 
