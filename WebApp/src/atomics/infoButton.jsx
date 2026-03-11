@@ -34,7 +34,7 @@ export default function InfoButton({ onClick }) {
             >
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="16" x2="12" y2="12"></line>
-                <circle cx="12" cy="8" r="1.5" fill="black" stroke="none"></circle>
+                <circle cx="12" cy="8" r="1" fill="black" stroke="none"></circle>
             </svg>
         </button>
     )
