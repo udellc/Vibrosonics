@@ -97,7 +97,7 @@ const ModulesPage = () => {
             <h4 className="font-bold text-lg">Add New Module</h4>
             <div className="flex flex-row gap-x-4">
               <DropDown label="Module" options={['First', 'Second']} onChange={(e) => handleDropdownChange(e)} ></DropDown>
-              <button className="rounded-lg pr-4 pl-4 bg-[#fcd34d] font-bold border border-amber-600" onClick={() =>handleAddModule(tempType)} >Add Module</button>
+              <button className="rounded-lg pr-4 pl-4 bg-amber-200 font-bold border border-amber-600" onClick={() =>handleAddModule(tempType)} >Add Module</button>
             </div>
           </div>
 

@@ -63,9 +63,9 @@ const LandingPage = () => {
               powerful beat.
             </p>
           </div>
-          <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-10 pl-44">
             <button
-              className="p-3 bg-[#fcd34d] border border-amber-700 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
+              className="py-1.5 px-6 bg-amber-200 border border-amber-700 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
               onClick={() => route("/network", false)}
             >
               Connect to Network
@@ -108,7 +108,7 @@ const LandingPage = () => {
           {/** info bubble 3 */}
           <div className="flex flew-row gap-2 pl-12">
             <InfoButton onClick={() => {}}/>
-            <h3 className="text-xl font-bold text-gray-800">The Interface</h3>
+            <h3 className="text-xl font-bold text-gray-800">The Team</h3>
             <p className="text-gray-500 mt-2 leading-relaxed">
               Led by Dr. Chet Udell of Oregon State University,
               the VibroSonics team directs a dedicated research 

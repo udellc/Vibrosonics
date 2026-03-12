@@ -105,15 +105,15 @@ const ConfigManager = ({ children }) => {
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
-      <div className="flex flex-row flex-wrap items-center gap-8 p-4 mt-8 mb-4 rounded-4xl border-gray-100 bg-gray-300">
+      <div className="flex flex-row flex-wrap items-center gap-8 p-4 pr-6 mt-8 mb-4 rounded-4xl border-gray-100 bg-gray-300 w-fit">
         <h2 className="text-xl font-bold">EQ Presets</h2>
         <div className="flex gap-2.5">
           {Object.keys(EQ_PRESETS).map((genre) => (
             <button
-              className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
+              className={`py-1.5 px-8 rounded-lg cursor-pointer transition-colors
               ${
                 activeGenre === genre
-                  ? "bg-[#fcd34d] font-bold border border-amber-600"
+                  ? "bg-amber-200 font-bold border border-amber-600"
                   : "bg-[#ffffff] font-normal border border-gray-400"
               }`}
               key={genre}
