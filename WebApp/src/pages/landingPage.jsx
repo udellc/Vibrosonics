@@ -65,7 +65,7 @@ const LandingPage = () => {
           </div>
           <div className="flex flex-col gap-10">
             <button
-              className="p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24]"
+              className="p-3 bg-[#fcd34d] border border-amber-700 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
               onClick={() => route("/network", false)}
             >
               Connect to Network

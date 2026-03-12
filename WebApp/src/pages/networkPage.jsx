@@ -75,12 +75,14 @@ const NetworkPage = () => {
         <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
 
         {/* Scan network button */}
-        <button
-          className="p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24]"
-          onClick={getNetworks}
-        >
-          Scan Networks
-        </button>
+        <div className="pt-4">
+          <button
+            className="p-3 bg-[#fcd34d] border border-amber-500 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
+            onClick={getNetworks}
+          >
+            Scan Networks
+          </button>
+        </div>
 
         {/* Network list */}
         {availableNetworks.map((network) => {

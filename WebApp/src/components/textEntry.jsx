@@ -29,7 +29,7 @@ const TextEntry = ({ label, entryType, presetText, onChange }) => {
       <label>
         {`${label}: `}
         <input
-          className="border border-gray-400 rounded-lg"
+          className="border border-gray-400 rounded-lg pl-1"
           type={entryType}
           placeholder={presetText}
           onChange={handleInput}
