@@ -29,18 +29,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Cache packages
+      - name: Setup Node.js and caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+        
+        # For faster workflows
+      - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
-          path: /node_modules
+          path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Install dependencies
+        run: npm install
+      
       - name: Run ESLint
         run: npm run lint

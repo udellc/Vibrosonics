@@ -1,19 +1,80 @@
 /***************************************************************
  * File: landingPage.jsx
+ *
  * Date: 11/06/2025
+ *
  * Description: The landing page for web app
+ *
  * Author: Ivan Wong
  ***************************************************************/
 
-import "../index.css";
+import { route } from "preact-router";
+import { useState, useEffect } from "preact/hooks";
+import { api } from "../utils/utils";
 
-export const LandingPage = () => {
+/**
+ * @brief Displays the landing page for the Vibrosonics web app
+ */
+const LandingPage = () => {
+  const [isAudioSettingBtnVisible, setAudioSettingBtnVisible] = useState(false);
+
+  /**
+   * @brief Gets the network SSID on mount, making the audio settings button visible if not connected to AP mode
+   */
+  useEffect( () => {
+    const checkNetwork = async () => {
+      const ssid = await api("GET", "/network/getSsid");
+
+      if (ssid.data !== "Vibrosonics-Unsecure") {
+        setAudioSettingBtnVisible(true);
+      }
+    };
+    checkNetwork();
+  }, []);
+
   return (
-    <div>
-      <h1 className="font-bold mt-10">Landing page title</h1>
-      <div>
-        <p>Maybe a page to connect to a wifi network</p>
+    <div className="mt-20 ml-10 mr-10 min-h-[60vh]">
+      {/* Vertical layout */}
+      <div className="flex flex-col">
+        <h2 className="text-4xl font-bold mb-10">Welcome</h2>
+        <p className="text-2xl">Feel the Music, Your Way</p>
+
+        {/* Horizontal layout */}
+        <div className="flex flex-row">
+          <div className="flex flex-col justify-between max-w-[50%] mr-6">
+            <p className="mb-4">
+              VibroSonics is dedicated to making music and sound accessible to
+              the hearing impaired community through the power of touch. We
+              believe that the experience of music is universal, and out
+              technology translates sound into nuanced vibrations you can feel.
+            </p>
+            <p>
+              Our platform allows you to take full control of your sensory
+              experiences. Select any song and our technology converts it into
+              rich, tactile sensors. You can precisely adjust the frequency to
+              find the vibration range that resonates with you and control the
+              gain to set the perfect intensity, from a subtle pulse to a
+              powerful beat.
+            </p>
+          </div>
+          <div className="flex flex-col gap-10">
+            <button
+              className="p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24]"
+              onClick={() => route("/network", false)}
+            >
+              Connect to Network
+            </button>
+            <button
+              className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
+              onClick={() => route("/modules", false)}
+            >
+              Adjust Audio Settings
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+export default LandingPage;

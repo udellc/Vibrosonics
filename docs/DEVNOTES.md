@@ -35,6 +35,8 @@ this analysis, distinct vibrations can be made to model elements of music by
 re-synthesizing these findings through AudioLab translated down into the haptic
 frequency range (0-230Hz).
 
+### TODO: add architecture update for the web app
+
 ### API Classes
 
 - `VibrosonicsAPI`: This is the core class; it is a unified interface for audio
