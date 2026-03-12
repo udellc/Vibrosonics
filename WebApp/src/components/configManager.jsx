@@ -105,16 +105,16 @@ const ConfigManager = ({ children }) => {
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
-      <div className="flex flex-row flex-wrap items-start gap-8 p-4 mt-8 mb-4 rounded-xl shadow-md border border-gray-100">
-        <h2 className="text-xl font-bold mb-4">Presets</h2>
-        <div className="flex gap-2.5 mb-4">
+      <div className="flex flex-row flex-wrap items-center gap-8 p-4 mt-8 mb-4 rounded-xl border-gray-100 bg-gray-300">
+        <h2 className="text-xl font-bold">EQ Presets</h2>
+        <div className="flex gap-2.5">
           {Object.keys(EQ_PRESETS).map((genre) => (
             <button
               className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
               ${
                 activeGenre === genre
                   ? "bg-[#fcd34d] font-bold"
-                  : "bg-[#e5e7eb] font-normal"
+                  : "bg-[#ffffff] font-normal"
               }`}
               key={genre}
               onClick={() => setActiveGenre(genre)}
@@ -124,7 +124,7 @@ const ConfigManager = ({ children }) => {
           ))}
         </div>
         
-        {/* TODO: testing this out rq */}
+        {/* TODO: testing this out rq 
         <div>
           <button
             className="bg-amber-500 cursor-pointer"
@@ -133,37 +133,38 @@ const ConfigManager = ({ children }) => {
             Send Data
           </button>
         </div>
+        */}
       </div>
 
       {/* Configuration stuff */}
       {children}
 
-      <div className="p-8 mt-8 bg-white rounded-xl shadow-md border border-gray-100">
+      <div className="p-8 mt-8 rounded-xl bg-gray-300">
         <h2 className="text-2xl font-bold mb-6">Project Library</h2>
 
         <div className="flex gap-4 mb-6">
           <button
             onClick={saveProj}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-800 transition cursor-pointer"
+            className="bg-[#70c247] text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition cursor-pointer"
           >
             Save Current Setup
           </button>
           <button
             onClick={startNewProj}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition cursor-pointer"
+            className="bg-[#7face5] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition cursor-pointer"
           >
             + Start New Project
           </button>
           <button
             onClick={clearLibrary}
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-800 font-bold cursor-pointer"
+            className="bg-[#ff6242] text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold cursor-pointer"
           >
             Clear All Projects
           </button>
 
           <button
             onClick={clearCurrentSettings}
-            className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-800 transition cursor-pointer"
+            className="bg-[#ff7900] text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition cursor-pointer"
           >
             Clear Current Settings
           </button>

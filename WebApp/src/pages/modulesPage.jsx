@@ -76,7 +76,7 @@ const ModulesPage = () => {
           <div className="flex flex-col">
             <h4 className="font-bold text-lg">Output Channel:</h4>
             <select
-              className="p-1 h-10 w-20 bg-blue-300 mb-4"
+              className="p-1 h-10 w-20 bg-white-300 mb-4 border rounded-xl"
               onChange={(e) => handleDropdownChange(e)}
             >
               <option value={0}>0</option>
