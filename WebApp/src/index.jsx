@@ -65,12 +65,13 @@ const AppContent = ({ setCurrentPage, currentPage}) => {
  * @brief
  *
  * @returns
+ * 
  */
 export function App() {
   const [ currentPage, setCurrentPage ] = useState('home');
 
   return (
-    <div className="min-w-lvw min-h-lvh flex flex-col">
+    <div className="min-w-lvw min-h-lvh flex flex-col font-['Inter']">
       
       {/* Wrap the app content with the contexts */}
       <SystemContextProvider>

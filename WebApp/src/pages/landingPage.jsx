@@ -42,8 +42,8 @@ const LandingPage = () => {
     <div className="mt-20 ml-10 mr-10 min-h-[60vh]">
       {/* Vertical layout */}
       <div className="flex flex-col">
-        <h2 className="text-4xl font-bold mb-10">Welcome</h2>
-        <p className="text-2xl">Feel the Music, Your Way</p>
+        <h2 className="text-4xl font-bold mb-8">Welcome</h2>
+        <p className="text-xl text-gray-400 pb-4">Feel the Music, Your Way</p>
 
         {/* Horizontal layout */}
         <div className="flex flex-row items-center">
