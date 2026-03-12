@@ -119,6 +119,7 @@ void setup()
     // TODO: maybe change this to init() that calls loadConfig()
     (void) HapticSettings::Instance().loadConfig();
     vapi.init();
+    durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
   #endif
 }
 
@@ -155,6 +156,11 @@ void loop()
     }
   }
   vapi.updateGrains();
+
+  for (int ch = 0; ch < NUM_OUT_CH; ch++)
+  {
+      AudioLab.mapAmplitudes(ch, activeConfig->minAmpNorm);
+  }
   AudioLab.synthesize();
 #endif // VAPI_EN
 }
@@ -194,15 +200,15 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
           DEBUG_PRINTLN("Percussion hit detected");
           // Get the energy, entropy and positive flux for the percussive hit. These
           // values are used to synthesize the haptic feedback of the percussion.
-          float energy = AudioPrism::energy(windowData, 
+          float energy = AudioPrism::energy(percussiveData, 
                                             moduleConfig->freqLow, 
                                             moduleConfig->freqHigh, 
                                             WINDOW_SIZE_OVERLAP);
-          float entropy = AudioPrism::entropy(windowData, 
+          float entropy = AudioPrism::entropy(percussiveData, 
                                             moduleConfig->freqLow, 
                                             moduleConfig->freqHigh, 
                                             WINDOW_SIZE_OVERLAP);
-          float flux = AudioPrism::positive_flux(windowData,
+          float flux = AudioPrism::positive_flux(percussiveData,
                                             percussiveSpectrogram.getPreviousWindow(),
                                             moduleConfig->freqLow, 
                                             moduleConfig->freqHigh, 
@@ -261,7 +267,6 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
     default:
       break;
   }
-  AudioLab.mapAmplitudes(moduleConfig->outputNumber, moduleConfig->minAmpNorm);
 }
 
 void rebuildOutputModules(const AnalysisConfig* Config)
@@ -279,6 +284,9 @@ void rebuildOutputModules(const AnalysisConfig* Config)
       delete analysisModules[i];
       analysisModules[i] = nullptr;
     }
+
+    if (!Config->modules[i])
+      continue;
 
     switch(Config->modules[i]->moduleType){
       case MAJORPEAKS:
