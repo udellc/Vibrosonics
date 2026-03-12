@@ -124,10 +124,11 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
   // Allocate memory in the array
   JsonObject module = modulesList.add<JsonObject>();
 
-  module["outputNumber"] = static_cast<int>(config->modules[i]->outputNumber);
-  module["moduleType"] = static_cast<int>(config->modules[i]->moduleType);
-  module["freqLow"] = static_cast<int>(config->modules[i]->freqLow);
-  module["freqHigh"] = static_cast<int>(config->modules[i]->freqHigh);
+  module["index"] = i;
+  module["outputNumber"] = config->modules[i]->outputNumber;
+  module["moduleType"] = config->modules[i]->moduleType;
+  module["freqLow"] = config->modules[i]->freqLow;
+  module["freqHigh"] = config->modules[i]->freqHigh;
 
   // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
   if (config->modules[i]->moduleType == MAJORPEAKS)
@@ -152,6 +153,7 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
  *        the factory method w/ a map.
  * 
  * @param Type - Type of module config to create.
+ *
  * @return ModulePtr - Unique pointer of the passed in module type.
  */
 inline ModulePtr Utils::createModule(const ModuleType Type)
@@ -167,4 +169,200 @@ inline ModulePtr Utils::createModule(const ModuleType Type)
   // Ex: ( ModuleType, unique_ptr for module )
   auto itr = Map.find(Type);
   return (itr == Map.end() ? nullptr : itr->second());
+}
+
+/**
+ * @brief Creates a message from the JsonObject data
+ * 
+ * @param id - Message id to use
+ * @param payload - Reference to the data source
+ * @param msg - Message structure to be populated
+ */
+void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueMessage& msg)
+{
+  msg.id = id;
+  msg.field = static_cast<ConfigField>(payload["field"].as<uint>());
+
+  switch (id)
+  {
+    case QueueMsgId::EditGlobal:
+    {
+      switch (msg.field)
+      {
+        case ConfigField::CfarRefCount:
+        case ConfigField::CfarGuardCount:
+          msg.global.value.u16 = payload["value"].as<uint16_t>();
+          break;
+
+        case ConfigField::NoiseFloor:
+        case ConfigField::CfarBias:
+        case ConfigField::SmoothingFactor:
+        case ConfigField::MinAmpNorm:
+          msg.global.value.f = payload["value"].as<float>();
+          break;
+
+        default:
+          break;
+      }
+      break;
+    }
+    case QueueMsgId::EditModule:
+    {
+      msg.module.index = payload["index"].as<int>();
+
+      switch (msg.field)
+      {
+        case ConfigField::FreqLow:
+        case ConfigField::FreqHigh:
+          msg.module.value.u16 = payload["value"].as<uint16_t>();
+          break;
+
+        case ConfigField::OutputNumber:
+        case ConfigField::MaxPeaks:
+          msg.module.value.i = payload["value"].as<int>();
+          break;
+
+        case ConfigField::FrequencyMapping:
+          msg.module.value.fm = payload["value"].as<FrequencyMapping>();
+          break;
+
+        case ConfigField::WaveType:
+          msg.module.value.wt = payload["value"].as<WaveType>();
+          break;
+
+        case ConfigField::FluxThresh:
+        case ConfigField::EnergyThresh:
+        case ConfigField::EntropyThresh:
+          msg.module.value.f = payload["value"].as<float>();
+          break;
+
+        default:
+          break;
+      }
+    }
+    case QueueMsgId::UpdateAll:   // Just needs the ID for a rebuild
+    default:
+      break;
+  }
+}
+
+/**
+ * @brief Updates the global config field using the message
+ * 
+ * @param config - Config pointer to be edited
+ * @param msg - Message holding which field and what value to use
+ */
+void Utils::applyGlobalEdit(AnalysisConfig* config, const QueueMessage& msg)
+{
+  switch (msg.field)
+  {
+    case ConfigField::NoiseFloor: 
+      config->noiseFloor = msg.global.value.f;
+      break;
+
+    case ConfigField::CfarRefCount:
+      config->cfarRefCount = msg.global.value.u16;
+      break;
+
+    case ConfigField::CfarGuardCount:  
+      config->cfarGuardCount  = msg.global.value.u16;
+      break;
+
+    case ConfigField::CfarBias:        
+      config->cfarBias = msg.global.value.f;
+      break;
+
+    case ConfigField::SmoothingFactor: 
+      config->smoothingFactor = msg.global.value.f;
+      break;
+
+    case ConfigField::MinAmpNorm:      
+      config->minAmpNorm = msg.global.value.f;
+      break;
+
+    default:
+      break;
+  }
+}
+
+/**
+ * @brief Updates the module config within the analysis config
+ * 
+ * @param config - Config pointer to edit
+ * @param msg - Message holding which index, field, and what value to use
+ *
+ * @return Bool indicating if the modules need to be rebuilt in the main loop 
+ */
+bool Utils::applyModuleEdit(AnalysisConfig* config, const QueueMessage& msg)
+{
+  if (!config->modules[msg.module.index])
+    return false;
+    
+  ModuleConfig* mod = config->modules[msg.module.index].get();
+
+  switch (msg.field)
+  {
+    case ConfigField::FreqLow:      
+      mod->freqLow = msg.module.value.u16; 
+      return true;
+
+    case ConfigField::FreqHigh:     
+      mod->freqHigh = msg.module.value.u16; 
+      return true;
+      
+    case ConfigField::OutputNumber: 
+      mod->outputNumber = msg.module.value.i; 
+      return true;
+
+    default:
+      break;
+  }
+
+  switch (mod->moduleType)
+  {
+    case MAJORPEAKS:
+    {
+      auto* mp = static_cast<MajorPeaksConfig*>(mod);
+      switch (msg.field)
+      {
+        case ConfigField::MaxPeaks:         
+          mp->maxPeaks = msg.module.value.i; 
+          return false;
+
+        case ConfigField::FrequencyMapping: 
+          mp->frequencyMapping = msg.module.value.fm; 
+          return false;
+
+        default:
+          return false;
+      }
+    }
+    case PERCUSSION:
+    {
+      auto* pc = static_cast<PercussionConfig*>(mod);
+      switch (msg.field)
+      {
+        case ConfigField::FluxThresh:   
+          pc->fluxThresh = msg.module.value.f;
+          return true;
+
+        case ConfigField::EnergyThresh: 
+          pc->energyThresh = msg.module.value.f;
+          return true;
+
+        case ConfigField::EntropyThresh:
+          pc->entropyThresh = msg.module.value.f;
+          return true;
+
+        case ConfigField::WaveType:     
+          pc->waveType = msg.module.value.wt;
+          return false;
+
+        default:
+          return false;
+      }
+    }
+    default:
+      return false;
+  }
 }

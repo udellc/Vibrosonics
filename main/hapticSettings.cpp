@@ -20,21 +20,93 @@
 
 #define MAIN_ANALYSIS_PATH "/data/mainConfig.json"
 
+// Queue stuff
+#define QUEUE_LENGTH 12
+#define ITEM_SIZE sizeof(QueueMessage)
+
+static QueueHandle_t updateQueue;
+static StaticQueue_t staticQueue;
+uint8_t ucQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
+
+/**
+ * @brief Plain constructor
+ * 
+ */
 HapticSettings::HapticSettings() :
-  curConfig{ nullptr },
-  _isDirty{ false }
+  curConfig{ nullptr }
 {}
+
+/**
+ * @brief Loads an analysis config and inits the update queue
+ * 
+ * @return Boolean indicating if the settings are initialized properly 
+ */
+bool HapticSettings::init()
+{
+  loadConfig();
+
+  updateQueue = xQueueCreateStatic(
+    QUEUE_LENGTH,
+    ITEM_SIZE,
+    ucQueueStorageArea,
+    &staticQueue
+  );
+
+  return (updateQueue != NULL);
+}
+
+/**
+ * @brief Adds a message to the update queue
+ * 
+ * @param toSend - Pointer to the message to add
+ * 
+ * @return Bool indicating if the message could be added
+ */
+bool HapticSettings::addMessage(QueueMessage* toSend)
+{
+  return (xQueueSend(
+    updateQueue,
+    toSend,
+    0
+  ) == pdPASS);
+}
+
+/**
+ * @brief Pops a message from the update queue
+ * 
+ * @param toGet - POinter to the message to be populated
+ *
+ * @return Bool indicating if a message could be popped 
+ */
+bool HapticSettings::getMessage(QueueMessage* toGet)
+{
+  return (xQueueReceive(
+    updateQueue,
+    toGet,
+    0
+  ) == pdPASS);
+}
+
+/**
+ * @brief Checks if the queue has messages
+ * 
+ * @return Bool indicating if the queue has messages
+ */
+bool HapticSettings::needsUpdate()
+{
+  return (uxQueueMessagesWaiting(updateQueue) != 0);
+}
 
 /**
  * @brief Populates the analysis configurations using the data found in the
  *        SD card, falling back onto an internal preset of the data file is not
  *        found.
- * 
+ *
  * @return Bool indicating if the loaded configuration was found from SD card.
  *         True if found on SD card.
  *         False if using preset.
  */
-bool HapticSettings::loadConfig()
+void HapticSettings::loadConfig()
 {
   JsonDocument doc;
   bool usingSavedConfig {false};
@@ -81,7 +153,39 @@ bool HapticSettings::loadConfig()
     this->curConfig->modules[3] =
       std::make_unique<MajorPeaksConfig>(0, 400, 1000, OCTAVE, 1);
   }
-  this->setIsDirty(true);
+}
 
-  return usingSavedConfig;
+/**
+ * @brief Processes each message in the update queue
+ * 
+ * NOTE: This should be thread-safe since adding messages requires the instance, so it'll wait until
+ *       this is done processing before adding. 
+ * 
+ * @return Bool indicating if the modules need to be rebuilt
+ */
+bool HapticSettings::processQueue()
+{
+  QueueMessage msg;
+  bool needsRebuild = false;
+
+  while (HapticSettings::Instance().getMessage(&msg))
+  {
+    switch (msg.id)
+    {
+      case QueueMsgId::EditGlobal:
+        Utils::applyGlobalEdit(curConfig.get(), msg);
+        break;
+
+      case QueueMsgId::EditModule:
+        needsRebuild |= Utils::applyModuleEdit(curConfig.get(), msg);
+        break;
+
+      case QueueMsgId::UpdateAll:
+        needsRebuild = true;
+
+      default:
+        break;
+    }
+  }
+  return needsRebuild;
 }

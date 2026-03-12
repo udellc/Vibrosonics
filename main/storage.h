@@ -15,6 +15,36 @@
 #include <AudioLab.h>
 #include <memory>
 
+// Enums for the config fields for real-time updates
+enum class ConfigField : uint
+{
+  // Global
+  NoiseFloor = 0u,
+  CfarRefCount,
+  CfarGuardCount,
+  CfarBias,
+  SmoothingFactor,
+  MinAmpNorm,
+
+  // Marker for global fields
+  GLOBAL_END = MinAmpNorm,
+
+  // Shared module fields
+  FreqLow,
+  FreqHigh,
+  OutputNumber,
+
+  // MajorPeaks
+  MaxPeaks,
+  FrequencyMapping,
+
+  // Percussion
+  FluxThresh,
+  EnergyThresh,
+  EntropyThresh,
+  WaveType
+};
+
 enum FrequencyMapping{
   NONE = 0,
   OCTAVE,
