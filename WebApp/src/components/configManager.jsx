@@ -105,7 +105,7 @@ const ConfigManager = ({ children }) => {
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
-      <div className="flex flex-row flex-wrap items-center gap-8 p-4 mt-8 mb-4 rounded-xl border-gray-100 bg-gray-300">
+      <div className="flex flex-row flex-wrap items-center gap-8 p-4 mt-8 mb-4 rounded-4xl border-gray-100 bg-gray-300">
         <h2 className="text-xl font-bold">EQ Presets</h2>
         <div className="flex gap-2.5">
           {Object.keys(EQ_PRESETS).map((genre) => (
@@ -113,8 +113,8 @@ const ConfigManager = ({ children }) => {
               className={`p-3 border border-[#ccc] rounded-lg cursor-pointer transition-colors
               ${
                 activeGenre === genre
-                  ? "bg-[#fcd34d] font-bold"
-                  : "bg-[#ffffff] font-normal"
+                  ? "bg-[#fcd34d] font-bold border border-amber-600"
+                  : "bg-[#ffffff] font-normal border border-gray-400"
               }`}
               key={genre}
               onClick={() => setActiveGenre(genre)}
@@ -139,7 +139,7 @@ const ConfigManager = ({ children }) => {
       {/* Configuration stuff */}
       {children}
 
-      <div className="p-8 mt-8 rounded-xl bg-gray-300 mb-4">
+      <div className="p-8 mt-8 rounded-4xl bg-gray-300 mb-4 w-fit">
         <h2 className="text-2xl font-bold mb-6">Project Library</h2>
 
         <div className="flex gap-4 mb-6">
@@ -176,7 +176,7 @@ const ConfigManager = ({ children }) => {
         {library.map((project) => (
           <div
             key={project.id}
-            className="p-4 rounded-lg flex justify-between items-center bg-gray-300"
+            className="p-4 rounded-4xl flex justify-between items-center bg-gray-300"
           >
             <span className="font-medium">{project.name}</span>
             <button

@@ -6,7 +6,7 @@
  * Description: The audio analysis modules page for reconfiguring
  * haptic feedback
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
 import { useContext, useEffect, useState } from "preact/hooks";
@@ -15,12 +15,13 @@ import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
 import GlobalSettings from "../components/globalSettings";
 import ConfigManager from "../components/configManager";
+import DropDown from "../atomics/dropdown";
 
 const ModulesPage = () => {
   // Persistant memory/data
-  const { globalSettings, setGlobalSettings } =
-    useContext(AudioSettingsContext);
+  const { globalSettings, setGlobalSettings } = useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
+  const [tempType, setTempType] = useState('First'); {/** TODO: test functionality */}
 
   // UI stuff
   const [selectedChannel, setSelectedChannel] = useState(0);
@@ -69,20 +70,37 @@ const ModulesPage = () => {
     getSettings();
   }, []);
 
+  // TODO: actually test this function
+  const handleAddModule = (moduleType) => {
+    const newModule = {
+      type: moduleType,
+      id: Date.now(),
+      outputNumber: selectedChannel,
+      settings: {}
+    };
+
+    setModules(prev => [...prev, newModule]);
+
+    api("POST", "/analysis/addModule", { module: newModule });
+  }
+
   return (
     <div className="flex flex-col m-8">
       <ConfigManager>
         <>
           <div className="flex flex-col">
             <h4 className="font-bold text-lg">Output Channel:</h4>
-            <select
-              className="p-1 h-10 w-20 bg-white-300 mb-4 border rounded-xl"
-              onChange={(e) => handleDropdownChange(e)}
-            >
-              <option value={0}>0</option>
-              <option value={1}>1</option>
-            </select>
+            <DropDown label="Channel" options={['Major Peaks', 'Percussion']} onChange={(e) => handleDropdownChange(e)} ></DropDown>
           </div>
+
+          <div className="flex flex-col pt-4">
+            <h4 className="font-bold text-lg">Add New Module</h4>
+            <div className="flex flex-row gap-x-4">
+              <DropDown label="Module" options={['First', 'Second']} onChange={(e) => handleDropdownChange(e)} ></DropDown>
+              <button className="rounded-lg pr-4 pl-4 bg-[#fcd34d] font-bold border border-amber-600" onClick={() =>handleAddModule(tempType)} >Add Module</button>
+            </div>
+          </div>
+
           <div className="flex flex-row gap-4">
             <GlobalSettings
               globalSettings={globalSettings}

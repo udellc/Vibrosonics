@@ -42,7 +42,7 @@ const LandingPage = () => {
     <div className="mt-20 ml-10 mr-10 min-h-[60vh]">
       {/* Vertical layout */}
       <div className="flex flex-col">
-        <h2 className="text-4xl font-bold mb-8">Welcome</h2>
+        <h2 className="text-5xl font-bold mb-7">Welcome</h2>
         <p className="text-xl text-gray-400 pb-4">Feel the Music, Your Way</p>
 
         {/* Horizontal layout */}
@@ -56,10 +56,10 @@ const LandingPage = () => {
             </p>
             <p>
               Our platform allows you to take full control of your sensory
-              experiences. Select any song and our technology converts it into
-              rich, tactile sensors. You can precisely adjust the frequency to
+              experiences. Select any <span className="font-bold">song</span> and our technology converts it into
+              rich, tactile sensors. You can precisely adjust the <span className="font-bold">frequency</span> to
               find the vibration range that resonates with you and control the
-              gain to set the perfect intensity, from a subtle pulse to a
+              <span className="font-bold">gain</span> to set the perfect intensity, from a subtle pulse to a
               powerful beat.
             </p>
           </div>
@@ -71,7 +71,6 @@ const LandingPage = () => {
               Connect to Network
             </button>
             
-            {/*<InfoButton onClick={handleInfoClick} /> REMOVE WHEN DONE TESTING*/}
             <button
               className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
               onClick={() => route("/modules", false)}
@@ -85,7 +84,7 @@ const LandingPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-10 pt-24 max-w-6xl mx-auto">
           {/** info bubble 1 */}
-          <div className="flex flew-row gap-4">
+          <div className="flex flew-row gap-2 pr-12">
             <InfoButton onClick={() => {}}/>
             <h3 className="text-xl font-bold text-gray-800">Audio Haptics</h3>
             <p className="text-gray-500 mt-2 leading-relaxed">
@@ -107,7 +106,7 @@ const LandingPage = () => {
           </div>
 
           {/** info bubble 3 */}
-          <div className="flex flew-row gap-4">
+          <div className="flex flew-row gap-2 pl-12">
             <InfoButton onClick={() => {}}/>
             <h3 className="text-xl font-bold text-gray-800">The Interface</h3>
             <p className="text-gray-500 mt-2 leading-relaxed">

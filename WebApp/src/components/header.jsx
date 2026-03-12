@@ -53,18 +53,18 @@ const Header = ({ setCurrentPage }) => {
   };
 
   return (
-    <div className="p-4 flex w-full min-h-[8vh] justify-between">
+    <div className="p-4 flex w-full min-h-[8vh] justify-between items-center">
       
       {/* Left side */}
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row justify-between items-center">
         <img src={logo} alt="logo" className="w-10 h-10"></img> {/** TODO: add actual alt text */}
-        <h2 className="font-bold text-3xl ml-2">Vibrosonics</h2>
+        <h2 className="font-bold text-2xl ml-2">Vibrosonics</h2>
       </div>
 
       {/* Right side */}
       <div>
         <div>
-          <nav className="pt-2">
+          <nav>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/network">Networks</NavLink>
             <NavLink to="/modules">Modules</NavLink>
@@ -74,12 +74,13 @@ const Header = ({ setCurrentPage }) => {
             <NavLink to="https://github.com/udellc/Vibrosonics">GitHub Repo</NavLink>
           </nav>
 
+          {/** remove? 
           <div className="pt-4">
             DEBUGGING
             <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
               PRINT MEMORY BTN
             </button>
-          </div>
+          </div>*/}
         </div>
       </div>
     </div>
