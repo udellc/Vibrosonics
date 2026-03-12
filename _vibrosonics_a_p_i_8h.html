@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-364-g1751614</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-613-g6cffbf4</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -150,9 +150,11 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ac03078e75fb605280c11d7502c86ee1b" id="r_ac03078e75fb605280c11d7502c86ee1b"><td class="memItemLeft" align="right" valign="top">constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac03078e75fb605280c11d7502c86ee1b">WINDOW_SIZE_BY_2</a> = WINDOW_SIZE &gt;&gt; 1</td></tr>
+<tr class="memitem:ab19910256c036cb3592658dcde15fcdc" id="r_ab19910256c036cb3592658dcde15fcdc"><td class="memItemLeft" align="right" valign="top">constexpr uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a> = WINDOW_SIZE &lt;&lt; WINDOW_OVERLAP</td></tr>
+<tr class="separator:ab19910256c036cb3592658dcde15fcdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac03078e75fb605280c11d7502c86ee1b" id="r_ac03078e75fb605280c11d7502c86ee1b"><td class="memItemLeft" align="right" valign="top">constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac03078e75fb605280c11d7502c86ee1b">WINDOW_SIZE_BY_2</a> = <a class="el" href="#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a> &gt;&gt; 1</td></tr>
 <tr class="separator:ac03078e75fb605280c11d7502c86ee1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0eb560ea8df07dae9c2676e230cc89df" id="r_a0eb560ea8df07dae9c2676e230cc89df"><td class="memItemLeft" align="right" valign="top">constexpr float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a> = (float)SAMPLE_RATE / (float)WINDOW_SIZE</td></tr>
+<tr class="memitem:a0eb560ea8df07dae9c2676e230cc89df" id="r_a0eb560ea8df07dae9c2676e230cc89df"><td class="memItemLeft" align="right" valign="top">constexpr float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a> = (float)SAMPLE_RATE / (float)<a class="el" href="#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a></td></tr>
 <tr class="memdesc:a0eb560ea8df07dae9c2676e230cc89df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frequency range of an FFT bin in Hz.  <br /></td></tr>
 <tr class="separator:a0eb560ea8df07dae9c2676e230cc89df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aafc60f8ba1f97829e954fc46c5f5aafa" id="r_aafc60f8ba1f97829e954fc46c5f5aafa"><td class="memItemLeft" align="right" valign="top">constexpr float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aafc60f8ba1f97829e954fc46c5f5aafa">FREQ_WIDTH</a> = 1.0 / <a class="el" href="#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a></td></tr>
@@ -170,7 +172,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">float FREQ_RES = (float)SAMPLE_RATE / (float)WINDOW_SIZE</td>
+          <td class="memname">float FREQ_RES = (float)SAMPLE_RATE / (float)<a class="el" href="#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a></td>
         </tr>
       </table>
   </td>
@@ -221,7 +223,29 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int WINDOW_SIZE_BY_2 = WINDOW_SIZE &gt;&gt; 1</td>
+          <td class="memname">int WINDOW_SIZE_BY_2 = <a class="el" href="#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a> &gt;&gt; 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab19910256c036cb3592658dcde15fcdc" name="ab19910256c036cb3592658dcde15fcdc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab19910256c036cb3592658dcde15fcdc">&#9670;&#160;</a></span>WINDOW_SIZE_OVERLAP</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t WINDOW_SIZE_OVERLAP = WINDOW_SIZE &lt;&lt; WINDOW_OVERLAP</td>
         </tr>
       </table>
   </td>

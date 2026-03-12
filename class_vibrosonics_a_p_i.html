@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-364-g1751614</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-613-g6cffbf4</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -203,6 +203,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a59dbd0af370fa3a293ed5d6a32a2f731" id="r_a59dbd0af370fa3a293ed5d6a32a2f731"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a59dbd0af370fa3a293ed5d6a32a2f731">setGrainDurEnv</a> (<a class="el" href="class_grain.html">Grain</a> *grains, int numGrains, <a class="el" href="struct_dur_env.html">DurEnv</a> durEnv)</td></tr>
 <tr class="memdesc:a59dbd0af370fa3a293ed5d6a32a2f731"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the duration envelope paramaters for an array of grains.  <br /></td></tr>
 <tr class="separator:a59dbd0af370fa3a293ed5d6a32a2f731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a449c9a55d5c2b3fdcd452ee485a92001" id="r_a449c9a55d5c2b3fdcd452ee485a92001"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a449c9a55d5c2b3fdcd452ee485a92001">pause</a> ()</td></tr>
+<tr class="memdesc:a449c9a55d5c2b3fdcd452ee485a92001"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stops the audio input sampling interrupt.  <br /></td></tr>
+<tr class="separator:a449c9a55d5c2b3fdcd452ee485a92001"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3a181f800e2e8834f8df34d20604d47" id="r_aa3a181f800e2e8834f8df34d20604d47"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa3a181f800e2e8834f8df34d20604d47">resume</a> ()</td></tr>
+<tr class="memdesc:aa3a181f800e2e8834f8df34d20604d47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resumes the audio input sample interrupt.  <br /></td></tr>
+<tr class="separator:aa3a181f800e2e8834f8df34d20604d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac39fb95046d254d3da5b26a7104b4d8c" name="ac39fb95046d254d3da5b26a7104b4d8c"></a>
@@ -854,6 +860,33 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a449c9a55d5c2b3fdcd452ee485a92001" name="a449c9a55d5c2b3fdcd452ee485a92001"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a449c9a55d5c2b3fdcd452ee485a92001">&#9670;&#160;</a></span>pause()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void VibrosonicsAPI::pause </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Stops the audio input sampling interrupt. </p>
+
+</div>
+</div>
 <a id="a18d073ca3e71cbbd856537a8612ce479" name="a18d073ca3e71cbbd856537a8612ce479"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a18d073ca3e71cbbd856537a8612ce479">&#9670;&#160;</a></span>processAudioInput()</h2>
 
@@ -877,6 +910,33 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aa3a181f800e2e8834f8df34d20604d47" name="aa3a181f800e2e8834f8df34d20604d47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3a181f800e2e8834f8df34d20604d47">&#9670;&#160;</a></span>resume()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void VibrosonicsAPI::resume </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Resumes the audio input sample interrupt. </p>
 
 </div>
 </div>
