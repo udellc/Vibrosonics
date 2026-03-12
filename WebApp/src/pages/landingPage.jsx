@@ -46,7 +46,7 @@ const LandingPage = () => {
         <p className="text-2xl">Feel the Music, Your Way</p>
 
         {/* Horizontal layout */}
-        <div className="flex flex-row">
+        <div className="flex flex-row items-center">
           <div className="flex flex-col justify-between max-w-[50%] mr-6">
             <p className="mb-4">
               VibroSonics is dedicated to making music and sound accessible to
@@ -70,6 +70,7 @@ const LandingPage = () => {
             >
               Connect to Network
             </button>
+            
             {/*<InfoButton onClick={handleInfoClick} /> REMOVE WHEN DONE TESTING*/}
             <button
               className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
@@ -77,6 +78,44 @@ const LandingPage = () => {
             >
               Adjust Audio Settings
             </button>
+          </div>
+
+          
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-10 pt-24 max-w-6xl mx-auto">
+          {/** info bubble 1 */}
+          <div className="flex flew-row gap-4">
+            <InfoButton onClick={() => {}}/>
+            <h3 className="text-xl font-bold text-gray-800">Audio Haptics</h3>
+            <p className="text-gray-500 mt-2 leading-relaxed">
+              Audio haptics technology enhances sensory perception for individuals 
+              who are deaf or hard of hearing by integrating auditory signals with
+              tactile feedback.
+            </p>
+          </div>
+
+          {/** info bubble 2 */}
+          <div className="flex flew-row gap-4">
+            <InfoButton onClick={() => {}}/>
+            <h3 className="text-xl font-bold text-gray-800">The Interface</h3>
+            <p className="text-gray-500 mt-2 leading-relaxed">
+              Our intuitive interface seamlessly unites he audio haptic device 
+              with an interactive software experience, delivering a fluid and 
+              engaging way for users to feel and control their music.
+            </p>
+          </div>
+
+          {/** info bubble 3 */}
+          <div className="flex flew-row gap-4">
+            <InfoButton onClick={() => {}}/>
+            <h3 className="text-xl font-bold text-gray-800">The Interface</h3>
+            <p className="text-gray-500 mt-2 leading-relaxed">
+              Led by Dr. Chet Udell of Oregon State University,
+              the VibroSonics team directs a dedicated research 
+              group of students and is supported by a strategic 
+              partnership with CymaSpace
+            </p>
           </div>
         </div>
       </div>

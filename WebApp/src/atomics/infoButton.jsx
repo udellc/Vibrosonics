@@ -19,10 +19,9 @@ export default function InfoButton({ onClick }) {
         <button
             type="button"
             onClick={onClick}
-            className="flex items-center justify-center w-6 h-6 border border-gray-300 rounded cursor-pointer bg-w"
+            className="flex items-center justify-center w-6 h-6 rounded cursor-pointer bg-w"
         >
             <svg 
-                //xmlns="http://www.w3.org/2000/svg" 
                 width="16" 
                 height="16" 
                 viewBox="0 0 24 24" 

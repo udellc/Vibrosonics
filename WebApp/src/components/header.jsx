@@ -11,6 +11,7 @@
 import { useState, useEffect } from "preact/hooks";
 import { api, HTTP_STATUS } from "../utils/utils";
 import { Match } from "preact-router/match";
+import logo from "../images/cymaspaceLogo.jpg"
 
 /**
  * @brief Displays the app header
@@ -18,7 +19,7 @@ import { Match } from "preact-router/match";
  * @returns Header component
  */
 
-const Header = () => {
+const Header = ({ setCurrentPage }) => {
   const NavLink = ({ to, children }) => {
 
     const baseClasses = "p-4 px-4 py-2 rounded-md font-medium transition-colors duration-200";
@@ -56,7 +57,7 @@ const Header = () => {
       
       {/* Left side */}
       <div className="flex flex-row justify-between">
-        {/* TODO: use the vibrosonics logo file in an assets folder under WebApp/assets and link img here */}
+        <img src={logo} alt="logo" className="w-10 h-10"></img> {/** TODO: add actual alt text */}
         <h2 className="font-bold text-3xl ml-2">Vibrosonics</h2>
       </div>
 
@@ -68,6 +69,9 @@ const Header = () => {
             <NavLink to="/network">Networks</NavLink>
             <NavLink to="/modules">Modules</NavLink>
             <NavLink to="/radio">FM Radio</NavLink>
+            {/** CHANGE LINK BELOW TO WEBSITE */}
+            <NavLink to="https://eecs.engineering.oregonstate.edu/capstone/submission/pages/viewSingleProject.php?id=o5UTAMyU6hdzv8jc">OSU Team</NavLink>
+            <NavLink to="https://github.com/udellc/Vibrosonics">GitHub Repo</NavLink>
           </nav>
 
           <div className="pt-4">

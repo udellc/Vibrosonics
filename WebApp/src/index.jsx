@@ -30,8 +30,12 @@ import { api, PAGE } from "./utils/utils";
  * @brief Defines the different pages for the main App
  *
  * @returns Routes to each page component
+ * @param {Object} _
+ * @param {Function} _.setCurrentPage Setter for current page status
+ * @param {string} _.currentPage Current page string
+ * 
  */
-const AppContent = () => {
+const AppContent = ({ setCurrentPage, currentPage}) => {
   const { setPageInfo } = useContext(SystemContext);
 
   // Used to update header when page changes
@@ -40,7 +44,13 @@ const AppContent = () => {
     else if (e.url === "/network") setPageInfo(PAGE.NETWORK);
     else if (e.url === "/modules") setPageInfo(PAGE.MODULES);
     else if (e.url === "/radio") setPageInfo(PAGE.RADIO);
+
+    if(e.url === "/") 
+      setCurrentPage('home');
+    else 
+      setCurrentPage(e.url.replace('/', ''));
   };
+
   return (
     <Router onChange={onPageChange}>
       <Route path="/" component={LandingPage} />
@@ -57,16 +67,18 @@ const AppContent = () => {
  * @returns
  */
 export function App() {
+  const [ currentPage, setCurrentPage ] = useState('home');
+
   return (
     <div className="min-w-lvw min-h-lvh flex flex-col">
       
       {/* Wrap the app content with the contexts */}
       <SystemContextProvider>
-        <Header />
+        <Header setCurrentPage={setCurrentPage}/>
         <AnalysisSettingsProvider>
-          <AppContent />
+          <AppContent currentPage={currentPage} setCurrentPage={setCurrentPage}/>
         </AnalysisSettingsProvider>
-        <Footer />
+        {currentPage !== 'home' && <Footer />}
       </SystemContextProvider>
     </div>
   );
