@@ -15,6 +15,7 @@ import "./index.css";
 import LandingPage from "./pages/landingPage";
 import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
+import RadioPage from "./pages/radioPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
 import {
@@ -38,12 +39,14 @@ const AppContent = () => {
     if (e.url === "/") setPageInfo(PAGE.LANDING);
     else if (e.url === "/network") setPageInfo(PAGE.NETWORK);
     else if (e.url === "/modules") setPageInfo(PAGE.MODULES);
+    else if (e.url === "/radio") setPageInfo(PAGE.RADIO);
   };
   return (
     <Router onChange={onPageChange}>
       <Route path="/" component={LandingPage} />
       <Route path="/network" component={NetworkPage} />
       <Route path="/modules" component={ModulesPage} />
+      <Route path="/radio" component={RadioPage} />
     </Router>
   );
 };

@@ -67,6 +67,7 @@ const Header = () => {
             <NavLink to="/">Home</NavLink>
             <NavLink to="/network">Networks</NavLink>
             <NavLink to="/modules">Modules</NavLink>
+            <NavLink to="/radio">FM Radio</NavLink>
           </nav>
 
           <div className="pt-4">

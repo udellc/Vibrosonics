@@ -139,7 +139,7 @@ const ConfigManager = ({ children }) => {
       {/* Configuration stuff */}
       {children}
 
-      <div className="p-8 mt-8 rounded-xl bg-gray-300">
+      <div className="p-8 mt-8 rounded-xl bg-gray-300 mb-4">
         <h2 className="text-2xl font-bold mb-6">Project Library</h2>
 
         <div className="flex gap-4 mb-6">
@@ -172,16 +172,16 @@ const ConfigManager = ({ children }) => {
       </div>
 
       {/* load project */}
-      <div className="flex flex-col md:grid-cols-2 gap-4">
+      <div className="flex flex-col md:grid-cols-2 gap-4 mb-2">
         {library.map((project) => (
           <div
             key={project.id}
-            className="p-4 border rounded-lg flex justify-between items-center bg-gray-50"
+            className="p-4 rounded-lg flex justify-between items-center bg-gray-300"
           >
             <span className="font-medium">{project.name}</span>
             <button
                 onClick={() => loadProject(project)}
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm font-bold text-blue-600 hover:underline"
             >
               Load Settings
             </button>
