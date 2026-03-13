@@ -18,7 +18,7 @@
 
 #ifdef VAPI_EN
 
-#include <VibrosonicsAPI.h>
+#include "../src/VibrosonicsAPI.h"
 
 // Vibrosonics audio analysis globals
 VibrosonicsAPI vapi = VibrosonicsAPI();

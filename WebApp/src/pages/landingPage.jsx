@@ -58,8 +58,8 @@ const LandingPage = () => {
               Our platform allows you to take full control of your sensory
               experiences. Select any <span className="font-bold">song</span> and our technology converts it into
               rich, tactile sensors. You can precisely adjust the <span className="font-bold">frequency</span> to
-              find the vibration range that resonates with you and control the
-              <span className="font-bold">gain</span> to set the perfect intensity, from a subtle pulse to a
+              find the vibration range that resonates with you and control the 
+              <span className="font-bold"> gain</span> to set the perfect intensity, from a subtle pulse to a
               powerful beat.
             </p>
           </div>

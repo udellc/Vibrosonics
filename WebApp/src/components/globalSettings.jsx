@@ -35,16 +35,16 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
   };
 
   // Check if the settings exists/ were retrieved
-  if (Object.keys(globalSettings).length == 0) {
-    if (Object.keys(globalSettings).length === 0) {
+  // if (Object.keys(globalSettings).length == 0) {
+  //   if (Object.keys(globalSettings).length === 0) {
 
-    return (
-      <div className="flex flex-col items-center justify-center p-10 m-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
-        <h3 className="text-red-800 font-bold text-lg">Configuration Error</h3>
-        <p className="text-red-600">Failed to get settings. Please check your connection.</p>
-      </div>
-    );}
-  }
+  //   return (
+  //     <div className="flex flex-col items-center justify-center p-10 m-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+  //       <h3 className="text-red-800 font-bold text-lg">Configuration Error</h3>
+  //       <p className="text-red-600">Failed to get settings. Please check your connection.</p>
+  //     </div>
+  //   );}
+  // }
 
   return (
     <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
