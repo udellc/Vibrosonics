@@ -117,7 +117,7 @@ const ModulesPage = () => {
           <div className="flex flex-col">
             <h4 className="font-bold text-lg">Output Channel:</h4>
             <select
-              className="p-1 h-10 w-20 bg-blue-300 mb-4"
+              className="p-1 h-10 w-20 bg-white-300 mb-4 border rounded-xl"
               onChange={(e) => handleOutputDropdownChange(e)}
             >
               <option value={0}>0</option>
@@ -128,14 +128,14 @@ const ModulesPage = () => {
           <div className="flex flex-col mb-4">
             <div className="flex">
               <select
-                className="p-1 h-10 w-40 bg-blue-300 mb-2 mr-4"
+                className="p-1 h-10 w-40 bg-white-300 mb-2 mr-4 border rounded-xl"
                 onChange={(e) => handleAddDropdownChange(e)}
               >
                 <option value={0}>Major Peaks</option>
                 <option value={1}>Percussion</option>
               </select>
               <button
-                className="bg-amber-500 cursor-pointer w-30 h-10"
+                className="bg-amber-200 cursor-pointer w-30 h-10 rounded-xl border border-amber-600 hover:bg-[#fbbf24]"
                 onClick={handleAddModule}
               >
                 Add Module

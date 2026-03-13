@@ -70,7 +70,7 @@ const Header = ({ setCurrentPage }) => {
             <NavLink to="/modules">Modules</NavLink>
             <NavLink to="/radio">FM Radio</NavLink>
             {/** CHANGE LINK BELOW TO WEBSITE */}
-            <NavLink to="https://eecs.engineering.oregonstate.edu/capstone/submission/pages/viewSingleProject.php?id=o5UTAMyU6hdzv8jc">OSU Team</NavLink>
+            <NavLink to="https://www.youtube.com/@cymaspace">CymaSpace</NavLink>
             <NavLink to="https://github.com/udellc/Vibrosonics">GitHub Repo</NavLink>
           </nav>
 

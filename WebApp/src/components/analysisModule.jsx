@@ -98,7 +98,7 @@ export default function AnalysisModule({ index, module, setModules }) {
   return (
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <button 
-        className="bg-amber-500 cursor-pointer"
+        className="bg-amber-200 cursor-pointer rounded-xl border border-amber-600 px-4 hover:bg-[#fbbf24]"
         onClick={handleDeleteModule}
       >
         Delete
@@ -139,7 +139,7 @@ export default function AnalysisModule({ index, module, setModules }) {
         <div className="flex flex-col gap-2">
           {Object.entries(dropdowns)?.map( ([key, _]) => {
             return (
-              <div className="bg-blue-300">
+              <div className="bg-white border rounded-xl px-2">
                 <h4>{dropdowns[key].title}</h4>
                 <select value={module[key] ?? 0}
                   onChange={(e) => handleValueChange(key, e.target instanceof HTMLSelectElement
@@ -159,7 +159,7 @@ export default function AnalysisModule({ index, module, setModules }) {
           {/* Create numerical text entries for the corresponding settings */}
           {Object.entries(spinboxes)?.map( ([key, val]) => {
             return (
-              <div className="bg-blue-300">
+              <div className="bg-white border rounded-xl px-2">
                 <h4>{spinboxes[key].title}</h4>
                 <input type="number" 
                   value={module[key] ?? 1}

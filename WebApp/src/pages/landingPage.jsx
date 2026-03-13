@@ -72,7 +72,7 @@ const LandingPage = () => {
             </button>
             
             <button
-              className={`p-3 bg-[#fcd34d] border border-[#ccc] rounded-lg cursor-pointer font-bold shadow-sm hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
+              className={`py-1.5 px-6 bg-amber-200 border border-amber-600 rounded-lg cursor-pointer hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
               onClick={() => route("/modules", false)}
             >
               Adjust Audio Settings
