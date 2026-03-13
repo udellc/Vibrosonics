@@ -22,6 +22,7 @@
 
 // Vibrosonics audio analysis globals
 VibrosonicsAPI vapi = VibrosonicsAPI();
+std::shared_ptr<AnalysisConfig> activeConfig {nullptr};
 
 float windowData[WINDOW_SIZE_BY_2] = { 0 };
 float filteredData[WINDOW_SIZE_BY_2] = { 0 };
@@ -91,6 +92,8 @@ void setup()
   (void) WebInterface::init();
 #endif
 
+  success &= HapticSettings::Instance().init();
+
   const auto CreatedTask = xTaskCreatePinnedToCore(
     webRunner,
     "webServer",
@@ -116,8 +119,10 @@ void setup()
   #ifdef VAPI_EN
     DEBUG_PRINTLN("DEBUG: Initializing VAPI");
 
-    // TODO: maybe change this to init() that calls loadConfig()
-    (void) HapticSettings::Instance().loadConfig();
+    activeConfig = HapticSettings::Instance().getConfig_mut();
+    rebuildOutputModules(activeConfig.get());
+    durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
+
     vapi.init();
   #endif
 }
@@ -132,14 +137,18 @@ void loop()
   if (!vapi.isAudioLabReady())
     return;
 
-  auto activeConfig = HapticSettings::Instance().getConfig_r();
-
-  if (HapticSettings::Instance().isDirty())
+  if (HapticSettings::Instance().needsUpdate())
   {
-    rebuildOutputModules(activeConfig.get());
-    HapticSettings::Instance().setIsDirty(false);
+    DEBUG_PRINTLN("DEBUG: processing queue...");
+
+    // NOTE: only returns true when it actually needs to be rebuilt, not every time it processes a request
+    if (HapticSettings::Instance().processQueue())
+    {
+      // Get the most recent config incase some were deleted or added
+      activeConfig = HapticSettings::Instance().getConfig_mut();
+      rebuildOutputModules(activeConfig.get());
+    }
   }
-  
   processData(activeConfig);
 
   melodic.runAnalysis();
@@ -155,6 +164,11 @@ void loop()
     }
   }
   vapi.updateGrains();
+
+  for (int ch = 0; ch < NUM_OUT_CH; ch++)
+  {
+      AudioLab.mapAmplitudes(ch, activeConfig->minAmpNorm);
+  }
   AudioLab.synthesize();
 #endif // VAPI_EN
 }
@@ -194,15 +208,15 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
           DEBUG_PRINTLN("Percussion hit detected");
           // Get the energy, entropy and positive flux for the percussive hit. These
           // values are used to synthesize the haptic feedback of the percussion.
-          float energy = AudioPrism::energy(windowData, 
+          float energy = AudioPrism::energy(percussiveData, 
                                             moduleConfig->freqLow, 
                                             moduleConfig->freqHigh, 
                                             WINDOW_SIZE_OVERLAP);
-          float entropy = AudioPrism::entropy(windowData, 
+          float entropy = AudioPrism::entropy(percussiveData, 
                                             moduleConfig->freqLow, 
                                             moduleConfig->freqHigh, 
                                             WINDOW_SIZE_OVERLAP);
-          float flux = AudioPrism::positive_flux(windowData,
+          float flux = AudioPrism::positive_flux(percussiveData,
                                             percussiveSpectrogram.getPreviousWindow(),
                                             moduleConfig->freqLow, 
                                             moduleConfig->freqHigh, 
@@ -250,18 +264,21 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
         ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
         const MajorPeaksConfig* majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
         float **analysisData = mpModuleInterface->getOutput();
-        synthesizePeak(moduleConfig->outputNumber, 
-                        analysisData[MP_FREQ][0], 
-                        analysisData[MP_AMP][0], 
-                        moduleConfig->freqLow, 
-                        moduleConfig->freqHigh, 
-                        majorPeaksConfig->frequencyMapping);
+
+        for (auto i {0}; i < majorPeaksConfig->maxPeaks; i++)
+        {
+          synthesizePeak(moduleConfig->outputNumber, 
+                          analysisData[MP_FREQ][i], 
+                          analysisData[MP_AMP][i], 
+                          moduleConfig->freqLow, 
+                          moduleConfig->freqHigh, 
+                          majorPeaksConfig->frequencyMapping);
+        }
         break;
       }
     default:
       break;
   }
-  AudioLab.mapAmplitudes(moduleConfig->outputNumber, moduleConfig->minAmpNorm);
 }
 
 void rebuildOutputModules(const AnalysisConfig* Config)
@@ -279,6 +296,9 @@ void rebuildOutputModules(const AnalysisConfig* Config)
       delete analysisModules[i];
       analysisModules[i] = nullptr;
     }
+
+    if (!Config->modules[i])
+      continue;
 
     switch(Config->modules[i]->moduleType){
       case MAJORPEAKS:

@@ -43,6 +43,9 @@ namespace WebInterface
   //! Handler for updating the HapticSettings config
   void onSubmitConfig();
 
+  //! Handler for real-time updates
+  void onEditSetting();
+
   #ifdef DEV_MODE_EN
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();

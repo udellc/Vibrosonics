@@ -9,10 +9,12 @@
  ***************************************************************/
 
 import axios from "axios";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 
 /**
  * The frozen objects must match the 
  *  enumerations in storage.h under /main/,
+ *  enumerations in utils.h under /main/,
  *  HTTP status codes in webInterface.cpp under /main/
  *  enumerations in Wave.h /src/ in the AudioLab respository
  */
@@ -33,6 +35,34 @@ export const MODULE_TYPE = Object.freeze({
   0: "Major Peaks",
   1: "Percussion"
 });
+export const QUEUE_MESSAGE_ID = Object.freeze({
+  EditGlobal: 0,
+  EditModule: 1
+});
+export const CONFIG_FIELDS = Object.freeze({
+  // Global
+  "noiseFloor": 0,
+  "cfarRefCount": 1,
+  "cfarGuardCount": 2,
+  "cfarBias": 3,
+  "smoothingFactor": 4,
+  "minAmpNorm": 5,
+
+  // Shared module fields
+  "freqLow": 6,
+  "freqHigh": 7,
+  "outputNumber": 8,
+
+  // MajorPeaks
+  "maxPeaks": 9,
+  "frequencyMapping": 10,
+
+  // Percussion
+  "fluxThresh": 11,
+  "energyThresh": 12,
+  "entropyThresh": 13,
+  "waveType": 14
+});
 export const WAVE_TYPE = Object.freeze({
   0: "Sine",
   1: "Cosine",
@@ -40,7 +70,6 @@ export const WAVE_TYPE = Object.freeze({
   3: "Sawtooth",
   4: "Triangle"
 });
-
 
 // Internal
 export const PAGE = {
@@ -70,6 +99,9 @@ export const api = async (method, endpoint, data = null) => {
       case "POST": {
         return (await axios.post(url, data));
       }
+      case "PATCH": {
+        return (await axios.patch(url, data));
+      }
       case "PUT": {
         return (await axios.put(url, data));
       }
@@ -80,8 +112,57 @@ export const api = async (method, endpoint, data = null) => {
         throw new Error(`Unknown HTTP method: ${method}`);
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`API Error [${method} ${url}]:`, error.message);
     return null;
   }
 };
+
+/**
+ * @brief Hook for editing settings in real-time. Calls the API form the web server
+ *        a max of 1/500ms when the setting is being changed to prevent flooding the web server
+ * 
+ * @param {Number} type - Message id to pass to the web server (type QUEUE_MESSAGE_ID)
+ * @param {Object} isValid - Optional mutable reference to an isValid boolean 
+ * 
+ * @returns Hook for the edit setting callback
+ */
+export function useEditSetting(type, isValid = null) {
+  const timers = useRef({});
+
+  // This will be called every update
+  const editSetting = useCallback( (setting) => {
+    clearTimeout(timers.current[setting.id]);
+
+    if (isValid?.current === false) return;
+
+    // Only called after 500ms after setting is settled
+    timers.current[setting.id] = setTimeout( async () => {
+      try {
+        const payload = {
+          ...setting,
+          type: type
+        };
+        const res = await api("PATCH", "/analysis/editSetting", payload);
+
+        if (res.status == HTTP_STATUS.OK) {
+          console.log("yuhhhh");
+        }
+      } 
+      catch (error) {
+        console.log(error);
+      }
+    }, 500);
+
+  }, [type]);
+
+  // Clean up the timers when in-use UI component is unmounted
+  useEffect( () => {
+    return () => {
+      Object.values(timers.current).forEach(clearTimeout);
+    }
+  }, []);
+
+  return { editSetting };
+}
