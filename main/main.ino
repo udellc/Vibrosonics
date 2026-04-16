@@ -43,9 +43,8 @@ DurEnv durEnv = {};
 int windowsSinceHit = 0;
 
 // list of our analysis modules. the maximum number of possible modules is currently
-// NUM_OUT_CH * 2 as each output can have one non-percussion module and one percussion module
-AnalysisModule* analysisModules[NUM_OUT_CH * 2] = { nullptr };
-bool outputHasPercussion[NUM_OUT_CH] = { false };
+// NUM_OUT_CH as each output can have one analysis module
+AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
 
 #endif
 
@@ -154,21 +153,18 @@ void loop()
   melodic.runAnalysis();
   percussive.runAnalysis();
 
-  for (int i = 0; i < NUM_OUT_CH * 2; i++)
+  for (int i = 0; i < NUM_OUT_CH; i++)
   {
     if (analysisModules[i] && activeConfig->modules[i]) {
       performModuleAnalysis(
         analysisModules[i],
         activeConfig->modules[i].get()
       );
+      AudioLab.mapAmplitudes(i, activeConfig->modules[i].get()->minAmpNorm);
     }
   }
   vapi.updateGrains();
 
-  for (int ch = 0; ch < NUM_OUT_CH; ch++)
-  {
-      AudioLab.mapAmplitudes(ch, activeConfig->minAmpNorm);
-  }
   AudioLab.synthesize();
 #endif // VAPI_EN
 }
@@ -286,10 +282,7 @@ void rebuildOutputModules(const AnalysisConfig* Config)
   melodic.clearModules();
   percussive.clearModules();
 
-  for (int ch = 0; ch < NUM_OUT_CH; ch++)
-    outputHasPercussion[ch] = false;
-
-  for (int i = 0; i < NUM_OUT_CH * 2; i++)
+  for (int i = 0; i < NUM_OUT_CH; i++)
   {
     if (analysisModules[i])
     {
@@ -319,7 +312,6 @@ void rebuildOutputModules(const AnalysisConfig* Config)
                                                     percussionConfig->entropyThresh);
         analysisModules[i]->setWindowSize(WINDOW_SIZE_OVERLAP);
         percussive.addModule(analysisModules[i], Config->modules[i]->freqLow, Config->modules[i]->freqHigh);
-        outputHasPercussion[Config->modules[i].get()->outputNumber] = true;
         break;
       }
       default:
@@ -359,22 +351,7 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
     haptic_freq = vapi.mapFrequencyMIDI(interp_freq, freqMin, freqMax);
   }
 
-  // duck the amplitude to highlight percussive hits based on how long it has
-  // been since the percussive hit
-  float adjusted_amp = amp;
-  if (outputHasPercussion[channel]) {
-    const float minDiv = 4.0f;
-    const float maxDiv = 1.0f;
-    const float maxWindows = 5.0f;
-
-    // uses linear interpolation to determine how much to duck the amplitude
-    float t = min((float)windowsSinceHit / maxWindows, 1.0f);
-    float divisor = linear_interpolation(minDiv, maxDiv, t);
-
-    adjusted_amp /= divisor;
-  }
-
-  vapi.assignWave(haptic_freq, adjusted_amp, channel);
+  vapi.assignWave(haptic_freq, amp, channel);
 }
 
 #endif // VAPI_EN

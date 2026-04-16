@@ -2,6 +2,7 @@
   "type": 0,
   "freqLow": 0,
   "freqhigh": 0,
+  "minAmpNorm": 1,
   "frequencyMapping": 0,
   "params": {}
 }
