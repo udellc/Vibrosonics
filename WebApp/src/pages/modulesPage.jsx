@@ -24,25 +24,25 @@ const ModulesPage = () => {
   const { modules, setModules } = useContext(AudioSettingsContext);
 
   // UI stuff
-  const [selectedChannel, setSelectedChannel] = useState(0);
-  const [displayedModules, setDisplayedModules] = useState([]);
-  const [moduleToAdd, setModuleToAdd] = useState(0);
-  const [showAddModuleError, setShowAddModuleError] = useState(false);
+  //const [selectedChannel, setSelectedChannel] = useState(0);
+  //const [displayedModules, setDisplayedModules] = useState([]);
+  // const [moduleToAdd, setModuleToAdd] = useState(0);
+  // const [showAddModuleError, setShowAddModuleError] = useState(false);
 
-  /**
-   * @brief Updates the indices of the displayed modules according to the selected channel number
-   */
-  useEffect(() => {
-    // Get filtered modules based on channel, saving the index for the modules context
-    const displayedIndices = modules
-      .map((m, index) =>
-        Number(m.outputNumber) === Number(selectedChannel) ? index : -1,
-      )
-      .filter((index) => index !== -1);
+  // /**
+  //  * @brief Updates the indices of the displayed modules according to the selected channel number
+  //  */
+  // useEffect(() => {
+  //   // Get filtered modules based on channel, saving the index for the modules context
+  //   const displayedIndices = modules
+  //     .map((m, index) =>
+  //       Number(m.outputNumber) === Number(selectedChannel) ? index : -1,
+  //     )
+  //     .filter((index) => index !== -1);
 
-    setDisplayedModules(displayedIndices);
+  //   setDisplayedModules(displayedIndices);
 
-  }, [modules, selectedChannel]);
+  // }, [modules, selectedChannel]);
 
   useEffect(() => {
     console.log(modules);
@@ -55,43 +55,43 @@ const ModulesPage = () => {
     getSettings();
   }, []);
 
-  /**
-   * @brief Updates the selected channel for displayed modules
-   * 
-   * @param {*} e - Changed event for the channel dropdown component
-   */
-  const handleOutputDropdownChange = (e) => {
-    setSelectedChannel(e.target.value);
-    setShowAddModuleError(false);
-  };
+  // /**
+  //  * @brief Updates the selected channel for displayed modules
+  //  * 
+  //  * @param {*} e - Changed event for the channel dropdown component
+  //  */
+  // const handleOutputDropdownChange = (e) => {
+  //   setSelectedChannel(e.target.value);
+  //   setShowAddModuleError(false);
+  // };
 
-  /**
-   * @brief Updates the selected module to add
-   * 
-   * @param {*} e - Changed event for the add module dropdown component
-   */
-  const handleAddDropdownChange = (e) => {
-    setModuleToAdd(e.target.value);
-    setShowAddModuleError(false);
-  }
+  // /**
+  //  * @brief Updates the selected module to add
+  //  * 
+  //  * @param {*} e - Changed event for the add module dropdown component
+  //  */
+  // const handleAddDropdownChange = (e) => {
+  //   setModuleToAdd(e.target.value);
+  //   setShowAddModuleError(false);
+  // }
 
-  /**
-   * @brief Adds new module of a selected type to the module list
-   */
-  const handleAddModule = () => {
-    // prevent user from adding duplicate modules to the same output
-    if (modules.some(item => item["moduleType"] == moduleToAdd && item["outputNumber"] == selectedChannel)){
-      setShowAddModuleError(true);
-      return;
-    }
+  // /**
+  //  * @brief Adds new module of a selected type to the module list
+  //  */
+  // const handleAddModule = () => {
+  //   // prevent user from adding duplicate modules to the same output
+  //   if (modules.some(item => item["moduleType"] == moduleToAdd && item["outputNumber"] == selectedChannel)){
+  //     setShowAddModuleError(true);
+  //     return;
+  //   }
 
-    // add module from default registry assigned to current channel
-    const newModule = { ...moduleRegistry[moduleToAdd] };
-    newModule["outputNumber"] = selectedChannel;
-    setModules([...modules, newModule]);
+  //   // add module from default registry assigned to current channel
+  //   const newModule = { ...moduleRegistry[moduleToAdd] };
+  //   newModule["outputNumber"] = selectedChannel;
+  //   setModules([...modules, newModule]);
 
-    setShowAddModuleError(false);
-  }
+  //   setShowAddModuleError(false);
+  // }
 
   /**
    * @brief Gets the analysis config from the web server
@@ -109,11 +109,7 @@ const ModulesPage = () => {
     <div className="flex flex-col m-8">
       <ConfigManager>
         <>
-          <GlobalSettings
-            globalSettings={globalSettings}
-            setGlobalSettings={setGlobalSettings}
-          />
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <h4 className="font-bold text-lg">Output Channel:</h4>
             <select
               className="p-1 h-10 w-20 bg-blue-300 mb-4"
@@ -145,14 +141,14 @@ const ModulesPage = () => {
                 This module has already been added to channel {selectedChannel}
               </p>
             )}
-          </div>
+          </div> */}
 
           <div className="flex flex-row gap-4">
             {/* Only display modules with the corresponding output channel number.
                 We pass in modules[index] because the actual modules being sent to the server
                 are updated here, rather than creating a copy of the module
             */}
-            {displayedModules?.map((index) => {
+            {modules?.map((index) => {
               return (
                 <div key={index} className="gap-3">
                   <AnalysisModule
@@ -164,6 +160,10 @@ const ModulesPage = () => {
               );
             })}
           </div>
+          <GlobalSettings
+            globalSettings={globalSettings}
+            setGlobalSettings={setGlobalSettings}
+          />
         </>
       </ConfigManager>
     </div>
