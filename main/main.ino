@@ -15,9 +15,6 @@
 #include "config.h"
 #include "hapticSettings.h"
 #include <memory>
-
-#ifdef VAPI_EN
-
 #include <VibrosonicsAPI.h>
 
 // Vibrosonics audio analysis globals
@@ -47,13 +44,20 @@ int windowsSinceHit = 0;
 AnalysisModule* analysisModules[NUM_OUT_CH * 2] = { nullptr };
 bool outputHasPercussion[NUM_OUT_CH] = { false };
 
-#endif
-
 // FreeRTOS stuff for the web server running on core 0
 #define TASK_DELAY_MS 100u
 #define WEB_SERVER_STACK_SIZE 8192u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
+
+// Helper functions
+void processData(std::shared_ptr<const AnalysisConfig> target);
+void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig);
+inline void doPercussiveAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig);
+inline void doMajorPeaksAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig);
+void rebuildOutputModules(const AnalysisConfig* Config);
+int interpolateAroundPeak(float *data, int indexOfPeak);
+void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption);
 
 /**
  * @brief Function to be pinned to core 0. Handles the clients for the web server
@@ -116,15 +120,13 @@ void setup()
     while (true)
       delay(3000u);
   }
-  #ifdef VAPI_EN
-    DEBUG_PRINTLN("DEBUG: Initializing VAPI");
+  DEBUG_PRINTLN("DEBUG: Initializing VAPI");
 
-    activeConfig = HapticSettings::Instance().getConfig_mut();
-    rebuildOutputModules(activeConfig.get());
-    durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
+  activeConfig = HapticSettings::Instance().getConfig_mut();
+  rebuildOutputModules(activeConfig.get());
+  durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
 
-    vapi.init();
-  #endif
+  vapi.init();
 }
 
 /**
@@ -133,7 +135,6 @@ void setup()
  */
 void loop()
 {
-#ifdef VAPI_EN
   if (!vapi.isAudioLabReady())
     return;
 
@@ -170,10 +171,7 @@ void loop()
       AudioLab.mapAmplitudes(ch, activeConfig->minAmpNorm);
   }
   AudioLab.synthesize();
-#endif // VAPI_EN
 }
-
-#ifdef VAPI_EN
 
 void processData(std::shared_ptr<const AnalysisConfig> target){
   // Get input data and clean it
@@ -197,85 +195,93 @@ void processData(std::shared_ptr<const AnalysisConfig> target){
   percussiveSpectrogram.pushWindow(percussiveData);
 }
 
+inline void doPercussiveAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig)
+{
+  auto percModuleInterface = static_cast<ModuleInterface<bool>*>(module);
+  auto percussionConfig = static_cast<const PercussionConfig*>(moduleConfig);
+  // If percussion was detected, synthesize a hit
+  if (percModuleInterface->getOutput()) {
+    DEBUG_PRINTLN("Percussion hit detected");
+    // Get the energy, entropy and positive flux for the percussive hit. These
+    // values are used to synthesize the haptic feedback of the percussion.
+    float energy = AudioPrism::energy(percussiveData, 
+                                      moduleConfig->freqLow, 
+                                      moduleConfig->freqHigh, 
+                                      WINDOW_SIZE_OVERLAP);
+    float entropy = AudioPrism::entropy(percussiveData, 
+                                      moduleConfig->freqLow, 
+                                      moduleConfig->freqHigh, 
+                                      WINDOW_SIZE_OVERLAP);
+    float flux = AudioPrism::positive_flux(percussiveData,
+                                      percussiveSpectrogram.getPreviousWindow(),
+                                      moduleConfig->freqLow, 
+                                      moduleConfig->freqHigh, 
+                                      WINDOW_SIZE_OVERLAP);
+
+    // Normalize the flux [0.0, 1.0] by the total energy
+    if (energy > 0.0f)
+        flux /= energy;
+    else
+        flux = 0.0f;
+
+    // Create the frequency and amplitude envelopes for the percussive hit,
+    // using a set frequency of 160 and the energy of the detected hit as the
+    // amplitude.
+    freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
+    ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
+
+    vapi.createDynamicGrain(moduleConfig->outputNumber, 
+                            percussionConfig->waveType, 
+                            freqEnv, 
+                            ampEnv, 
+                            durEnv);
+
+    // For particularily noisy hits, synthesize another hit with less energy
+    // to create a rougher feeling.
+    if (entropy > 0.9) {
+      energy *= 0.3;
+      freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
+      ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
+      vapi.createDynamicGrain(moduleConfig->outputNumber, 
+                              percussionConfig->waveType, 
+                              freqEnv, 
+                              ampEnv, 
+                              durEnv);
+    }
+    windowsSinceHit = 0;
+  }
+  else {
+    windowsSinceHit++;
+  }
+}
+
+inline void doMajorPeaksAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig)
+{
+  auto mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
+  auto majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
+  float **analysisData = mpModuleInterface->getOutput();
+
+  for (auto i {0}; i < majorPeaksConfig->maxPeaks; i++)
+  {
+    synthesizePeak(moduleConfig->outputNumber, 
+                    analysisData[MP_FREQ][i], 
+                    analysisData[MP_AMP][i], 
+                    moduleConfig->freqLow, 
+                    moduleConfig->freqHigh, 
+                    majorPeaksConfig->frequencyMapping);
+  }
+}
+
 void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleConfig){
   switch(moduleConfig->moduleType){
     case PERCUSSION:
-      {
-        ModuleInterface<bool>* percModuleInterface = static_cast<ModuleInterface<bool>*>(module);
-        const PercussionConfig* percussionConfig = static_cast<const PercussionConfig*>(moduleConfig);
-        // If percussion was detected, synthesize a hit
-        if (percModuleInterface->getOutput()) {
-          DEBUG_PRINTLN("Percussion hit detected");
-          // Get the energy, entropy and positive flux for the percussive hit. These
-          // values are used to synthesize the haptic feedback of the percussion.
-          float energy = AudioPrism::energy(percussiveData, 
-                                            moduleConfig->freqLow, 
-                                            moduleConfig->freqHigh, 
-                                            WINDOW_SIZE_OVERLAP);
-          float entropy = AudioPrism::entropy(percussiveData, 
-                                            moduleConfig->freqLow, 
-                                            moduleConfig->freqHigh, 
-                                            WINDOW_SIZE_OVERLAP);
-          float flux = AudioPrism::positive_flux(percussiveData,
-                                            percussiveSpectrogram.getPreviousWindow(),
-                                            moduleConfig->freqLow, 
-                                            moduleConfig->freqHigh, 
-                                            WINDOW_SIZE_OVERLAP);
+      doPercussiveAnalysis(module, moduleConfig);
+      break;
 
-          // Normalize the flux [0.0, 1.0] by the total energy
-          if (energy > 0.0f)
-              flux /= energy;
-          else
-              flux = 0.0f;
-
-          // Create the frequency and amplitude envelopes for the percussive hit,
-          // using a set frequency of 160 and the energy of the detected hit as the
-          // amplitude.
-          freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
-          ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
-
-          vapi.createDynamicGrain(moduleConfig->outputNumber, 
-                                  percussionConfig->waveType, 
-                                  freqEnv, 
-                                  ampEnv, 
-                                  durEnv);
-
-          // For particularily noisy hits, synthesize another hit with less energy
-          // to create a rougher feeling.
-          if (entropy > 0.9) {
-            energy *= 0.3;
-            freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
-            ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
-            vapi.createDynamicGrain(moduleConfig->outputNumber, 
-                                    percussionConfig->waveType, 
-                                    freqEnv, 
-                                    ampEnv, 
-                                    durEnv);
-          }
-          windowsSinceHit = 0;
-        }
-        else {
-          windowsSinceHit++;
-        }
-        break;
-      }
     case MAJORPEAKS:
-      {
-        ModuleInterface<float**>* mpModuleInterface = static_cast<ModuleInterface<float**>*>(module);
-        const MajorPeaksConfig* majorPeaksConfig = static_cast<const MajorPeaksConfig*>(moduleConfig);
-        float **analysisData = mpModuleInterface->getOutput();
+      doMajorPeaksAnalysis(module, moduleConfig);
+      break;
 
-        for (auto i {0}; i < majorPeaksConfig->maxPeaks; i++)
-        {
-          synthesizePeak(moduleConfig->outputNumber, 
-                          analysisData[MP_FREQ][i], 
-                          analysisData[MP_AMP][i], 
-                          moduleConfig->freqLow, 
-                          moduleConfig->freqHigh, 
-                          majorPeaksConfig->frequencyMapping);
-        }
-        break;
-      }
     default:
       break;
   }
@@ -341,8 +347,8 @@ int interpolateAroundPeak(float *data, int indexOfPeak) {
   return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
 }
 
-float linear_interpolation(float a, float b, float t) {
-    return a + t * (b - a);
+inline float linear_interpolation(float a, float b, float t) {
+  return a + t * (b - a);
 }
 
 void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption) {
@@ -376,5 +382,3 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
 
   vapi.assignWave(haptic_freq, adjusted_amp, channel);
 }
-
-#endif // VAPI_EN
