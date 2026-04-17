@@ -110,10 +110,6 @@ const ModulesPage = () => {
     <div className="flex flex-col m-8">
       <ConfigManager>
         <>
-          <GlobalSettings
-            globalSettings={globalSettings}
-            setGlobalSettings={setGlobalSettings}
-          />
           <div className="flex flex-col">
             <h4 className="font-bold text-lg">Output Channel:</h4>
             <select
@@ -148,7 +144,7 @@ const ModulesPage = () => {
             )}
           </div>
 
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-row gap-4 pb-4">
             {/* Only display modules with the corresponding output channel number.
                 We pass in modules[index] because the actual modules being sent to the server
                 are updated here, rather than creating a copy of the module
@@ -166,6 +162,10 @@ const ModulesPage = () => {
             })}
           </div>
         </>
+        <GlobalSettings
+            globalSettings={globalSettings}
+            setGlobalSettings={setGlobalSettings}
+          />
       </ConfigManager>
     </div>
   );
