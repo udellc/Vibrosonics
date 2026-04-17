@@ -107,7 +107,7 @@ const NetworkPage = () => {
               onChange={setPassword}
             />
             <button
-              className="border-3 border-amber-500 p-1 cursor-pointer mt-3 text-lg font-semibold rounded-sm"
+              className="p-2 bg-amber-200 border border-amber-500 p-1 cursor-pointer mt-3 text-lg font-semibold rounded-sm hover:bg-[#fbbf24]"
               onClick={handleNetworkRequest}
             >
               Submit
