@@ -6,10 +6,11 @@
  * Description: Displays the adjustable global audio config
  * settings.
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella
  ***************************************************************/
 
 import Knob from "../atomics/knob";
+import { useState } from 'react';
 import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
 import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils";
 
@@ -23,6 +24,8 @@ import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils"
  * @returns Global settings UI component
  */
 const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   const settingsDisplay = GlobalSettingsDisplay.settings;
 
   // Hook used for real-time updates
@@ -58,25 +61,34 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
   // }
 
   return (
-    <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
-      <h3 className="font-bold text-xl">{GlobalSettingsDisplay.title}</h3>
+    <div>
+      <button onClick={() => setIsCollapsed(!isCollapsed)} 
+        className = "flex items-center gap-2 text-center justify-center font-bold text-xl mx-auto w-fit py-4">
+        {GlobalSettingsDisplay.title}
+        <span className="text-sm">{isCollapsed ? '▼' : '▲'}</span>
+      </button>
 
-      <div className="flex flex-wrap justify-center gap-4">
-        {Object.entries(globalSettings).map(([key, val]) => {
-          return (
-            <div>
-              <Knob
-                min={settingsDisplay[key].min}
-                max={settingsDisplay[key].max}
-                title={settingsDisplay[key].title}
-                step={settingsDisplay[key].step}
-                onChange={(value) => handleKnobChange(key, value)}
-                value={globalSettings[key] ?? val}
-              />
-            </div>
-          );
-        })}
+      {!isCollapsed && (
+      <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
+
+        <div className="flex flex-wrap justify-center gap-4">
+          {Object.entries(globalSettings).map(([key, val]) => {
+            return (
+              <div>
+                <Knob
+                  min={settingsDisplay[key].min}
+                  max={settingsDisplay[key].max}
+                  title={settingsDisplay[key].title}
+                  step={settingsDisplay[key].step}
+                  onChange={(value) => handleKnobChange(key, value)}
+                  value={globalSettings[key] ?? val}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
+      )}
     </div>
   );
 };
