@@ -50,12 +50,11 @@ const RadioPage = () => {
                 <input 
                     id="Station" 
                     type="number" 
-                    className="border rounded-xl px-2"
+                    className="border rounded-xl px-2 hover:border-amber-500 "
                     step="any"></input>
             </div>
 
             <label className="font-bold"> OR </label>
-
 
             <div className="relative w-full max-w-xs flex items-center">
                 <label className="block mb-2 w-40">
@@ -63,7 +62,7 @@ const RadioPage = () => {
                 </label>
                 <div
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-50 flex items-center justify-between border border-gray-300 rounded-xl px-4 py-3 bg-white cursor-pointer hover:border-amber-500 transition-colors shadow-sm"
+                    className="w-50 flex items-center justify-between border rounded-xl px-4 py-3 bg-white cursor-pointer hover:border-amber-500 transition-colors"
                 >
                     <span className={selectedStation ? "test-black" : "text-gray-400"}>
                         {selectedStation ? selectedStation.name : "Select a station.."}
