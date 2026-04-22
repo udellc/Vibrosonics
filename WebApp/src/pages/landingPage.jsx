@@ -85,7 +85,10 @@ const LandingPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-10 pt-24 max-w-6xl mx-auto">
           {/** info bubble 1 */}
           <div className="flex flew-row gap-2 pr-12">
-            <InfoButton onClick={() => {}}/>
+            <InfoButton
+              onClick={() => ("")}
+              infoText="none"
+              showToolTip={false}/>
             <h3 className="text-xl font-bold text-gray-800">Audio Haptics</h3>
             <p className="text-gray-500 mt-2 leading-relaxed">
               Audio haptics technology enhances sensory perception for individuals 
@@ -96,7 +99,10 @@ const LandingPage = () => {
 
           {/** info bubble 2 */}
           <div className="flex flew-row gap-4">
-            <InfoButton onClick={() => {}}/>
+            <InfoButton
+              onClick={() => ("")}
+              infoText="none"
+              showToolTip={false}/>
             <h3 className="text-xl font-bold text-gray-800">The Interface</h3>
             <p className="text-gray-500 mt-2 leading-relaxed">
               Our intuitive interface seamlessly unites he audio haptic device 
@@ -107,7 +113,10 @@ const LandingPage = () => {
 
           {/** info bubble 3 */}
           <div className="flex flew-row gap-2 pl-12">
-            <InfoButton onClick={() => {}}/>
+            <InfoButton
+              onClick={() => ("")}
+              infoText="none"
+              showToolTip={false}/>
             <h3 className="text-xl font-bold text-gray-800">The Team</h3>
             <p className="text-gray-500 mt-2 leading-relaxed">
               Led by Dr. Chet Udell of Oregon State University,

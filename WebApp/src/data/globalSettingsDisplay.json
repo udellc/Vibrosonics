@@ -3,35 +3,35 @@
   "settings": {
     "noiseFloor": {
       "title": "Noise Floor",
-      "description": "",
+      "description": "The baseline level of background noise or interference expected in the environment. It acts as an absolute minimum threshold below which incoming signals are ignored entirely.",
       "min": 0,
       "max": 2048,
       "step": 1
     },
     "smoothingFactor": {
       "title": "Smoothing Factor",
-      "description": "",
+      "description": "A parameter used to average or filter the data over time or space to reduce random, rapid fluctuations. A higher smoothing factor produces a more stable, readable output but will respond more slowly to sudden, actual changes in the environment.",
       "min": 0,
       "max": 1,
       "step": 0.01
     },
     "cfarRefCount": {
       "title": "CFAR Reference Cells",
-      "description": "",
+      "description": "The number of neighboring data points used to calculate the average local background noise level around a potential target. Using more cells provides a more accurate noise estimate but can reduce detection resolution if multiple targets are close together.",
       "min": 1,
       "max": 30,
       "step": 1
     },
     "cfarGuardCount": {
       "title": "CFAR Guard Cells",
-      "description": "",
+      "description": "Data points immediately adjacent to the cell being tested that are intentionally excluded from the noise estimation calculation. This prevents a target's own signal energy from ''bleeding'' into the calculation, which would artificially raise the noise floor and mask the target.",
       "min": 1,
       "max": 30,
       "step": 1
     },
     "cfarBias": {
       "title": "CFAR Bias",
-      "description": "",
+      "description": "A scaling factor (or multiplier) applied to the calculated background noise to establish the final detection threshold. Increasing this value reduces false alarms from random noise spikes, but makes it harder to detect weak legitimate targets.",
       "min": 0,
       "max": 25,
       "step": 0.01
@@ -46,7 +46,8 @@
           "title": "Min Amplitude Norm",
           "min": 1,
           "max": 20000,
-          "step": 0.01
+          "step": 0.01,
+          "description": "An absolute minimum intensity threshold a signal must reach to be considered a valid detection, regardless of what the CFAR algorithm calculates. It acts as a hard cutoff to filter out consistently weak, insignificant returns."
         }
   }
 }

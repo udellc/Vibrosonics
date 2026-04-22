@@ -17,6 +17,7 @@ import GlobalSettings from "../components/globalSettings";
 import ConfigManager from "../components/configManager";
 import { moduleRegistry } from "../utils/defaultModules";
 import DropDown from "../atomics/dropdown";
+import InfoButton from "../atomics/infoButton";
 
 const ModulesPage = () => {
   // Persistant memory/data
@@ -162,6 +163,7 @@ const ModulesPage = () => {
             })}
           </div>
         </>
+        
         <GlobalSettings
             globalSettings={globalSettings}
             setGlobalSettings={setGlobalSettings}

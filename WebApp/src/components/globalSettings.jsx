@@ -20,10 +20,10 @@ import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils"
  * @param {Object} _ - Object containing required fields 
  * @param {Object} _.globalSettings - Global settings we want to display and modify 
  * @param {CallableFunction} _.setGlobalSettings - Callback that updates the global settings config and UI 
- * 
+ * @param {any} [_.children]
  * @returns Global settings UI component
  */
-const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
+const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const settingsDisplay = GlobalSettingsDisplay.settings;
@@ -74,12 +74,14 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
         <div className="flex flex-wrap justify-center gap-4">
           {Object.entries(globalSettings).map(([key, val]) => {
             return (
-              <div>
+              <div className="flex flex-row">
+                {children}
                 <Knob
                   min={settingsDisplay[key].min}
                   max={settingsDisplay[key].max}
                   title={settingsDisplay[key].title}
                   step={settingsDisplay[key].step}
+                  description={settingsDisplay[key].description}
                   onChange={(value) => handleKnobChange(key, value)}
                   value={globalSettings[key] ?? val}
                 />

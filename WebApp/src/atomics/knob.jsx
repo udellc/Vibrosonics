@@ -9,6 +9,7 @@
  ***************************************************************/
 
 import { useEffect, useRef } from "preact/hooks";
+import InfoButton from "./infoButton";
 
 /**
  * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob
@@ -16,6 +17,7 @@ import { useEffect, useRef } from "preact/hooks";
  *
  * @param {Object} setting - Expanded object for the knob settings
  * @param {String} setting.title - Name of the setting to be changed
+ * @param {String} [setting.description] - description of setting 
  * @param {Number} setting.value - changing value
  * @param {Number} setting.min - Min value the knob can be at
  * @param {Number} setting.max - Max value the knob can be at
@@ -28,6 +30,7 @@ export default function Knob({
   step = 1,
   onChange,
   title,
+  description,
   value,
 }) {
   const startY = useRef(null);
@@ -83,6 +86,7 @@ export default function Knob({
   return (
     // Parent container
     <div className="flex flex-col items-center font-bold text-sm">
+
       {/* Outside slider */}
       <div className="w-[100px] h-[100px] flex items-center justify-center relative">
         <div
@@ -101,7 +105,18 @@ export default function Knob({
           </div>
         </div>
       </div>
-      <div className="mt-1 justify-center">{title}</div>
+      <div className="flex flex-row">
+        <div className="mt-1 justify-center">{title}</div>
+        {description && (
+          <div className="asbolute top-2 left-2">
+            <InfoButton 
+                infoText={description} 
+                onClick={() => {}} // Pass an empty function so it doesn't crash if clicked
+                showToolTip={true}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Spinbox for the knob */}
       <div className="flex flex-col items-center gap-1 font-semibold">
