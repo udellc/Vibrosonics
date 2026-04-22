@@ -136,16 +136,15 @@ const ConfigManager = ({ children }) => {
           ))}
         </div>
         
-        {/* TODO: testing this out rq 
+        {/* TODO: testing this out rq */}
         <div>
           <button
-            className="bg-amber-500 cursor-pointer"
+            className="bg-amber-200 font-bold border border-amber-600 rounded-xl p-1"
               onClick={sendData}
           >
             Send Data
           </button>
         </div>
-        */}
       </div>
 
       {/* Configuration stuff */}

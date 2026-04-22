@@ -20,6 +20,7 @@ import TextEntry from "../components/textEntry";
  */
 const NetworkPage = () => {
   const [availableNetworks, setAvailableNetworks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [password, setPassword] = useState("");
   const [showTextForm, setTextForm] = useState(false);
@@ -28,6 +29,8 @@ const NetworkPage = () => {
    * @brief Makes a request to the ESP32 to scan and return available networks
    */
   const getNetworks = async () => {
+    setIsLoading(true);
+
     try {
       const res = await api("GET", "/network/scanNetworks");
 
@@ -36,6 +39,8 @@ const NetworkPage = () => {
       }
     } catch (err) {
       console.error("Failed to scan networks", err);
+    } finally {
+      setIsLoading(false);
     }
   };
   /**
@@ -63,6 +68,7 @@ const NetworkPage = () => {
       route("/modules", true);
     }
   };
+
   // Scan for networks on mount
   useEffect(() => {
     getNetworks();
@@ -70,54 +76,68 @@ const NetworkPage = () => {
 
   return (
     <div className="mt-20 min-h-[60vh] ml-10 mr-10">
-      {/* Centered vertical layout */}
-      <div className="flex flex-col items-center">
-        <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
-
-        {/* Scan network button */}
-        <div className="pt-4">
-          <button
-            className="p-3 bg-amber-200 border border-amber-500 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
-            onClick={getNetworks}
-          >
-            Scan Networks
-          </button>
+      {isLoading ? (
+        
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-gray-200 border-t-amber-500 rounded-full animate-spin" />
+          <p className="text-gray-500 font-medium animate-pulse">
+            Scanning for networks...
+          </p>
         </div>
 
-        {/* Network list */}
-        {availableNetworks.map((network) => {
-          return (
-            <NetworkCard
-              key={network}
-              SSID={network}
-              onConnect={() => {
-                handleConnectClicked(network);
-              }}
-            />
-          );
-        })}
-        {showTextForm === true ? (
-          // Form for entering password
-          <>
-            <p className="mt-4">Selected Network: {selectedNetwork}</p>
-            <TextEntry
-              label="Password"
-              entryType="password"
-              presetText="Enter Password"
-              onChange={setPassword}
-            />
+      ) : (
+
+        <div className="flex flex-col items-center">
+          {/* Centered vertical layout */}
+          <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
+
+          {/* Scan network button */}
+          <div className="pt-4">
             <button
-              className="p-2 bg-amber-200 border border-amber-500 p-1 cursor-pointer mt-3 text-lg font-semibold rounded-sm hover:bg-[#fbbf24]"
-              onClick={handleNetworkRequest}
+              className="p-3 bg-amber-200 border border-amber-500 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
+              onClick={getNetworks}
             >
-              Submit
+              Scan Networks
             </button>
-          </>
-        ) : (
-          // Show nothing
-          <></>
-        )}
-      </div>
+          </div>
+
+          {/* Network list */}
+          {availableNetworks.map((network) => {
+            return (
+              <NetworkCard
+                key={network}
+                SSID={network}
+                onConnect={() => {
+                  handleConnectClicked(network);
+                }}
+              />
+            );
+          })}
+
+          {showTextForm === true ? (
+            // Form for entering password
+            <>
+              <p className="mt-4">Selected Network: {selectedNetwork}</p>
+              <TextEntry
+                label="Password"
+                entryType="password"
+                presetText="Enter Password"
+                onChange={setPassword}
+              />
+              <button
+                className="p-2 bg-amber-200 border border-amber-500 cursor-pointer mt-3 text-lg font-semibold rounded-sm hover:bg-[#fbbf24]"
+                onClick={handleNetworkRequest}
+              >
+                Submit
+              </button>
+            </>
+          ) : (
+            // Show nothing
+            <></>
+          )}
+        </div>
+
+      )}
     </div>
   );
 };
