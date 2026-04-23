@@ -53,7 +53,7 @@ const ModulesPage = () => {
   const getSettings = async () => {
     const res = await api("GET", "/analysis/getSettings");
 
-    if (res.status == HTTP_STATUS.OK) {
+    if (res?.status == HTTP_STATUS.OK) {
       setGlobalSettings(res.data?.global ?? {});
       setModules(res.data?.modules ?? []);
     }
@@ -62,43 +62,13 @@ const ModulesPage = () => {
   return (
     <div className="flex flex-col m-8">
       <ConfigManager>
-        <>
-          <div className="flex flex-col">
-            <h4 className="font-bold text-lg">Output Channel:</h4>
-            <select
-              className="p-1 h-10 w-20 bg-white-300 mb-4 border rounded-xl"
-              onChange={(e) => handleOutputDropdownChange(e)}
-            >
-              <option value={0}>0</option>
-              <option value={1}>1</option>
-            </select>
-          </div>
-          <h4 className="font-bold text-lg">Add New Module:</h4>
-          <div className="flex flex-col mb-4">
-            <div className="flex">
-              <select
-                className="p-1 h-10 w-40 bg-white-300 mb-2 mr-4 border rounded-xl"
-                onChange={(e) => handleAddDropdownChange(e)}
-              >
-                <option value={0}>Major Peaks</option>
-                <option value={1}>Percussion</option>
-              </select>
-              <button
-                className="bg-amber-200 cursor-pointer w-30 h-10 rounded-xl border border-amber-600 hover:bg-[#fbbf24]"
-                onClick={handleAddModule}
-              >
-                Add Module
-              </button>
-            </div>
-            {showAddModuleError && (
-              <p className="text-red-500 text-sm">
-                This module has already been added to channel {selectedChannel}
-              </p>
-            )}
-          </div>
-
+        {/* TODO: better way to check if module load failed? */}
         {modules.length != 0 && (
-          <div className="flex flex-row gap-4 pb-4">
+          <div className="flex flex-row gap-4">
+            {/* Either display empty slot or module assigned to each output
+                We pass in module because the actual modules being sent to the server
+                are updated here, rather than creating a copy of the module
+            */}
             {outputs.map((module, outputNum) => {
               return (
                 <div key={outputNum} className="gap-3">
@@ -119,12 +89,12 @@ const ModulesPage = () => {
               );
             })}
           </div>
-        </>
-        
+        )}
         <GlobalSettings
-            globalSettings={globalSettings}
-            setGlobalSettings={setGlobalSettings}
-          />
+          globalSettings={globalSettings}
+          setGlobalSettings={setGlobalSettings}
+        />
+          
       </ConfigManager>
     </div>
   );
