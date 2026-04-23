@@ -17,13 +17,13 @@ import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELD
  * @brief The AnalysisModule component describe a full module that can be modified
  * 
  * @param {Object} _ - Object describing the configurations
- * @param {Number} _.index - Index of module to be updated using the modules context
+ * @param {Number} _.outputNum - Index of module to be updated using the modules context
  * @param {Object} _.module - Module configuration to modify
  * @param {CallableFunction} _.setModules - Callback for actually updating the module settings and UI
  * 
  * @returns AnalysisModule component describing the configs
  */
-export default function AnalysisModule({ index, module, setModules }) {
+export default function AnalysisModule({ outputNum, module, setModules }) {
   if (!module) return null;
 
   const isValid = useRef(true);
@@ -53,16 +53,17 @@ export default function AnalysisModule({ index, module, setModules }) {
    */
   const handleValueChange = (id, val) => {
     // Update the UI
-    setModules((prev) => {
-      const updated = [...prev];
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.outputNumber !== outputNum) return m;
 
-      // This index is for the UI and may not be same for the web server
-      updated[index] = {
-        ...updated[index],
-        [id]: val,
-      };
-      return updated;
-    });
+        return {
+          ...m,
+          [id]: val,
+        };
+      })
+    );
+
     // Send the updated val to the web server
     editSetting({
       // This index is for the position in the web server array
@@ -76,11 +77,9 @@ export default function AnalysisModule({ index, module, setModules }) {
    * @brief Deletes the current module from the module list
    */
   const handleDeleteModule = () => {
-    setModules((prev) => {
-      const updated = [...prev];
-      updated.splice(index, 1); 
-      return updated;
-    });
+    setModules((prev) =>
+      prev.filter((m) => m.outputNumber !== outputNum)
+    );
   };
 
   /**
