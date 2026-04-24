@@ -42,16 +42,11 @@ const ModulesPage = () => {
 
     setDisplayedModules(displayedIndices);
 
-<<<<<<< HEAD
   }, [modules, selectedChannel]);
 
   useEffect(() => {
     console.log(modules);
   }, modules);
-=======
-    // FIXME: the length may not be a good indicator, but this works for now
-  }, [modules, selectedChannel]);
->>>>>>> e782188 (feat: added rock and jazz presets to webapp)
 
   /**
    * @brief Gets the analysis configurations on mount

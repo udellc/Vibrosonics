@@ -25,13 +25,9 @@ import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELD
  */
 export default function AnalysisModule({ index, module, setModules }) {
   if (!module) return null;
-<<<<<<< HEAD
 
   const isValid = useRef(true);
   const { editSetting } = useEditSetting(QUEUE_MESSAGE_ID.EditModule, isValid);
-=======
-  const [isValid, setIsValid] = useState(true);
->>>>>>> e782188 (feat: added rock and jazz presets to webapp)
 
   // Getting the module specific settings display values and ranges from the /data/ directory
   const moduleType = module.moduleType ?? module.type;
