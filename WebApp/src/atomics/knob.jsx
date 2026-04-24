@@ -111,7 +111,7 @@ export default function Knob({
           <div className="asbolute top-2 left-2">
             <InfoButton 
                 infoText={description} 
-                onClick={() => {}} // Pass an empty function so it doesn't crash if clicked
+                onClick={() => {}} 
                 showToolTip={true}
             />
           </div>

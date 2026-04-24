@@ -6,7 +6,7 @@
  * Description: Displays the adjustable global audio config
  * settings.
  *
- * Author: Ivan Wong and Bella
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
 import Knob from "../atomics/knob";

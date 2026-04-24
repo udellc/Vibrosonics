@@ -35,7 +35,7 @@ export default function EmptyOutput({ outputNum, setModules }) {
   }
 
   return (
-    <div className="pt-8 p-4 border border-blue-300 rounded-xl shadow-inner flex flex-col items-center">
+    <div className="py-93 px-24 border border-blue-300 rounded-xl shadow-inner flex flex-col items-center">
       {/* Add module button */}
       <button
         className="p-3 cursor-pointer text-blue-400"

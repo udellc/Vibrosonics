@@ -71,7 +71,7 @@ const ModulesPage = () => {
             */}
             {outputs.map((module, outputNum) => {
               return (
-                <div key={outputNum} className="gap-3">
+                <div key={outputNum} className="gap-3 flex flex-col items-center">
                   <p>Output {outputNum + 1}</p>
                   {module === null ? (
                     <EmptyOutput

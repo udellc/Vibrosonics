@@ -12,6 +12,7 @@ import { useEffect, useRef } from "preact/hooks";
 import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
 import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID } from "../utils/utils";
+import InfoButton from "../atomics/infoButton";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified
@@ -127,17 +128,17 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
       <div>
         {isValid?.current ? (
-          <div className="text-green-500">in valid ranges</div>
+          <div className="text-green-500">inside valid ranges</div>
         ) : (
           <div className="font-bold text-red-500">outside valid ranges</div>
         )}
       </div>
 
       {/* Row layout */}
-      <div className="flex flex-row gap-x-3">
+      <div className="flex flex-col gap-x-3 px-6">
 
         {/* Create a grid of knobs for corresponding settings */}
-        <div className="grid grid-rows-3 grid-flow-col gap-5">
+        <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">
           {Object.entries(knobs)?.map( ([key, val]) => {
             return (
               <Knob 
@@ -146,6 +147,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
                 step={val.step}
                 onChange={(value) => handleValueChange(key, value)}
                 title={val.title}
+                description={val.description}
                 value={module[key] ?? 0}
               />
             );
