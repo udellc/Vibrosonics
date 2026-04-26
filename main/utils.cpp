@@ -32,7 +32,6 @@ void Utils::populateGlobalSettings(JsonObject& global, AnalysisConfig* config)
   config->cfarGuardCount = global["cfarGuardCount"] | 1;
   config->cfarBias = global["cfarBias"] | 1.2f;
   config->smoothingFactor = global["smoothingFactor"] | 0.2f;
-  config->minAmpNorm = global["minAmpNorm"] | 10000.0f;
 }
 
 /**
@@ -50,7 +49,7 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 
   for (auto module : modulesList)
   {
-    if (ch >= (NUM_OUT_CH * 2)) break;
+    if (ch >= (NUM_OUT_CH)) break;
 
     // newModule type is ModuleConfig at the moment
     const auto Type = static_cast<ModuleType>(module["moduleType"]);
@@ -66,6 +65,7 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
     modulePtr->outputNumber = module["outputNumber"]; 
     modulePtr->freqLow = module["freqLow"]; 
     modulePtr->freqHigh = module["freqHigh"];
+    modulePtr->minAmpNorm = module["minAmpNorm"];
 
     // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
     if (Type == MAJORPEAKS)
@@ -104,7 +104,6 @@ void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
   global["cfarGuardCount"] = config->cfarGuardCount;
   global["cfarBias"] = config->cfarBias;
   global["smoothingFactor"] = config->smoothingFactor;
-  global["minAmpNorm"] = config->minAmpNorm;
 }
 
 /**
@@ -116,7 +115,7 @@ void Utils::packageGlobalSettings(JsonObject& global, AnalysisConfig* config)
  */
 void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
- for (auto i {0u}; i < NUM_OUT_CH * 2; i++)
+ for (auto i {0u}; i < NUM_OUT_CH; i++)
  {
   if (config->modules[i] == nullptr)
     continue;
@@ -129,6 +128,7 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
   module["moduleType"] = config->modules[i]->moduleType;
   module["freqLow"] = config->modules[i]->freqLow;
   module["freqHigh"] = config->modules[i]->freqHigh;
+  module["minAmpNorm"] = config->modules[i]->minAmpNorm;
 
   // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
   if (config->modules[i]->moduleType == MAJORPEAKS)
@@ -162,8 +162,8 @@ inline ModulePtr Utils::createModule(const ModuleType Type)
   static const ModuleFactory Map =
   {
     // TODO: add more modules types as we create structs for them
-    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, NONE, 1); } },
-    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 0.0, 0.0, 0.0, SINE); } },
+    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, 1, NONE, 1); } },
+    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 1, 0.0, 0.0, 0.0, SINE); } },
   };
   // If the module type is defined, we return the second element since the Map carries a pair:
   // Ex: ( ModuleType, unique_ptr for module )
@@ -197,7 +197,6 @@ void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueM
         case ConfigField::NoiseFloor:
         case ConfigField::CfarBias:
         case ConfigField::SmoothingFactor:
-        case ConfigField::MinAmpNorm:
           msg.global.value.f = payload["value"].as<float>();
           break;
 
@@ -233,6 +232,7 @@ void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueM
         case ConfigField::FluxThresh:
         case ConfigField::EnergyThresh:
         case ConfigField::EntropyThresh:
+        case ConfigField::MinAmpNorm:
           msg.module.value.f = payload["value"].as<float>();
           break;
 
@@ -276,10 +276,6 @@ void Utils::applyGlobalEdit(AnalysisConfig* config, const QueueMessage& msg)
       config->smoothingFactor = msg.global.value.f;
       break;
 
-    case ConfigField::MinAmpNorm:      
-      config->minAmpNorm = msg.global.value.f;
-      break;
-
     default:
       break;
   }
@@ -313,6 +309,10 @@ bool Utils::applyModuleEdit(AnalysisConfig* config, const QueueMessage& msg)
     case ConfigField::OutputNumber: 
       mod->outputNumber = msg.module.value.i; 
       return true;
+
+    case ConfigField::MinAmpNorm:      
+      mod->minAmpNorm = msg.global.value.f;
+      break;
 
     default:
       break;

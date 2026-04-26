@@ -24,15 +24,15 @@ enum class ConfigField : uint
   CfarGuardCount,
   CfarBias,
   SmoothingFactor,
-  MinAmpNorm,
 
   // Marker for global fields
-  GLOBAL_END = MinAmpNorm,
+  GLOBAL_END = SmoothingFactor,
 
   // Shared module fields
   FreqLow,
   FreqHigh,
   OutputNumber,
+  MinAmpNorm,
 
   // MajorPeaks
   MaxPeaks,
@@ -66,11 +66,13 @@ protected:
               int outputNumber,
               ModuleType moduleType,
               uint16_t freqLow,
-              uint16_t freqHigh)
+              uint16_t freqHigh,
+              float minAmpNorm)
     : outputNumber(outputNumber),
       moduleType(moduleType),
       freqLow(freqLow),
-      freqHigh(freqHigh) {}
+      freqHigh(freqHigh),
+      minAmpNorm(minAmpNorm) {}
 public:
   // the output number that the module is assigned to
   int outputNumber;
@@ -80,6 +82,8 @@ public:
   uint16_t freqLow;
   // high value of the frequency range to pick up. must be positive and should be larger than freqLow
   uint16_t freqHigh;
+  // minimum value to use for amplitude mapping. must be positive
+  float minAmpNorm;
 };
 
 // configuration unique to the major peaks analysis module
@@ -87,9 +91,10 @@ struct MajorPeaksConfig : ModuleConfig {
   MajorPeaksConfig(int outputNumber,
                   uint16_t freqLow,
                   uint16_t freqHigh,
+                  float minAmpNorm,
                   FrequencyMapping frequencyMapping,
                   int maxPeaks)
-    : ModuleConfig(outputNumber, MAJORPEAKS, freqLow, freqHigh),
+    : ModuleConfig(outputNumber, MAJORPEAKS, freqLow, freqHigh, minAmpNorm),
       maxPeaks(maxPeaks),
       frequencyMapping(frequencyMapping) {}
   // what type of frequency mapping to use. see FrequencyMapping enum for options
@@ -103,11 +108,12 @@ struct PercussionConfig : ModuleConfig {
   PercussionConfig(int outputNumber,
                   uint16_t freqLow,
                   uint16_t freqHigh,
+                  float minAmpNorm,
                   float fluxThresh,
                   float energyThresh,
                   float entropyThresh,
                   WaveType waveType)
-    : ModuleConfig(outputNumber, PERCUSSION, freqLow, freqHigh),
+    : ModuleConfig(outputNumber, PERCUSSION, freqLow, freqHigh, minAmpNorm),
       fluxThresh(fluxThresh),
       energyThresh(energyThresh),
       entropyThresh(entropyThresh),
@@ -138,11 +144,8 @@ struct AnalysisConfig {
   float cfarBias = 1.4;
   // smoothing factor for smooth_window_over_time. value from 0-1 (0 high smoothing, 1 no smoothing)
   float smoothingFactor = 0.3;
-  // minimum value to use for amplitude mapping. must be positive
-  float minAmpNorm;
 
-  // TODO: temporary?
-  ModulePtr modules[NUM_OUT_CH * 2] = { nullptr };
+  ModulePtr modules[NUM_OUT_CH] = { nullptr };
 };
 
 #endif

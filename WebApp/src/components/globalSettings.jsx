@@ -6,10 +6,11 @@
  * Description: Displays the adjustable global audio config
  * settings.
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
 import Knob from "../atomics/knob";
+import { useState } from 'react';
 import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
 import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils";
 
@@ -19,10 +20,12 @@ import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils"
  * @param {Object} _ - Object containing required fields 
  * @param {Object} _.globalSettings - Global settings we want to display and modify 
  * @param {CallableFunction} _.setGlobalSettings - Callback that updates the global settings config and UI 
- * 
+ * @param {any} [_.children]
  * @returns Global settings UI component
  */
-const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
+const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   const settingsDisplay = GlobalSettingsDisplay.settings;
 
   // Hook used for real-time updates
@@ -46,34 +49,48 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings }) => {
   };
 
   // Check if the settings exists/ were retrieved
-  if (Object.keys(globalSettings).length == 0) {
-    // TODO: add UI component for failed to get settings
-    return (
-      <div>
-        Error fetching analysis configs
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
-      <h3 className="font-bold text-xl">{GlobalSettingsDisplay.title}</h3>
+  // if (Object.keys(globalSettings).length == 0) {
+  //   if (Object.keys(globalSettings).length === 0) {
 
-      <div className="flex flex-wrap justify-center gap-4">
-        {Object.entries(globalSettings).map(([key, val]) => {
-          return (
-            <div>
-              <Knob
-                min={settingsDisplay[key].min}
-                max={settingsDisplay[key].max}
-                title={settingsDisplay[key].title}
-                step={settingsDisplay[key].step}
-                onChange={(value) => handleKnobChange(key, value)}
-                value={globalSettings[key] ?? val}
-              />
-            </div>
-          );
-        })}
+  //   return (
+  //     <div className="flex flex-col items-center justify-center p-10 m-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+  //       <h3 className="text-red-800 font-bold text-lg">Configuration Error</h3>
+  //       <p className="text-red-600">Failed to get settings. Please check your connection.</p>
+  //     </div>
+  //   );}
+  // }
+
+  return (
+    <div>
+      <button onClick={() => setIsCollapsed(!isCollapsed)} 
+        className = "flex items-center gap-2 text-center justify-center font-bold text-xl mx-auto w-fit py-4">
+        {GlobalSettingsDisplay.title}
+        <span className="text-sm">{isCollapsed ? '▼' : '▲'}</span>
+      </button>
+
+      {!isCollapsed && (
+      <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
+
+        <div className="flex flex-wrap justify-center gap-4">
+          {Object.entries(globalSettings).map(([key, val]) => {
+            return (
+              <div className="flex flex-row">
+                {children}
+                <Knob
+                  min={settingsDisplay[key].min}
+                  max={settingsDisplay[key].max}
+                  title={settingsDisplay[key].title}
+                  step={settingsDisplay[key].step}
+                  description={settingsDisplay[key].description}
+                  onChange={(value) => handleKnobChange(key, value)}
+                  value={globalSettings[key] ?? val}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
+      )}
     </div>
   );
 };

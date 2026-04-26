@@ -18,7 +18,7 @@
 #include "Grain.h"
 #include "Wave.h"
 
-constexpr uint16_t WINDOW_SIZE_OVERLAP = WINDOW_SIZE << WINDOW_OVERLAP;
+constexpr uint16_t WINDOW_SIZE_OVERLAP = WINDOW_SIZE << 2;
 constexpr int WINDOW_SIZE_BY_2 = WINDOW_SIZE_OVERLAP >> 1;
 
 //! Frequency range of an FFT bin in Hz.

@@ -15,7 +15,7 @@
  */
 const Footer = () => {
   return (
-    <div className="font-bold mt-10 border-t-2 border-black p-4 flex w-full min-h-[10vh]">
+    <div className="bg-gray-100 pb-10 font-bold mt-10 p-4 flex w-full min-h-[10vh]">
       <p>
         Developed by the 2024-26 Vibrosonics Software Teams under the leadership
         of Dr. Chet Udell, in collaboration with Cymaspace and contributors Ivan

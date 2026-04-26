@@ -1,22 +1,49 @@
 /***************************************************************
  * File: header.jsx
  *
- * Date: 11/18/2025
+ * Date: 03/10/2026
  *
  * Description: The header component for the web app.
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { api, HTTP_STATUS } from "../utils/utils";
+import { Match } from "preact-router/match";
+import logo from "../images/cymaspaceLogo.jpg"
 
 /**
  * @brief Displays the app header
  *
  * @returns Header component
  */
-const Header = () => {
+
+const Header = ({ setCurrentPage }) => {
+  const NavLink = ({ to, children }) => {
+
+    const baseClasses = "p-4 px-4 py-2 rounded-md font-medium transition-colors duration-200";
+    const activeClasses = "bg-gray-400 text-white shadow-sm";
+    const inactiveClasses = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
+
+    return(
+      <Match path={to}>
+        {({ url }) => {
+          const isActive = url === to;
+
+          return(
+            <a
+              href={to}
+              className={`${baseClasses} ${isActive? activeClasses : inactiveClasses}`}
+            >
+              {children}
+            </a>
+          );
+        }}
+      </Match>
+    );
+  };
+
   const printMemory = async () => {
     const res = await api("GET", "/dev/getMemory");
 
@@ -26,23 +53,35 @@ const Header = () => {
   };
 
   return (
-    <div className="p-4 flex w-full min-h-[8vh] border-b-2 border-black justify-between">
+    <div className="p-4 flex w-full min-h-[8vh] justify-between items-center">
       
       {/* Left side */}
-      <div className="flex flex-row justify-between">
-        {/* TODO: use the vibrosonics logo file in an assets folder under WebApp/assets and link img here */}
-        <h2 className="font-bold text-3xl ml-2">Vibrosonics</h2>
+      <div className="flex flex-row justify-between items-center">
+        <img src={logo} alt="logo" className="w-10 h-10"></img> {/** TODO: add actual alt text */}
+        <h2 className="font-bold text-2xl ml-2">Vibrosonics</h2>
       </div>
 
       {/* Right side */}
       <div>
         <div>
-          DEBUGGING
-          <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
-            PRINT MEMORY BTN
-          </button>
+          <nav>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/network">Networks</NavLink>
+            <NavLink to="/modules">Modules</NavLink>
+            <NavLink to="/radio">FM Radio</NavLink>
+            {/** CHANGE LINK BELOW TO WEBSITE */}
+            <NavLink to="https://www.youtube.com/@cymaspace">CymaSpace</NavLink>
+            <NavLink to="https://github.com/udellc/Vibrosonics">GitHub Repo</NavLink>
+          </nav>
+
+          {/** remove? 
+          <div className="pt-4">
+            DEBUGGING
+            <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
+              PRINT MEMORY BTN
+            </button>
+          </div>*/}
         </div>
-        <div>TODO: menu bar? Network stuff?</div>
       </div>
     </div>
   );
