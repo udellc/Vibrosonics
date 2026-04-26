@@ -42,12 +42,6 @@ namespace FileSys
   //! Writes a file to the SD card, truncating the previous data
   bool writeFile(const String &Path, const String &Data);
 
-  //! Appends data to an existing file in the SD card
-  bool appendFile(const String &Path, const String &Data);
-
-  //! Reads the contents of the given file and returns it as a string 
-  String readFile(const String &Path);
-
   #ifdef DEV_MODE_EN
     //! Applies the callback function for every file in the SD card
     void traverseFiles(File start, FSCallback callback);

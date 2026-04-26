@@ -120,7 +120,7 @@ export const api = async (method, endpoint, data = null) => {
 };
 
 /**
- * @brief Hook for editing settings in real-time. Calls the API form the web server
+ * @brief Hook for editing settings in real-time. Calls the API from the web server
  *        a max of 1/500ms when the setting is being changed to prevent flooding the web server
  * 
  * @param {Number} type - Message id to pass to the web server (type QUEUE_MESSAGE_ID)
@@ -137,7 +137,7 @@ export function useEditSetting(type, isValid = null) {
 
     if (isValid?.current === false) return;
 
-    // Only called after 500ms after setting is settled
+    // Only called 500ms after setting is settled
     timers.current[setting.id] = setTimeout( async () => {
       try {
         const payload = {
@@ -147,7 +147,7 @@ export function useEditSetting(type, isValid = null) {
         const res = await api("PATCH", "/analysis/editSetting", payload);
 
         if (res.status == HTTP_STATUS.OK) {
-          console.log("yuhhhh");
+          console.log("Success");
         }
       } 
       catch (error) {

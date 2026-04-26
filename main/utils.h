@@ -22,8 +22,9 @@ enum class QueueMsgId : uint
 {
   EditGlobal = 0u,
   EditModule,
-  UpdateAll
-  // Create/delete module?
+  UpdateAll,
+  CreateModule,
+  DeleteModule
 };
 
 struct EditGlobalData
