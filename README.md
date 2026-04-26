@@ -25,7 +25,7 @@ Millions of people experience barriers when it comes to audio-based media such a
 
 Instead of hearing a beat, you **feel it**.
 
-<img src="docs/assets/images/spectrogram.png" width=20% height=20%>
+<img src="docs/assets/images/spectrogram.png" width=35% height=35%>
 
 Built in collaboration with **[Cymaspace](https://www.cymaspace.org/)**, an organization whose goal is to make culture and arts accessible for the deaf and hard-of-hearing community, Vibrosonics is designed to make music, entertainment, and environments more inclusive while also opening up new immersive experiences for everyone. This group makes up our primary audience, as haptic feedback can be used to replace or enhance audio. Some secondary users would be employers whose work environments make pure audio based communication difficult. They could instead receive important audio cues through haptics.
 
@@ -35,6 +35,7 @@ Transforms live audio input directly into haptic vibration with minimal latency.
 
 **Configurable Settings Through Web Application**
 A browser-based app allows users to adjust haptic feedback in real-time with no recompiling or device flashing required.
+
 <img src="docs/assets/images/Webapp_configurable.png" width=60% height=60%>
 
 **Frequency-Aware Feedback**
