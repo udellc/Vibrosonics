@@ -3,6 +3,7 @@
 ## Experience audio through vibration
 
 **Vibrosonics** is a real-time audio-to-haptics system with an interactive web interface that allows deaf, hard-of-hearing, and sensory-focused users feel sound through vibrarions.
+
 <img src="docs/assets/images/Webapp_homepage.png" width=60% height=60%>
 
 [**Documentation (Doxygen)**](https://udellc.github.io/Vibrosonics/) \
@@ -19,12 +20,12 @@ transducer, 3.5mm audio jack cable \
 - [Try It Yourself](#try-it-yourself)
 - [Contributors](#contributors)
 
-## Why Vibrosoncis Matters
+## Why Vibrosonics Matters
 Millions of people experience barriers when it comes to audio-based media such as music, games, alerts, or live events. Vibrosoncis transforms those experiences by converting sound into meaningful tactile feedback.
 
 Instead of hearing a beat, you **feel it**.
 
-<img src="docs/assets/images/spectrogram.png" width=40% height=40%>
+<img src="docs/assets/images/spectrogram.png" width=20% height=20%>
 
 Built in collaboration with **[Cymaspace](https://www.cymaspace.org/)**, an organization whose goal is to make culture and arts accessible for the deaf and hard-of-hearing community, Vibrosonics is designed to make music, entertainment, and environments more inclusive while also opening up new immersive experiences for everyone. This group makes up our primary audience, as haptic feedback can be used to replace or enhance audio. Some secondary users would be employers whose work environments make pure audio based communication difficult. They could instead receive important audio cues through haptics.
 
@@ -34,7 +35,7 @@ Transforms live audio input directly into haptic vibration with minimal latency.
 
 **Configurable Settings Through Web Application**
 A browser-based app allows users to adjust haptic feedback in real-time with no recompiling or device flashing required.
-<img src="docs/assets/images/Webapp_configurable.png" widdth=60% height=60%>
+<img src="docs/assets/images/Webapp_configurable.png" width=60% height=60%>
 
 **Frequency-Aware Feedback**
 Different pitches and intensities map to distinct vibration patterns, preserving musical structure and adding depth.
