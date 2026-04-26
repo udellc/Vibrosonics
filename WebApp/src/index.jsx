@@ -15,6 +15,7 @@ import "./index.css";
 import LandingPage from "./pages/landingPage";
 import NetworkPage from "./pages/networkPage";
 import ModulesPage from "./pages/modulesPage";
+import RadioPage from "./pages/radioPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
 import {
@@ -29,8 +30,12 @@ import { api, PAGE } from "./utils/utils";
  * @brief Defines the different pages for the main App
  *
  * @returns Routes to each page component
+ * @param {Object} _
+ * @param {Function} _.setCurrentPage Setter for current page status
+ * @param {string} _.currentPage Current page string
+ * 
  */
-const AppContent = () => {
+const AppContent = ({ setCurrentPage, currentPage}) => {
   const { setPageInfo } = useContext(SystemContext);
 
   // Used to update header when page changes
@@ -38,12 +43,20 @@ const AppContent = () => {
     if (e.url === "/") setPageInfo(PAGE.LANDING);
     else if (e.url === "/network") setPageInfo(PAGE.NETWORK);
     else if (e.url === "/modules") setPageInfo(PAGE.MODULES);
+    else if (e.url === "/radio") setPageInfo(PAGE.RADIO);
+
+    if(e.url === "/") 
+      setCurrentPage('home');
+    else 
+      setCurrentPage(e.url.replace('/', ''));
   };
+
   return (
     <Router onChange={onPageChange}>
       <Route path="/" component={LandingPage} />
       <Route path="/network" component={NetworkPage} />
       <Route path="/modules" component={ModulesPage} />
+      <Route path="/radio" component={RadioPage} />
     </Router>
   );
 };
@@ -52,18 +65,21 @@ const AppContent = () => {
  * @brief
  *
  * @returns
+ * 
  */
 export function App() {
+  const [ currentPage, setCurrentPage ] = useState('home');
+
   return (
-    <div className="min-w-lvw min-h-lvh flex flex-col">
+    <div className="min-w-lvw min-h-lvh flex flex-col font-['Inter']">
       
       {/* Wrap the app content with the contexts */}
       <SystemContextProvider>
-        <Header />
+        <Header setCurrentPage={setCurrentPage}/>
         <AnalysisSettingsProvider>
-          <AppContent />
+          <AppContent currentPage={currentPage} setCurrentPage={setCurrentPage}/>
         </AnalysisSettingsProvider>
-        <Footer />
+        {currentPage !== 'home' && <Footer />}
       </SystemContextProvider>
     </div>
   );

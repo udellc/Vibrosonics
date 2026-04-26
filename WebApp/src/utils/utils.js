@@ -75,7 +75,8 @@ export const WAVE_TYPE = Object.freeze({
 export const PAGE = {
   LANDING: 0,
   NETWORK: 1,
-  MODULES: 2
+  MODULES: 2,
+  RADIO: 3
 };
 
 /**

@@ -12,18 +12,19 @@ import { useEffect, useRef } from "preact/hooks";
 import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
 import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID } from "../utils/utils";
+import InfoButton from "../atomics/infoButton";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified
  * 
  * @param {Object} _ - Object describing the configurations
- * @param {Number} _.index - Index of module to be updated using the modules context
+ * @param {Number} _.outputNum - Index of module to be updated using the modules context
  * @param {Object} _.module - Module configuration to modify
  * @param {CallableFunction} _.setModules - Callback for actually updating the module settings and UI
  * 
  * @returns AnalysisModule component describing the configs
  */
-export default function AnalysisModule({ index, module, setModules }) {
+export default function AnalysisModule({ outputNum, module, setModules }) {
   if (!module) return null;
 
   const isValid = useRef(true);
@@ -53,16 +54,17 @@ export default function AnalysisModule({ index, module, setModules }) {
    */
   const handleValueChange = (id, val) => {
     // Update the UI
-    setModules((prev) => {
-      const updated = [...prev];
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.outputNumber !== outputNum) return m;
 
-      // This index is for the UI and may not be same for the web server
-      updated[index] = {
-        ...updated[index],
-        [id]: val,
-      };
-      return updated;
-    });
+        return {
+          ...m,
+          [id]: val,
+        };
+      })
+    );
+
     // Send the updated val to the web server
     editSetting({
       // This index is for the position in the web server array
@@ -76,11 +78,9 @@ export default function AnalysisModule({ index, module, setModules }) {
    * @brief Deletes the current module from the module list
    */
   const handleDeleteModule = () => {
-    setModules((prev) => {
-      const updated = [...prev];
-      updated.splice(index, 1); 
-      return updated;
-    });
+    setModules((prev) =>
+      prev.filter((m) => m.outputNumber !== outputNum)
+    );
   };
 
   /**
@@ -97,30 +97,48 @@ export default function AnalysisModule({ index, module, setModules }) {
 
   return (
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
-      <button 
-        className="bg-amber-500 cursor-pointer"
-        onClick={handleDeleteModule}
-      >
-        Delete
-      </button>
-      <h3 className="font-bold text-lg">
-        Module: {MODULE_TYPE[module.moduleType]}
-      </h3>
+      <div className="flex flex-row">
+        <button 
+          className="text-black px-2 font-bold"
+          onClick={handleDeleteModule}
+        >
+          X
+        </button>
+
+        <div className="relative border border-black bg-white rounded-xl p-1.5">
+        
+        <select 
+          className="w-full bg-transparent font-bold text-lg cursor-pointer appearance-none outline-none pr-6"
+          value={module.moduleType}
+          onChange={(e) => handleUpdate(module.id, e.target.value)}
+        >
+          {Object.entries(MODULE_TYPE).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {/* Custom chevron icon since 'appearance-none' removes the default one */}
+        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+          <span className="text-xs">▼</span>
+        </div>
+      </div>
+      </div>
 
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
       <div>
         {isValid?.current ? (
-          <div>Valid ranges</div>
+          <div className="text-green-500">inside valid ranges</div>
         ) : (
-          <div className="font-bold text-red-500">Not valid ranges</div>
+          <div className="font-bold text-red-500">outside valid ranges</div>
         )}
       </div>
 
       {/* Row layout */}
-      <div className="flex flex-row gap-x-3">
+      <div className="flex flex-col gap-x-3 px-6">
 
         {/* Create a grid of knobs for corresponding settings */}
-        <div className="grid grid-rows-3 grid-flow-col gap-5">
+        <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">
           {Object.entries(knobs)?.map( ([key, val]) => {
             return (
               <Knob 
@@ -129,6 +147,7 @@ export default function AnalysisModule({ index, module, setModules }) {
                 step={val.step}
                 onChange={(value) => handleValueChange(key, value)}
                 title={val.title}
+                description={val.description}
                 value={module[key] ?? 0}
               />
             );
@@ -139,7 +158,7 @@ export default function AnalysisModule({ index, module, setModules }) {
         <div className="flex flex-col gap-2">
           {Object.entries(dropdowns)?.map( ([key, _]) => {
             return (
-              <div className="bg-blue-300">
+              <div className="bg-white border rounded-xl px-2">
                 <h4>{dropdowns[key].title}</h4>
                 <select value={module[key] ?? 0}
                   onChange={(e) => handleValueChange(key, e.target instanceof HTMLSelectElement
@@ -159,7 +178,7 @@ export default function AnalysisModule({ index, module, setModules }) {
           {/* Create numerical text entries for the corresponding settings */}
           {Object.entries(spinboxes)?.map( ([key, val]) => {
             return (
-              <div className="bg-blue-300">
+              <div className="bg-white border rounded-xl px-2">
                 <h4>{spinboxes[key].title}</h4>
                 <input type="number" 
                   value={module[key] ?? 1}

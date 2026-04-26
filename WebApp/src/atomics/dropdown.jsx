@@ -3,7 +3,7 @@
  *
  * Date: 02/19/2026
  *
- * Description: UI dropdown componene
+ * Description: UI dropdown component
  *
  * Author: Bella Mann
  ***************************************************************/
@@ -11,10 +11,10 @@
 import { useState } from "preact/hooks";
 
 /**
- * @brief The Checkbox component is a skeleton for an audio analysis setting which uses checkbox
+ * @brief The dropdown component is a skeleton for an audio analysis setting which uses dropdown
  *        for reconfiguration
  *
- * @param {Object} props - Expanded object for the checkbox settings
+ * @param {Object} props - Expanded object for the dropdown settings
  * @param {String} props.label - Text to display next to checkbox
  * @param {Array} props.options - Initial/Default value
  * @param {function} props.onChange - Callback that receives boolean state
@@ -40,7 +40,7 @@ export default function DropDown({
     <div className="relative inline-block text-left w-32">
       <button
         onClick={toggleDropdown}
-        className="flex items-center justify-between w-full px-4 py-2 bg-gray-200 rounded-xl shadow-inner hover:bg-gray-300 transition-colors"
+        className="flex items-center justify-between w-full px-4 py-2 bg-white rounded-xl border border-black hover:bg-gray-300 transition-colors"
       >
         <span>{selected || label}</span>
         <svg
