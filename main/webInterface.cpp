@@ -128,6 +128,8 @@ inline void WebInterface::setupServer()
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
   server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
   server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
+  server.on("/analysis/deleteModule", HTTP_DELETE, onDeleteModule);
+  server.on("/analysis/addModule", HTTP_POST, onAddModule);
 
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
@@ -322,6 +324,46 @@ void WebInterface::onEditSetting()
     resStatus = HTTP_OK;
 
   send(resStatus);
+}
+
+void WebInterface::onDeleteModule()
+{
+  if (!server.hasArg("index")) {
+    send(HTTP_UNPROCESSABLE);
+    return;
+  }
+  const int ModuleIndex = server.arg("index").toInt();
+  QueueMessage msg = {
+    .id = QueueMsgId::DeleteModule,
+    .module = { .index = ModuleIndex }
+  };
+  (void) HapticSettings::Instance().addMessage(&msg);
+
+  send(HTTP_OK);
+}
+
+// todo: add header
+void WebInterface::onAddModule()
+{
+  JsonDocument payload;
+  int res = HTTP_UNPROCESSABLE;
+  
+  if (parsePayload(payload))
+  {
+    auto data = payload.as<JsonObject>();
+
+    QueueMessage msg = {
+      .id = QueueMsgId::CreateModule,
+      .module = { 
+        .index = data["outputNumber"].as<int>(),
+        .value = { .i = data["type"].as<int>() }
+      }
+    };
+
+    if (HapticSettings::Instance().addMessage(&msg))
+      res = HTTP_OK;
+  }
+  send(res);
 }
 
 /**

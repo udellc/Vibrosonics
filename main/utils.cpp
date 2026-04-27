@@ -158,12 +158,11 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
  */
 inline ModulePtr Utils::createModule(const ModuleType Type)
 {
-  // Used to create module configs
+  // Used to create default module configs
   static const ModuleFactory Map =
   {
-    // TODO: add more modules types as we create structs for them
-    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 0, 0, 1, NONE, 1); } },
-    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 0, 0, 1, 0.0, 0.0, 0.0, SINE); } },
+    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 400, 1000, 10000.0, OCTAVE, 1); } },
+    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 1800, 4000, 10000000.0, 0.5, 100000000.0, 0.78, TRIANGLE); } },
   };
   // If the module type is defined, we return the second element since the Map carries a pair:
   // Ex: ( ModuleType, unique_ptr for module )

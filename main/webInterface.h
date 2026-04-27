@@ -46,6 +46,10 @@ namespace WebInterface
   //! Handler for real-time updates
   void onEditSetting();
 
+  void onDeleteModule();
+
+  void onAddModule();
+
   #ifdef DEV_MODE_EN
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();

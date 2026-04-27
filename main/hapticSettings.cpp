@@ -178,6 +178,33 @@ bool HapticSettings::processQueue()
       case QueueMsgId::UpdateAll:
         needsRebuild = true;
 
+      case QueueMsgId::CreateModule:
+      {
+        const int Index = msg.module.index;
+        
+        if (Index >= 0 && Index < NUM_OUT_CH)
+        {
+          const auto Type = static_cast<ModuleType>(msg.module.value.i);
+          auto newModule = Utils::createModule(Type);
+
+          if (!newModule) break;
+
+          newModule->outputNumber = Index;
+          curConfig->modules[Index] = std::move(newModule);
+          needsRebuild = true;
+        }
+        break;
+      }
+      case QueueMsgId::DeleteModule:
+      {
+        const int Index = msg.module.index;
+        
+        if (Index >= 0 && Index < NUM_OUT_CH) {
+          curConfig->modules[Index] = nullptr;
+          needsRebuild = true;
+        }
+        break;
+      }
       default:
         break;
     }

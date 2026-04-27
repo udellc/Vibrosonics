@@ -11,8 +11,8 @@
 import { useEffect, useRef } from "preact/hooks";
 import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
-import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID } from "../utils/utils";
-import InfoButton from "../atomics/infoButton";
+import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID, HTTP_STATUS } from "../utils/utils";
+import { api } from "../utils/utils";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified
@@ -77,10 +77,18 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
   /**
    * @brief Deletes the current module from the module list
    */
-  const handleDeleteModule = () => {
-    setModules((prev) =>
-      prev.filter((m) => m.outputNumber !== outputNum)
-    );
+  const handleDeleteModule = async () => {
+    if (!window.confirm("Are you sure you want to delete this module?")) {
+      return;
+    }
+    const query = `index=${module.index}`;
+    const res = await api("DELETE", `/analysis/deleteModule?${query}`);
+
+    if (res?.status == HTTP_STATUS.OK) {
+      setModules((prev) =>
+        prev.filter((m) => m.outputNumber !== outputNum)
+      );
+    }
   };
 
   /**
@@ -99,7 +107,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <div className="flex flex-row">
         <button 
-          className="text-black px-2 font-bold"
+          className="text-black px-2 font-bold cursor-pointer"
           onClick={handleDeleteModule}
         >
           X

@@ -9,7 +9,8 @@
  ***************************************************************/
 
 import { moduleRegistry } from "../utils/defaultModules";
-import { MODULE_TYPE } from "../utils/utils";
+import { HTTP_STATUS, MODULE_TYPE } from "../utils/utils";
+import { api } from "../utils/utils";
 
 /**
  * @brief The EmptyOutput component represents an output with no audio analysis modules.
@@ -23,15 +24,25 @@ import { MODULE_TYPE } from "../utils/utils";
 export default function EmptyOutput({ outputNum, setModules }) {
   
   /**
-   * @brief Adds a new default module to the corresponding output
+   * @brief Adds a new module to the corresponding output
+   * 
+   * @param {Number} value - Module type to be added
    */
-  const handleAddModule = (value) => {
-    if (value != -1) {
+  const handleAddModule = async (value) => {
+    if (value === -1) {
+      return;
+    }
+    const payload = {
+      type: value,
+      outputNumber: outputNum
+    };
+    const res = await api("POST", "/analysis/addModule", payload);
+
+    if (res?.status === HTTP_STATUS.OK) {
       const newModule = {
         ...moduleRegistry[value],
         outputNumber: outputNum,
       };
-  
       setModules((prev) => [...prev, newModule]);
     }
   };
@@ -44,7 +55,7 @@ export default function EmptyOutput({ outputNum, setModules }) {
           value={-1}
           onChange={(e) => handleAddModule(e.target.value)}
         >
-          <option key={1} value={-1}>
+          <option key={-1} value={-1}>
             None
           </option>
 
