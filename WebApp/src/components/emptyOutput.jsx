@@ -8,7 +8,7 @@
  * Author: Danielle Chang
  ***************************************************************/
 
-import { moduleRegistry } from "../utils/defaultModules";
+import { moduleRegistry } from "../data/defaultModules";
 import { HTTP_STATUS, MODULE_TYPE } from "../utils/utils";
 import { api } from "../utils/utils";
 

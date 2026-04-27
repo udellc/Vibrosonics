@@ -300,7 +300,10 @@ void WebInterface::onSubmitConfig()
   send(resStatus);
 }
 
-// TODO: add header comment
+/**
+ * @brief Adds a message to the haptic settings queue for real-time updates
+ * 
+ */
 void WebInterface::onEditSetting()
 {
   limitReqRate(500u);
@@ -326,6 +329,10 @@ void WebInterface::onEditSetting()
   send(resStatus);
 }
 
+/**
+ * @brief Adds a message to the haptic settings queue to delete a module at a given index in real-time.
+ * 
+ */
 void WebInterface::onDeleteModule()
 {
   if (!server.hasArg("index")) {
@@ -342,7 +349,10 @@ void WebInterface::onDeleteModule()
   send(HTTP_OK);
 }
 
-// todo: add header
+/**
+ * @brief Adds a message to the haptic settings queue to add a module in real-time.
+ * 
+ */
 void WebInterface::onAddModule()
 {
   JsonDocument payload;
@@ -352,6 +362,7 @@ void WebInterface::onAddModule()
   {
     auto data = payload.as<JsonObject>();
 
+    // NOTE: Relies on Utils::createModule to create a module with default settings
     QueueMessage msg = {
       .id = QueueMsgId::CreateModule,
       .module = { 
@@ -359,7 +370,6 @@ void WebInterface::onAddModule()
         .value = { .i = data["type"].as<int>() }
       }
     };
-
     if (HapticSettings::Instance().addMessage(&msg))
       res = HTTP_OK;
   }
@@ -412,7 +422,11 @@ static bool parsePayload(JsonDocument &output)
   return true;
 }
 
-// TODO: add comment
+/**
+ * @brief Limits the number of requests to 1/Time_ms.
+ * 
+ * @param Time_ms - Wait time before another request can be processed.
+ */
 inline void limitReqRate(const unsigned long Time_ms)
 {
   static unsigned long lastReq_ms = 0;

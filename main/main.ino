@@ -339,10 +339,6 @@ int interpolateAroundPeak(float *data, int indexOfPeak) {
   return int(round((float(indexOfPeak) + magnitudeOfChange) * FREQ_RES));
 }
 
-inline float linear_interpolation(float a, float b, float t) {
-  return a + t * (b - a);
-}
-
 void synthesizePeak(int channel, float freq, float amp, float freqMin, float freqMax, FrequencyMapping mappingOption) {
   // interpolate the frequency around the peak to get a more accurate measure
   float interp_freq = interpolateAroundPeak(windowData, int(round(freq * FREQ_WIDTH)));
