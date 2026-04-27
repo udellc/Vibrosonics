@@ -88,4 +88,4 @@ library architecture, and example programs, refer to the following documents:
 - Nick Synytsia (Developed AudioLab and advised software development for 2024-25)
 - Alex Synytsia (Participated in hardware development during 2022-23)
 - Vincent Vaughn (Advised software and hardware development)
-- Hans Bestel (Advised software and hardware development)
+- Hans Bestel (Project manager for software and hardware development during 2025-26)
