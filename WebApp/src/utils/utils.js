@@ -83,9 +83,9 @@ export const PAGE = {
  * @brief The api util provides an generic interface for making API calls to the
  * backend web server
  *
- * @param method - HTTP method to be used for the client request
- * @param endpoint - API endpoint we want to invoke from the web server
- * @param data - Optional param for data
+ * @param {String} method - HTTP method to be used for the client request
+ * @param {String} endpoint - API endpoint we want to invoke from the web server
+ * @param {Object | null} data - Optional param for data
  *
  */
 export const api = async (method, endpoint, data = null) => {
@@ -125,14 +125,16 @@ export const api = async (method, endpoint, data = null) => {
  *        a max of 1/500ms when the setting is being changed to prevent flooding the web server
  * 
  * @param {Number} type - Message id to pass to the web server (type QUEUE_MESSAGE_ID)
- * @param {Object} isValid - Optional mutable reference to an isValid boolean 
+ * @param {Object | null} isValid - Optional mutable reference to an isValid boolean 
  * 
  * @returns Hook for the edit setting callback
  */
 export function useEditSetting(type, isValid = null) {
   const timers = useRef({});
 
-  // This will be called every update
+  /**
+   * @brief Function to be called on every update
+   */
   const editSetting = useCallback( (setting) => {
     clearTimeout(timers.current[setting.id]);
 
@@ -147,7 +149,7 @@ export function useEditSetting(type, isValid = null) {
         };
         const res = await api("PATCH", "/analysis/editSetting", payload);
 
-        if (res.status == HTTP_STATUS.OK) {
+        if (res?.status == HTTP_STATUS.OK) {
           console.log("Success");
         }
       } 
