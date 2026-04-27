@@ -16,13 +16,11 @@ import { useState } from "preact/hooks";
  *
  * @param {Object} setting - Expanded object for the checkbox settings
  * @param {String} setting.label - Text to display next to checkbox
- * @param {Number} [setting.initialValue] - Initial/Default value
  * @param {function(string, boolean): void} setting.onChange - Callback that receives boolean state
  */
 
 export default function Checkbox({ 
     label, 
-    initialValue = 0, 
     onChange 
 }) {
     const [checked, setChecked] = useState(false);
