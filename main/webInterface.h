@@ -46,8 +46,10 @@ namespace WebInterface
   //! Handler for real-time updates
   void onEditSetting();
 
+  //! Handler for deleting a module in real-time
   void onDeleteModule();
 
+  //! Handler for adding a module in real-time
   void onAddModule();
 
   #ifdef DEV_MODE_EN
@@ -65,6 +67,7 @@ namespace WebInterface
 
     //! Prints the heap memory stats to the serial monitor    
     void getMemory();
+  
   #endif // DEV_MODE_EN
 }
 
