@@ -13,6 +13,7 @@ import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
 import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID, HTTP_STATUS } from "../utils/utils";
 import { api } from "../utils/utils";
+import { moduleRegistry } from "../data/defaultModules";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified
@@ -91,6 +92,33 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
     }
   };
 
+  const handleChangeModuleType = async (newType) => {
+    newType = Number(newType);
+    if (newType === -1) return;
+
+    const query = `index=${module.index}`;
+
+    const deleteRes = await api("DELETE", `/analysis/deleteModule?${query}`);
+    if (deleteRes?.status !== HTTP_STATUS.OK) return;
+
+    const addRes = await api("POST", "/analysis/addModule", {
+      type: newType,
+      outputNumber: outputNum,
+    });
+    if (addRes?.status !== HTTP_STATUS.OK) return;
+
+    const newModule = {
+      ...moduleRegistry[newType],
+      outputNumber: outputNum,
+    };
+
+    setModules((prev) =>
+      prev.map((m) =>
+        m.outputNumber === outputNum ? newModule : m
+      )
+    );
+  };
+
   /**
    * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
    * @brief Error handling invalid frequency ranges low and high
@@ -118,7 +146,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <select 
           className="w-full bg-transparent font-bold text-lg cursor-pointer appearance-none outline-none pr-6"
           value={module.moduleType}
-          onChange={(e) => handleUpdate(module.id, e.target.value)}
+          onChange={(e) => handleChangeModuleType(e.target.value)}
         >
           {Object.entries(MODULE_TYPE).map(([key, label]) => (
             <option key={key} value={key}>
