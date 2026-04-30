@@ -92,21 +92,27 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
     }
   };
 
+  /**
+   * @brief Updates the module type of the current output
+   */
   const handleChangeModuleType = async (newType) => {
     newType = Number(newType);
     if (newType === -1) return;
 
+    // delete current module
     const query = `index=${module.index}`;
 
     const deleteRes = await api("DELETE", `/analysis/deleteModule?${query}`);
     if (deleteRes?.status !== HTTP_STATUS.OK) return;
 
+    // replace with default module of requested type
     const addRes = await api("POST", "/analysis/addModule", {
       type: newType,
       outputNumber: outputNum,
     });
     if (addRes?.status !== HTTP_STATUS.OK) return;
 
+    // update UI
     const newModule = {
       ...moduleRegistry[newType],
       outputNumber: outputNum,
