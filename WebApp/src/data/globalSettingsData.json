@@ -1,6 +1,7 @@
 {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   "global": {
     "noiseFloor": 280,
     "cfarRefCount": 6,
@@ -18,26 +19,46 @@
       "cfarBias": 2.0,
       "smoothingFactor": 0.4,
       "minAmpNorm": 10000.0
+=======
+  "A Tear in Space": {
+    "global": {
+      "noiseFloor": 160,
+      "cfarRefCount": 6,
+      "cfarGuardCount": 1.0,
+      "cfarBias": 1.3,
+      "smoothingFactor": 0.3,
+      "minAmpNorm": 9000.0
+>>>>>>> 4a5811d4abc3e215942e2693a388dc5732bcf478
     },
     "modules": [
       {
         "moduleType": 0,
         "outputNumber": 0,
         "freqLow": 80,
+<<<<<<< HEAD
         "freqHigh": 400,
+=======
+        "freqHigh": 600,
+>>>>>>> 4a5811d4abc3e215942e2693a388dc5732bcf478
         "frequencyMapping": 1,
         "maxPeaks": 1
       },
       {
         "moduleType": 0,
         "outputNumber": 1,
+<<<<<<< HEAD
         "freqLow": 400,
         "freqHigh": 3600,
+=======
+        "freqLow": 600,
+        "freqHigh": 4000,
+>>>>>>> 4a5811d4abc3e215942e2693a388dc5732bcf478
         "frequencyMapping": 0,
         "maxPeaks": 2
       },
       {
         "moduleType": 1,
+<<<<<<< HEAD
         "outputNumber": 0,
         "freqLow": 60,
         "freqHigh": 200,
@@ -110,6 +131,26 @@
         "fluxThresh": 0.4,
         "energyThresh": 20000000,
         "entropyThresh": 0.8,
+=======
+        "outputNumber": 2,
+        "freqLow": 60,
+        "freqHigh": 200,
+        "frequencyMapping": 0,
+        "fluxThresh": 0.4,
+        "energyThresh": 80000000,
+        "entropyThresh": 0.80,
+        "waveType": 0
+      },
+      {
+        "moduleType": 1,
+        "outputNumber": 4,
+        "freqLow": 1800,
+        "freqHigh": 3000,
+        "frequencyMapping": 0,
+        "fluxThresh": 0.35,
+        "energyThresh": 30000000,
+        "entropyThresh": 0.68,
+>>>>>>> 4a5811d4abc3e215942e2693a388dc5732bcf478
         "waveType": 4
       }
     ]
