@@ -12,16 +12,21 @@ defaults:
 on:
   push:
     paths:
-      - ".github/workflows/*.yaml"
+      - "WebApp/**"
+      - "WebApp/package.json"
+      - "WebApp/package-lock.json"
     branches: 
-        - main
-        - 25-26_dev
+      - main
+      - 25-26_dev
+      - fix/workflow
   pull_request:
     paths:
-      - ".github/workflows/*.yaml"
+      - "WebApp/**"
+      - "WebApp/package.json"
+      - "WebApp/package-lock.json"
     branches:
-        - main
-        - 25-26_dev
+      - main
+      - 25-26_dev
 
 jobs:
   eslint:

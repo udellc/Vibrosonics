@@ -153,7 +153,7 @@ export function useEditSetting(type, isValid = null) {
         const res = await api("PATCH", "/analysis/editSetting", payload);
 
         if (res?.status == HTTP_STATUS.OK) {
-          console.log("Success");
+          console.log("success");
         }
       } 
       catch (error) {
