@@ -174,6 +174,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <button 
           className="text-black px-2 font-bold cursor-pointer"
           onClick={handleDeleteModule}
+          aria-label="Delete Module"
         >
           X
         </button>
