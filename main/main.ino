@@ -153,6 +153,7 @@ void loop()
 
   melodic.runAnalysis();
   percussive.runAnalysis();
+  vapi.updateGrains();
 
   for (int i = 0; i < NUM_OUT_CH; i++)
   {
@@ -167,8 +168,6 @@ void loop()
       }
     }
   }
-  vapi.updateGrains();
-
   AudioLab.synthesize();
 }
 
@@ -226,7 +225,7 @@ inline void doPercussiveAnalysis(AnalysisModule* module, const ModuleConfig* mod
     // Create the frequency and amplitude envelopes for the percussive hit,
     // using a set frequency of 160 and the energy of the detected hit as the
     // amplitude.
-    freqEnv = vapi.createFreqEnv(160, 160, 160, 20);
+    freqEnv = vapi.createFreqEnv(160, 160, 160, 50);
     ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
 
     vapi.createDynamicGrain(moduleConfig->outputNumber, 
@@ -239,7 +238,7 @@ inline void doPercussiveAnalysis(AnalysisModule* module, const ModuleConfig* mod
     // to create a rougher feeling.
     if (entropy > 0.9) {
       energy *= 0.3;
-      freqEnv = vapi.createFreqEnv(200, 200, 200, 20);
+      freqEnv = vapi.createFreqEnv(200, 200, 200, 50);
       ampEnv = vapi.createAmpEnv(energy, energy, 0.3 * energy, 0.);
       vapi.createDynamicGrain(moduleConfig->outputNumber, 
                               percussionConfig->waveType, 
