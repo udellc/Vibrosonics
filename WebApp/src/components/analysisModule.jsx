@@ -11,8 +11,9 @@
 import { useEffect, useRef } from "preact/hooks";
 import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
-import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID } from "../utils/utils";
-import InfoButton from "../atomics/infoButton";
+import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID, HTTP_STATUS } from "../utils/utils";
+import { api } from "../utils/utils";
+import { moduleRegistry } from "../data/defaultModules";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified
@@ -77,11 +78,79 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
   /**
    * @brief Deletes the current module from the module list
    */
-  const handleDeleteModule = () => {
+  const handleDeleteModule = async () => {
+    if (!window.confirm("Are you sure you want to delete this module?")) {
+      return;
+    }
+    const query = `index=${module.index}`;
+    const res = await api("DELETE", `/analysis/deleteModule?${query}`);
+
+    if (res?.status == HTTP_STATUS.OK) {
+      setModules((prev) =>
+        prev.filter((m) => m.outputNumber !== outputNum)
+      );
+    }
+  };
+
+  /**
+   * @brief Updates the module type of the current output
+   */
+  const handleChangeModuleType = async (newType) => {
+    newType = Number(newType);
+    if (newType === -1) return;
+
+    // delete current module
+    const query = `index=${module.index}`;
+
+    const deleteRes = await api("DELETE", `/analysis/deleteModule?${query}`);
+    if (deleteRes?.status !== HTTP_STATUS.OK) return;
+
+    // replace with default module of requested type
+    const addRes = await api("POST", "/analysis/addModule", {
+      type: newType,
+      outputNumber: outputNum,
+    });
+    if (addRes?.status !== HTTP_STATUS.OK) return;
+
+    // update UI
+    const newModule = {
+      ...moduleRegistry[newType],
+      outputNumber: outputNum,
+    };
+
     setModules((prev) =>
-      prev.filter((m) => m.outputNumber !== outputNum)
+      prev.map((m) =>
+        m.outputNumber === outputNum ? newModule : m
+      )
     );
   };
+
+  /**
+   * @brief Mutes or unmutes current output
+   */
+  const handleMutePressed = () => {
+    const updatedMuteVal = !module.isMuted;
+
+    // Update the UI
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.outputNumber !== outputNum) return m;
+
+        return {
+          ...m,
+          isMuted: updatedMuteVal,
+        };
+      })
+    );
+
+    // Send the updated val to the web server
+    editSetting({
+      // This index is for the position in the web server array
+      index: module.index,
+      field: CONFIG_FIELDS["isMuted"],
+      value: updatedMuteVal
+    })
+  }
 
   /**
    * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
@@ -99,7 +168,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <div className="flex flex-row">
         <button 
-          className="text-black px-2 font-bold"
+          className="text-black px-2 font-bold cursor-pointer"
           onClick={handleDeleteModule}
         >
           X
@@ -110,7 +179,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <select 
           className="w-full bg-transparent font-bold text-lg cursor-pointer appearance-none outline-none pr-6"
           value={module.moduleType}
-          onChange={(e) => handleUpdate(module.id, e.target.value)}
+          onChange={(e) => handleChangeModuleType(e.target.value)}
         >
           {Object.entries(MODULE_TYPE).map(([key, label]) => (
             <option key={key} value={key}>
@@ -136,6 +205,12 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
 
       {/* Row layout */}
       <div className="flex flex-col gap-x-3 px-6">
+        <button 
+          className="w-fit self-center px-4 py-2 mt-2 text-black cursor-pointer rounded-xl bg-gray-300 hover:bg-gray-400 transition-colors"
+          onClick={handleMutePressed}
+        >
+          {module.isMuted ? "Unmute" : "Mute"}
+        </button>
 
         {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">

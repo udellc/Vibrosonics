@@ -9,9 +9,9 @@
  ***************************************************************/
 
 /**
- * @brief
+ * @brief Defines the footer text
  *
- * @returns
+ * @returns Footer component
  */
 const Footer = () => {
   return (

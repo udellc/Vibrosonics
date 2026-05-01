@@ -1,5 +1,5 @@
 /***************************************************************
- * FILE: webServer.h
+ * FILE: webInterface.h
  * 
  * DATE: 11/18/2025
  * 
@@ -46,6 +46,12 @@ namespace WebInterface
   //! Handler for real-time updates
   void onEditSetting();
 
+  //! Handler for deleting a module in real-time
+  void onDeleteModule();
+
+  //! Handler for adding a module in real-time
+  void onAddModule();
+
   #ifdef DEV_MODE_EN
     //! Initializes the web server assuming the web app in upload files mode 
     inline void setupUploadMode();
@@ -61,6 +67,7 @@ namespace WebInterface
 
     //! Prints the heap memory stats to the serial monitor    
     void getMemory();
+  
   #endif // DEV_MODE_EN
 }
 

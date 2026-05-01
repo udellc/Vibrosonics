@@ -10,11 +10,8 @@
 
 import { useContext, useState } from "preact/hooks";
 import EQ_PRESETS from "../data/eqSettings.json";
-import Checkbox from "../atomics/checkbox";
 import { AudioSettingsContext } from "../utils/configurations";
-import { api, HTTP_STATUS } from "../utils/utils";
-import { moduleRegistry } from "../utils/defaultModules";
-import globalSettings from "../data/globalSettingsData.json";
+import { moduleRegistry } from "../data/defaultModules";
 
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =
@@ -99,21 +96,6 @@ const ConfigManager = ({ children }) => {
     }
   };
 
-  /**
-   * @brief Sends the global settings and modules to the web server
-   */
-    const sendData = async () => {
-      const payload = {
-        global: globalSettings,
-        modules,
-      };
-      const res = await api("PUT", "/analysis/submitSettings", payload);
-
-      if (res.status == HTTP_STATUS.OK) {
-        console.log("worked");
-      } else console.log(res.status);
-    };
-
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
@@ -134,16 +116,6 @@ const ConfigManager = ({ children }) => {
               {` ${genre} `}
             </button>
           ))}
-        </div>
-        
-        {/* TODO: testing this out rq */}
-        <div>
-          <button
-            className="bg-amber-200 font-bold border border-amber-600 rounded-xl p-1"
-              onClick={sendData}
-          >
-            Send Data
-          </button>
         </div>
       </div>
 

@@ -34,7 +34,7 @@ const NetworkPage = () => {
     try {
       const res = await api("GET", "/network/scanNetworks");
 
-      if (res.status == HTTP_STATUS.OK) {
+      if (res?.status == HTTP_STATUS.OK) {
         setAvailableNetworks(res.data.ssid);
       }
     } catch (err) {
@@ -63,7 +63,7 @@ const NetworkPage = () => {
     };
     const res = await api("POST", "/network/connect", payload);
 
-    if (res.status == HTTP_STATUS.ACCEPTED) {
+    if (res?.status == HTTP_STATUS.ACCEPTED) {
       // TODO: update some sort of context that the header/footer use to show disconnect option
       route("/modules", true);
     }
@@ -77,16 +77,13 @@ const NetworkPage = () => {
   return (
     <div className="mt-20 min-h-[60vh] ml-10 mr-10">
       {isLoading ? (
-        
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 border-t-amber-500 rounded-full animate-spin" />
           <p className="text-gray-500 font-medium animate-pulse">
             Scanning for networks...
           </p>
         </div>
-
       ) : (
-
         <div className="flex flex-col items-center">
           {/* Centered vertical layout */}
           <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
@@ -115,8 +112,8 @@ const NetworkPage = () => {
           })}
 
           {showTextForm === true ? (
-            // Form for entering password
             <>
+              {/* Form for entering password */}
               <p className="mt-4">Selected Network: {selectedNetwork}</p>
               <TextEntry
                 label="Password"
@@ -136,7 +133,6 @@ const NetworkPage = () => {
             <></>
           )}
         </div>
-
       )}
     </div>
   );

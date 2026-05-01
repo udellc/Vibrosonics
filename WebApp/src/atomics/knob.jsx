@@ -12,7 +12,7 @@ import { useEffect, useRef } from "preact/hooks";
 import InfoButton from "./infoButton";
 
 /**
- * @brief The Slider component is a skeleton for an audio analysis setting which uses a range based knob
+ * @brief The knob component is a skeleton for an audio analysis setting which uses a range based knob
  *        for reconfiguration
  *
  * @param {Object} setting - Expanded object for the knob settings

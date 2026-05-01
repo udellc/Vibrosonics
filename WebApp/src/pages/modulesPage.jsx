@@ -15,7 +15,7 @@ import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
 import GlobalSettings from "../components/globalSettings";
 import ConfigManager from "../components/configManager";
-import { moduleRegistry } from "../utils/defaultModules";
+import { moduleRegistry } from "../data/defaultModules";
 import DropDown from "../atomics/dropdown";
 import InfoButton from "../atomics/infoButton";
 import EmptyOutput from "../components/emptyOutput";
