@@ -157,11 +157,14 @@ void loop()
   for (int i = 0; i < NUM_OUT_CH; i++)
   {
     if (analysisModules[i] && activeConfig->modules[i]) {
-      performModuleAnalysis(
-        analysisModules[i],
-        activeConfig->modules[i].get()
-      );
-      AudioLab.mapAmplitudes(i, activeConfig->modules[i].get()->minAmpNorm);
+      // only do analysis if output isn't muted
+      if (!activeConfig->modules[i].get()->isMuted){
+          performModuleAnalysis(
+          analysisModules[i],
+          activeConfig->modules[i].get()
+        );
+        AudioLab.mapAmplitudes(i, activeConfig->modules[i].get()->minAmpNorm);
+      }
     }
   }
   vapi.updateGrains();

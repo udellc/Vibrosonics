@@ -46,6 +46,7 @@ struct EditModuleData
     float f;
     FrequencyMapping fm;
     WaveType wt;
+    bool b;
   } value;
 };
 

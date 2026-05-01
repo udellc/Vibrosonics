@@ -144,9 +144,9 @@ void HapticSettings::loadConfig()
     this->curConfig->smoothingFactor = 0.2;
     
     this->curConfig->modules[0] =
-      std::make_unique<MajorPeaksConfig>(0, 1000, 3600, 10000.0, OCTAVE, 1);
+      std::make_unique<MajorPeaksConfig>(0, 1000, 3600, 10000.0, false, OCTAVE, 1);
     this->curConfig->modules[1] =
-      std::make_unique<PercussionConfig>(1, 1800, 4000, 10000000.0, 0.5, 100000000.0, 0.78, TRIANGLE);
+      std::make_unique<PercussionConfig>(1, 1800, 4000, 10000000.0, false, 0.5, 100000000.0, 0.78, TRIANGLE);
   }
 }
 

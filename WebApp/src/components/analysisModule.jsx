@@ -126,6 +126,33 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
   };
 
   /**
+   * @brief Mutes or unmutes current output
+   */
+  const handleMutePressed = () => {
+    const updatedMuteVal = !module.isMuted;
+
+    // Update the UI
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.outputNumber !== outputNum) return m;
+
+        return {
+          ...m,
+          isMuted: updatedMuteVal,
+        };
+      })
+    );
+
+    // Send the updated val to the web server
+    editSetting({
+      // This index is for the position in the web server array
+      index: module.index,
+      field: CONFIG_FIELDS["isMuted"],
+      value: updatedMuteVal
+    })
+  }
+
+  /**
    * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
    * @brief Error handling invalid frequency ranges low and high
    */
@@ -178,6 +205,12 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
 
       {/* Row layout */}
       <div className="flex flex-col gap-x-3 px-6">
+        <button 
+          className="w-fit self-center px-4 py-2 mt-2 text-black cursor-pointer rounded-xl bg-gray-300 hover:bg-gray-400 transition-colors"
+          onClick={handleMutePressed}
+        >
+          {module.isMuted ? "Unmute" : "Mute"}
+        </button>
 
         {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">

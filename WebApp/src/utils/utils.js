@@ -46,9 +46,9 @@ export const CONFIG_FIELDS = Object.freeze({
   "cfarGuardCount": 2,
   "cfarBias": 3,
   "smoothingFactor": 4,
-  "minAmpNorm": 5,
 
   // Shared module fields
+  "minAmpNorm": 5,
   "freqLow": 6,
   "freqHigh": 7,
   "outputNumber": 8,
@@ -61,7 +61,10 @@ export const CONFIG_FIELDS = Object.freeze({
   "fluxThresh": 11,
   "energyThresh": 12,
   "entropyThresh": 13,
-  "waveType": 14
+  "waveType": 14,
+
+  // Shared module field
+  "isMuted": 15
 });
 export const WAVE_TYPE = Object.freeze({
   0: "Sine",
