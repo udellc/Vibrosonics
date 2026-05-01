@@ -14,7 +14,7 @@ import Checkbox from "../atomics/checkbox";
 import { AudioSettingsContext } from "../utils/configurations";
 import { api, HTTP_STATUS } from "../utils/utils";
 import { moduleRegistry } from "../utils/defaultModules";
-import globalSettings from "../data/globalSettingsData.json";
+import defaultGlobalSettings from "../data/globalSettingsData.json";
 
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =
@@ -66,7 +66,7 @@ const ConfigManager = ({ children }) => {
 
   const clearCurrentSettings = () => {
     setModules(structuredClone(moduleRegistry));
-    setGlobalSettings(structuredClone(globalSettings));
+    setGlobalSettings(structuredClone(defaultGlobalSettings));
     setActiveGenre("Rock");
   };
 
@@ -79,9 +79,9 @@ const ConfigManager = ({ children }) => {
       activeGenre: savedGenre 
     } = project.data;
 
-    if (savedGlobal) setGlobalSettings(savedGlobal);
-    if (savedModules) setModules(savedModules);
-    if (savedGenre) setActiveGenre(savedGenre);
+    if (savedGlobal) setGlobalSettings(structuredClone(savedGlobal));
+    if (savedModules) setModules(structuredClone(savedModules));
+    if (savedGenre) setActiveGenre(structuredClone(savedGenre));
 
     setCurrentProjectName(project.name)
   };
