@@ -8,8 +8,6 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import { useState, useEffect } from "preact/hooks";
-import { api, HTTP_STATUS } from "../utils/utils";
 import { Match } from "preact-router/match";
 import logo from "../images/cymaspaceLogo.jpg"
 
@@ -18,8 +16,7 @@ import logo from "../images/cymaspaceLogo.jpg"
  *
  * @returns Header component
  */
-
-const Header = ({ setCurrentPage }) => {
+const Header = ({ setCurrentPage }) => {    //eslint-disable-line no-unused-vars
   const NavLink = ({ to, children }) => {
 
     const baseClasses = "p-4 px-4 py-2 rounded-md font-medium transition-colors duration-200";
@@ -44,20 +41,12 @@ const Header = ({ setCurrentPage }) => {
     );
   };
 
-  const printMemory = async () => {
-    const res = await api("GET", "/dev/getMemory");
-
-    if (res?.status == HTTP_STATUS.OK) {
-      console.log("Check serial monitor");
-    }
-  };
-
   return (
     <div className="p-4 flex w-full min-h-[8vh] justify-between items-center">
       
       {/* Left side */}
       <div className="flex flex-row justify-between items-center">
-        <img src={logo} alt="logo" className="w-10 h-10"></img> {/** TODO: add actual alt text */}
+        <img src={logo} alt="Image of the Cymaspace logo." className="w-10 h-10" /> {/** TODO: add actual alt text */}
         <h2 className="font-bold text-2xl ml-2">Vibrosonics</h2>
       </div>
 
@@ -70,17 +59,9 @@ const Header = ({ setCurrentPage }) => {
             <NavLink to="/modules">Modules</NavLink>
             <NavLink to="/radio">FM Radio</NavLink>
             {/** CHANGE LINK BELOW TO WEBSITE */}
-            <NavLink to="https://www.youtube.com/@cymaspace">CymaSpace</NavLink>
+            <NavLink to="https://www.cymaspace.org/">CymaSpace</NavLink>
             <NavLink to="https://github.com/udellc/Vibrosonics">GitHub Repo</NavLink>
           </nav>
-
-          {/** remove? 
-          <div className="pt-4">
-            DEBUGGING
-            <button className="ml-3 bg-cyan-400 cursor-pointer" onClick={printMemory}>
-              PRINT MEMORY BTN
-            </button>
-          </div>*/}
         </div>
       </div>
     </div>

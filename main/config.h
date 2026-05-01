@@ -14,14 +14,10 @@
 // Allow API endpoints to interact with the file system
 #define DEV_MODE_EN
 
-// Allow VibrosonicsAPI to run with the WebServer
-#define VAPI_EN
-
 // Allow debug statements to be printed to the Serial Monitor
-// Usage: true = enabled, false = disabled
-#define DEBUG_EN true
+#define DEBUG_EN
 
-#if DEBUG_EN
+#ifdef DEBUG_EN
   #define DEBUG_BEGIN(baudRate) Serial.begin(baudRate); Serial.println("DEBUG: Debugging Enabled")
   #define DEBUG_PRINTF(...) Serial.printf(__VA_ARGS__)
   #define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)

@@ -11,8 +11,9 @@
 import { useEffect, useRef } from "preact/hooks";
 import Knob from "../atomics/knob";
 import ModuleDisplay from "../data/moduleDisplay.json";
-import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID } from "../utils/utils";
-import InfoButton from "../atomics/infoButton";
+import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID, HTTP_STATUS } from "../utils/utils";
+import { api } from "../utils/utils.js";
+import { moduleRegistry } from "../data/defaultModules";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified
@@ -25,9 +26,25 @@ import InfoButton from "../atomics/infoButton";
  * @returns AnalysisModule component describing the configs
  */
 export default function AnalysisModule({ outputNum, module, setModules }) {
+  
+  /**
+   * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
+   * @brief Error handling invalid frequency ranges low and high
+   */
+  useEffect(() => {
+    const freqLow = module?.freqLow;
+    const freqHigh = module?.freqHigh;
+
+    isValid.current = (freqLow <= freqHigh);
+
+  }, [module?.freqLow, module?.freqHigh]);
+
   if (!module) return null;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const isValid = useRef(true);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { editSetting } = useEditSetting(QUEUE_MESSAGE_ID.EditModule, isValid);
 
   // Getting the module specific settings display values and ranges from the /data/ directory
@@ -77,29 +94,85 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
   /**
    * @brief Deletes the current module from the module list
    */
-  const handleDeleteModule = () => {
+  const handleDeleteModule = async () => {
+    if (!window.confirm("Are you sure you want to delete this module?")) {
+      return;
+    }
+    const query = `index=${module.index}`;
+    const res = await api("DELETE", `/analysis/deleteModule?${query}`);
+
+    if (res?.status == HTTP_STATUS.OK) {
+      setModules((prev) =>
+        prev.filter((m) => m.outputNumber !== outputNum)
+      );
+    }
+  };
+
+  /**
+   * @brief Updates the module type of the current output
+   */
+  const handleChangeModuleType = async (newType) => {
+    newType = Number(newType);
+    if (newType === -1) return;
+
+    // delete current module
+    const query = `index=${module.index}`;
+
+    const deleteRes = await api("DELETE", `/analysis/deleteModule?${query}`);
+    if (deleteRes?.status !== HTTP_STATUS.OK) return;
+
+    // replace with default module of requested type
+    const addRes = await api("POST", "/analysis/addModule", {
+      type: newType,
+      outputNumber: outputNum,
+    });
+    if (addRes?.status !== HTTP_STATUS.OK) return;
+
+    // update UI
+    const newModule = {
+      ...moduleRegistry[newType],
+      outputNumber: outputNum,
+    };
+
     setModules((prev) =>
-      prev.filter((m) => m.outputNumber !== outputNum)
+      prev.map((m) =>
+        m.outputNumber === outputNum ? newModule : m
+      )
     );
   };
 
   /**
-   * @todo Add better handling for invalid frequencies. currently just displays some red text if invalid
-   * @brief Error handling invalid frequency ranges low and high
+   * @brief Mutes or unmutes current output
    */
-  useEffect(() => {
-    const freqLow = module.freqLow;
-    const freqHigh = module.freqHigh;
+  const handleMutePressed = () => {
+    const updatedMuteVal = !module.isMuted;
 
-    isValid.current = (freqLow <= freqHigh);
+    // Update the UI
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.outputNumber !== outputNum) return m;
 
-  }, [module.freqLow, module.freqHigh]);
+        return {
+          ...m,
+          isMuted: updatedMuteVal,
+        };
+      })
+    );
+
+    // Send the updated val to the web server
+    editSetting({
+      // This index is for the position in the web server array
+      index: module.index,
+      field: CONFIG_FIELDS["isMuted"],
+      value: updatedMuteVal
+    })
+  }
 
   return (
     <div className="pt-8 p-4 bg-gray-200 rounded-xl shadow-inner flex flex-col items-center">
       <div className="flex flex-row">
         <button 
-          className="text-black px-2 font-bold"
+          className="text-black px-2 font-bold cursor-pointer"
           onClick={handleDeleteModule}
         >
           X
@@ -110,7 +183,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <select 
           className="w-full bg-transparent font-bold text-lg cursor-pointer appearance-none outline-none pr-6"
           value={module.moduleType}
-          onChange={(e) => handleUpdate(module.id, e.target.value)}
+          onChange={(e) => handleChangeModuleType(e.target.value)}
         >
           {Object.entries(MODULE_TYPE).map(([key, label]) => (
             <option key={key} value={key}>
@@ -136,12 +209,19 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
 
       {/* Row layout */}
       <div className="flex flex-col gap-x-3 px-6">
+        <button 
+          className="w-fit self-center px-4 py-2 mt-2 text-black cursor-pointer rounded-xl bg-gray-300 hover:bg-gray-400 transition-colors"
+          onClick={handleMutePressed}
+        >
+          {module.isMuted ? "Unmute" : "Mute"}
+        </button>
 
         {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">
           {Object.entries(knobs)?.map( ([key, val]) => {
             return (
-              <Knob 
+              <Knob
+                key={key}
                 min={val.min}
                 max={val.max}
                 step={val.step}
@@ -156,9 +236,9 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
 
         {/* Create dropdown boxes for corresponding settings */}
         <div className="flex flex-col gap-2">
-          {Object.entries(dropdowns)?.map( ([key, _]) => {
+          {Object.entries(dropdowns)?.map( ([key]) => {
             return (
-              <div className="bg-white border rounded-xl px-2">
+              <div key={key} className="bg-white border rounded-xl px-2">
                 <h4>{dropdowns[key].title}</h4>
                 <select value={module[key] ?? 0}
                   onChange={(e) => handleValueChange(key, e.target instanceof HTMLSelectElement
@@ -167,7 +247,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
                    )}>
 
                   {Object.entries(dropdownOptions)?.map( ([val, name]) => {
-                    return <option value={val}>{name}</option>
+                    return <option key={name} value={val}>{name}</option>
                   })}
 
                 </select>
@@ -178,7 +258,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
           {/* Create numerical text entries for the corresponding settings */}
           {Object.entries(spinboxes)?.map( ([key, val]) => {
             return (
-              <div className="bg-white border rounded-xl px-2">
+              <div key={key} className="bg-white border rounded-xl px-2">
                 <h4>{spinboxes[key].title}</h4>
                 <input type="number" 
                   value={module[key] ?? 1}

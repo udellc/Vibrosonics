@@ -22,8 +22,9 @@ enum class QueueMsgId : uint
 {
   EditGlobal = 0u,
   EditModule,
-  UpdateAll
-  // Create/delete module?
+  UpdateAll,
+  CreateModule,
+  DeleteModule
 };
 
 struct EditGlobalData
@@ -45,6 +46,7 @@ struct EditModuleData
     float f;
     FrequencyMapping fm;
     WaveType wt;
+    bool b;
   } value;
 };
 

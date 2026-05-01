@@ -128,6 +128,8 @@ inline void WebInterface::setupServer()
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
   server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
   server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
+  server.on("/analysis/deleteModule", HTTP_DELETE, onDeleteModule);
+  server.on("/analysis/addModule", HTTP_POST, onAddModule);
 
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
@@ -298,7 +300,10 @@ void WebInterface::onSubmitConfig()
   send(resStatus);
 }
 
-// TODO: add header comment
+/**
+ * @brief Adds a message to the haptic settings queue for real-time updates
+ * 
+ */
 void WebInterface::onEditSetting()
 {
   limitReqRate(500u);
@@ -322,6 +327,53 @@ void WebInterface::onEditSetting()
     resStatus = HTTP_OK;
 
   send(resStatus);
+}
+
+/**
+ * @brief Adds a message to the haptic settings queue to delete a module at a given index in real-time.
+ * 
+ */
+void WebInterface::onDeleteModule()
+{
+  if (!server.hasArg("index")) {
+    send(HTTP_UNPROCESSABLE);
+    return;
+  }
+  const int ModuleIndex = server.arg("index").toInt();
+  QueueMessage msg = {
+    .id = QueueMsgId::DeleteModule,
+    .module = { .index = ModuleIndex }
+  };
+  (void) HapticSettings::Instance().addMessage(&msg);
+
+  send(HTTP_OK);
+}
+
+/**
+ * @brief Adds a message to the haptic settings queue to add a module in real-time.
+ * 
+ */
+void WebInterface::onAddModule()
+{
+  JsonDocument payload;
+  int res = HTTP_UNPROCESSABLE;
+  
+  if (parsePayload(payload))
+  {
+    auto data = payload.as<JsonObject>();
+
+    // NOTE: Relies on Utils::createModule to create a module with default settings
+    QueueMessage msg = {
+      .id = QueueMsgId::CreateModule,
+      .module = { 
+        .index = data["outputNumber"].as<int>(),
+        .value = { .i = data["type"].as<int>() }
+      }
+    };
+    if (HapticSettings::Instance().addMessage(&msg))
+      res = HTTP_OK;
+  }
+  send(res);
 }
 
 /**
@@ -370,7 +422,11 @@ static bool parsePayload(JsonDocument &output)
   return true;
 }
 
-// TODO: add comment
+/**
+ * @brief Limits the number of requests to 1/Time_ms.
+ * 
+ * @param Time_ms - Wait time before another request can be processed.
+ */
 inline void limitReqRate(const unsigned long Time_ms)
 {
   static unsigned long lastReq_ms = 0;

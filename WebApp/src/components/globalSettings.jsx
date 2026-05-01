@@ -46,7 +46,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertM
     // Send a HTTP req for the modified setting
     editSetting({
       field: CONFIG_FIELDS[id],
-      value: value
+      value
     });
   };
 
@@ -102,7 +102,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertM
             const displayTitle = (isExpertMode && settingsDisplay[key]?.expertTitle) ? settingsDisplay[key].expertTitle : settingsDisplay[key]?.title;
             const displayDescription = (isExpertMode && settingsDisplay[key]?.expertDescription) ? settingsDisplay[key].expertDescription  : settingsDisplay[key]?.description;
             return (
-              <div className="flex flex-row">
+              <div key={key} className="flex flex-row">
                 {children}
                 <Knob
                   min={settingsDisplay[key].min}
