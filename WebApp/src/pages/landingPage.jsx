@@ -33,6 +33,7 @@ const LandingPage = () => {
     checkNetwork();
   }, []);
 
+  //eslint-disable-next-line no-unused-vars
   const handleInfoClick = () => {
     // TODO: change to pop up rather than alert
     alert("working!");

@@ -81,7 +81,7 @@ export default function Knob({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     // Parent container

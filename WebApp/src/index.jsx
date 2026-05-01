@@ -23,8 +23,8 @@ import {
   SystemContext,
   SystemContextProvider,
 } from "./utils/configurations";
-import { useContext, useEffect, useState } from "preact/hooks";
-import { api, PAGE } from "./utils/utils";
+import { useContext, useState } from "preact/hooks";
+import { PAGE } from "./utils/utils";
 
 /**
  * @brief Defines the different pages for the main App
@@ -35,7 +35,7 @@ import { api, PAGE } from "./utils/utils";
  * @param {string} _.currentPage Current page string
  * 
  */
-const AppContent = ({ setCurrentPage, currentPage}) => {
+const AppContent = ({ setCurrentPage, currentPage}) => {    //eslint-disable-line no-unused-vars
   const { setPageInfo } = useContext(SystemContext);
 
   // Used to update header when page changes

@@ -15,16 +15,12 @@ import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
 import GlobalSettings from "../components/globalSettings";
 import ConfigManager from "../components/configManager";
-import { moduleRegistry } from "../data/defaultModules";
-import DropDown from "../atomics/dropdown";
-import InfoButton from "../atomics/infoButton";
 import EmptyOutput from "../components/emptyOutput";
 
 const ModulesPage = () => {
   // Persistant memory/data
   const { globalSettings, setGlobalSettings } = useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
-  const [tempType, setTempType] = useState('First'); {/** TODO: test functionality */}
 
   // TODO: pull number of outputs from config rather than hard coding as 8
   const [outputs, setOutputs] = useState(new Array(8).fill(null));
@@ -45,7 +41,7 @@ const ModulesPage = () => {
    */
   useEffect(() => {
     getSettings();
-  }, []);
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * @brief Gets the analysis config from the web server
