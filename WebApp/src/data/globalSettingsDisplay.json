@@ -6,42 +6,51 @@
       "description": "The baseline level of background noise or interference expected in the environment. It acts as an absolute minimum threshold below which incoming signals are ignored entirely.",
       "min": 0,
       "max": 2048,
-      "step": 1
+      "step": 1,
+      "isExpertOnly": true
     },
     "smoothingFactor": {
       "title": "Smoothing Factor",
-      "description": "A parameter used to average or filter the data over time or space to reduce random, rapid fluctuations. A higher smoothing factor produces a more stable, readable output but will respond more slowly to sudden, actual changes in the environment.",
+      "description": "This acts like a shock absorber for your data. It averages out rapid, jittery spikes so you get a smoother, easier to listen idea of what is actually happening.",
+      "expertDescription": "A parameter used to average or filter the data over time or space to reduce random, rapid fluctuations. A higher smoothing factor produces a more stable, readable output but will respond more slowly to sudden, actual changes in the environment.",
       "min": 0,
       "max": 1,
-      "step": 0.01
+      "step": 0.01,
+      "isExpertOnly": false
     },
     "cfarRefCount": {
       "title": "CFAR Reference Cells",
       "description": "The number of neighboring data points used to calculate the average local background noise level around a potential target. Using more cells provides a more accurate noise estimate but can reduce detection resolution if multiple targets are close together.",
       "min": 1,
       "max": 30,
-      "step": 1
+      "step": 1,
+      "isExpertOnly": true
     },
     "cfarGuardCount": {
       "title": "CFAR Guard Cells",
       "description": "Data points immediately adjacent to the cell being tested that are intentionally excluded from the noise estimation calculation. This prevents a target's own signal energy from ''bleeding'' into the calculation, which would artificially raise the noise floor and mask the target.",
       "min": 1,
       "max": 30,
-      "step": 1
+      "step": 1,
+      "isExpertOnly": true
     },
     "cfarBias": {
-      "title": "CFAR Bias",
-      "description": "A scaling factor (or multiplier) applied to the calculated background noise to establish the final detection threshold. Increasing this value reduces false alarms from random noise spikes, but makes it harder to detect weak legitimate targets.",
+      "title": "Noise Filter",
+      "expertTitle": "CFAR Bias",
+      "description": "This is your sensitivity dial. Turning it up makes the system stricter, which reduces false alarms from random static but makes it harder to spot weak signals.",
+      "expertDescription": "A scaling factor (or multiplier) applied to the calculated background noise to establish the final detection threshold. Increasing this value reduces false alarms from random noise spikes, but makes it harder to detect weak legitimate targets. Labelled in beginner mode as 'Noise Filter'.",
       "min": 0,
       "max": 25,
-      "step": 0.01
+      "step": 0.01,
+      "isExpertOnly": false
     },
     "minAmpNorm": {
       "title": "Min Amplitude Norm",
       "min": 1,
       "max": 20000,
       "step": 0.01,
-      "description": "An absolute minimum intensity threshold a signal must reach to be considered a valid detection, regardless of what the CFAR algorithm calculates. It acts as a hard cutoff to filter out consistently weak, insignificant returns."
+      "description": "An absolute minimum intensity threshold a signal must reach to be considered a valid detection, regardless of what the CFAR algorithm calculates. It acts as a hard cutoff to filter out consistently weak, insignificant returns.",
+      "isExpertOnly": true
     }
   }
 }

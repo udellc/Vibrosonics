@@ -41,7 +41,7 @@ export default function InfoButton({ onClick, infoText, showToolTip = true }) {
             </button>
 
             {showToolTip && (
-                <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-2 bg-gray-400 text-black text-xs text-center rounded-lg shadow-lg 
+                <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-2 bg-blue-300 text-black text-xs text-center rounded-lg shadow-lg 
                                 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
                     {infoText}
                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-400"></div>
