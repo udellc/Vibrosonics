@@ -41,7 +41,6 @@
       "expertDescription": "A scaling factor (or multiplier) applied to the calculated background noise to establish the final detection threshold. Increasing this value reduces false alarms from random noise spikes, but makes it harder to detect weak legitimate targets. Labelled in beginner mode as 'Noise Filter'.",
       "min": 0,
       "max": 25,
-<<<<<<< HEAD
       "step": 0.01,
       "isExpertOnly": false
     },
@@ -52,9 +51,6 @@
       "step": 0.01,
       "description": "An absolute minimum intensity threshold a signal must reach to be considered a valid detection, regardless of what the CFAR algorithm calculates. It acts as a hard cutoff to filter out consistently weak, insignificant returns.",
       "isExpertOnly": true
-=======
-      "step": 0.01
->>>>>>> 25-26_dev
     }
   }
 }

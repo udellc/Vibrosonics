@@ -63,8 +63,12 @@ const ConfigManager = ({ children }) => {
   };
 
   const clearCurrentSettings = () => {
-    setModules(structuredClone(moduleRegistry));
-    setGlobalSettings(structuredClone(defaultGlobalSettings));
+    if (Array.isArray(moduleRegistry)) {
+        setModules([...moduleRegistry]);
+    } else if (moduleRegistry && typeof moduleRegistry === 'object') {
+        setModules(Object.values(moduleRegistry));
+    }
+    setGlobalSettings({...defaultGlobalSettings.global});
     setActiveGenre("Rock");
   };
 
