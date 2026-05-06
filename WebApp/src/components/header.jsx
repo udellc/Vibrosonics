@@ -53,7 +53,7 @@ const Header = ({ setCurrentPage }) => {    //eslint-disable-line no-unused-vars
       {/* Right side */}
       <div>
         <div>
-          <nav>
+          <nav id="main-nav">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/network">Networks</NavLink>
             <NavLink to="/modules">Modules</NavLink>

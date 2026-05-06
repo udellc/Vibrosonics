@@ -40,10 +40,12 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="mt-20 ml-10 mr-10 min-h-[60vh]">
+    <div id="welcomeheading" className="mt-20 ml-10 mr-10 min-h-[60vh]">
       {/* Vertical layout */}
       <div className="flex flex-col">
-        <h2 className="text-5xl font-bold mb-7">Welcome</h2>
+        <h2 className="text-5xl font-bold mb-7">
+          <span >Welcome</span>
+        </h2>
         <p className="text-xl text-gray-400 pb-4">Feel the Music, Your Way</p>
 
         {/* Horizontal layout */}
