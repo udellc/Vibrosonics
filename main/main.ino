@@ -287,8 +287,8 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
 
 void rebuildOutputModules(const AnalysisConfig* Config)
 {
-  //melodic.clearModules();
-  //percussive.clearModules();
+  melodic.clearModules();
+  percussive.clearModules();
 
   for (int i = 0; i < NUM_OUT_CH; i++)
   {

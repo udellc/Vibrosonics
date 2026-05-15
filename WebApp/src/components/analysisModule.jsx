@@ -46,17 +46,12 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { editSetting } = useEditSetting(QUEUE_MESSAGE_ID.EditModule, isValid);
-  const [isValid, setIsValid] = useState(true);
 
   // Getting the module specific settings display values and ranges from the /data/ directory
-  const moduleType = module.moduleType ?? module.type;
-  const settings = ModuleDisplay[moduleType]?.settings;
-  
-  if (!settings) return null;
-
-  const knobs = settings.knob ?? {};
-  const dropdowns = settings.dropdown ?? {};
-  const spinboxes = settings.spinbox ?? {};
+  const settings = ModuleDisplay[module.moduleType].settings;
+  const knobs = settings.knob ?? null;
+  const dropdowns = settings.dropdown ?? null;
+  const spinboxes = settings.spinbox ?? null;
 
   // FIXME: temp solution to dynamic dropdown options
   const getDropdownOptions = () => {

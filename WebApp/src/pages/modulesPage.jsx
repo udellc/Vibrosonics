@@ -29,26 +29,12 @@ const ModulesPage = () => {
    * @brief Updates output display whenever modules update.
    */
   useEffect(() => {
-<<<<<<< HEAD
     let updatedOutputs = new Array(8).fill(null);
     for (const module of modules) {
       updatedOutputs[module.outputNumber] = module;
     }
     setOutputs(updatedOutputs);
   }, [modules]);
-=======
-    // Get filtered modules based on channel, saving the index for the modules context
-    const displayedIndices = modules
-      .map((m, index) =>
-        Number(m.outputNumber) === Number(selectedChannel) ? index : -1,
-      )
-      .filter((index) => index !== -1);
-
-    setDisplayedModules(displayedIndices);
-
-    // FIXME: the length may not be a good indicator, but this works for now
-  }, [modules, selectedChannel]);
->>>>>>> e782188 (feat: added rock and jazz presets to webapp)
 
   /**
    * @brief Gets the analysis configurations on mount
