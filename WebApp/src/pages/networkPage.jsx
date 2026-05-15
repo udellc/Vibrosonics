@@ -77,7 +77,7 @@ const NetworkPage = () => {
   return (
     <div className="mt-20 min-h-[60vh] ml-10 mr-10">
       {isLoading ? (
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center justify-center min-h-[200px] w-full gap-3" id="scanning">
           <div className="w-10 h-10 border-4 border-gray-200 border-t-amber-500 rounded-full animate-spin" />
           <p className="text-gray-500 font-medium animate-pulse">
             Scanning for networks...

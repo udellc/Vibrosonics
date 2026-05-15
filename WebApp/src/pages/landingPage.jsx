@@ -5,7 +5,7 @@
  *
  * Description: The landing page for web app
  *
- * Author: Ivan Wong
+ * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
 import { route } from "preact-router";

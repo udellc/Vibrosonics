@@ -219,8 +219,10 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">
           {Object.entries(knobs)?.map( ([key, val]) => {
+            const knobId = `knob-${key}`;
             return (
               <Knob
+                id={knobId}
                 key={key}
                 min={val.min}
                 max={val.max}
