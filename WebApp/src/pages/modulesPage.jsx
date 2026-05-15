@@ -58,34 +58,31 @@ const ModulesPage = () => {
   return (
     <div className="flex flex-col m-8">
       <ConfigManager>
-        {/* TODO: better way to check if module load failed? */}
-        {modules.length != 0 && (
-          <div className="flex flex-row gap-4">
-            {/* Either display empty slot or module assigned to each output
-                We pass in module because the actual modules being sent to the server
-                are updated here, rather than creating a copy of the module
-            */}
-            {outputs.map((module, outputNum) => {
-              return (
-                <div key={outputNum} className="gap-3 flex flex-col items-center">
-                  <p>Output {outputNum + 1}</p>
-                  {module === null ? (
-                    <EmptyOutput
-                      outputNum={outputNum}
-                      setModules={setModules}
-                    />
-                  ) : (
-                    <AnalysisModule
-                      outputNum={outputNum}
-                      module={module}
-                      setModules={setModules}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <div className="flex flex-row gap-4">
+          {/* Either display empty slot or module assigned to each output
+              We pass in module because the actual modules being sent to the server
+              are updated here, rather than creating a copy of the module
+          */}
+          {outputs.map((module, outputNum) => {
+            return (
+              <div key={outputNum} className="gap-3 flex flex-col items-center">
+                <p>Output {outputNum + 1}</p>
+                {module === null ? (
+                  <EmptyOutput
+                    outputNum={outputNum}
+                    setModules={setModules}
+                  />
+                ) : (
+                  <AnalysisModule
+                    outputNum={outputNum}
+                    module={module}
+                    setModules={setModules}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
         <GlobalSettings
           globalSettings={globalSettings}
           setGlobalSettings={setGlobalSettings}

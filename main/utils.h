@@ -38,7 +38,7 @@ struct EditGlobalData
 
 struct EditModuleData
 {
-  int index;
+  int outputNumber;
 
   union {
     int i;
@@ -88,7 +88,7 @@ namespace Utils
   //! Edits the global config data using the message as which field and value
   void applyGlobalEdit(AnalysisConfig* config, const QueueMessage& msg);
 
-  //! Edits the module config data using the message as which field, index, and value
+  //! Edits the module config data using the message as which field, output, and value
   bool applyModuleEdit(AnalysisConfig* config, const QueueMessage& msg);
 }
 

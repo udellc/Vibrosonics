@@ -124,7 +124,6 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
   // Allocate memory in the array
   JsonObject module = modulesList.add<JsonObject>();
 
-  module["index"] = i;
   module["outputNumber"] = config->modules[i]->outputNumber;
   module["moduleType"] = config->modules[i]->moduleType;
   module["freqLow"] = config->modules[i]->freqLow;
@@ -208,7 +207,7 @@ void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueM
     }
     case QueueMsgId::EditModule:
     {
-      msg.module.index = payload["index"].as<int>();
+      msg.module.outputNumber = payload["outputNumber"].as<int>();
 
       switch (msg.field)
       {
@@ -290,16 +289,16 @@ void Utils::applyGlobalEdit(AnalysisConfig* config, const QueueMessage& msg)
  * @brief Updates the module config within the analysis config
  * 
  * @param config - Config pointer to edit
- * @param msg - Message holding which index, field, and what value to use
+ * @param msg - Message holding which output, field, and what value to use
  *
  * @return Bool indicating if the modules need to be rebuilt in the main loop 
  */
 bool Utils::applyModuleEdit(AnalysisConfig* config, const QueueMessage& msg)
 {
-  if (!config->modules[msg.module.index])
+  if (!config->modules[msg.module.outputNumber])
     return false;
     
-  ModuleConfig* mod = config->modules[msg.module.index].get();
+  ModuleConfig* mod = config->modules[msg.module.outputNumber].get();
 
   switch (msg.field)
   {

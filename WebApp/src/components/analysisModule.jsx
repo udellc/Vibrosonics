@@ -19,7 +19,7 @@ import { moduleRegistry } from "../data/defaultModules";
  * @brief The AnalysisModule component describe a full module that can be modified
  * 
  * @param {Object} _ - Object describing the configurations
- * @param {Number} _.outputNum - Index of module to be updated using the modules context
+ * @param {Number} _.outputNum - Output number of module to be updated using the modules context
  * @param {Object} _.module - Module configuration to modify
  * @param {CallableFunction} _.setModules - Callback for actually updating the module settings and UI
  * 
@@ -84,8 +84,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
 
     // Send the updated val to the web server
     editSetting({
-      // This index is for the position in the web server array
-      index: module.index,
+      outputNumber: outputNum,
       field: CONFIG_FIELDS[id],
       value: val
     })
@@ -98,7 +97,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
     if (!window.confirm("Are you sure you want to delete this module?")) {
       return;
     }
-    const query = `index=${module.index}`;
+    const query = `outputNumber=${module.outputNumber}`;
     const res = await api("DELETE", `/analysis/deleteModule?${query}`);
 
     if (res?.status == HTTP_STATUS.OK) {
@@ -116,7 +115,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
     if (newType === -1) return;
 
     // delete current module
-    const query = `index=${module.index}`;
+    const query = `outputNumber=${module.outputNumber}`;
 
     const deleteRes = await api("DELETE", `/analysis/deleteModule?${query}`);
     if (deleteRes?.status !== HTTP_STATUS.OK) return;
@@ -145,27 +144,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
    * @brief Mutes or unmutes current output
    */
   const handleMutePressed = () => {
-    const updatedMuteVal = !module.isMuted;
-
-    // Update the UI
-    setModules((prev) =>
-      prev.map((m) => {
-        if (m.outputNumber !== outputNum) return m;
-
-        return {
-          ...m,
-          isMuted: updatedMuteVal,
-        };
-      })
-    );
-
-    // Send the updated val to the web server
-    editSetting({
-      // This index is for the position in the web server array
-      index: module.index,
-      field: CONFIG_FIELDS["isMuted"],
-      value: updatedMuteVal
-    })
+    handleValueChange("isMuted", !module.isMuted);
   }
 
   return (
