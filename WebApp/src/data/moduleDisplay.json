@@ -22,8 +22,8 @@
         "minAmpNorm": {
           "title": "Min Amplitude Norm",
           "min": 1,
-          "max": 20000000,
-          "step": 0.01,
+          "max": 40000,
+          "step": 100.0,
           "description": "This establishes the absolute minimum intensity threshold a signal must reach to be registered by the system. Any signal falling below this magnitude is discarded as background noise, which helps prevent false positive detections."
         }
       },
@@ -63,7 +63,7 @@
           "title": "Min Amplitude Norm",
           "min": 1,
           "max": 20000000,
-          "step": 0.01
+          "step": 1000.0
         },
         "fluxThresh": {
           "title": "Flux Threshold",
