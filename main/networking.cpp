@@ -10,21 +10,19 @@
  ***************************************************************/
 
 #include "networking.h"
+#include "config.h"
 #include "fileSys.h"
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <ArduinoJson.h>
+#include <algorithm>
 
 // Networking globals
 #define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
 
-#ifdef DEV_MODE_EN
-  const char *ApSSID = "Vibrosonics-Dev";
-#else
-  const char *ApSSID = "Vibrosonics-Unsecure";
-#endif
+const char *DefaultApSSID = "Vibrosonics-Unsecure";
 const char *DefaultHostname = "vibrosonics";
-const char *ApPassword = "1234567890";
+const char *DefaultApPassword = "1234567890";
 
 struct WiFiInfo
 {
@@ -54,6 +52,7 @@ bool Networking::init()
 
   // Operate in AP and station mode
   WiFi.mode(WIFI_AP_STA);
+
   const bool HasSettings = FileSys::exists(WIFI_SETTINGS_PATH);
 
   if (HasSettings)
@@ -61,12 +60,13 @@ bool Networking::init()
     File settingsFile = FileSys::getFile(WIFI_SETTINGS_PATH);
     const auto Error = deserializeJson(settingsDoc, settingsFile);
     settingsFile.close();
-
+    
     if (!Error)
     {
+      // Try to connect to external Wi-Fi first
       auto ssid = settingsDoc["ssid"];
       auto password = settingsDoc["password"];
-
+    
       if (connectToNetwork(ssid, password))
       {
         currentWifi.ssid = String(ssid);
@@ -76,37 +76,45 @@ bool Networking::init()
 
         return true;
       }
-      else
+      // Didn't work, try to connect to AP mode with user settings
+      ssid = settingsDoc["apSsid"];
+      password = settingsDoc["apPassword"];
+
+      if (initAccessPoint(ssid, password))
       {
-        DEBUG_PRINTLN("WARNING: Could not connect to saved WiFi");
+        DEBUG_PRINTLN("DEBUG: Using user saved network settings.");
+        return true;
       }
     }
   }
-  // Fall back on AP mode if saved network settings DNE or couldn't connect
-  if (initAccessPoint())
+  // Fallback to default AP mode
+  if (!initAccessPoint(DefaultApSSID, DefaultApPassword))
   {
-    currentWifi.ssid = "";
-    currentWifi.password = "";
-    wifiStatus = Status_T::ConnectedToAP;
-
-    return true;
+    DEBUG_PRINTLN("FATAL: Could not use any Wi-Fi signal");
+    wifiStatus = Status_T::NotConnected;
+    return false;
   }
-  // Complete failure
-  wifiStatus = Status_T::NotConnected;
-  return false;
+  return true;
 }
 
 /**
  * @brief Initializes WiFi capabilities on the ESP32 in access point mode, with a custom host name
  * 
+ * @param Ssid - Name of the Wi-Fi to 
+ * 
  * @return Bool indicating of the WiFi access point has been created with the
  *         defaultHostname domain.
  */
-bool Networking::initAccessPoint()
+bool Networking::initAccessPoint(const String& Ssid, const String& Password)
 {
+  if (Ssid.length() == 0)
+  {
+    DEBUG_PRINTLN("FATAL: SSID for AP mode is empty.");
+    return false;
+  }
   DEBUG_PRINTLN("DEBUG: Starting WiFi access point...");
 
-  bool success = WiFi.softAP(ApSSID, ApPassword);
+  bool success = WiFi.softAP(Ssid, Password);
   success &= MDNS.begin(DefaultHostname);
 
   if (!success)
@@ -115,6 +123,10 @@ bool Networking::initAccessPoint()
   }
   else
   {
+    currentWifi.ssid = DefaultApSSID;
+    currentWifi.password = DefaultApPassword;
+    wifiStatus = Status_T::ConnectedToAP;
+
     DEBUG_PRINT("DEBUG: Access point created. Accessible at ");
     DEBUG_PRINT(WiFi.softAPIP());
     DEBUG_PRINTF(" or http://%s\n", DefaultHostname);
