@@ -144,9 +144,9 @@ void HapticSettings::loadConfig()
     this->curConfig->smoothingFactor = 0.2;
     
     this->curConfig->modules[0] =
-      std::make_unique<MajorPeaksConfig>(0, 1000, 3600, 10000.0, OCTAVE, 1);
+      std::make_unique<MajorPeaksConfig>(0, 1000, 3600, 10000.0, false, OCTAVE, 1);
     this->curConfig->modules[1] =
-      std::make_unique<PercussionConfig>(1, 1800, 4000, 10000000.0, 0.5, 100000000.0, 0.78, TRIANGLE);
+      std::make_unique<PercussionConfig>(1, 1800, 4000, 10000000.0, false, 0.5, 100000000.0, 0.78, TRIANGLE);
   }
 }
 
@@ -180,27 +180,27 @@ bool HapticSettings::processQueue()
 
       case QueueMsgId::CreateModule:
       {
-        const int Index = msg.module.index;
+        const int outputNumber = msg.module.outputNumber;
         
-        if (Index >= 0 && Index < NUM_OUT_CH)
+        if (outputNumber >= 0 && outputNumber < NUM_OUT_CH)
         {
           const auto Type = static_cast<ModuleType>(msg.module.value.i);
           auto newModule = Utils::createModule(Type);
 
           if (!newModule) break;
 
-          newModule->outputNumber = Index;
-          curConfig->modules[Index] = std::move(newModule);
+          newModule->outputNumber = outputNumber;
+          curConfig->modules[outputNumber] = std::move(newModule);
           needsRebuild = true;
         }
         break;
       }
       case QueueMsgId::DeleteModule:
       {
-        const int Index = msg.module.index;
+        const int outputNumber = msg.module.outputNumber;
         
-        if (Index >= 0 && Index < NUM_OUT_CH) {
-          curConfig->modules[Index] = nullptr;
+        if (outputNumber >= 0 && outputNumber < NUM_OUT_CH) {
+          curConfig->modules[outputNumber] = nullptr;
           needsRebuild = true;
         }
         break;

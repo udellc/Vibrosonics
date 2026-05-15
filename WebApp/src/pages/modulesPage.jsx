@@ -15,16 +15,12 @@ import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
 import GlobalSettings from "../components/globalSettings";
 import ConfigManager from "../components/configManager";
-import { moduleRegistry } from "../data/defaultModules";
-import DropDown from "../atomics/dropdown";
-import InfoButton from "../atomics/infoButton";
 import EmptyOutput from "../components/emptyOutput";
 
 const ModulesPage = () => {
   // Persistant memory/data
   const { globalSettings, setGlobalSettings } = useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
-  const [tempType, setTempType] = useState('First'); {/** TODO: test functionality */}
 
   // TODO: pull number of outputs from config rather than hard coding as 8
   const [outputs, setOutputs] = useState(new Array(8).fill(null));
@@ -59,7 +55,7 @@ const ModulesPage = () => {
    */
   useEffect(() => {
     getSettings();
-  }, []);
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * @brief Gets the analysis config from the web server
@@ -76,34 +72,31 @@ const ModulesPage = () => {
   return (
     <div className="flex flex-col m-8">
       <ConfigManager>
-        {/* TODO: better way to check if module load failed? */}
-        {modules.length != 0 && (
-          <div className="flex flex-row gap-4">
-            {/* Either display empty slot or module assigned to each output
-                We pass in module because the actual modules being sent to the server
-                are updated here, rather than creating a copy of the module
-            */}
-            {outputs.map((module, outputNum) => {
-              return (
-                <div key={outputNum} className="gap-3 flex flex-col items-center">
-                  <p>Output {outputNum + 1}</p>
-                  {module === null ? (
-                    <EmptyOutput
-                      outputNum={outputNum}
-                      setModules={setModules}
-                    />
-                  ) : (
-                    <AnalysisModule
-                      outputNum={outputNum}
-                      module={module}
-                      setModules={setModules}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <div className="flex flex-row gap-4">
+          {/* Either display empty slot or module assigned to each output
+              We pass in module because the actual modules being sent to the server
+              are updated here, rather than creating a copy of the module
+          */}
+          {outputs.map((module, outputNum) => {
+            return (
+              <div key={outputNum} className="gap-3 flex flex-col items-center">
+                <p>Output {outputNum + 1}</p>
+                {module === null ? (
+                  <EmptyOutput
+                    outputNum={outputNum}
+                    setModules={setModules}
+                  />
+                ) : (
+                  <AnalysisModule
+                    outputNum={outputNum}
+                    module={module}
+                    setModules={setModules}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
         <GlobalSettings
           globalSettings={globalSettings}
           setGlobalSettings={setGlobalSettings}

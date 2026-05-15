@@ -10,7 +10,7 @@
 
 import { moduleRegistry } from "../data/defaultModules";
 import { HTTP_STATUS, MODULE_TYPE } from "../utils/utils";
-import { api } from "../utils/utils";
+import { api } from "../utils/utils.js";
 
 /**
  * @brief The EmptyOutput component represents an output with no audio analysis modules.

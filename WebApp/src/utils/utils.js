@@ -46,9 +46,9 @@ export const CONFIG_FIELDS = Object.freeze({
   "cfarGuardCount": 2,
   "cfarBias": 3,
   "smoothingFactor": 4,
-  "minAmpNorm": 5,
 
   // Shared module fields
+  "minAmpNorm": 5,
   "freqLow": 6,
   "freqHigh": 7,
   "outputNumber": 8,
@@ -61,7 +61,10 @@ export const CONFIG_FIELDS = Object.freeze({
   "fluxThresh": 11,
   "energyThresh": 12,
   "entropyThresh": 13,
-  "waveType": 14
+  "waveType": 14,
+
+  // Shared module field
+  "isMuted": 15
 });
 export const WAVE_TYPE = Object.freeze({
   0: "Sine",
@@ -145,12 +148,12 @@ export function useEditSetting(type, isValid = null) {
       try {
         const payload = {
           ...setting,
-          type: type
+          type
         };
         const res = await api("PATCH", "/analysis/editSetting", payload);
 
         if (res?.status == HTTP_STATUS.OK) {
-          console.log("Success");
+          console.log("success");
         }
       } 
       catch (error) {
@@ -158,12 +161,17 @@ export function useEditSetting(type, isValid = null) {
       }
     }, 500);
 
-  }, [type]);
+  }, [type]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clean up the timers when in-use UI component is unmounted
   useEffect( () => {
+    // Freeze object to avoid potential race conditions
+    const currentTimers = timers.current;
+
     return () => {
-      Object.values(timers.current).forEach(clearTimeout);
+      if (currentTimers) {
+        Object.values(currentTimers).forEach(clearTimeout);
+      }
     }
   }, []);
 

@@ -5,7 +5,8 @@ export const moduleRegistry = {
     "freqHigh": 1000,
     "minAmpNorm": 10000.0,
     "maxPeaks": 1,
-    "frequencyMapping": 1
+    "frequencyMapping": 1,
+    "isMuted": false
   },
   1: { // percussion
     "moduleType": 1,
@@ -15,6 +16,7 @@ export const moduleRegistry = {
     "fluxThresh": 0.5,
     "energyThresh": 100000000.0,
     "entropyThresh": 0.78,
-    "waveType": 4
+    "waveType": 4,
+    "isMuted": false
   }
 }

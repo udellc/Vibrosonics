@@ -66,6 +66,7 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
     modulePtr->freqLow = module["freqLow"]; 
     modulePtr->freqHigh = module["freqHigh"];
     modulePtr->minAmpNorm = module["minAmpNorm"];
+    modulePtr->isMuted = module["isMuted"];
 
     // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
     if (Type == MAJORPEAKS)
@@ -123,12 +124,12 @@ void Utils::packageModulesList(JsonArray& modulesList, AnalysisConfig* config)
   // Allocate memory in the array
   JsonObject module = modulesList.add<JsonObject>();
 
-  module["index"] = i;
   module["outputNumber"] = config->modules[i]->outputNumber;
   module["moduleType"] = config->modules[i]->moduleType;
   module["freqLow"] = config->modules[i]->freqLow;
   module["freqHigh"] = config->modules[i]->freqHigh;
   module["minAmpNorm"] = config->modules[i]->minAmpNorm;
+  module["isMuted"] = config->modules[i]->isMuted;
 
   // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
   if (config->modules[i]->moduleType == MAJORPEAKS)
@@ -161,8 +162,8 @@ inline ModulePtr Utils::createModule(const ModuleType Type)
   // Used to create default module configs
   static const ModuleFactory Map =
   {
-    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 400, 1000, 10000.0, OCTAVE, 1); } },
-    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 1800, 4000, 10000000.0, 0.5, 100000000.0, 0.78, TRIANGLE); } },
+    { MAJORPEAKS, []() { return std::make_unique<MajorPeaksConfig>(0, 400, 1000, 10000.0, false, OCTAVE, 1); } },
+    { PERCUSSION, []() { return std::make_unique<PercussionConfig>(0, 1800, 4000, 10000000.0, false, 0.5, 100000000.0, 0.78, TRIANGLE); } },
   };
   // If the module type is defined, we return the second element since the Map carries a pair:
   // Ex: ( ModuleType, unique_ptr for module )
@@ -206,7 +207,7 @@ void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueM
     }
     case QueueMsgId::EditModule:
     {
-      msg.module.index = payload["index"].as<int>();
+      msg.module.outputNumber = payload["outputNumber"].as<int>();
 
       switch (msg.field)
       {
@@ -233,6 +234,10 @@ void Utils::createMessage(const QueueMsgId id, const JsonObject& payload, QueueM
         case ConfigField::EntropyThresh:
         case ConfigField::MinAmpNorm:
           msg.module.value.f = payload["value"].as<float>();
+          break;
+
+        case ConfigField::IsMuted:
+          msg.module.value.b = payload["value"].as<bool>();
           break;
 
         default:
@@ -284,16 +289,16 @@ void Utils::applyGlobalEdit(AnalysisConfig* config, const QueueMessage& msg)
  * @brief Updates the module config within the analysis config
  * 
  * @param config - Config pointer to edit
- * @param msg - Message holding which index, field, and what value to use
+ * @param msg - Message holding which output, field, and what value to use
  *
  * @return Bool indicating if the modules need to be rebuilt in the main loop 
  */
 bool Utils::applyModuleEdit(AnalysisConfig* config, const QueueMessage& msg)
 {
-  if (!config->modules[msg.module.index])
+  if (!config->modules[msg.module.outputNumber])
     return false;
     
-  ModuleConfig* mod = config->modules[msg.module.index].get();
+  ModuleConfig* mod = config->modules[msg.module.outputNumber].get();
 
   switch (msg.field)
   {
@@ -310,8 +315,12 @@ bool Utils::applyModuleEdit(AnalysisConfig* config, const QueueMessage& msg)
       return true;
 
     case ConfigField::MinAmpNorm:      
-      mod->minAmpNorm = msg.global.value.f;
-      break;
+      mod->minAmpNorm = msg.module.value.f;
+      return false;
+
+    case ConfigField::IsMuted:
+      mod->isMuted = msg.module.value.b;
+      return false;
 
     default:
       break;

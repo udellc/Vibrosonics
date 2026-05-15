@@ -29,10 +29,10 @@ enum class ConfigField : uint
   GLOBAL_END = SmoothingFactor,
 
   // Shared module fields
+  MinAmpNorm,
   FreqLow,
   FreqHigh,
   OutputNumber,
-  MinAmpNorm,
 
   // MajorPeaks
   MaxPeaks,
@@ -42,7 +42,9 @@ enum class ConfigField : uint
   FluxThresh,
   EnergyThresh,
   EntropyThresh,
-  WaveType
+  WaveType,
+
+  IsMuted
 };
 
 enum FrequencyMapping{
@@ -67,12 +69,14 @@ protected:
               ModuleType moduleType,
               uint16_t freqLow,
               uint16_t freqHigh,
-              float minAmpNorm)
+              float minAmpNorm,
+              bool isMuted)
     : outputNumber(outputNumber),
       moduleType(moduleType),
       freqLow(freqLow),
       freqHigh(freqHigh),
-      minAmpNorm(minAmpNorm) {}
+      minAmpNorm(minAmpNorm),
+      isMuted(isMuted) {}
 public:
   // the output number that the module is assigned to
   int outputNumber;
@@ -84,6 +88,8 @@ public:
   uint16_t freqHigh;
   // minimum value to use for amplitude mapping. must be positive
   float minAmpNorm;
+  // bool to see if module should be muted or not
+  bool isMuted;
 };
 
 // configuration unique to the major peaks analysis module
@@ -92,9 +98,10 @@ struct MajorPeaksConfig : ModuleConfig {
                   uint16_t freqLow,
                   uint16_t freqHigh,
                   float minAmpNorm,
+                  bool isMuted,
                   FrequencyMapping frequencyMapping,
                   int maxPeaks)
-    : ModuleConfig(outputNumber, MAJORPEAKS, freqLow, freqHigh, minAmpNorm),
+    : ModuleConfig(outputNumber, MAJORPEAKS, freqLow, freqHigh, minAmpNorm, isMuted),
       maxPeaks(maxPeaks),
       frequencyMapping(frequencyMapping) {}
   // what type of frequency mapping to use. see FrequencyMapping enum for options
@@ -109,11 +116,12 @@ struct PercussionConfig : ModuleConfig {
                   uint16_t freqLow,
                   uint16_t freqHigh,
                   float minAmpNorm,
+                  bool isMuted,
                   float fluxThresh,
                   float energyThresh,
                   float entropyThresh,
                   WaveType waveType)
-    : ModuleConfig(outputNumber, PERCUSSION, freqLow, freqHigh, minAmpNorm),
+    : ModuleConfig(outputNumber, PERCUSSION, freqLow, freqHigh, minAmpNorm, isMuted),
       fluxThresh(fluxThresh),
       energyThresh(energyThresh),
       entropyThresh(entropyThresh),

@@ -44,7 +44,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
     // Send a HTTP req for the modified setting
     editSetting({
       field: CONFIG_FIELDS[id],
-      value: value
+      value
     });
   };
 
@@ -74,7 +74,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
         <div className="flex flex-wrap justify-center gap-4">
           {Object.entries(globalSettings).map(([key, val]) => {
             return (
-              <div className="flex flex-row">
+              <div key={key} className="flex flex-row">
                 {children}
                 <Knob
                   min={settingsDisplay[key].min}
