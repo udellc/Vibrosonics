@@ -5,21 +5,21 @@
     "outputNumber": 0,
     "settings": {
       "knob": {
-        "freqLow": {
+        "freqLowMP": {
           "title": "Low Cut Frequency",
           "min": 0,
           "max": 4096,
           "step": 1,
           "description": "This setting acts as a high-pass filter by blocking all frequencies below the specified value. It is typically used to eliminate unwanted low-frequency noise, such as rumble or structural vibrations, from your incoming signal."
         },
-        "freqHigh": {
+        "freqHighMP": {
           "title": "High Cut Frequency",
           "min": 0,
           "max": 4096,
           "step": 1,
           "description": "This setting acts as a low-pass filter by blocking all frequencies above the specified value. This helps clean up the data by removing high-frequency interference, electronic hiss, or noise outside your target range."
         },
-        "minAmpNorm": {
+        "minAmpNormMP": {
           "title": "Min Amplitude Norm",
           "min": 1,
           "max": 20000000,
@@ -47,19 +47,19 @@
     "outputNumber": 0,
     "settings": {
       "knob": {
-        "freqLow": {
+        "freqLowP": {
           "title": "Low Cut Frequency",
           "min": 0,
           "max": 4096,
           "step": 1
         },
-        "freqHigh": {
+        "freqHighP": {
           "title": "High Cut Frequency",
           "min": 0,
           "max": 4096,
           "step": 1
         },
-        "minAmpNorm": {
+        "minAmpNormP": {
           "title": "Min Amplitude Norm",
           "min": 1,
           "max": 20000000,

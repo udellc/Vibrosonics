@@ -34,21 +34,27 @@
   },
   {
     "route": "/modules",
-    "selector": "knob-freqHigh",
-    "title": "High Cut Frequency Configuration:",
-    "text": "High Cut Frequency sets the highest sounds."
-  },
-  {
-    "route": "/modules",
-    "selector": "#knob-freqLow",
+    "selector": "#knob-freqLowMP",
     "title": "Low Cut Frequency Configuration:",
     "text": "Low Cut Frequency sets the lowest sounds the module pays attention to."
   },
   {
     "route": "/modules",
-    "selector": "#knob-minAmpNorm",
+    "selector": "#knob-freqHighMP",
+    "title": "High Cut Frequency Configuration:",
+    "text": "High Cut Frequency sets the highest sounds."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-minAmpNormMP",
     "title": "Minimum Amplitude Norm",
     "text": "Sets how loud the sound needs to be before the device starts to react."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-freqLowP",
+    "title": "Low Cut Frequency Configuration:",
+    "text": "Low Cut Frequency sets the lowest sounds the module pays attention to."
   },
   {
     "route": "/modules",
@@ -58,9 +64,21 @@
   },
   {
     "route": "/modules",
+    "selector": "#knob-freqHighP",
+    "title": "High Cut Frequency Configuration:",
+    "text": "High Cut Frequency sets the highest sounds."
+  },
+  {
+    "route": "/modules",
     "selector": "#knob-energyThresh",
     "title": "Entropy Threshold",
     "text": "Filters out constant background noise so the device focuses on the main rhythm."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-minAmpNormP",
+    "title": "Entropy Threshold",
+    "text": "This helps filter out messy noise so the device reacts more to meaningful sound."
   },
   {
     "route": "/modules",
