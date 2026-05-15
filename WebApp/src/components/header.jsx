@@ -9,7 +9,7 @@
  ***************************************************************/
 
 import { Match } from "preact-router/match";
-import logo from "../images/cymaspaceLogo.jpg"
+import logo from "../../assets/cymaspaceLogo.jpg"
 
 /**
  * @brief Displays the app header

@@ -22,7 +22,7 @@
  */
 const NetworkCard = ({ SSID, onConnect }) => {
   return (
-    <div className="flex flex-row p-3">
+    <div className="flex flex-row p-3 justify-between w-1/2">
       <p>{SSID}</p>
       <button
         className="p-1 bg-amber-200 border border-amber-500 rounded-sm cursor-pointer ml-4 hover:bg-[#fbbf24]"
