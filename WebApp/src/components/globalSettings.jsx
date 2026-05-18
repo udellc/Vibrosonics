@@ -97,14 +97,13 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertM
 
         <div className="flex flex-wrap justify-center gap-4">
           {Object.entries(globalSettings)
-          .filter(([key, val]) => isExpertMode || !settingsDisplay[key]?.isExpertOnly)
+          .filter(([key]) => isExpertMode || !settingsDisplay[key]?.isExpertOnly)
           .map(([key, val]) => {
             const displayTitle = (isExpertMode && settingsDisplay[key]?.expertTitle) ? settingsDisplay[key].expertTitle : settingsDisplay[key]?.title;
             const displayDescription = (isExpertMode && settingsDisplay[key]?.expertDescription) ? settingsDisplay[key].expertDescription  : settingsDisplay[key]?.description;
             
             return (
-              <div key={key} className="flex flex-row" id={`global-${key}`}>
-                {children}
+              <div key={key} className="flex flex-row">
                 <Knob
                   id={`global-${key}`}
                   min={settingsDisplay[key].min}

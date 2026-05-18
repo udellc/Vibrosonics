@@ -32,11 +32,6 @@ const [targetRect, setTargetRect] = useState(null);
     setIsRunning(true);
   };
 
-  const handleStepChange = (direction) => {
-    setTargetRect(null);
-    setCurrentStepIndex((prev) => prev + direction);
-  }
-
   useEffect(() => {
      if(localStorage.getItem(TOUR_STORAGE_KEY) === "true")
       setIsRunning(true);
