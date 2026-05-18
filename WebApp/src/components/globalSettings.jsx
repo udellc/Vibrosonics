@@ -63,7 +63,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertM
   // }
 
   return (
-    <div>
+    <div id="globalSettings">
       <button onClick={() => setIsCollapsed(!isCollapsed)} 
         className = "flex items-center gap-2 text-center justify-center font-bold text-xl mx-auto w-fit py-4">
         {GlobalSettingsDisplay.title}
@@ -72,7 +72,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertM
 
       {!isCollapsed && (
       <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" id="mode">
           <span className={`text-sm font-medium tranistion-colors ${!isExpertMode ? 'text-gray-900' : 'text-gray-400'}`}>
             Beginner
           </span>
@@ -101,10 +101,12 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertM
           .map(([key, val]) => {
             const displayTitle = (isExpertMode && settingsDisplay[key]?.expertTitle) ? settingsDisplay[key].expertTitle : settingsDisplay[key]?.title;
             const displayDescription = (isExpertMode && settingsDisplay[key]?.expertDescription) ? settingsDisplay[key].expertDescription  : settingsDisplay[key]?.description;
+            
             return (
-              <div key={key} className="flex flex-row">
+              <div key={key} className="flex flex-row" id={`global-${key}`}>
                 {children}
                 <Knob
+                  id={`global-${key}`}
                   min={settingsDisplay[key].min}
                   max={settingsDisplay[key].max}
                   title={displayTitle}

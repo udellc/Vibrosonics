@@ -127,25 +127,28 @@ const ConfigManager = ({ children }) => {
       {/* Configuration stuff */}
       {children}
 
-      <div className="p-8 mt-8 rounded-4xl bg-gray-300 mb-4 w-fit">
+      <div className="p-8 mt-8 rounded-4xl bg-gray-300 mb-4 w-fit" id="library">
         <h2 className="text-2xl font-bold mb-6">Project Library</h2>
 
         <div className="flex gap-4 mb-6">
           <button
             onClick={saveProj}
             className="bg-[#70c247] text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition cursor-pointer border border-green-700"
+            id="current-setup"
           >
             Save Current Setup
           </button>
           <button
             onClick={startNewProj}
             className="bg-[#7face5] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition cursor-pointer border border-blue-700"
+            id="new-project"
           >
             + Start New Project
           </button>
           <button
             onClick={clearLibrary}
             className="bg-[#ff6242] text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold cursor-pointer border border-red-700"
+            id="clear-all"
           >
             Clear All Projects
           </button>
@@ -153,6 +156,7 @@ const ConfigManager = ({ children }) => {
           <button
             onClick={clearCurrentSettings}
             className="bg-[#ff9100] text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition cursor-pointer border border-orange-700"
+            id="clear-current-settings"
           >
             Clear Current Settings
           </button>

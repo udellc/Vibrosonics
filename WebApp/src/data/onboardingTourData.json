@@ -34,7 +34,7 @@
     "route": "/modules",
     "selector": "#modules-0",
     "title": "Major Peak Frequency Configuration",
-    "text": "Lower down in the modules tab you can adjust the major peaks modules. Click next to learn more about what the knobs control."
+    "text": "Fine-tunes how the device tracks the loudest, dominant melodies and notes in the music. Click Next to see what the knobs do."
   },
   {
     "route": "/modules",
@@ -58,19 +58,19 @@
     "route": "/modules",
     "selector": "#frequency-map",
     "title": "Frequency",
-    "text": ""
+    "text": "Changes how different musical pitches are sent to different parts of the device."
   },
   {
     "route": "/modules",
     "selector": "#num-peaks",
     "title": "Number of Peaks",
-    "text": ""
+    "text": "Controls how many separate audio notes the device tracks at the same time for more or less detail."
   },
   {
     "route": "/modules",
     "selector": "#modules-1",
     "title": "Percussion Frequency Configuration",
-    "text": "Lower down in the modules tab you can adjust the percussion modules. Click next to learn more about what the knobs control."
+    "text": "Fine-tunes how the device handles drums and beats. Click Next to see what the knobs do."
   },
   {
     "route": "/modules",
@@ -112,24 +112,78 @@
     "route": "/modules",
     "selector": "#wave-type",
     "title": "Wave Type",
-    "text": ""
+    "text": "Changes the shape of the vibration signals, altering how smooth or sharp the physical feedback feels."
   },
   {
     "route": "/modules",
+    "selector": "#globalSettings",
+    "title": "Global Configurations",
+    "text": "Adjusts master settings that apply to the entire system, regardless of which module you are using."
+  },
+  {
+    "route": "/modules",
+    "selector": "#mode",
+    "title": "Global Configuration Mode",
+    "text": "We offer a user friendly mode and a developer mode, depending on the expertise of the user."
+  },
+  {
+    "route": "/modules",
+    "selector": "#global-cfarBias",
+    "title": "Noise Filter",
+    "text": "Your sound sensitivity module."
+  },
+  {
+    "route": "/modules",
+    "selector": "#global-smoothingFactor",
+    "title": "Smoothing Factor",
+    "text": "Smooths your sound out to get an easier idea of what you're changing."
+  },
+  {
+    "route": "/modules",
+    "selector": "#library",
+    "title": "Project Library",
+    "text": "A place to save your module settings so you can work on multiple different projects."
+  },
+  {
+    "route": "/modules",
+    "selector": "#current-setup",
+    "title": "Save Current Setup",
+    "text": "Save your current module setup. This is helpful if you want to try different sounds out or different songs."
+  },
+  {
+    "route": "/modules",
+    "selector": "#new-project",
+    "title": "Start New Project",
+    "text": "Start a new project!"
+  },
+  {
+    "route": "/modules",
+    "selector": "#clear-all",
+    "title": "Clear All Projects",
+    "text": "Clear all saved projects from your library."
+  },
+  {
+    "route": "/modules",
+    "selector": "#clear-current-settings",
+    "title": "Clear Current Settings",
+    "text": "Clear any currently configured module settings."
+  },
+  {
+    "route": "/radio",
     "selector": "#main-nav a[href=\"/radio\"]",
-    "title": "Additional Tabs",
+    "title": "FM Radio",
     "text": "Check out the FM Radio tab to connect the device to a radio station."
   },
   {
-    "route": "/modules",
+    "route": "/radio",
     "selector": "#cymaSpace",
-    "title": "Additional Tabs",
+    "title": "CymaSpace",
     "text": "Check out the CymaSpace tab to learn more about CymaSpace."
   },
   {
-    "route": "/modules",
+    "route": "/radio",
     "selector": "#gitRepo",
-    "title": "Additional Tabs",
+    "title": "GitHub Repository",
     "text": "Check out the Github Repo tab to learn more about the source code on Github."
   },
   {
