@@ -22,6 +22,7 @@ import InfoButton from "./infoButton";
  * @param {Number} setting.min - Min value the knob can be at
  * @param {Number} setting.max - Max value the knob can be at
  * @param {Number} setting.step - Step size for each knob increment
+ * @param {String} setting.id - Knob ID
  * @param {CallableFunction} setting.onChange - Callback that happens for each knob value change
  */
 export default function Knob({

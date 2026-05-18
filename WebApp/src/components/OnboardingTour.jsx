@@ -88,15 +88,13 @@ const [targetRect, setTargetRect] = useState(null);
   return (
     <div id="onboarding-tour-container">
       {!isRunning ? (
-        /* 1. Only show Restart Button if NOT running */
         <button
           onClick={restartTour}
-          className="fixed bottom-4 right-4 z-[60] bg-slate-800 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-slate-700 transition-all"
+          className="fixed bottom-4 right-4 z-[60] bg-gray-400 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-slate-700 transition-all"
         >
           Restart Tour
         </button>
       ) : (
-        /* 2. Show Tour UI if running */
         <>
           <div className="fixed inset-0 bg-black/50 z-40 pointer-events-none" />
           

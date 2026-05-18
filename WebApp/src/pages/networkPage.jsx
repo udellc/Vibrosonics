@@ -84,7 +84,7 @@ const NetworkPage = () => {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center" id="available-networks">
           {/* Centered vertical layout */}
           <h1 className="font-bold mt-10 text-4xl">Available Networks</h1>
 

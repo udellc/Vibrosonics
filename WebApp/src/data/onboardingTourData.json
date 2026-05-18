@@ -16,9 +16,13 @@
     "route": "/network",
     "selector": "#scanning",
     "title": "Scan Networks",
-    "text": "Scans current available networks, Use this button to scan for available networks before connecting the Vibrosonics device.",
-    "canClickTarget": false,
-    "autoNextWhenMissing": true
+    "text": "Scans current available networks, Use this button to scan for available networks before connecting the Vibrosonics device."
+  },
+  {
+    "route": "/network",
+    "selector": "#available-networks",
+    "title": "Available Networks",
+    "text": "Here you can find a list of networks to connect to."
   },
   {
     "route": "/modules",
@@ -28,93 +32,111 @@
   },
   {
     "route": "/modules",
-    "selector": "#modules-button",
-    "title": "Bass and Major Peak Frequency Configuration",
-    "text": "Lower down in the modules tab you can adjust the percussion and major peaks modules. Click next to learn more about what the knobs control."
+    "selector": "#modules-0",
+    "title": "Major Peak Frequency Configuration",
+    "text": "Lower down in the modules tab you can adjust the major peaks modules. Click next to learn more about what the knobs control."
   },
   {
     "route": "/modules",
-    "selector": "#knob-freqLowMP",
+    "selector": "#knob-0-freqLow",
     "title": "Low Cut Frequency Configuration:",
     "text": "Low Cut Frequency sets the lowest sounds the module pays attention to."
   },
   {
     "route": "/modules",
-    "selector": "#knob-freqHighMP",
+    "selector": "#knob-0-freqHigh",
     "title": "High Cut Frequency Configuration:",
     "text": "High Cut Frequency sets the highest sounds."
   },
   {
     "route": "/modules",
-    "selector": "#knob-minAmpNormMP",
+    "selector": "#knob-0-minAmpNorm",
     "title": "Minimum Amplitude Norm",
     "text": "Sets how loud the sound needs to be before the device starts to react."
   },
   {
     "route": "/modules",
-    "selector": "#knob-freqLowP",
+    "selector": "#frequency-map",
+    "title": "Frequency",
+    "text": ""
+  },
+  {
+    "route": "/modules",
+    "selector": "#num-peaks",
+    "title": "Number of Peaks",
+    "text": ""
+  },
+  {
+    "route": "/modules",
+    "selector": "#modules-1",
+    "title": "Percussion Frequency Configuration",
+    "text": "Lower down in the modules tab you can adjust the percussion modules. Click next to learn more about what the knobs control."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-freqLow",
     "title": "Low Cut Frequency Configuration:",
     "text": "Low Cut Frequency sets the lowest sounds the module pays attention to."
   },
   {
     "route": "/modules",
-    "selector": "#knob-fluxThresh",
+    "selector": "#knob-1-fluxThresh",
     "title": "Flux Threshold",
     "text": "Controls sensitivity to sudden changes in sound, like sharp drum hits."
   },
   {
     "route": "/modules",
-    "selector": "#knob-freqHighP",
+    "selector": "#knob-1-freqHigh",
     "title": "High Cut Frequency Configuration:",
     "text": "High Cut Frequency sets the highest sounds."
   },
   {
     "route": "/modules",
-    "selector": "#knob-energyThresh",
+    "selector": "#knob-1-energyThresh",
     "title": "Entropy Threshold",
     "text": "Filters out constant background noise so the device focuses on the main rhythm."
   },
   {
     "route": "/modules",
-    "selector": "#knob-minAmpNormP",
+    "selector": "#knob-1-minAmpNorm",
+    "title": "Minimum Amplitude Norm",
+    "text": "Sets how loud the sound needs to be before the device starts to react."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-entropyThresh",
     "title": "Entropy Threshold",
     "text": "This helps filter out messy noise so the device reacts more to meaningful sound."
   },
   {
     "route": "/modules",
-    "selector": "#knob-entropyThresh",
-    "title": "Entropy Threshold",
-    "text": "This helps filter out messy noise so the device reacts more to meaningful sound."
+    "selector": "#wave-type",
+    "title": "Wave Type",
+    "text": ""
   },
   {
-    "route": "/",
+    "route": "/modules",
     "selector": "#main-nav a[href=\"/radio\"]",
     "title": "Additional Tabs",
     "text": "Check out the FM Radio tab to connect the device to a radio station."
   },
   {
-    "route": "/",
+    "route": "/modules",
     "selector": "#cymaSpace",
     "title": "Additional Tabs",
     "text": "Check out the CymaSpace tab to learn more about CymaSpace."
   },
   {
-    "route": "/",
+    "route": "/modules",
     "selector": "#gitRepo",
     "title": "Additional Tabs",
     "text": "Check out the Github Repo tab to learn more about the source code on Github."
-  },
-  {
-    "route": "/network",
-    "selector": "#scan-networks-button",
-    "title": "Scan Networks",
-    "text": "Use this button to scan for available networks before connecting the Vibrosonics device."
   },
   {
     "route": "/",
     "selector": "#welcomeheading",
     "placement": "right",
     "title": "End of Tour!",
-    "text": ""
+    "text": "Feel free to restart the tour at any time!"
   }
 ]
