@@ -12,6 +12,7 @@ import { useContext, useState } from "preact/hooks";
 import EQ_PRESETS from "../data/eqSettings.json";
 import { AudioSettingsContext } from "../utils/configurations";
 import { moduleRegistry } from "../data/defaultModules";
+import defaultGlobalSettings from "../data/globalSettingsData.json";
 
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =
@@ -62,8 +63,12 @@ const ConfigManager = ({ children }) => {
   };
 
   const clearCurrentSettings = () => {
-    setModules(structuredClone(moduleRegistry));
-    setGlobalSettings(structuredClone(globalSettings));
+    if (Array.isArray(moduleRegistry)) {
+        setModules([...moduleRegistry]);
+    } else if (moduleRegistry && typeof moduleRegistry === 'object') {
+        setModules(Object.values(moduleRegistry));
+    }
+    setGlobalSettings({...defaultGlobalSettings.global});
     setActiveGenre("Rock");
   };
 
@@ -76,9 +81,9 @@ const ConfigManager = ({ children }) => {
       activeGenre: savedGenre 
     } = project.data;
 
-    if (savedGlobal) setGlobalSettings(savedGlobal);
-    if (savedModules) setModules(savedModules);
-    if (savedGenre) setActiveGenre(savedGenre);
+    if (savedGlobal) setGlobalSettings(structuredClone(savedGlobal));
+    if (savedModules) setModules(structuredClone(savedModules));
+    if (savedGenre) setActiveGenre(structuredClone(savedGenre));
 
     setCurrentProjectName(project.name)
   };

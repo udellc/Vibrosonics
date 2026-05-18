@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { route } from "preact-router";
-import steps from "../data/onboardingTourData.json";
+import steps from "../data/walkthroughTour.json";
 
 const TOUR_STORAGE_KEY = "vibrosonics-onboarding-tour-complete";
 
@@ -88,9 +88,10 @@ const [targetRect, setTargetRect] = useState(null);
   return (
     <div id="onboarding-tour-container">
       {!isRunning ? (
+        /* 1. Only show Restart Button if NOT running */
         <button
           onClick={restartTour}
-          className="fixed bottom-4 right-4 z-[60] bg-gray-400 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-slate-700 transition-all"
+          className="fixed bottom-4 right-4 z-[60] bg-slate-800 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-slate-700 transition-all"
         >
           Restart Tour
         </button>
@@ -117,11 +118,11 @@ const [targetRect, setTargetRect] = useState(null);
             <h2 className="font-bold text-xl mb-2 text-slate-900">{currentStep?.title}</h2>
             <p className="text-slate-600 leading-relaxed mb-6">{currentStep?.text}</p>
 
-            {/*!targetRect && (
+            {!targetRect && (
               <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded mb-4 animate-pulse italic">
                 Looking for element on {currentStep?.route}...
               </div>
-            )*/}
+            )}
 
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">

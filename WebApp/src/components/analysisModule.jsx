@@ -174,6 +174,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <button 
           className="text-black px-2 font-bold cursor-pointer"
           onClick={handleDeleteModule}
+          aria-label="Delete Module"
         >
           X
         </button>
@@ -202,7 +203,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
       <div>
         {isValid?.current ? (
-          <div className="text-green-500">inside valid ranges</div>
+          <div className="text-green-500"></div>
         ) : (
           <div className="font-bold text-red-500">outside valid ranges</div>
         )}

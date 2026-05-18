@@ -1,0 +1,46 @@
+[
+  {
+    "route": "/",
+    "selector": "#welcomeheading",
+    "placement": "right",
+    "title": "Welcome!",
+    "text": "This is the Home Page, where you can learn more information about the software."
+  },
+  {
+    "route": "/",
+    "selector": "#main-nav",
+    "title": "Navigation Bar",
+    "text": "Use the navigation bar to move to Networks, Modules, FM Radio, and more!"
+  },
+  {
+    "route": "/network",
+    "selector": "#scanningForNetworks",
+    "title": "Navigation Bar",
+    "text": "Currently scanning for Networks"
+  },
+  {
+    "route": "/network",
+    "selector": "#networksButton",
+    "title": "Scan Networks",
+    "text": "Use this button to scan for available networks before connecting the Vibrosonics device."
+  },
+  {
+    "route": "/modules",
+    "selector": "#modules-button",
+    "title": "EQ Presets",
+    "text": "On this tab, you can configure the device to correlate with the genre of music you are listening to."
+  },
+  {
+    "route": "/",
+    "selector": "#main-nav a[href=\"/radio\"]",
+    "title": "Additional Tabs",
+    "text": "Check out the FM Radio tab to connect the device to a radio station."
+  },
+  {
+    "route": "/",
+    "selector": "#welcomeheading",
+    "placement": "right",
+    "title": "End of Tour!",
+    "text": ""
+  }
+]
