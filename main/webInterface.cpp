@@ -330,19 +330,19 @@ void WebInterface::onEditSetting()
 }
 
 /**
- * @brief Adds a message to the haptic settings queue to delete a module at a given index in real-time.
+ * @brief Adds a message to the haptic settings queue to delete a module on a given output in real-time.
  * 
  */
 void WebInterface::onDeleteModule()
 {
-  if (!server.hasArg("index")) {
+  if (!server.hasArg("outputNumber")) {
     send(HTTP_UNPROCESSABLE);
     return;
   }
-  const int ModuleIndex = server.arg("index").toInt();
+  const int OutputNumber = server.arg("outputNumber").toInt();
   QueueMessage msg = {
     .id = QueueMsgId::DeleteModule,
-    .module = { .index = ModuleIndex }
+    .module = { .outputNumber = OutputNumber }
   };
   (void) HapticSettings::Instance().addMessage(&msg);
 
@@ -366,7 +366,7 @@ void WebInterface::onAddModule()
     QueueMessage msg = {
       .id = QueueMsgId::CreateModule,
       .module = { 
-        .index = data["outputNumber"].as<int>(),
+        .outputNumber  = data["outputNumber"].as<int>(),
         .value = { .i = data["type"].as<int>() }
       }
     };
