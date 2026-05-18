@@ -25,7 +25,7 @@ import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils"
  * @param {CallableFunction} _.setIsExpertMode
  * @returns Global settings UI component
  */
-const GlobalSettings = ({ globalSettings, setGlobalSettings, children, isExpertMode, setIsExpertMode}) => {
+const GlobalSettings = ({ globalSettings, setGlobalSettings, isExpertMode, setIsExpertMode}) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const settingsDisplay = GlobalSettingsDisplay.settings;

@@ -53,7 +53,7 @@ const [targetRect, setTargetRect] = useState(null);
       window.removeEventListener("resize", sync);
       window.removeEventListener("scroll", sync, true);
     };
-  }, [isRunning, currentStepIndex, updateTargetRect]);
+  }, [isRunning, currentStepIndex, updateTargetRect, currentStep]);
 
   const getDynamicStyles = () => {
     /** @type {DOMRect} */
