@@ -9,9 +9,10 @@
  ***************************************************************/
 
 import { useContext, useState } from "preact/hooks";
-import EQ_PRESETS from "../data/eqSettings.json";
+import EQ_PRESETS from "../data/globalSettingsData.json";
 import { AudioSettingsContext } from "../utils/configurations";
 import { moduleRegistry } from "../data/defaultModules";
+import { api, HTTP_STATUS } from "../utils/utils";
 
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =
@@ -96,6 +97,32 @@ const ConfigManager = ({ children }) => {
     }
   };
 
+ const handlePresetClick = async (genre) => {
+    setActiveGenre(genre);
+
+    const preset = EQ_PRESETS[genre];
+    if(!preset) return;
+
+    setGlobalSettings(preset.global);
+    setModules(preset.modules);
+
+    const payload = {
+      global: preset.global,
+      modules: preset.modules,
+    };
+
+    console.log("Sending preset:", genre);
+    console.log("Payload:", JSON.stringify(payload, null, 2));
+    
+    const res = await api("PUT", "/analysis/submitSettings", payload);
+
+    if (res?.status == HTTP_STATUS.OK){
+      console.log("Preset applied:", genre);
+    } else {
+      console.log("Failed to apply preset", res?.status);
+    }
+  };
+
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
@@ -111,7 +138,7 @@ const ConfigManager = ({ children }) => {
                   : "bg-[#ffffff] font-normal border border-gray-400"
               }`}
               key={genre}
-              onClick={() => setActiveGenre(genre)}
+              onClick={() => handlePresetClick(genre)}
             >
               {` ${genre} `}
             </button>
