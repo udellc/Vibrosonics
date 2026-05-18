@@ -16,6 +16,8 @@
 #include "hapticSettings.h"
 #include <memory>
 #include <VibrosonicsAPI.h>
+#include <SPI.h>
+#include <SD.h>
 
 // Vibrosonics audio analysis globals
 VibrosonicsAPI vapi = VibrosonicsAPI();
@@ -129,7 +131,7 @@ void setup()
   rebuildOutputModules(activeConfig.get());
   durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
 
-  vapi.init();
+  //vapi.init();
 }
 
 /**
