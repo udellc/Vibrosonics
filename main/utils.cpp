@@ -44,16 +44,16 @@ void Utils::populateGlobalSettings(JsonObject& global, AnalysisConfig* config)
  */
 void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
 {
-  // Channel count
-  int ch {0};
+  for (int i = 0; i < NUM_OUT_CH; i++)
+  {
+    config->modules[i] = nullptr;
+  }
 
   for (auto module : modulesList)
   {
-    if (ch >= (NUM_OUT_CH)) break;
-
     // newModule type is ModuleConfig at the moment
-    const auto Type = static_cast<ModuleType>(module["moduleType"]);
-    auto newModule = createModule(Type);
+    const auto type = static_cast<ModuleType>(module["moduleType"]);
+    auto newModule = createModule(type);
 
     if (!newModule)
     {
@@ -61,33 +61,38 @@ void Utils::populateModulesList(JsonArray& modulesList, AnalysisConfig* config)
       continue;
     }
     // Update base data
-    auto* modulePtr = newModule.get();
-    modulePtr->outputNumber = module["outputNumber"]; 
-    modulePtr->freqLow = module["freqLow"]; 
-    modulePtr->freqHigh = module["freqHigh"];
-    modulePtr->minAmpNorm = module["minAmpNorm"];
-    modulePtr->isMuted = module["isMuted"];
+    ModuleConfig* modulePtr = newModule.get();
+
+    modulePtr->outputNumber = module["outputNumber"].as<int>();
+    modulePtr->freqLow = module["freqLow"].as<uint16_t>();
+    modulePtr->freqHigh = module["freqHigh"].as<uint16_t>();
+    modulePtr->minAmpNorm = module["minAmpNorm"].as<float>();
+    modulePtr->isMuted = module["isMuted"] | false;
 
     // Do the rest params under a function that takes in the type or use branching, for now just do this for MajorPeaks
-    if (Type == MAJORPEAKS)
+    if (type == MAJORPEAKS)
     {
-      auto* majorPeaksConfig = static_cast<MajorPeaksConfig*>(newModule.get());
+      auto* majorPeaksConfig = static_cast<MajorPeaksConfig*>(modulePtr);
 
       majorPeaksConfig->frequencyMapping = static_cast<FrequencyMapping>(module["frequencyMapping"]);
-      majorPeaksConfig->maxPeaks = module["maxPeaks"];
+      majorPeaksConfig->maxPeaks = module["maxPeaks"].as<int>();
     }
-    else if (Type == PERCUSSION)
+    else if (type == PERCUSSION)
     {
-      auto* percussionConfig = static_cast<PercussionConfig*>(newModule.get());
+      auto* percussionConfig = static_cast<PercussionConfig*>(modulePtr);
 
-      percussionConfig->fluxThresh = module["fluxThresh"];
-      percussionConfig->energyThresh = module["energyThresh"];
-      percussionConfig->entropyThresh = module["entropyThresh"];
+      percussionConfig->fluxThresh = module["fluxThresh"].as<float>();
+      percussionConfig->energyThresh = module["energyThresh"].as<float>();
+      percussionConfig->entropyThresh = module["entropyThresh"].as<float>();
       percussionConfig->waveType = static_cast<WaveType>(module["waveType"]);
     }
-    // The old module memory will be deleted automatically since the ptr now has no references
-    config->modules[ch] = std::move(newModule);
-    ch++;
+    
+    int output = module["outputNumber"];
+
+    if (output >= 0 && output < NUM_OUT_CH)
+    {
+      config->modules[output] = std::move(newModule);
+    }
   }
 }
 

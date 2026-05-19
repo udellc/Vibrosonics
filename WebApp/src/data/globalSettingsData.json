@@ -15,7 +15,8 @@
         "freqHigh": 3500,
         "frequencyMapping": 1,
         "maxPeaks": 1,
-        "minAmpNorm": 10000.0
+        "minAmpNorm": 10000.0,
+        "isMuted": false
       },
       {
         "moduleType": 0,
@@ -24,7 +25,8 @@
         "freqHigh": 200,
         "frequencyMapping": 0,
         "maxPeaks": 1,
-        "minAmpNorm": 10000.0
+        "minAmpNorm": 10000.0,
+        "isMuted": false
       }
     ]
   },
@@ -42,24 +44,24 @@
         "outputNumber": 0,
         "freqLow": 50,
         "freqHigh": 180,
-        "frequencyMapping": 0,
         "fluxThresh": 0.35,
         "energyThresh": 60000000,
         "entropyThresh": 0.60,
         "waveType": 0,
-        "minAmpNorm": 10000000.0
+        "minAmpNorm": 10000000.0,
+        "isMuted": false
       },
       {
         "moduleType": 1,
         "outputNumber": 1,
         "freqLow": 50,
         "freqHigh": 180,
-        "frequencyMapping": 0,
         "fluxThresh": 0.35,
         "energyThresh": 60000000,
         "entropyThresh": 0.60,
         "waveType": 0,
-        "minAmpNorm": 10000000.0
+        "minAmpNorm": 10000000.0,
+        "isMuted": false
       }
     ]
   }
