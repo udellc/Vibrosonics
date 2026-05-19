@@ -1,112 +1,11 @@
 {
-  "Rock": {
-    "global": {
-      "noiseFloor": 280,
-      "cfarRefCount": 8,
-      "cfarGuardCount": 2,
-      "cfarBias": 2.0,
-      "smoothingFactor": 0.4,
-      "minAmpNorm": 10000.0
-    },
-    "modules": [
-      {
-        "moduleType": 0,
-        "outputNumber": 0,
-        "freqLow": 80,
-        "freqHigh": 400,
-        "frequencyMapping": 1,
-        "maxPeaks": 1
-      },
-      {
-        "moduleType": 0,
-        "outputNumber": 1,
-        "freqLow": 400,
-        "freqHigh": 3600,
-        "frequencyMapping": 0,
-        "maxPeaks": 2
-      },
-      {
-        "moduleType": 1,
-        "outputNumber": 2,
-        "freqLow": 60,
-        "freqHigh": 200,
-        "frequencyMapping": 0,
-        "fluxThresh": 0.4,
-        "energyThresh": 80000000,
-        "entropyThresh": 0.80,
-        "waveType": 0
-      },
-      {
-        "moduleType": 1,
-        "outputNumber": 4,
-        "freqLow": 1800,
-        "freqHigh": 3000,
-        "frequencyMapping": 0,
-        "fluxThresh": 0.35,
-        "energyThresh": 30000000,
-        "entropyThresh": 0.68,
-        "waveType": 4
-      }
-    ]
-  },
-  "Jazz": {
-    "global": {
-      "noiseFloor": 150,
-      "cfarRefCount": 8,
-      "cfarGuardCount": 2,
-      "cfarBias": 2.0,
-      "smoothingFactor": 0.4,
-      "minAmpNorm": 8000.0
-    },
-    "modules": [
-      {
-        "moduleType": 0,
-        "outputNumber": 0,
-        "freqLow": 40,
-        "freqHigh": 800,
-        "frequencyMapping": 2,
-        "maxPeaks": 1
-      },
-      {
-        "moduleType": 0,
-        "outputNumber": 1,
-        "freqLow": 800,
-        "freqHigh": 3000,
-        "frequencyMapping": 2,
-        "maxPeaks": 2
-      },
-      {
-        "moduleType": 1,
-        "outputNumber": 2,
-        "freqLow": 150,
-        "freqHigh": 800,
-        "frequencyMapping": 0,
-        "fluxThresh": 0.45,
-        "energyThresh": 40000000,
-        "entropyThresh": 0.7,
-        "waveType": 4
-      },
-      {
-        "moduleType": 1,
-        "outputNumber": 3,
-        "freqLow": 3000,
-        "freqHigh": 8000,
-        "frequencyMapping": 0,
-        "fluxThresh": 0.4,
-        "energyThresh": 20000000,
-        "entropyThresh": 0.8,
-        "waveType": 4
-      }
-    ]
-  },
   "A Tear in Space: Vocals & Melody": {
     "global": {
       "noiseFloor": 200,
       "cfarRefCount": 8,
       "cfarGuardCount": 2,
       "cfarBias": 1.6,
-      "smoothingFactor": 0.2,
-      "minAmpNorm": 10000.0
+      "smoothingFactor": 0.2
     },
     "modules": [
       {
@@ -115,7 +14,8 @@
         "freqLow": 200,
         "freqHigh": 3500,
         "frequencyMapping": 1,
-        "maxPeaks": 1
+        "maxPeaks": 1,
+        "minAmpNorm": 10000.0
       },
       {
         "moduleType": 0,
@@ -123,18 +23,18 @@
         "freqLow": 60,
         "freqHigh": 200,
         "frequencyMapping": 0,
-        "maxPeaks": 1
+        "maxPeaks": 1,
+        "minAmpNorm": 10000.0
       }
     ]
   },
-  "A Tear in Space: Instruments & Percussion": {
+  "A Tear in Space: Percussion": {
     "global": {
       "noiseFloor": 200,
       "cfarRefCount": 8,
       "cfarGuardCount": 2,
       "cfarBias": 1.5,
-      "smoothingFactor": 0.2,
-      "minAmpNorm": 10000.0
+      "smoothingFactor": 0.2
     },
     "modules": [
       {
@@ -146,7 +46,8 @@
         "fluxThresh": 0.35,
         "energyThresh": 60000000,
         "entropyThresh": 0.60,
-        "waveType": 0
+        "waveType": 0,
+        "minAmpNorm": 10000000.0
       },
       {
         "moduleType": 1,
@@ -157,7 +58,8 @@
         "fluxThresh": 0.35,
         "energyThresh": 60000000,
         "entropyThresh": 0.60,
-        "waveType": 0
+        "waveType": 0,
+        "minAmpNorm": 10000000.0
       }
     ]
   }
