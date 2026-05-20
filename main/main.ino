@@ -289,9 +289,6 @@ void performModuleAnalysis(AnalysisModule* module, const ModuleConfig* moduleCon
 
 void rebuildOutputModules(const AnalysisConfig* Config)
 {
-  melodic.clearModules();
-  percussive.clearModules();
-
   for (int i = 0; i < NUM_OUT_CH; i++)
   {
     if (analysisModules[i])
@@ -299,11 +296,19 @@ void rebuildOutputModules(const AnalysisConfig* Config)
       delete analysisModules[i];
       analysisModules[i] = nullptr;
     }
+  }
 
+  melodic.clearModules();
+  percussive.clearModules();
+
+  for (int i = 0; i < NUM_OUT_CH; i++)
+  {
     if (!Config->modules[i])
       continue;
 
-    switch(Config->modules[i]->moduleType){
+    ModuleType type = Config->modules[i]->moduleType;
+
+    switch(type){
       case MAJORPEAKS:
       {
         auto* majorPeaks = static_cast<MajorPeaksConfig*>(Config->modules[i].get());
