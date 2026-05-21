@@ -11,8 +11,8 @@
       {
         "moduleType": 0,
         "outputNumber": 0,
-        "freqLow": 200,
-        "freqHigh": 3500,
+        "freqLow": 118,
+        "freqHigh": 510,
         "frequencyMapping": 1,
         "maxPeaks": 1,
         "minAmpNorm": 10000.0,
@@ -21,9 +21,9 @@
       {
         "moduleType": 0,
         "outputNumber": 1,
-        "freqLow": 60,
-        "freqHigh": 200,
-        "frequencyMapping": 0,
+        "freqLow": 429,
+        "freqHigh": 1756,
+        "frequencyMapping": 1,
         "maxPeaks": 1,
         "minAmpNorm": 10000.0,
         "isMuted": false
