@@ -30,7 +30,7 @@
       }
     ]
   },
-  "A Tear in Space: Percussion": {
+  "A Tear in Space: Percussion and Instrumental": {
     "global": {
       "noiseFloor": 200,
       "cfarRefCount": 8,
@@ -42,25 +42,25 @@
       {
         "moduleType": 1,
         "outputNumber": 0,
-        "freqLow": 50,
-        "freqHigh": 180,
-        "fluxThresh": 0.35,
-        "energyThresh": 60000000,
-        "entropyThresh": 0.60,
-        "waveType": 0,
-        "minAmpNorm": 10000000.0,
+        "freqLow": 600.0,
+        "freqHigh": 1000.0,
+        "fluxThresh": 0.37,
+        "energyThresh": 5000000.0,
+        "entropyThresh": 0.25,
+        "waveType": 4,
+        "minAmpNorm": 20000000.0,
         "isMuted": false
       },
       {
         "moduleType": 1,
         "outputNumber": 1,
-        "freqLow": 50,
-        "freqHigh": 180,
-        "fluxThresh": 0.35,
-        "energyThresh": 60000000,
-        "entropyThresh": 0.60,
-        "waveType": 0,
-        "minAmpNorm": 10000000.0,
+        "freqLow": 1800.0,
+        "freqHigh": 2500.0,
+        "fluxThresh": 0.30,
+        "energyThresh": 5000000.0,
+        "entropyThresh": 0.50,
+        "waveType": 4,
+        "minAmpNorm": 8000000.0,
         "isMuted": false
       }
     ]
