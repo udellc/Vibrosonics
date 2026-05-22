@@ -127,7 +127,7 @@ void setup()
   rebuildOutputModules(activeConfig.get());
   durEnv = vapi.createDurEnv(1, 0, 1, 3, 1.0);
 
-  //vapi.init();
+  vapi.init();
 }
 
 /**
