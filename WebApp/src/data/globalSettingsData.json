@@ -1,5 +1,5 @@
 {
-  "A Tear in Space: Vocals & Melody": {
+  "Innuendo: Bass & Melody": {
     "global": {
       "noiseFloor": 200,
       "cfarRefCount": 8,
@@ -11,8 +11,8 @@
       {
         "moduleType": 0,
         "outputNumber": 0,
-        "freqLow": 118,
-        "freqHigh": 510,
+        "freqLow": 40,
+        "freqHigh": 180,
         "frequencyMapping": 1,
         "maxPeaks": 1,
         "minAmpNorm": 10000.0,
@@ -21,16 +21,16 @@
       {
         "moduleType": 0,
         "outputNumber": 1,
-        "freqLow": 429,
-        "freqHigh": 1756,
+        "freqLow": 510,
+        "freqHigh": 2400,
         "frequencyMapping": 1,
         "maxPeaks": 1,
-        "minAmpNorm": 10000.0,
+        "minAmpNorm": 7200.0,
         "isMuted": false
       }
     ]
   },
-  "A Tear in Space: Percussion and Instrumental": {
+  "Innuendo: Percussion": {
     "global": {
       "noiseFloor": 200,
       "cfarRefCount": 8,
