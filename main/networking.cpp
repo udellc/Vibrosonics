@@ -24,15 +24,8 @@ const char *DefaultApSSID = "Vibrosonics-Unsecure";
 const char *DefaultHostname = "vibrosonics";
 const char *DefaultApPassword = "1234567890";
 
-struct WiFiInfo
-{
-  String ssid;
-  String password;
-};
-
-WiFiInfo currentWifi;
-Networking::Status_T wifiStatus;
 static JsonDocument settingsDoc;
+volatile bool needsSDWrite = false;
 
 // Internal function helpers
 static void inline resetWifi();
@@ -47,54 +40,46 @@ static void inline resetWifi();
  */
 bool Networking::init()
 {
+  bool success = false;
+
   // Prevents Flash write when WiFi.begin() is called
   WiFi.persistent(false);
 
-  // Operate in AP and station mode
+  // Always boot up with AP, then open STA if available
   WiFi.mode(WIFI_AP_STA);
 
-  const bool HasSettings = FileSys::exists(WIFI_SETTINGS_PATH);
-
-  if (HasSettings)
+  if (!FileSys::exists(WIFI_SETTINGS_PATH))
   {
-    File settingsFile = FileSys::getFile(WIFI_SETTINGS_PATH);
-    const auto Error = deserializeJson(settingsDoc, settingsFile);
-    settingsFile.close();
-    
-    if (!Error)
-    {
-      // Try to connect to external Wi-Fi first
-      auto ssid = settingsDoc["ssid"];
-      auto password = settingsDoc["password"];
-    
-      if (connectToNetwork(ssid, password))
-      {
-        currentWifi.ssid = String(ssid);
-        currentWifi.password = String(password);
-        wifiStatus = Status_T::ConnectedToWiFi;
-        DEBUG_PRINTLN("DEBUG: Successfully connected to saved Wi-Fi");
-
-        return true;
-      }
-      // Didn't work, try to connect to AP mode with user settings
-      ssid = settingsDoc["apSsid"];
-      password = settingsDoc["apPassword"];
-
-      if (initAccessPoint(ssid, password))
-      {
-        DEBUG_PRINTLN("DEBUG: Using user saved network settings.");
-        return true;
-      }
-    }
+    // Create the file for future usage
+    FileSys::writeFile(WIFI_SETTINGS_PATH, "");
   }
-  // Fallback to default AP mode
-  if (!initAccessPoint(DefaultApSSID, DefaultApPassword))
+  // Open the preferences from file on SD card
+  File settings = FileSys::getFile(WIFI_SETTINGS_PATH);
+  const auto Error = deserializeJson(settingsDoc, settings);
+  settings.close();
+
+  if (!Error)
   {
-    DEBUG_PRINTLN("FATAL: Could not use any Wi-Fi signal");
-    wifiStatus = Status_T::NotConnected;
-    return false;
+    // Create the AP using data in the file or the default settings
+    auto ssid = settingsDoc["apSsid"] | DefaultApSSID;
+    auto password = settingsDoc["apPassword"] | DefaultApPassword;
+    success = initAccessPoint(ssid, password);
+
+    // Now open the STA for an external WiFi source
+    ssid = settingsDoc["extSsid"] | "";
+    password = settingsDoc["extPassword"] | "";
+
+    success |= connectToNetwork(ssid, password);
   }
-  return true;
+  else
+  {
+    DEBUG_PRINTLN("WARNING: Could not open WiFi settings file");
+
+    settingsDoc["apSsid"] = DefaultApSSID;
+    settingsDoc["apPassword"] = DefaultApPassword;
+    success = initAccessPoint(DefaultApSSID, DefaultApPassword);
+  }
+  return success;
 }
 
 /**
@@ -123,10 +108,6 @@ bool Networking::initAccessPoint(const String& Ssid, const String& Password)
   }
   else
   {
-    currentWifi.ssid = DefaultApSSID;
-    currentWifi.password = DefaultApPassword;
-    wifiStatus = Status_T::ConnectedToAP;
-
     DEBUG_PRINT("DEBUG: Access point created. Accessible at ");
     DEBUG_PRINT(WiFi.softAPIP());
     DEBUG_PRINTF(" or http://%s\n", DefaultHostname);
@@ -175,7 +156,7 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 {
   if (Ssid.length() == 0)
   {
-    DEBUG_PRINTLN("WARNING: Empty SSID provided");
+    DEBUG_PRINTLN("WARNING: Empty SSID provided for external WiFi source");
     return false;
   }
   DEBUG_PRINTF("DEBUG: Attempting to connect to %s\n", Ssid);
@@ -185,17 +166,11 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
   if (WiFi.waitForConnectResult(10000) == WL_CONNECTED)
   {
     (void) MDNS.begin(DefaultHostname);
+    settingsDoc["extSsid"] = Ssid;
+    settingsDoc["extPassword"] = Password;
+    needsSDWrite = true;
 
-    wifiStatus == Status_T::ConnectedToWiFi;
-    currentWifi.ssid = Ssid;
-    currentWifi.password = Password;
-    const String JsonWifi = "{\n"
-                              "  \"ssid\": \"" + currentWifi.ssid + "\",\n"
-                              "  \"password\": \"" + currentWifi.password + "\"\n"
-                              "}";
-    (void) FileSys::writeFile(WIFI_SETTINGS_PATH, JsonWifi);
-    DEBUG_PRINTF("DEBUG: Successfully connected to %s and saved info to SD card\n", currentWifi.ssid);
-
+    DEBUG_PRINTF("DEBUG: Successfully connected to %s\n", Ssid);
     return true;
   }
   DEBUG_PRINTF("DEBUG: Connection attempt to %s failed\n", Ssid);
@@ -205,19 +180,85 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
 }
 
 /**
- * @brief Getter for the name of the current network SSID
+ * @brief Retrieves the networking info from the ESP32 and packages
+ * the info into a Json object
  * 
- * @return String indicating the connected SSID
+ * @param info - Reference to the JsonObject to be populated
  */
-String Networking::getNetworkSsid()
+void Networking::getNetworkInfo(JsonObject& info)
 {
-  return (wifiStatus == Status_T::ConnectedToWiFi) ? currentWifi.ssid : String(ApSSID);
+  info["extSsid"] = settingsDoc["extSsid"] | "";
+  info["apSsid"] = settingsDoc["apSsid"] | DefaultApSSID;
+  info["apPassword"] = settingsDoc["apPassword"] | DefaultApPassword;
+  info["rssi"] = WiFi.RSSI();
 }
 
 /**
- * @brief Restarts the WiFi signal from the ESP32 in AP and STation mode.
- *
- * NOTE: This function should only be called after failing to connect to an alternative network
+ * @brief Clears the external WiFi credentials and disconnects from it
+ */
+void Networking::forgetExternalWiFi()
+{
+  settingsDoc["extSsid"] = "";
+  settingsDoc["extPassword"] = "";
+  needsSDWrite = true;
+
+  resetWifi();
+}
+
+/**
+ * @brief Update the settings document and checks for empty credentials
+ * 
+ * @param Ssid - New AP SSID to use
+ * @param Password - New AP password to use 
+ * 
+ * @return Bool indicating if the credentials are valid 
+ */
+bool Networking::setAccessPointCredentials(const String& Ssid, const String& Password)
+{
+  if ((Ssid.length() == 0) || (Password.length() == 0))
+  {
+    DEBUG_PRINTLN("WARNING: Invalid access point credentials.");
+    return false;
+  }
+  settingsDoc["apSsid"] = Ssid;
+  settingsDoc["apPassword"] = Password;
+  needsSDWrite = true;
+
+  return true;
+}
+
+/**
+ * @brief clears the internal settings doc and disconnects from external Wi-Fi
+ */
+void Networking::setDefaultSettings()
+{
+  settingsDoc.clear();
+  needsSDWrite = true;
+  resetWifi();
+}
+
+/**
+ * @brief Write the settings JSON document to the SD card
+ */
+void Networking::writeSettings()
+{
+  if (needsSDWrite)
+  {
+    DEBUG_PRINTLN("DEBUG: Writing WiFi settings to SD card");
+    String data;
+
+    if (settingsDoc.isNull())
+      data = "";
+    else
+      serializeJson(settingsDoc, data);
+
+    FileSys::writeFile(WIFI_SETTINGS_PATH, data);
+    needsSDWrite = false;
+  }
+}
+
+/**
+ * @brief Disconnects the external WiFi signal, keeping the AP.
  */
 void resetWifi()
 {

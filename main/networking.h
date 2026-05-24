@@ -15,15 +15,10 @@
 
 #include <set>
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 namespace Networking
 {
-  enum Status_T : unsigned int
-  {
-    ConnectedToAP = 0u,
-    ConnectedToWiFi,
-    NotConnected
-  };
   //! Initializes the Wi-Fi settings for the web app
   bool init();
 
@@ -36,8 +31,22 @@ namespace Networking
   //! Scans available networks and adds their SSID to the result vector
   void scanAvailableNetworks(std::set<String> &result);
 
-  //! Returns the current WiFi SSID
-  String getNetworkSsid();
+  //! Gets the networking info from the ESP32 and populates the object
+  void getNetworkInfo(JsonObject& info);
+
+  //! Clears the external Wi-Fi credentials and disconnects if we can
+  void forgetExternalWiFi();
+
+  //! Updates the on-device Wi-Fi credentials
+  bool setAccessPointCredentials(const String &Ssid, const String &Password);
+
+  //! Restores default networking settings
+  void setDefaultSettings();
+
+  //! Writes the settings document to the SD card
+  //! NOTE: Use for the external DACs since the SD card also shares the same SPI pins.
+  //        We need to control exactly when to write data to the SD card
+  void writeSettings();
 }
 
 #endif
