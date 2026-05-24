@@ -9,8 +9,6 @@
  ***************************************************************/
 
 import { route } from "preact-router";
-import { useState, useEffect } from "preact/hooks";
-import { api } from "../utils/utils";
 import InfoButton from "../atomics/infoButton";
 
 /**
