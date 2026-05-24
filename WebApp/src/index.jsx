@@ -71,7 +71,7 @@ export function App() {
   const [ currentPage, setCurrentPage ] = useState('home');
 
   return (
-    <div className="min-w-lvw min-h-lvh flex flex-col font-['Inter']">
+    <div className="min-w-lvw min-h-lvh flex flex-col font-brand">
       
       {/* Wrap the app content with the contexts */}
       <SystemContextProvider>
