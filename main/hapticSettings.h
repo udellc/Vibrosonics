@@ -49,6 +49,9 @@ public:
   //! Processes all messages in the update queue
   bool processQueue();
 
+  //! Adds a basic message for the queue for safe SD writes
+  void prepareSDWrite();
+
 private:
   // Use shared ptr, so that we can replace the settings fast/safe across cores
   std::shared_ptr<AnalysisConfig> curConfig;

@@ -45,7 +45,7 @@ AnalysisModule* analysisModules[NUM_OUT_CH] = { nullptr };
 
 // FreeRTOS stuff for the web server running on core 0
 #define TASK_DELAY_MS 100u
-#define WEB_SERVER_STACK_SIZE 8192u
+#define WEB_SERVER_STACK_SIZE 4096u
 #define WEB_SERVER_PRIORITY 3u
 #define WEB_SERVER_CORE_ID 0u
 
@@ -69,6 +69,8 @@ void synthesizePeak(int channel, float freq, float amp, float freqMin, float fre
  */
 void webRunner(void *params)
 {
+  WebInterface::start();
+
   while (true)
   {
     WebInterface::run();
@@ -84,6 +86,7 @@ void setup()
 {
   bool success = true;
   DEBUG_BEGIN(115200);
+  
   success &= FileSys::init();
   success &= Networking::init();
 
@@ -92,6 +95,7 @@ void setup()
 #ifndef DEV_MODE_EN
   success &= WebInterface::init();
 #else
+  DEBUG_PRINTLN("DEBUG: Web server accesible through developer web page");
   (void) WebInterface::init();
 #endif
 
@@ -130,7 +134,6 @@ void setup()
 
 /**
  * @brief Audio analysis and synthesize running on core 1
- * 
  */
 void loop()
 {
@@ -140,6 +143,9 @@ void loop()
   if (HapticSettings::Instance().needsUpdate())
   {
     DEBUG_PRINTLN("DEBUG: processing queue...");
+    
+    // Pause the audio sampling or any SD writes
+    vapi.pause();
 
     // NOTE: only returns true when it actually needs to be rebuilt, not every time it processes a request
     if (HapticSettings::Instance().processQueue())
@@ -148,6 +154,11 @@ void loop()
       activeConfig = HapticSettings::Instance().getConfig_mut();
       rebuildOutputModules(activeConfig.get());
     }
+    // Check and do any SD writes here
+    Networking::writeSettings();
+
+    // Resume sampling
+    vapi.resume();
   }
   processData(activeConfig);
 
@@ -199,7 +210,7 @@ inline void doPercussiveAnalysis(AnalysisModule* module, const ModuleConfig* mod
   auto percussionConfig = static_cast<const PercussionConfig*>(moduleConfig);
   // If percussion was detected, synthesize a hit
   if (percModuleInterface->getOutput()) {
-    DEBUG_PRINTLN("Percussion hit detected");
+    // DEBUG_PRINTLN("Percussion hit detected");
     // Get the energy, entropy and positive flux for the percussive hit. These
     // values are used to synthesize the haptic feedback of the percussion.
     float energy = AudioPrism::energy(percussiveData, 
