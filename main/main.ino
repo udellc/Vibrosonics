@@ -16,8 +16,6 @@
 #include "hapticSettings.h"
 #include <memory>
 #include <VibrosonicsAPI.h>
-#include <SPI.h>
-#include <SD.h>
 
 // Vibrosonics audio analysis globals
 VibrosonicsAPI vapi = VibrosonicsAPI();
