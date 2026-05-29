@@ -18,6 +18,7 @@ import ModulesPage from "./pages/modulesPage";
 import RadioPage from "./pages/radioPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
+import OnboardingTour from "./components/onboardingTour";
 import {
   AnalysisSettingsProvider,
   SystemContext,
@@ -71,7 +72,7 @@ export function App() {
   const [ currentPage, setCurrentPage ] = useState('home');
 
   return (
-    <div className="min-w-lvw min-h-lvh flex flex-col font-['Inter']">
+    <div className="min-w-lvw min-h-lvh flex flex-col font-brand">
       
       {/* Wrap the app content with the contexts */}
       <SystemContextProvider>
@@ -80,6 +81,7 @@ export function App() {
           <AppContent currentPage={currentPage} setCurrentPage={setCurrentPage}/>
         </AnalysisSettingsProvider>
         {currentPage !== 'home' && <Footer />}
+        <OnboardingTour />
       </SystemContextProvider>
     </div>
   );

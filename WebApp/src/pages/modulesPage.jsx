@@ -10,16 +10,16 @@
  ***************************************************************/
 
 import { useContext, useEffect, useState } from "preact/hooks";
-import AnalysisModule from "../components/analysisModule";
+import AnalysisModule from "../components/moduleComponents/analysisModule";
 import { api, HTTP_STATUS } from "../utils/utils";
 import { AudioSettingsContext } from "../utils/configurations";
-import GlobalSettings from "../components/globalSettings";
-import ConfigManager from "../components/configManager";
-import EmptyOutput from "../components/emptyOutput";
+import GlobalSettings from "../components/moduleComponents/globalSettings";
+import ConfigManager from "../components/moduleComponents/configManager";
+import EmptyOutput from "../components/moduleComponents/emptyOutput";
 
 const ModulesPage = () => {
   // Persistant memory/data
-  const { globalSettings, setGlobalSettings } = useContext(AudioSettingsContext);
+  const { globalSettings, setGlobalSettings, isExpertMode, setIsExpertMode } = useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
 
   // TODO: pull number of outputs from config rather than hard coding as 8
@@ -86,6 +86,8 @@ const ModulesPage = () => {
         <GlobalSettings
           globalSettings={globalSettings}
           setGlobalSettings={setGlobalSettings}
+          isExpertMode={isExpertMode} 
+          setIsExpertMode={setIsExpertMode}
         />
           
       </ConfigManager>

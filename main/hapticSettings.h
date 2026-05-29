@@ -12,6 +12,8 @@
 #ifndef HAPTIC_SETTINGS_H
 #define HAPTIC_SETTINGS_H
 
+#define MAIN_ANALYSIS_PATH "/data/mainConfig.json"
+
 #include "storage.h"
 #include "utils.h"
 #include <memory>
@@ -48,6 +50,9 @@ public:
 
   //! Processes all messages in the update queue
   bool processQueue();
+
+  //! Adds data for the file to be written into the SD card on the next update loop
+  void prepareSDWrite(const String FilePath, const String FileContent);
 
 private:
   // Use shared ptr, so that we can replace the settings fast/safe across cores

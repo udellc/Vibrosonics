@@ -51,37 +51,43 @@
           "title": "Low Cut Frequency",
           "min": 0,
           "max": 4096,
-          "step": 1
+          "step": 1,
+          "description": "This setting acts as a high-pass filter by blocking all frequencies below the specified value. It is typically used to eliminate unwanted low-frequency noise, such as rumble or structural vibrations, from your incoming signal."
         },
         "freqHigh": {
           "title": "High Cut Frequency",
           "min": 0,
           "max": 4096,
-          "step": 1
+          "step": 1,
+          "description": "This setting acts as a low-pass filter by blocking all frequencies above the specified value. This helps clean up the data by removing high-frequency interference, electronic hiss, or noise outside your target range."
         },
         "minAmpNorm": {
           "title": "Min Amplitude Norm",
           "min": 1,
           "max": 20000000,
-          "step": 1000.0
+          "step": 1000.0,
+          "description": "This establishes the absolute minimum intensity threshold a signal must reach to be registered by the system. Any signal falling below this magnitude is discarded as background noise, which helps prevent false positive detections."
         },
         "fluxThresh": {
           "title": "Flux Threshold",
           "min": 0,
           "max": 1,
-          "step": 0.01
+          "step": 0.01,
+          "description": "This controls how sensitive the device is to sudden, sharp changes in volume. Raising this value ensures the device ignores slow, gradual changes in the music and only triggers on snappy, hard-hitting impacts like crisp drum strikes or sudden beats."
         },
         "energyThresh": {
           "title": "Energy Threshold",
           "min": 1,
           "max": 500000000,
-          "step": 1
+          "step": 1,
+          "description": "This sets the minimum structural weight or power a sound must have before it triggers a response. It ignores thin, weak sounds and requires a baseline fullness and density in the music—like a heavy bassline or thick beat—before allowing the device to vibrate."
         },
         "entropyThresh": {
           "title": "Entropy Threshold",
           "min": 0,
           "max": 1,
-          "step": 0.01
+          "step": 0.01,
+          "description": "This establishes the threshold for signal complexity and randomness. By evaluating the chaos of the waveform, it isolates structured, tonal, or rhythmic audio patterns and systematically filters out broadband noise, white noise, or sustained atmospheric static."
         }
       },
       "dropdown": {

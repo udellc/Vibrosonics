@@ -9,7 +9,7 @@
  ***************************************************************/
 
 import { Match } from "preact-router/match";
-import logo from "../images/cymaspaceLogo.jpg"
+import logo from "../../assets/cymaspaceLogo.jpg"
 
 /**
  * @brief Displays the app header
@@ -53,14 +53,17 @@ const Header = ({ setCurrentPage }) => {    //eslint-disable-line no-unused-vars
       {/* Right side */}
       <div>
         <div>
-          <nav>
+          <nav id="main-nav">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/network">Networks</NavLink>
             <NavLink to="/modules">Modules</NavLink>
             <NavLink to="/radio">FM Radio</NavLink>
-            {/** CHANGE LINK BELOW TO WEBSITE */}
-            <NavLink to="https://www.cymaspace.org/">CymaSpace</NavLink>
-            <NavLink to="https://github.com/udellc/Vibrosonics">GitHub Repo</NavLink>
+            <a href="https://www.cymaspace.org/" id="cymaSpace" target="_blank" rel="noopener noreferrer">
+              CymaSpace
+            </a>
+            <a href="https://github.com/udellc/Vibrosonics" id="gitRepo" target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2">
+              GitHub Repo
+            </a>
           </nav>
         </div>
       </div>
