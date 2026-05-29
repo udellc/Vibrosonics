@@ -130,6 +130,7 @@ inline void WebInterface::setupServer()
   server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
   server.on("/analysis/deleteModule", HTTP_DELETE, onDeleteModule);
   server.on("/analysis/addModule", HTTP_POST, onAddModule);
+  server.on("/analysis/savePreset", HTTP_POST, onSavePresetConfig);
 
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
@@ -300,6 +301,47 @@ void WebInterface::onSubmitConfig()
   }
   if (hasUpdated)
     resStatus = HTTP_OK;
+
+  send(resStatus);
+}
+
+/*
+* @brief saves project name and passes saveToSD message to system queue
+*/
+void WebInterface::onSavePresetConfig()
+{
+  DEBUG_PRINTLN("DEBUG: save preset config to SD card");
+
+  JsonDocument payload;
+  int resStatus = HTTP_UNPROCESSABLE;
+  bool hasUpdated = false;
+
+  if(parsePayload(payload)) {
+    auto newConfig = std::make_shared<AnalysisConfig>();
+
+    auto globalSettings = payload["data"]["globalSettings"].as<JsonObject>();
+    auto modulesList = payload["data"]["modules"].as<JsonArray>();
+    
+    const char* projectName = payload["name"] | "New Project";
+    strncpy(newConfig->projectName, projectName, sizeof(newConfig->projectName) - 1);
+
+    Utils::populateGlobalSettings(globalSettings, newConfig.get());
+    Utils::populateModulesList(modulesList, newConfig.get());
+
+    HapticSettings::Instance().updateConfig(newConfig);
+
+    QueueMessage msg {
+      .id = QueueMsgId::SaveToSD
+    };
+
+    if (HapticSettings::Instance().addMessage(&msg)) {
+      hasUpdated = true;
+    }
+  }
+  
+  if (hasUpdated) {
+    resStatus = HTTP_OK;
+  }
 
   send(resStatus);
 }
