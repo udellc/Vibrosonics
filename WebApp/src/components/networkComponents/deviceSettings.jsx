@@ -85,7 +85,7 @@ const DeviceSettings = ({ apSsid, apPassword, externalSsid }) => {
   };
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-3" id="device-network">
       <h3 className={"space-y-4 font-bold text-xl gap-2.5 mb-4"}>
         On-Device WiFi Settings
       </h3>

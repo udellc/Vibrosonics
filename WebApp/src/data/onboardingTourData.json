@@ -14,15 +14,21 @@
   },
   {
     "route": "/network",
-    "selector": "#scanning",
-    "title": "Scan Networks",
-    "text": "Scans current available networks, Use this button to scan for available networks before connecting the Vibrosonics device."
+    "selector": "#overview",
+    "title": "Network Settings",
+    "text": "Use the network page to gain access to the VibroSonics web application using your preferences."
   },
   {
     "route": "/network",
     "selector": "#available-networks",
     "title": "Available Networks",
-    "text": "Here you can find a list of networks to connect to."
+    "text": "(Optional) Use this setting to connect your device to an external network of your choosing."
+  },
+  {
+    "route": "/network",
+    "selector": "#device-network",
+    "title": "On-Device Settings",
+    "text": "Edit the credentials of the on-device Wi-Fi signal."
   },
   {
     "route": "/modules",
