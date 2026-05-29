@@ -9,10 +9,10 @@
  ***************************************************************/
 
 import { useContext, useState } from "preact/hooks";
-import EQ_PRESETS from "../data/eqSettings.json";
-import { AudioSettingsContext } from "../utils/configurations";
-import { moduleRegistry } from "../data/defaultModules";
-import defaultGlobalSettings from "../data/globalSettingsData.json";
+import EQ_PRESETS from "../../data/eqSettings.json";
+import { AudioSettingsContext } from "../../utils/configurations";
+import { moduleRegistry } from "../../data/defaultModules";
+import defaultGlobalSettings from "../../data/globalSettingsData.json";
 
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =

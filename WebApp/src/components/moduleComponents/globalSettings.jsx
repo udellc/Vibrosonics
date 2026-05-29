@@ -9,10 +9,10 @@
  * Author: Ivan Wong and Bella Mann
  ***************************************************************/
 
-import Knob from "../atomics/knob";
+import Knob from "../../atomics/knob";
 import { useState } from 'react';
-import GlobalSettingsDisplay from "../data/globalSettingsDisplay.json";
-import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils";
+import GlobalSettingsDisplay from "../../data/globalSettingsDisplay.json";
+import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../../utils/utils";
 
 /**
  * @brief Displays the global configuration fields and updates them when changed
