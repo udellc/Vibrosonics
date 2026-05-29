@@ -22,9 +22,11 @@ import InfoButton from "./infoButton";
  * @param {Number} setting.min - Min value the knob can be at
  * @param {Number} setting.max - Max value the knob can be at
  * @param {Number} setting.step - Step size for each knob increment
+ * @param {String} setting.id - Knob ID
  * @param {CallableFunction} setting.onChange - Callback that happens for each knob value change
  */
 export default function Knob({
+  id,
   min = 0,
   max = 10,
   step = 1,
@@ -85,7 +87,7 @@ export default function Knob({
 
   return (
     // Parent container
-    <div className="flex flex-col items-center font-bold text-sm">
+    <div className="flex flex-col items-center font-bold text-sm" id={id}>
 
       {/* Outside slider */}
       <div className="w-[100px] h-[100px] flex items-center justify-center relative">

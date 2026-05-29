@@ -1,0 +1,196 @@
+[
+  {
+    "route": "/",
+    "selector": "#welcomeheading",
+    "placement": "right",
+    "title": "Welcome!",
+    "text": "This is the Home Page, where you can learn more information about the software."
+  },
+  {
+    "route": "/",
+    "selector": "#main-nav",
+    "title": "Navigation Bar",
+    "text": "Use the navigation bar to move to Networks, Modules, FM Radio, and more!"
+  },
+  {
+    "route": "/network",
+    "selector": "#scanning",
+    "title": "Scan Networks",
+    "text": "Scans current available networks, Use this button to scan for available networks before connecting the Vibrosonics device."
+  },
+  {
+    "route": "/network",
+    "selector": "#available-networks",
+    "title": "Available Networks",
+    "text": "Here you can find a list of networks to connect to."
+  },
+  {
+    "route": "/modules",
+    "selector": "#modules-button",
+    "title": "EQ Presets",
+    "text": "On this tab, you can configure the device to correlate with the genre of music you are listening to."
+  },
+  {
+    "route": "/modules",
+    "selector": "#modules-0",
+    "title": "Major Peak Frequency Configuration",
+    "text": "Fine-tunes how the device tracks the loudest, dominant melodies and notes in the music. Click Next to see what the knobs do."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-0-freqLow",
+    "title": "Low Cut Frequency Configuration:",
+    "text": "Low Cut Frequency sets the lowest sounds the module pays attention to."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-0-freqHigh",
+    "title": "High Cut Frequency Configuration:",
+    "text": "High Cut Frequency sets the highest sounds."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-0-minAmpNorm",
+    "title": "Minimum Amplitude Norm",
+    "text": "Sets how loud the sound needs to be before the device starts to react."
+  },
+  {
+    "route": "/modules",
+    "selector": "#frequency-map",
+    "title": "Frequency",
+    "text": "Changes how different musical pitches are sent to different parts of the device."
+  },
+  {
+    "route": "/modules",
+    "selector": "#num-peaks",
+    "title": "Number of Peaks",
+    "text": "Controls how many separate audio notes the device tracks at the same time for more or less detail."
+  },
+  {
+    "route": "/modules",
+    "selector": "#modules-1",
+    "title": "Percussion Frequency Configuration",
+    "text": "Fine-tunes how the device handles drums and beats. Click Next to see what the knobs do."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-freqLow",
+    "title": "Low Cut Frequency Configuration:",
+    "text": "Low Cut Frequency sets the lowest sounds the module pays attention to."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-fluxThresh",
+    "title": "Flux Threshold",
+    "text": "Controls sensitivity to sudden changes in sound, like sharp drum hits."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-freqHigh",
+    "title": "High Cut Frequency Configuration:",
+    "text": "High Cut Frequency sets the highest sounds."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-energyThresh",
+    "title": "Entropy Threshold",
+    "text": "Filters out constant background noise so the device focuses on the main rhythm."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-minAmpNorm",
+    "title": "Minimum Amplitude Norm",
+    "text": "Sets how loud the sound needs to be before the device starts to react."
+  },
+  {
+    "route": "/modules",
+    "selector": "#knob-1-entropyThresh",
+    "title": "Entropy Threshold",
+    "text": "This helps filter out messy noise so the device reacts more to meaningful sound."
+  },
+  {
+    "route": "/modules",
+    "selector": "#wave-type",
+    "title": "Wave Type",
+    "text": "Changes the shape of the vibration signals, altering how smooth or sharp the physical feedback feels."
+  },
+  {
+    "route": "/modules",
+    "selector": "#globalSettings",
+    "title": "Global Configurations",
+    "text": "Adjusts master settings that apply to the entire system, regardless of which module you are using."
+  },
+  {
+    "route": "/modules",
+    "selector": "#mode",
+    "title": "Global Configuration Mode",
+    "text": "We offer a user friendly mode and a developer mode, depending on the expertise of the user."
+  },
+  {
+    "route": "/modules",
+    "selector": "#global-cfarBias",
+    "title": "Noise Filter",
+    "text": "Your sound sensitivity module."
+  },
+  {
+    "route": "/modules",
+    "selector": "#global-smoothingFactor",
+    "title": "Smoothing Factor",
+    "text": "Smooths your sound out to get an easier idea of what you're changing."
+  },
+  {
+    "route": "/modules",
+    "selector": "#library",
+    "title": "Project Library",
+    "text": "A place to save your module settings so you can work on multiple different projects."
+  },
+  {
+    "route": "/modules",
+    "selector": "#current-setup",
+    "title": "Save Current Setup",
+    "text": "Save your current module setup. This is helpful if you want to try different sounds out or different songs."
+  },
+  {
+    "route": "/modules",
+    "selector": "#new-project",
+    "title": "Start New Project",
+    "text": "Start a new project!"
+  },
+  {
+    "route": "/modules",
+    "selector": "#clear-all",
+    "title": "Clear All Projects",
+    "text": "Clear all saved projects from your library."
+  },
+  {
+    "route": "/modules",
+    "selector": "#clear-current-settings",
+    "title": "Clear Current Settings",
+    "text": "Clear any currently configured module settings."
+  },
+  {
+    "route": "/radio",
+    "selector": "#main-nav a[href=\"/radio\"]",
+    "title": "FM Radio",
+    "text": "Check out the FM Radio tab to connect the device to a radio station."
+  },
+  {
+    "route": "/radio",
+    "selector": "#cymaSpace",
+    "title": "CymaSpace",
+    "text": "Check out the CymaSpace tab to learn more about CymaSpace."
+  },
+  {
+    "route": "/radio",
+    "selector": "#gitRepo",
+    "title": "GitHub Repository",
+    "text": "Check out the Github Repo tab to learn more about the source code on Github."
+  },
+  {
+    "route": "/",
+    "selector": "#welcomeheading",
+    "placement": "right",
+    "title": "End of Tour!",
+    "text": "Feel free to restart the tour at any time!"
+  }
+]

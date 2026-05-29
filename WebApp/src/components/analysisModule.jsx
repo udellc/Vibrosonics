@@ -153,6 +153,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <button 
           className="text-black px-2 font-bold cursor-pointer"
           onClick={handleDeleteModule}
+          aria-label="Delete Module"
         >
           X
         </button>
@@ -161,6 +162,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         
         <select 
           className="w-full bg-transparent font-bold text-lg cursor-pointer appearance-none outline-none pr-6"
+          id={`modules-${module.moduleType}`}
           value={module.moduleType}
           onChange={(e) => handleChangeModuleType(e.target.value)}
         >
@@ -180,7 +182,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
       <div>
         {isValid?.current ? (
-          <div className="text-green-500">inside valid ranges</div>
+          <div className="text-green-500"/>
         ) : (
           <div className="font-bold text-red-500">outside valid ranges</div>
         )}
@@ -198,8 +200,11 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">
           {Object.entries(knobs)?.map( ([key, val]) => {
+            //console.log("DEBUG - Full module object structure:", module);
+            const knobId = `knob-${outputNum}-${key}`;
             return (
               <Knob
+                id={knobId}
                 key={key}
                 min={val.min}
                 max={val.max}
@@ -217,7 +222,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         <div className="flex flex-col gap-2">
           {Object.entries(dropdowns)?.map( ([key]) => {
             return (
-              <div key={key} className="bg-white border rounded-xl px-2">
+              <div key={key} className="bg-white border rounded-xl px-2" id={`${dropdowns[key].title.toLowerCase().replace(/\s+/g, '-')}`}>
                 <h4>{dropdowns[key].title}</h4>
                 <select value={module[key] ?? 0}
                   onChange={(e) => handleValueChange(key, e.target instanceof HTMLSelectElement
@@ -237,7 +242,7 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
           {/* Create numerical text entries for the corresponding settings */}
           {Object.entries(spinboxes)?.map( ([key, val]) => {
             return (
-              <div key={key} className="bg-white border rounded-xl px-2">
+              <div key={key} className="bg-white border rounded-xl px-2" id={`${spinboxes[key]?.title?.toLowerCase().replace(/\s+/g, '-')}`}>
                 <h4>{spinboxes[key].title}</h4>
                 <input type="number" 
                   value={module[key] ?? 1}

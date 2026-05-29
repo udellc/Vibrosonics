@@ -21,6 +21,7 @@ const ModulesPage = () => {
   // Persistant memory/data
   const { globalSettings, setGlobalSettings } = useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
+  const [isExpertMode, setIsExpertMode] = useState(false);
 
   // TODO: pull number of outputs from config rather than hard coding as 8
   const [outputs, setOutputs] = useState(new Array(8).fill(null));
@@ -86,6 +87,8 @@ const ModulesPage = () => {
         <GlobalSettings
           globalSettings={globalSettings}
           setGlobalSettings={setGlobalSettings}
+          isExpertMode={isExpertMode} 
+          setIsExpertMode={setIsExpertMode}
         />
           
       </ConfigManager>

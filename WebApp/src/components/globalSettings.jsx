@@ -21,9 +21,11 @@ import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils"
  * @param {Object} _.globalSettings - Global settings we want to display and modify 
  * @param {CallableFunction} _.setGlobalSettings - Callback that updates the global settings config and UI 
  * @param {any} [_.children]
+ * @param {boolean} _.isExpertMode 
+ * @param {CallableFunction} _.setIsExpertMode
  * @returns Global settings UI component
  */
-const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
+const GlobalSettings = ({ globalSettings, setGlobalSettings, isExpertMode, setIsExpertMode}) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const settingsDisplay = GlobalSettingsDisplay.settings;
@@ -61,7 +63,7 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
   // }
 
   return (
-    <div>
+    <div id="globalSettings">
       <button onClick={() => setIsCollapsed(!isCollapsed)} 
         className = "flex items-center gap-2 text-center justify-center font-bold text-xl mx-auto w-fit py-4">
         {GlobalSettingsDisplay.title}
@@ -70,18 +72,45 @@ const GlobalSettings = ({ globalSettings, setGlobalSettings, children }) => {
 
       {!isCollapsed && (
       <div className="flex flex-col items-center pt-8 p-4 text-lg bg-gray-200 rounded-xl shadow-inner max-h-fit">
+        <div className="flex items-center gap-3" id="mode">
+          <span className={`text-sm font-medium tranistion-colors ${!isExpertMode ? 'text-gray-900' : 'text-gray-400'}`}>
+            Beginner
+          </span>
+
+          <button
+            type="button"
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none 
+              ${isExpertMode ? 'bg-amber-500' : 'bg-gray-300'}`}
+            role="switch" 
+            aria-checked={isExpertMode}
+            onClick={() => setIsExpertMode(!isExpertMode)}>
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out 
+                ${isExpertMode ? 'translate-x-5' : 'translate-x-0'}`}/>
+          </button>
+
+          <span className={`text-sm font-bold transition-colors ${isExpertMode ? 'text-amber-600' : 'text-gray-400'}`}>
+            Expert
+          </span>
+        </div>
 
         <div className="flex flex-wrap justify-center gap-4">
-          {Object.entries(globalSettings).map(([key, val]) => {
+          {Object.entries(globalSettings)
+          .filter(([key]) => isExpertMode || !settingsDisplay[key]?.isExpertOnly)
+          .map(([key, val]) => {
+            const displayTitle = (isExpertMode && settingsDisplay[key]?.expertTitle) ? settingsDisplay[key].expertTitle : settingsDisplay[key]?.title;
+            const displayDescription = (isExpertMode && settingsDisplay[key]?.expertDescription) ? settingsDisplay[key].expertDescription  : settingsDisplay[key]?.description;
+            
             return (
               <div key={key} className="flex flex-row">
-                {children}
                 <Knob
+                  id={`global-${key}`}
                   min={settingsDisplay[key].min}
                   max={settingsDisplay[key].max}
-                  title={settingsDisplay[key].title}
+                  title={displayTitle}
                   step={settingsDisplay[key].step}
-                  description={settingsDisplay[key].description}
+                  description={displayDescription}
                   onChange={(value) => handleKnobChange(key, value)}
                   value={globalSettings[key] ?? val}
                 />

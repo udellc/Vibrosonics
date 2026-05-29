@@ -12,6 +12,7 @@ import { useContext, useState } from "preact/hooks";
 import EQ_PRESETS from "../data/eqSettings.json";
 import { AudioSettingsContext } from "../utils/configurations";
 import { moduleRegistry } from "../data/defaultModules";
+import defaultGlobalSettings from "../data/globalSettingsData.json";
 
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =
@@ -62,8 +63,12 @@ const ConfigManager = ({ children }) => {
   };
 
   const clearCurrentSettings = () => {
-    setModules(structuredClone(moduleRegistry));
-    setGlobalSettings(structuredClone(globalSettings));
+    if (Array.isArray(moduleRegistry)) {
+        setModules([...moduleRegistry]);
+    } else if (moduleRegistry && typeof moduleRegistry === 'object') {
+        setModules(Object.values(moduleRegistry));
+    }
+    setGlobalSettings({...defaultGlobalSettings.global});
     setActiveGenre("Rock");
   };
 
@@ -76,9 +81,9 @@ const ConfigManager = ({ children }) => {
       activeGenre: savedGenre 
     } = project.data;
 
-    if (savedGlobal) setGlobalSettings(savedGlobal);
-    if (savedModules) setModules(savedModules);
-    if (savedGenre) setActiveGenre(savedGenre);
+    if (savedGlobal) setGlobalSettings(structuredClone(savedGlobal));
+    if (savedModules) setModules(structuredClone(savedModules));
+    if (savedGenre) setActiveGenre(structuredClone(savedGenre));
 
     setCurrentProjectName(project.name)
   };
@@ -100,7 +105,7 @@ const ConfigManager = ({ children }) => {
     <div>
       <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
       <div className="flex flex-row flex-wrap items-center gap-8 p-4 pr-6 mt-8 mb-4 rounded-4xl border-gray-100 bg-gray-300 w-fit">
-        <h2 className="text-xl font-bold">EQ Presets</h2>
+        <h2 id="modules-button" className="text-xl font-bold">EQ Presets</h2>
         <div className="flex gap-2.5">
           {Object.keys(EQ_PRESETS).map((genre) => (
             <button
@@ -122,25 +127,28 @@ const ConfigManager = ({ children }) => {
       {/* Configuration stuff */}
       {children}
 
-      <div className="p-8 mt-8 rounded-4xl bg-gray-300 mb-4 w-fit">
+      <div className="p-8 mt-8 rounded-4xl bg-gray-300 mb-4 w-fit" id="library">
         <h2 className="text-2xl font-bold mb-6">Project Library</h2>
 
         <div className="flex gap-4 mb-6">
           <button
             onClick={saveProj}
             className="bg-[#70c247] text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition cursor-pointer border border-green-700"
+            id="current-setup"
           >
             Save Current Setup
           </button>
           <button
             onClick={startNewProj}
             className="bg-[#7face5] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition cursor-pointer border border-blue-700"
+            id="new-project"
           >
             + Start New Project
           </button>
           <button
             onClick={clearLibrary}
             className="bg-[#ff6242] text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold cursor-pointer border border-red-700"
+            id="clear-all"
           >
             Clear All Projects
           </button>
@@ -148,6 +156,7 @@ const ConfigManager = ({ children }) => {
           <button
             onClick={clearCurrentSettings}
             className="bg-[#ff9100] text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition cursor-pointer border border-orange-700"
+            id="clear-current-settings"
           >
             Clear Current Settings
           </button>

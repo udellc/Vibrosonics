@@ -163,6 +163,7 @@ const NetworkPage = () => {
         // Disables tabbing into the network components
         inert={isConnecting}
         aria-hidden={isConnecting}
+        id="overview"
       >
         <h1 className="font-bold text-3xl">Network Configurations</h1>
 
@@ -207,9 +208,9 @@ const NetworkPage = () => {
             {/* Scan networks panel */}
             <div className="bg-gray-200 p-6 rounded-2xl shadow-lg">
               {isLoading ? (
-                <LoadingSpinner size={10} label="Scanning for networks..." />
+                <LoadingSpinner size={10} label="Scanning for networks..."/>
               ) : (
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center" id="available-networks">
                   {/* Centered vertical layout */}
                   <h1 className="font-bold text-2xl mb-6">
                     Available Networks
@@ -217,7 +218,7 @@ const NetworkPage = () => {
 
                   {/* Scan network button */}
                   <div className="pt-4">
-                    <button className={buttonStyle} onClick={getNetworks}>
+                    <button className={buttonStyle} onClick={getNetworks} id="networksButton">
                       Scan Networks
                     </button>
                   </div>
