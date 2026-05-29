@@ -24,13 +24,13 @@ import { api, HTTP_STATUS } from "../../utils/utils";
  * @returns 
  */
 const ConfigManager = ({ children }) => {
-  const { globalSettings, setGlobalSettings } =
+  const { globalSettings, setGlobalSettings } =   //eslint-disable-line no-unused-vars
     useContext(AudioSettingsContext);
-  const { modules, setModules } = useContext(AudioSettingsContext);
+  const { modules, setModules } = useContext(AudioSettingsContext);   //eslint-disable-line no-unused-vars
 
   const [currentProjectName, setCurrentProjectName] =useState("New Project");
   const [activeGenre, setActiveGenre] = useState("Rock");
-  const [library, setLibrary] = useState([{id: 1, name: "test"}]);
+  const [library, setLibrary] = useState([]);
 
   const saveProj = async () => {
     const trimmedName = currentProjectName.trim();
@@ -50,20 +50,29 @@ const ConfigManager = ({ children }) => {
     }
   };
 
-  const loadProject = (project) => {
-    if (!project || !project.data) return;
+  const clearCurrentSettings = () => {
+    if (Array.isArray(moduleRegistry)) {
+        setModules([...moduleRegistry]);
+    } else if (moduleRegistry && typeof moduleRegistry === 'object') {
+        setModules(Object.values(moduleRegistry));
+    }
+    setGlobalSettings({...defaultGlobalSettings.global});
+    setActiveGenre("Rock");
+  };
 
-    const { 
-      globalSettings: savedGlobal,
-      modules: savedModules,
-      activeGenre: savedGenre 
-    } = project.data;
+  const loadProject = async (name) => {
+    if (!name) return;
 
-    if (savedGlobal) setGlobalSettings(structuredClone(savedGlobal));
-    if (savedModules) setModules(structuredClone(savedModules));
-    if (savedGenre) setActiveGenre(structuredClone(savedGenre));
+    const res = await api("GET", "/analysis/getPreset", {name});
 
-    setCurrentProjectName(project.name)
+    if (res?.status === HTTP_STATUS.OK) {
+      const project = res?.data;
+
+      setGlobalSettings(project.global);
+      setModules(project.modules);
+      setCurrentProjectName(project.name);
+    }
+
   };
 
   const clearLibrary = () => {
@@ -129,6 +138,13 @@ const ConfigManager = ({ children }) => {
             Save Current Settings
           </button>
           <button
+            onClick={clearCurrentSettings}
+            className="bg-[#ff9100] text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition cursor-pointer border border-orange-700"
+            id="clear-current-settings"
+          >
+            Reset Settings
+          </button>
+          <button
             onClick={clearLibrary}
             className="bg-[#ff6242] text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold cursor-pointer border border-red-700"
             id="clear-all"
@@ -148,14 +164,6 @@ const ConfigManager = ({ children }) => {
             id="clear-all"
           >
             Clear All Projects
-          </button>
-
-          <button
-            onClick={clearCurrentSettings}
-            className="bg-[#ff9100] text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition cursor-pointer border border-orange-700"
-            id="clear-current-settings"
-          >
-            Clear Current Settings
           </button> */}
         </div>
       </div>
