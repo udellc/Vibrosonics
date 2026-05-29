@@ -13,6 +13,8 @@
 #ifndef NETWORKING_H
 #define NETWORKING_H
 
+#define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
+
 #include <set>
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -43,10 +45,7 @@ namespace Networking
   //! Restores default networking settings
   void setDefaultSettings();
 
-  //! Writes the settings document to the SD card
-  //! NOTE: Use for the external DACs since the SD card also shares the same SPI pins.
-  //        We need to control exactly when to write data to the SD card
-  void writeSettings();
+  String getSettings();
 }
 
 #endif

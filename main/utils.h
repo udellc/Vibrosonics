@@ -25,7 +25,7 @@ enum class QueueMsgId : uint
   UpdateAll,
   CreateModule,
   DeleteModule,
-  EnterUpdate     // Used for entering the update loop which also interacts with SD writes
+  SDWrite       // Used for entering the update loop for safe SD writes
 };
 
 // All possible data types for global settings

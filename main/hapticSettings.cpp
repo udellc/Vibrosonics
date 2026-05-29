@@ -18,7 +18,11 @@
 #include <ArduinoJson.h>
 #include <memory>
 
-#define MAIN_ANALYSIS_PATH "/data/mainConfig.json"
+// Global for SD writes
+static struct {
+  String filePath;
+  String data;
+} writeBuffer;
 
 // Queue stuff
 #define QUEUE_LENGTH 12
@@ -158,11 +162,10 @@ void HapticSettings::loadConfig()
  * 
  * @return Bool indicating if the modules need to be rebuilt
  */
-bool HapticSettings::processQueue(bool& sdSaveRequested)
+bool HapticSettings::processQueue()
 {
   QueueMessage msg;
   bool needsRebuild = false;
-
 
   while (HapticSettings::Instance().getMessage(&msg))
   {
@@ -206,7 +209,19 @@ bool HapticSettings::processQueue(bool& sdSaveRequested)
         }
         break;
       }
-      case QueueMsgId::EnterUpdate:
+      case QueueMsgId::SDWrite:
+        if (!FileSys::writeFile(writeBuffer.filePath, writeBuffer.data))
+        {
+          DEBUG_PRINTF("WARNING: Could not write to file %s into SD card", writeBuffer.filePath);
+        }
+        else
+        {
+          DEBUG_PRINTF("DEBUG: Sucessfully written to file %s into SD card", writeBuffer.filePath);
+          
+          // Clear the memory
+          writeBuffer.filePath = "";
+          writeBuffer.data = "";
+        }
       default:
         break;
     }
@@ -216,11 +231,16 @@ bool HapticSettings::processQueue(bool& sdSaveRequested)
 
 /**
  * @brief Adds a message into the queue to enter the update section in main/loop() for SD writes
+ *        for the networking component
  */
-void HapticSettings::prepareSDWrite()
+void HapticSettings::prepareSDWrite(const String FilePath, const String FileContent)
 {
   QueueMessage msg = {
-    .id = QueueMsgId::EnterUpdate
+    .id = QueueMsgId::SDWrite
   };
+  // Transfer ownership incase the file contents is large
+  writeBuffer.filePath = std::move(FilePath);
+  writeBuffer.data = std::move(FileContent);
+
   (void) addMessage(&msg);
 }

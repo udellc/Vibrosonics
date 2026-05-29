@@ -15,7 +15,7 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <ArduinoJson.h>
-#include <algorithm>
+#include "hapticSettings.h"
 
 // Networking globals
 #define WIFI_SETTINGS_PATH "/data/wifiSettings.json"
@@ -238,23 +238,18 @@ void Networking::setDefaultSettings()
 }
 
 /**
- * @brief Write the settings JSON document to the SD card
+ * @brief Converts the settings JSON document to a String
  */
-void Networking::writeSettings()
+String Networking::getSettings()
 {
-  if (needsSDWrite)
-  {
-    DEBUG_PRINTLN("DEBUG: Writing WiFi settings to SD card");
-    String data;
+  String data;
 
-    if (settingsDoc.isNull())
-      data = "";
-    else
-      serializeJson(settingsDoc, data);
+  if (settingsDoc.isNull())
+    data = "";
+  else
+    serializeJson(settingsDoc, data);
 
-    FileSys::writeFile(WIFI_SETTINGS_PATH, data);
-    needsSDWrite = false;
-  }
+  return data;
 }
 
 /**

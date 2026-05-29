@@ -134,11 +134,10 @@ inline void WebInterface::setupServer()
 
   // Haptic settings APIs
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
-  server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
+  server.on("/analysis/saveSettings", HTTP_POST, onSaveConfig);
   server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
   server.on("/analysis/deleteModule", HTTP_DELETE, onDeleteModule);
   server.on("/analysis/addModule", HTTP_POST, onAddModule);
-  server.on("/analysis/savePreset", HTTP_POST, onSavePresetConfig);
 
   // Make /assets/ public for the server
   server.serveStatic("/", SD, "/assets/");
@@ -239,7 +238,7 @@ void WebInterface::onConnectToNetwork()
   if (hasConnected)
   {
     resStatus = HTTP_ACCEPTED;
-    HapticSettings::Instance().prepareSDWrite();
+    HapticSettings::Instance().prepareSDWrite(WIFI_SETTINGS_PATH, Networking::getSettings());
   }
   send(resStatus);
 }
@@ -277,7 +276,7 @@ void WebInterface::onSaveAPSettings()
   if (success)
   {
     resStatus = HTTP_OK;
-    HapticSettings::Instance().prepareSDWrite();
+    HapticSettings::Instance().prepareSDWrite(WIFI_SETTINGS_PATH, Networking::getSettings());
   }
   send(resStatus);
 }
@@ -288,7 +287,7 @@ void WebInterface::onSaveAPSettings()
 void WebInterface::onForgetWiFi()
 {
   Networking::forgetExternalWiFi();
-  HapticSettings::Instance().prepareSDWrite();
+  HapticSettings::Instance().prepareSDWrite(WIFI_SETTINGS_PATH, Networking::getSettings());
   send(HTTP_OK);
 }
 
@@ -298,7 +297,7 @@ void WebInterface::onForgetWiFi()
 void WebInterface::onResetNetworkSettings()
 {
   Networking::setDefaultSettings();
-  HapticSettings::Instance().prepareSDWrite();
+  HapticSettings::Instance().prepareSDWrite(WIFI_SETTINGS_PATH, Networking::getSettings());
   send(HTTP_OK);
 }
 
@@ -324,86 +323,34 @@ void WebInterface::sendAnalysisConfig()
 }
 
 /**
- * @brief Parses the submitted analysis configuration, updates the config
- *        in HapticSettings, and sends the response status.
- * 
- * TODO: this could change to save config onto SD card
+ * @brief Saves the current analysis settings into the SD card on the next update loop
+ *        in loop()
  */
-void WebInterface::onSubmitConfig()
+void WebInterface::onSaveConfig()
 {
-  DEBUG_PRINTLN("DEBUG: Submit config requested");
+  DEBUG_PRINTLN("DEBUG: Save config requested");
   
+  String json;
   JsonDocument payload;
   int resStatus = HTTP_UNPROCESSABLE;
   bool hasUpdated = false;
 
   if (parsePayload(payload))
   {
-    // Creating a new AnalysisConfig for the audio loop and adding settings. Once loop() is done,
-    // it calls HapticSettings::Instance().getConfig_r() again, which then deletes the old config
-    // since there are no more owners of that pointer
-    auto newConfig = std::make_shared<AnalysisConfig>();
-    auto globalSettings = payload["global"].as<JsonObject>();
-    auto modulesList = payload["modules"].as<JsonArray>();
-    
-    // getting project name string
-    const char* projectName = payload["name"] | "New Project";
-    strncpy(newConfig->projectName, projectName, sizeof(newConfig->projectName) - 1);
+    JsonDocument doc;
+    JsonObject global = doc["global"].to<JsonObject>();
+    JsonArray modules = doc["modules"].to<JsonArray>();
+    auto curConfig = HapticSettings::Instance().getConfig_mut();
 
-    Utils::populateGlobalSettings(globalSettings, newConfig.get());
-    Utils::populateModulesList(modulesList, newConfig.get());
+    // Populate doc with the current settings
+    Utils::packageGlobalSettings(global, curConfig.get());
+    Utils::packageModulesList(modules, curConfig.get());
+    doc["name"] = payload["name"];
 
-    HapticSettings::Instance().updateConfig(newConfig);
+    // Insert the file path and data into the write buffer
+    serializeJson(doc, json);
+    HapticSettings::Instance().prepareSDWrite(String("/data/") + payload["name"].as<String>(), json);
 
-    // Just needs the ID for a pointer swap, no need for a createMessage call
-    QueueMessage msg {
-      .id = QueueMsgId::UpdateAll
-    };
-
-    if (HapticSettings::Instance().addMessage(&msg))
-      hasUpdated = true;
-  }
-  if (hasUpdated)
-    resStatus = HTTP_OK;
-
-  send(resStatus);
-}
-
-/*
-* @brief saves project name and passes saveToSD message to system queue
-*/
-void WebInterface::onSavePresetConfig()
-{
-  DEBUG_PRINTLN("DEBUG: save preset config to SD card");
-
-  JsonDocument payload;
-  int resStatus = HTTP_UNPROCESSABLE;
-  bool hasUpdated = false;
-
-  if(parsePayload(payload)) {
-    auto newConfig = std::make_shared<AnalysisConfig>();
-
-    auto globalSettings = payload["data"]["globalSettings"].as<JsonObject>();
-    auto modulesList = payload["data"]["modules"].as<JsonArray>();
-    
-    const char* projectName = payload["name"] | "New Project";
-    strncpy(newConfig->projectName, projectName, sizeof(newConfig->projectName) - 1);
-
-    Utils::populateGlobalSettings(globalSettings, newConfig.get());
-    Utils::populateModulesList(modulesList, newConfig.get());
-
-    HapticSettings::Instance().updateConfig(newConfig);
-
-    QueueMessage msg {
-      .id = QueueMsgId::SaveToSD
-    };
-
-    if (HapticSettings::Instance().addMessage(&msg)) {
-      hasUpdated = true;
-    }
-  }
-  
-  if (hasUpdated) {
     resStatus = HTTP_OK;
   }
 

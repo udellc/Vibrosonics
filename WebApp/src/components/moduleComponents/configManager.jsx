@@ -13,57 +13,41 @@ import EQ_PRESETS from "../../data/eqSettings.json";
 import { AudioSettingsContext } from "../../utils/configurations";
 import { moduleRegistry } from "../../data/defaultModules";
 import defaultGlobalSettings from "../../data/globalSettingsData.json";
+import { api, HTTP_STATUS } from "../../utils/utils";
 
+/**
+ * @brief Parent container for the modules page
+ * 
+ * @param {Object} _ - Expanded object
+ * @param {*} _.children - Components within the container
+ *  
+ * @returns 
+ */
 const ConfigManager = ({ children }) => {
   const { globalSettings, setGlobalSettings } =
     useContext(AudioSettingsContext);
   const { modules, setModules } = useContext(AudioSettingsContext);
 
-
   const [currentProjectName, setCurrentProjectName] =useState("New Project");
   const [activeGenre, setActiveGenre] = useState("Rock");
-  const [library, setLibrary] = useState([]);
+  const [library, setLibrary] = useState([{id: 1, name: "test"}]);
 
-  const startNewProj = () => {
-    if (window.confirm("Are you sure? Unsaved changes will be lost.")) {
-      setCurrentProjectName("New Project");
-
-      // TODO: replaced initial states with this
-    //   getSettings();
-
-      // TODO: temp
-      setActiveGenre("Rock");
-    }
-  };
-
-  const saveProj = () => {
+  const saveProj = async () => {
     const trimmedName = currentProjectName.trim();
 
     if(!trimmedName){
       alert("Please enter project name before saving!")
       return;
     }
+    const res = await api("POST", "/analysis/saveSettings", { currentProjectName });
 
-    const newSave = {
-      id: Date.now(),
-      name: currentProjectName,
-      data: { 
-        globalSettings: structuredClone(globalSettings),
-        modules: structuredClone(modules), 
-        activeGenre 
-      },
-    };
-    setLibrary((prev) => [...prev, newSave]);
-  };
-
-  const clearCurrentSettings = () => {
-    if (Array.isArray(moduleRegistry)) {
-        setModules([...moduleRegistry]);
-    } else if (moduleRegistry && typeof moduleRegistry === 'object') {
-        setModules(Object.values(moduleRegistry));
+    if (res?.status === HTTP_STATUS.OK) {
+      const newProject = {
+        id: Date.now(),             // For UI mapping
+        name: currentProjectName    // Only send the name, the current settings will be saved in the web server
+      }
+      setLibrary((prev) => [...prev, newProject])
     }
-    setGlobalSettings({...defaultGlobalSettings.global});
-    setActiveGenre("Rock");
   };
 
   const loadProject = (project) => {
@@ -85,7 +69,7 @@ const ConfigManager = ({ children }) => {
   const clearLibrary = () => {
     if (
       window.confirm(
-        "This will permanently delete ALL saved projects. Continue?",
+        "This will permanently delete ALL saved presets. Continue?",
       )
     ) {
       setLibrary([]);
@@ -98,7 +82,7 @@ const ConfigManager = ({ children }) => {
       {/** Project name instertion box */}
       <div className="mb-4">
         <label htmlFor="project-name-input" className="block text-sm font-semibold text-gray-600 mb-1">
-          Project Name
+          Current Settings
           </label>
           <input
             id="project-name-input"
@@ -142,9 +126,16 @@ const ConfigManager = ({ children }) => {
             className="bg-[#70c247] text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition cursor-pointer border border-green-700"
             id="current-setup"
           >
-            Save Current Setup
+            Save Current Settings
           </button>
           <button
+            onClick={clearLibrary}
+            className="bg-[#ff6242] text-white px-6 py-2 rounded-lg hover:bg-red-700 font-bold cursor-pointer border border-red-700"
+            id="clear-all"
+          >
+            Clear All Projects
+          </button>
+          {/* <button
             onClick={startNewProj}
             className="bg-[#7face5] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition cursor-pointer border border-blue-700"
             id="new-project"
@@ -165,11 +156,9 @@ const ConfigManager = ({ children }) => {
             id="clear-current-settings"
           >
             Clear Current Settings
-          </button>
+          </button> */}
         </div>
       </div>
-
-      {/* load project */}
       <div className="flex flex-col md:grid-cols-2 gap-4 mb-2">
         {library.map((project) => (
           <div
@@ -179,9 +168,15 @@ const ConfigManager = ({ children }) => {
             <span className="font-medium">{project.name}</span>
             <button
                 onClick={() => loadProject(project)}
-              className="text-sm font-bold text-blue-600 hover:underline"
+              className="text-sm font-bold text-blue-600 hover:underline cursor-pointer"
             >
-              Load Settings
+              Load Preset
+            </button>
+            <button
+                onClick={() => loadProject(project)}
+              className="text-sm font-bold text-blue-600 hover:underline cursor-pointer"
+            >
+              Delete Preset
             </button>
           </div>
         ))}

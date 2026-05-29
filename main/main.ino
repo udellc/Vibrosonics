@@ -148,15 +148,13 @@ void loop()
     vapi.pause();
 
     // NOTE: only returns true when it actually needs to be rebuilt, not every time it processes a request
+    //       also handles any SD writes, see HapticSettings::prepareSDWrite
     if (HapticSettings::Instance().processQueue())
     {
       // Get the most recent config incase some were deleted or added
       activeConfig = HapticSettings::Instance().getConfig_mut();
       rebuildOutputModules(activeConfig.get());
     }
-    // Check and do any SD writes here
-    Networking::writeSettings();
-
     // Resume sampling
     vapi.resume();
   }
