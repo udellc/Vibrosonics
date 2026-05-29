@@ -45,6 +45,7 @@ namespace Networking
   //! Restores default networking settings
   void setDefaultSettings();
 
+  //! Converts the current network settings into a JSON string
   String getSettings();
 }
 

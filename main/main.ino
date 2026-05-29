@@ -144,7 +144,7 @@ void loop()
   {
     DEBUG_PRINTLN("DEBUG: processing queue...");
     
-    // Pause the audio sampling or any SD writes
+    // Pause the audio sampling for any SD writes
     vapi.pause();
 
     // NOTE: only returns true when it actually needs to be rebuilt, not every time it processes a request

@@ -39,7 +39,7 @@ const ConfigManager = ({ children }) => {
       alert("Please enter project name before saving!")
       return;
     }
-    const res = await api("POST", "/analysis/saveSettings", { currentProjectName });
+    const res = await api("POST", "/analysis/saveSettings", { name: trimmedName });
 
     if (res?.status === HTTP_STATUS.OK) {
       const newProject = {

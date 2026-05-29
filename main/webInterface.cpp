@@ -349,7 +349,8 @@ void WebInterface::onSaveConfig()
 
     // Insert the file path and data into the write buffer
     serializeJson(doc, json);
-    HapticSettings::Instance().prepareSDWrite(String("/data/") + payload["name"].as<String>(), json);
+    String filePath = String("/data/") + payload["name"].as<String>() + String(".json");
+    HapticSettings::Instance().prepareSDWrite(filePath, json);
 
     resStatus = HTTP_OK;
   }

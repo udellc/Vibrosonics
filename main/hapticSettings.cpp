@@ -212,11 +212,11 @@ bool HapticSettings::processQueue()
       case QueueMsgId::SDWrite:
         if (!FileSys::writeFile(writeBuffer.filePath, writeBuffer.data))
         {
-          DEBUG_PRINTF("WARNING: Could not write to file %s into SD card", writeBuffer.filePath);
+          DEBUG_PRINTF("WARNING: Could not write file to SD card\n");
         }
         else
         {
-          DEBUG_PRINTF("DEBUG: Sucessfully written to file %s into SD card", writeBuffer.filePath);
+          DEBUG_PRINTF("DEBUG: Sucessfully written to SD card\n");
           
           // Clear the memory
           writeBuffer.filePath = "";

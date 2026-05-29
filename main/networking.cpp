@@ -25,7 +25,6 @@ const char *DefaultHostname = "vibrosonics";
 const char *DefaultApPassword = "1234567890";
 
 static JsonDocument settingsDoc;
-volatile bool needsSDWrite = false;
 
 // Internal function helpers
 static void inline resetWifi();
@@ -168,7 +167,6 @@ bool Networking::connectToNetwork(const String &Ssid, const String &Password)
     (void) MDNS.begin(DefaultHostname);
     settingsDoc["extSsid"] = Ssid;
     settingsDoc["extPassword"] = Password;
-    needsSDWrite = true;
 
     DEBUG_PRINTF("DEBUG: Successfully connected to %s\n", Ssid);
     return true;
@@ -200,7 +198,6 @@ void Networking::forgetExternalWiFi()
 {
   settingsDoc["extSsid"] = "";
   settingsDoc["extPassword"] = "";
-  needsSDWrite = true;
 
   resetWifi();
 }
@@ -222,7 +219,6 @@ bool Networking::setAccessPointCredentials(const String& Ssid, const String& Pas
   }
   settingsDoc["apSsid"] = Ssid;
   settingsDoc["apPassword"] = Password;
-  needsSDWrite = true;
 
   return true;
 }
@@ -233,7 +229,6 @@ bool Networking::setAccessPointCredentials(const String& Ssid, const String& Pas
 void Networking::setDefaultSettings()
 {
   settingsDoc.clear();
-  needsSDWrite = true;
   resetWifi();
 }
 
