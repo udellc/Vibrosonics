@@ -19,6 +19,9 @@ namespace WebInterface
   //! Initializes the web server before starting it
   bool init();
 
+  //! Function call for the server to start
+  void start();
+
   //! Function call for the server to handle requests via polling
   void run();
 
@@ -36,6 +39,18 @@ namespace WebInterface
 
   //! Handler for connncting to user selected network
   void onConnectToNetwork();
+
+  //! Handler for sending networking info from the ESP32
+  void onGetNetworkInfo();
+
+  //! Handler for editing the on-device networking credentials
+  void onSaveAPSettings();
+
+  //! Handler for forgetting the external WiFi source
+  void onForgetWiFi();
+
+  //! Handler for resetting the networking settings to default
+  void onResetNetworkSettings();
 
   //! Handler for getting the current analysis config settings
   void sendAnalysisConfig();

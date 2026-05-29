@@ -9,30 +9,12 @@
  ***************************************************************/
 
 import { route } from "preact-router";
-import { useState, useEffect } from "preact/hooks";
-import { api } from "../utils/utils";
 import InfoButton from "../atomics/infoButton";
 
 /**
  * @brief Displays the landing page for the Vibrosonics web app
  */
 const LandingPage = () => {
-  const [isAudioSettingBtnVisible, setAudioSettingBtnVisible] = useState(false);
-
-  /**
-   * @brief Gets the network SSID on mount, making the audio settings button visible if not connected to AP mode
-   */
-  useEffect( () => {
-    const checkNetwork = async () => {
-      const ssid = await api("GET", "/network/getSsid");
-
-      if (ssid.data !== "Vibrosonics-Unsecure") {
-        setAudioSettingBtnVisible(true);
-      }
-    };
-    checkNetwork();
-  }, []);
-
   //eslint-disable-next-line no-unused-vars
   const handleInfoClick = () => {
     // TODO: change to pop up rather than alert
@@ -71,14 +53,14 @@ const LandingPage = () => {
               className="py-1.5 px-6 bg-amber-200 border border-amber-700 rounded-lg cursor-pointer hover:bg-[#fbbf24]"
               onClick={() => route("/network", false)}
             >
-              Connect to Network
+              Network Settings
             </button>
             
             <button
-              className={`py-1.5 px-6 bg-amber-200 border border-amber-600 rounded-lg cursor-pointer hover:bg-[#fbbf24] ${isAudioSettingBtnVisible ? "visible" : "invisible"}`}
+              className={`py-1.5 px-6 bg-amber-200 border border-amber-600 rounded-lg cursor-pointer hover:bg-[#fbbf24]`}
               onClick={() => route("/modules", false)}
             >
-              Adjust Audio Settings
+              Audio Settings
             </button>
           </div>
 

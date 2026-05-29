@@ -46,8 +46,10 @@ constexpr char APP_JSON[] = "application/json";
 
 static WebServer server(SERVER_PORT);
 
+#ifdef DEV_MODE_EN
 // File buffer object for uploading files from machine to ESP32 
 File _uploadFile;
+#endif
 
 // Internal web server functions
 static String getContentType(const String &Path);
@@ -94,15 +96,21 @@ bool WebInterface::init()
   if (!success)
     DEBUG_PRINTLN("FATAL: /index.html not found. Missing web app files.");
   
-  server.begin();
   DEBUG_PRINTLN("DEBUG: Web server started.");
 
   return success;
 }
 
 /**
+ * @brief Start the web server
+ */
+void WebInterface::start()
+{
+  server.begin();
+}
+
+/**
  * @brief Function call for running the web server via polling method.
- * 
  */
 void WebInterface::run()
 {
@@ -111,7 +119,6 @@ void WebInterface::run()
 
 /**
  * @brief Adds web server API endpoints and sets up WebServer settings.
- * 
  */
 inline void WebInterface::setupServer()
 {
@@ -120,11 +127,12 @@ inline void WebInterface::setupServer()
   // Network APIs
   server.on("/network/scanNetworks", HTTP_GET, onScanNetworks);
   server.on("/network/connect", HTTP_POST, onConnectToNetwork);
-  server.on("/network/getSsid", HTTP_GET, []()
-  {
-    send(HTTP_OK, TEXT_PLAIN, Networking::getNetworkSsid());
-  });
-  // Haptic settings API
+  server.on("/network/getInfo", HTTP_GET, onGetNetworkInfo);
+  server.on("/network/saveAPSettings", HTTP_PATCH, onSaveAPSettings);
+  server.on("/network/forgetWifi", HTTP_PATCH, onForgetWiFi);
+  server.on("/network/resetSettings", HTTP_PATCH, onResetNetworkSettings);
+
+  // Haptic settings APIs
   server.on("/analysis/getSettings", HTTP_GET, sendAnalysisConfig);
   server.on("/analysis/submitSettings", HTTP_PUT, onSubmitConfig);
   server.on("/analysis/editSetting", HTTP_PATCH, onEditSetting);
@@ -158,7 +166,6 @@ void WebInterface::sendWebApp()
  * @brief Sends 404 error when URI endpoint is not defined.
  *        If not defined, it searches the SD card for a matching file name
  *        and sends it.
- * 
  */
 void WebInterface::onNotFoundHandler()
 {
@@ -194,7 +201,6 @@ void WebInterface::onNotFoundHandler()
 /**
  * @brief Gets scanned networks, packages the SSIDs,
  *        and sends the data.
- * 
  */
 void WebInterface::onScanNetworks()
 {
@@ -217,7 +223,6 @@ void WebInterface::onScanNetworks()
 /**
  * @brief Gets the user selected network SSID and password,
  *        attempts to connect to the network and sends the response status.
- * 
  */
 void WebInterface::onConnectToNetwork()
 {
@@ -232,9 +237,69 @@ void WebInterface::onConnectToNetwork()
     hasConnected = Networking::connectToNetwork(SelectedNetwork, Password);
   }
   if (hasConnected)
+  {
     resStatus = HTTP_ACCEPTED;
-
+    HapticSettings::Instance().prepareSDWrite();
+  }
   send(resStatus);
+}
+
+/**
+ * @brief Gets the networking info from the ESP32 and sends it as a JSON object
+ */
+void WebInterface::onGetNetworkInfo()
+{
+  String output;
+  JsonDocument doc;
+  JsonObject networkInfo = doc["info"].to<JsonObject>();
+
+  Networking::getNetworkInfo(networkInfo);
+
+  serializeJson(doc, output);
+  send(HTTP_OK, APP_JSON, output);
+}
+
+/**
+ * @brief Handles the API call for saving access point settings
+ */
+void WebInterface::onSaveAPSettings()
+{
+  JsonDocument payload;
+  int resStatus = HTTP_UNPROCESSABLE;
+  bool success = false;
+
+  if (parsePayload(payload))
+  {
+    const String ApSsid = payload["newApSsid"] | "";
+    const String ApPassword = payload["newApPassword"] | "";
+    success = Networking::setAccessPointCredentials(ApSsid, ApPassword);
+  }
+  if (success)
+  {
+    resStatus = HTTP_OK;
+    HapticSettings::Instance().prepareSDWrite();
+  }
+  send(resStatus);
+}
+
+/**
+ * @brief Handles the API call for forgetting and disconnecting the external WiFi source
+ */
+void WebInterface::onForgetWiFi()
+{
+  Networking::forgetExternalWiFi();
+  HapticSettings::Instance().prepareSDWrite();
+  send(HTTP_OK);
+}
+
+/**
+ * @brief Restores the networking settings for the device. Changes take place on device restart
+ */
+void WebInterface::onResetNetworkSettings()
+{
+  Networking::setDefaultSettings();
+  HapticSettings::Instance().prepareSDWrite();
+  send(HTTP_OK);
 }
 
 /**
@@ -262,8 +327,7 @@ void WebInterface::sendAnalysisConfig()
  * @brief Parses the submitted analysis configuration, updates the config
  *        in HapticSettings, and sends the response status.
  * 
- * TODO: this could prolly change to save config
- * 
+ * TODO: this could change to save config onto SD card
  */
 void WebInterface::onSubmitConfig()
 {
@@ -348,7 +412,6 @@ void WebInterface::onSavePresetConfig()
 
 /**
  * @brief Adds a message to the haptic settings queue for real-time updates
- * 
  */
 void WebInterface::onEditSetting()
 {
@@ -377,7 +440,6 @@ void WebInterface::onEditSetting()
 
 /**
  * @brief Adds a message to the haptic settings queue to delete a module on a given output in real-time.
- * 
  */
 void WebInterface::onDeleteModule()
 {
@@ -397,7 +459,6 @@ void WebInterface::onDeleteModule()
 
 /**
  * @brief Adds a message to the haptic settings queue to add a module in real-time.
- * 
  */
 void WebInterface::onAddModule()
 {

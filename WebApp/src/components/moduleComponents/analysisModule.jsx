@@ -9,11 +9,11 @@
  ***************************************************************/
 
 import { useEffect, useRef } from "preact/hooks";
-import Knob from "../atomics/knob";
-import ModuleDisplay from "../data/moduleDisplay.json";
-import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID, HTTP_STATUS } from "../utils/utils";
-import { api } from "../utils/utils.js";
-import { moduleRegistry } from "../data/defaultModules";
+import Knob from "../../atomics/knob";
+import ModuleDisplay from "../../data/moduleDisplay.json";
+import { FREQUENCY_MAPPING, MODULE_TYPE, useEditSetting, WAVE_TYPE, CONFIG_FIELDS, QUEUE_MESSAGE_ID, HTTP_STATUS } from "../../utils/utils";
+import { api } from "../../utils/utils.js";
+import { moduleRegistry } from "../../data/defaultModules";
 
 /**
  * @brief The AnalysisModule component describe a full module that can be modified

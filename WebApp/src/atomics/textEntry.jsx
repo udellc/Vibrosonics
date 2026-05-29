@@ -25,8 +25,8 @@ const TextEntry = ({ label, entryType, presetText, onChange }) => {
   };
 
   return (
-    <div>
-      <label>
+    <div className={"text-lg"}>
+      <label className={"font-bold"}>
         {`${label}: `}
         <input
           className="border border-gray-400 rounded-lg pl-1"

@@ -206,15 +206,21 @@ bool HapticSettings::processQueue(bool& sdSaveRequested)
         }
         break;
       }
-      case QueMsgId::SaveToSD:
-      {
-        sdSaveRequested = true;
-        needsRebuild = true;
-        break;
-      }
+      case QueueMsgId::EnterUpdate:
       default:
         break;
     }
   }
   return needsRebuild;
+}
+
+/**
+ * @brief Adds a message into the queue to enter the update section in main/loop() for SD writes
+ */
+void HapticSettings::prepareSDWrite()
+{
+  QueueMessage msg = {
+    .id = QueueMsgId::EnterUpdate
+  };
+  (void) addMessage(&msg);
 }

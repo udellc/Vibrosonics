@@ -25,9 +25,10 @@ enum class QueueMsgId : uint
   UpdateAll,
   CreateModule,
   DeleteModule,
-  SaveToSD
+  EnterUpdate     // Used for entering the update loop which also interacts with SD writes
 };
 
+// All possible data types for global settings
 struct EditGlobalData
 {
   union {
@@ -37,6 +38,7 @@ struct EditGlobalData
   } value;
 };
 
+// All possible data types for the module settings
 struct EditModuleData
 {
   int outputNumber;
