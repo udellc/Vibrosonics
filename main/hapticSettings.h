@@ -47,7 +47,7 @@ public:
   void updateConfig(std::shared_ptr<AnalysisConfig>& other) { std::atomic_store(&curConfig, other); }
 
   //! Processes all messages in the update queue
-  bool processQueue();
+  bool processQueue(bool& sdSaveRequested);
 
 private:
   // Use shared ptr, so that we can replace the settings fast/safe across cores

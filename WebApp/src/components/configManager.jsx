@@ -20,20 +20,13 @@ const ConfigManager = ({ children }) => {
   const { modules, setModules } = useContext(AudioSettingsContext);
 
 
-  const [currentProjectName, setCurrentProjectName] =useState("Project 1: Setup 1");
+  const [currentProjectName, setCurrentProjectName] =useState("New Project");
   const [activeGenre, setActiveGenre] = useState("Rock");
   const [library, setLibrary] = useState([]);
-  const [projectCount, setProjectCount] = useState(1);
-  const [setupCount, setSetupCount] = useState(1);
 
   const startNewProj = () => {
     if (window.confirm("Are you sure? Unsaved changes will be lost.")) {
-      const nextCount = projectCount + 1;
-      const initialSetup = 1;
-
-      setProjectCount(nextCount);
-      setSetupCount(initialSetup);
-      setCurrentProjectName(`Project ${nextCount}: Setup ${initialSetup}`);
+      setCurrentProjectName("New Project");
 
       // TODO: replaced initial states with this
     //   getSettings();
@@ -44,7 +37,13 @@ const ConfigManager = ({ children }) => {
   };
 
   const saveProj = () => {
-    // 1. Save the CURRENT name (e.g., "Project 2: Setup 1") to the library
+    const trimmedName = currentProjectName.trim();
+
+    if(!trimmedName){
+      alert("Please enter project name before saving!")
+      return;
+    }
+
     const newSave = {
       id: Date.now(),
       name: currentProjectName,
@@ -55,11 +54,6 @@ const ConfigManager = ({ children }) => {
       },
     };
     setLibrary((prev) => [...prev, newSave]);
-
-    // 2. Prepare the name for the NEXT save within this same project
-    const nextSetupNumber = setupCount + 1;
-    setSetupCount(nextSetupNumber);
-    setCurrentProjectName(`Project ${projectCount}: Setup ${nextSetupNumber}`);
   };
 
   const clearCurrentSettings = () => {
@@ -95,15 +89,27 @@ const ConfigManager = ({ children }) => {
       )
     ) {
       setLibrary([]);
-      setProjectCount(1);
-      setSetupCount(1);
-      setCurrentProjectName("Project 1: Setup 1");
+      setCurrentProjectName("New Project");
     }
   };
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">{currentProjectName}</h1>
+      {/** Project name instertion box */}
+      <div className="mb-4">
+        <label htmlFor="project-name-input" className="block text-sm font-semibold text-gray-600 mb-1">
+          Project Name
+          </label>
+          <input
+            id="project-name-input"
+            type="text"
+            value={currentProjectName}
+            onChange={(e) => setCurrentProjectName(e.target?.value)}
+            placeholder="Type project name here..."
+            className="text-xl font-bold bg-transparent border-b-2 border-gray-400 focus:border-blue-500 outline-none pb-1 w-full max-w-md transition-colors"
+          />
+      </div>
+
       <div className="flex flex-row flex-wrap items-center gap-8 p-4 pr-6 mt-8 mb-4 rounded-4xl border-gray-100 bg-gray-300 w-fit">
         <h2 id="modules-button" className="text-xl font-bold">EQ Presets</h2>
         <div className="flex gap-2.5">

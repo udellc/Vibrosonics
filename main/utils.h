@@ -24,7 +24,8 @@ enum class QueueMsgId : uint
   EditModule,
   UpdateAll,
   CreateModule,
-  DeleteModule
+  DeleteModule,
+  SaveToSD
 };
 
 struct EditGlobalData

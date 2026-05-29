@@ -180,13 +180,9 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
       </div>
 
       {/* TODO: this is some logic saying ranges are not valid, add some sort of handling here */}
-      <div>
-        {isValid?.current ? (
-          <div className="text-green-500"/>
-        ) : (
-          <div className="font-bold text-red-500">outside valid ranges</div>
-        )}
-      </div>
+      {!isValid?.current && (
+        <div className="font-bold text-red-500">outside valid ranges</div>
+      )}
 
       {/* Row layout */}
       <div className="flex flex-col gap-x-3 px-6">
@@ -200,7 +196,6 @@ export default function AnalysisModule({ outputNum, module, setModules }) {
         {/* Create a grid of knobs for corresponding settings */}
         <div className="grid grid-rows-3 grid-flow-col gap-5 py-2 px-4">
           {Object.entries(knobs)?.map( ([key, val]) => {
-            //console.log("DEBUG - Full module object structure:", module);
             const knobId = `knob-${outputNum}-${key}`;
             return (
               <Knob

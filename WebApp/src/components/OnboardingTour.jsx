@@ -1,3 +1,13 @@
+/***************************************************************
+ * File: configManager.jsx
+ *
+ * Date: 05/28/2026
+ *
+ * Description: Component for the onboarding tour walkthrough
+ *
+ * Author: Bella Mann
+ ***************************************************************/
+
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { route } from "preact-router";
 import steps from "../data/onboardingTourData.json";

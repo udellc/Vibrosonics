@@ -280,6 +280,10 @@ void WebInterface::onSubmitConfig()
     auto newConfig = std::make_shared<AnalysisConfig>();
     auto globalSettings = payload["global"].as<JsonObject>();
     auto modulesList = payload["modules"].as<JsonArray>();
+    
+    // getting project name string
+    const char* projectName = payload["name"] | "New Project";
+    strncpy(newConfig->projectName, projectName, sizeof(newConfig->projectName) - 1);
 
     Utils::populateGlobalSettings(globalSettings, newConfig.get());
     Utils::populateModulesList(modulesList, newConfig.get());

@@ -158,10 +158,11 @@ void HapticSettings::loadConfig()
  * 
  * @return Bool indicating if the modules need to be rebuilt
  */
-bool HapticSettings::processQueue()
+bool HapticSettings::processQueue(bool& sdSaveRequested)
 {
   QueueMessage msg;
   bool needsRebuild = false;
+
 
   while (HapticSettings::Instance().getMessage(&msg))
   {
@@ -203,6 +204,12 @@ bool HapticSettings::processQueue()
           curConfig->modules[outputNumber] = nullptr;
           needsRebuild = true;
         }
+        break;
+      }
+      case QueMsgId::SaveToSD:
+      {
+        sdSaveRequested = true;
+        needsRebuild = true;
         break;
       }
       default:

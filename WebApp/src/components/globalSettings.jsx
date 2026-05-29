@@ -27,7 +27,6 @@ import { CONFIG_FIELDS, QUEUE_MESSAGE_ID, useEditSetting } from "../utils/utils"
  */
 const GlobalSettings = ({ globalSettings, setGlobalSettings, isExpertMode, setIsExpertMode}) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
-
   const settingsDisplay = GlobalSettingsDisplay.settings;
 
   // Hook used for real-time updates

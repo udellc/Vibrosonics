@@ -18,7 +18,7 @@ import ModulesPage from "./pages/modulesPage";
 import RadioPage from "./pages/radioPage";
 import Header from "./components/header";
 import Footer from "./components/footer";
-import OnboardingTour from "./components/OnboardingTour";
+import OnboardingTour from "./components/onboardingTour";
 import {
   AnalysisSettingsProvider,
   SystemContext,

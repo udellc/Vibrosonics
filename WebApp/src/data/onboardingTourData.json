@@ -14,15 +14,9 @@
   },
   {
     "route": "/network",
-    "selector": "#scanning",
+    "selector": "#networksPage",
     "title": "Scan Networks",
-    "text": "Scans current available networks, Use this button to scan for available networks before connecting the Vibrosonics device."
-  },
-  {
-    "route": "/network",
-    "selector": "#available-networks",
-    "title": "Available Networks",
-    "text": "Here you can find a list of networks to connect to."
+    "text": "This is the networks page. Use this page to scan for available networks before connecting the Vibrosonics device."
   },
   {
     "route": "/modules",
