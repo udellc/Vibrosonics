@@ -10,7 +10,6 @@
 #define PERC_FREQ_HI 4000
 
 VibrosonicsAPI vapi = VibrosonicsAPI();
-std::shared_ptr<AnalysisConfig? activeConfig;
 
 float windowData[WINDOW_SIZE_BY_2] = { 0 };
 float filteredData[WINDOW_SIZE_BY_2] = { 0 };
@@ -41,8 +40,6 @@ void setup() {
   // call the API setup function
   vapi.init();
 
-  activeConfig = std::make_shared<AnalysisConfig>();
-
   // set peak debug mode on to see the peaks picked up in each range
   // midPeak.setDebugMode(0x1);
   // highPeak.setDebugMode(0x1);
@@ -67,23 +64,6 @@ void loop() {
   // skip if new audio window has not been recorded
   if (!vapi.isAudioLabReady()) {
     return;
-  }
-
-  if(HapticSettings::Instance().needsUpdate()) {
-    DEBUG_PRINTLN("DEBUG: processing queue...");
-
-    vapi.pause();
-    bool sdSavedRequested = false;
-
-    if (HapticSettings::Instance().processQueue(sdSaveRequested)) {
-      activeConfig = HapticSettings::Instance().getConfig_mut();
-      rebuildOutputModules(activeConfig.get());
-    }
-
-    if(sdSavedRequested)
-      Networking::writeSettings();
-
-    vapi.resume();
   }
 
   // process the raw audio signal into frequency domain data
