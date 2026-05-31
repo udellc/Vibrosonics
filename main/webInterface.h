@@ -56,6 +56,9 @@ namespace WebInterface
   void sendAnalysisConfig();
 
   //! Handler for updating the HapticSettings config
+  void onSubmitConfig();
+
+  //! Handler for updating the HapticSettings config
   void onSaveConfig();
 
   //! Handler for real-time updates
