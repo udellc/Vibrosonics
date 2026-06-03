@@ -181,6 +181,7 @@ bool HapticSettings::processQueue()
 
       case QueueMsgId::UpdateAll:
         needsRebuild = true;
+        break;
 
       case QueueMsgId::CreateModule:
       {
