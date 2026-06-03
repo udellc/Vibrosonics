@@ -34,6 +34,11 @@ const DeviceSettings = ({ apSsid, apPassword, externalSsid }) => {
    * @brief API handler for saving access point settings to the ESP32
    */
   const handleSaveSettings = async () => {
+    // // WiFi WPA2 requires at least 8 chars for a password 
+    if (newApPassword.length < 8) {
+      window.alert("Warning: Password must be at least 8 characters.");
+      return;
+    }
     if (window.confirm("Warning: This Will Overwrite Current Settings. Continue?")) {
       const data = {
         newApSsid,

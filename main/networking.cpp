@@ -91,14 +91,18 @@ bool Networking::init()
  */
 bool Networking::initAccessPoint(const String& Ssid, const String& Password)
 {
+  DEBUG_PRINTLN("DEBUG: Starting WiFi access point...");
+
   if (Ssid.length() == 0)
   {
     DEBUG_PRINTLN("FATAL: SSID for AP mode is empty.");
     return false;
   }
-  DEBUG_PRINTLN("DEBUG: Starting WiFi access point...");
-
-  bool success = WiFi.softAP(Ssid, Password);
+  if (Password.length() < 8u)
+  {
+    DEBUG_PRINTLN("FATAL: Password for AP mode is less than 8 characters.");
+  }
+  bool success = WiFi.softAP(Ssid.c_str(), Password.c_str());
   success &= MDNS.begin(DefaultHostname);
 
   if (!success)
