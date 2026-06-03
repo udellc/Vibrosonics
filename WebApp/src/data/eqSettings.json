@@ -1,23 +1,200 @@
 {
-  "Rock": [
-    { "id": "rockBass", "title": "Bass", "min": 0, "max": 100 },
-    { "id": "rockMid", "title": "Mid", "min": 0, "max": 10 },
-    { "id": "rockTreb", "title": "Treble", "min": 0, "max": 10 },
-    { "id": "rockPres", "title": "Presence", "min": 0, "max": 10 }
-  ],
-  "EDM": [
-    { "id": "edmBass", "title": "Bass", "min": 0, "max": 100 },
-    { "id": "edmTreble", "title": "Highs", "min": 0, "max": 10 },
-    { "id": "edmSub", "title": "Sub-Bass", "min": 0, "max": 10 }
-  ],
-  "Country": [
-    { "id": "countryBass", "title": "Bass", "min": 0, "max": 100 },
-    { "id": "countryMid", "title": "Mid", "min": 0, "max": 100 },
-    { "id": "countryTwang", "title": "Twang", "min": 0, "max": 10 }
-  ],
-  "Jazz": [
-    { "id": "jazzLow", "title": "Low", "min": 0, "max": 100 },
-    { "id": "jazzMid", "title": "Mid", "min": 0, "max": 100 },
-    { "id": "jazzHigh", "title": "High", "min": 0, "max": 10 }
-  ]
+    "Innuendo: Bass & Melody": {
+        "global": {
+            "noiseFloor": 200,
+            "cfarRefCount": 8,
+            "cfarGuardCount": 2,
+            "cfarBias": 1.6,
+            "smoothingFactor": 0.2
+        },
+        "modules": [
+            {
+                "moduleType": 0,
+                "outputNumber": 0,
+                "freqLow": 40,
+                "freqHigh": 180,
+                "frequencyMapping": 1,
+                "maxPeaks": 1,
+                "minAmpNorm": 10000.0,
+                "isMuted": false
+            },
+            {
+                "moduleType": 0,
+                "outputNumber": 1,
+                "freqLow": 510,
+                "freqHigh": 2400,
+                "frequencyMapping": 1,
+                "maxPeaks": 1,
+                "minAmpNorm": 7200.0,
+                "isMuted": false
+            }
+        ]
+    },
+    "Innuendo: Percussion": {
+        "global": {
+            "noiseFloor": 200,
+            "cfarRefCount": 8,
+            "cfarGuardCount": 2,
+            "cfarBias": 1.5,
+            "smoothingFactor": 0.2
+        },
+        "modules": [
+            {
+                "moduleType": 1,
+                "outputNumber": 0,
+                "freqLow": 600.0,
+                "freqHigh": 1000.0,
+                "fluxThresh": 0.37,
+                "energyThresh": 5000000.0,
+                "entropyThresh": 0.25,
+                "waveType": 4,
+                "minAmpNorm": 20000000.0,
+                "isMuted": false
+            },
+            {
+                "moduleType": 1,
+                "outputNumber": 1,
+                "freqLow": 1800.0,
+                "freqHigh": 2500.0,
+                "fluxThresh": 0.30,
+                "energyThresh": 5000000.0,
+                "entropyThresh": 0.50,
+                "waveType": 4,
+                "minAmpNorm": 8000000.0,
+                "isMuted": false
+            }
+        ]
+    },
+    "Calabria 2008: Bass & Melody": {
+        "global": {
+            "noiseFloor": 200,
+            "cfarRefCount": 8,
+            "cfarGuardCount": 2,
+            "cfarBias": 1.6,
+            "smoothingFactor": 0.2
+        },
+        "modules": [
+            {
+                "moduleType": 0,
+                "outputNumber": 0,
+                "freqLow": 40,
+                "freqHigh": 150,
+                "frequencyMapping": 1,
+                "maxPeaks": 1,
+                "minAmpNorm": 34000.0,
+                "isMuted": false
+            },
+            {
+                "moduleType": 0,
+                "outputNumber": 1,
+                "freqLow": 276,
+                "freqHigh": 703,
+                "frequencyMapping": 1,
+                "maxPeaks": 1,
+                "minAmpNorm": 11000.0,
+                "isMuted": false
+            }
+        ]
+    },
+    "Calabria 2008: Percussion": {
+        "global": {
+            "noiseFloor": 200,
+            "cfarRefCount": 8,
+            "cfarGuardCount": 2,
+            "cfarBias": 1.5,
+            "smoothingFactor": 0.2
+        },
+        "modules": [
+            {
+                "moduleType": 1,
+                "outputNumber": 0,
+                "freqLow": 1600.0,
+                "freqHigh": 2860.0,
+                "fluxThresh": 0.40,
+                "energyThresh": 150000000.0,
+                "entropyThresh": 0.90,
+                "waveType": 4,
+                "minAmpNorm": 20000000.0,
+                "isMuted": false
+            },
+            {
+                "moduleType": 1,
+                "outputNumber": 1,
+                "freqLow": 700.0,
+                "freqHigh": 1000.0,
+                "fluxThresh": 0.21,
+                "energyThresh": 400000000.0,
+                "entropyThresh": 1.0,
+                "waveType": 4,
+                "minAmpNorm": 10600000.0,
+                "isMuted": false
+            }
+        ]
+    },
+    "Strobe: Bass and Melody": {
+        "global": {
+            "noiseFloor": 200,
+            "cfarRefCount": 8,
+            "cfarGuardCount": 2,
+            "cfarBias": 1.6,
+            "smoothingFactor": 0.2
+        },
+        "modules": [
+            {
+                "moduleType": 0,
+                "outputNumber": 0,
+                "freqLow": 60,
+                "freqHigh": 345,
+                "frequencyMapping": 1,
+                "maxPeaks": 1,
+                "minAmpNorm": 10000.0,
+                "isMuted": false
+            },
+            {
+                "moduleType": 0,
+                "outputNumber": 1,
+                "freqLow": 510,
+                "freqHigh": 1870,
+                "frequencyMapping": 1,
+                "maxPeaks": 1,
+                "minAmpNorm": 7200.0,
+                "isMuted": false
+            }
+        ]
+    },
+    "Strobe: Percussion": {
+        "global": {
+            "noiseFloor": 200,
+            "cfarRefCount": 8,
+            "cfarGuardCount": 2,
+            "cfarBias": 1.5,
+            "smoothingFactor": 0.2
+        },
+        "modules": [
+            {
+                "moduleType": 1,
+                "outputNumber": 0,
+                "freqLow": 715.0,
+                "freqHigh": 2000.0,
+                "fluxThresh": 0.37,
+                "energyThresh": 125000000.0,
+                "entropyThresh": 0.86,
+                "waveType": 4,
+                "minAmpNorm": 2800000.0,
+                "isMuted": false
+            },
+            {
+                "moduleType": 1,
+                "outputNumber": 1,
+                "freqLow": 2700.0,
+                "freqHigh": 3500.0,
+                "fluxThresh": 0.72,
+                "energyThresh": 400000000.0,
+                "entropyThresh": 0.27,
+                "waveType": 4,
+                "minAmpNorm": 15200000.0,
+                "isMuted": false
+            }
+        ]
+    }
 }
