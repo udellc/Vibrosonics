@@ -36,6 +36,7 @@ Contains the Arduino library required to communicate with the Si4703 tuner.
 | GPIO 2         | GPIO 4        |
 
 Verify pin assignments against the schematic before powering the system.
+<img src="reference images/schematic.png>" alt="Schematic" width="500">
 
 ## Software Requirements
 ### Development Environment
