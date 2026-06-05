@@ -1,4 +1,27 @@
 var searchData=
 [
-  ['6_20install_20web_20server_20libraries_20for_20the_20arduinoide_0',['6. Install Web Server Libraries for the ArduinoIDE',['../md_docs_2_s_e_t_u_p.html#autotoc_md19',1,'']]]
+  ['a_20sketch_0',['4. Upload a Sketch',['../index.html#autotoc_md9',1,'']]],
+  ['add_20libraries_1',['3. Add Libraries',['../index.html#autotoc_md8',1,'']]],
+  ['additional_20commands_2',['4. Additional Commands',['../index.html#autotoc_md14',1,'']]],
+  ['ampenv_3',['AmpEnv',['../struct_amp_env.html',1,'']]],
+  ['analysis_20loop_20core_201_4',['Audio Analysis Loop (Core 1)',['../index.html#autotoc_md27',1,'']]],
+  ['and_20esp32_20board_20support_5',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md6',1,'']]],
+  ['and_20npm_6',['1. Install Node.js and npm',['../index.html#autotoc_md11',1,'']]],
+  ['and_20ports_7',['2. Set Board and Ports',['../index.html#autotoc_md7',1,'']]],
+  ['api_20classes_8',['API Classes',['../index.html#autotoc_md30',1,'']]],
+  ['app_9',['App',['../index.html#autotoc_md18',1,'2. Connect to the Web App'],['../index.html#autotoc_md24',1,'Frontend (Web App)']]],
+  ['app_20architecture_10',['Web App Architecture',['../index.html#autotoc_md21',1,'']]],
+  ['app_20is_20not_20on_20the_20esp32_20otherwise_20skip_11',['1. Setup Upload Mode (Necessary if web app is not on the ESP32, otherwise skip)',['../index.html#autotoc_md17',1,'']]],
+  ['architecture_12',['Architecture',['../index.html#autotoc_md20',1,'Library Architecture'],['../index.html#autotoc_md21',1,'Web App Architecture']]],
+  ['architecture_20components_13',['Architecture Components',['../index.html#autotoc_md23',1,'']]],
+  ['arduino_20ide_20and_20esp32_20board_20support_14',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md6',1,'']]],
+  ['arduino_20setup_15',['Arduino Setup',['../index.html#autotoc_md5',1,'']]],
+  ['assignwave_16',['assignWave',['../class_vibrosonics_a_p_i.html#ac39fb95046d254d3da5b26a7104b4d8c',1,'VibrosonicsAPI']]],
+  ['assignwaves_17',['assignWaves',['../class_vibrosonics_a_p_i.html#a9d0dbc73ba0905fbf5e69c4654ccfac2',1,'VibrosonicsAPI']]],
+  ['attack_18',['ATTACK',['../_grain_8h.html#a05122a67715192f0564d8ea597d4d68ca831c130f9c83adc963152d232a9d61c7',1,'Grain.h']]],
+  ['attackamplitude_19',['attackAmplitude',['../struct_amp_env.html#a8efa51ebec80432bfcf5bc6c4c3b4194',1,'AmpEnv']]],
+  ['attackduration_20',['attackDuration',['../struct_amp_env.html#a5030ebdd7c493e789963bf2de653af71',1,'AmpEnv::attackDuration'],['../struct_dur_env.html#ac1476d0010fde48f4d724872b286d58c',1,'DurEnv::attackDuration']]],
+  ['attackfrequency_21',['attackFrequency',['../struct_freq_env.html#abc9cf0d7a0ef13622a85ea052cad3502',1,'FreqEnv']]],
+  ['audio_20analysis_20loop_20core_201_22',['Audio Analysis Loop (Core 1)',['../index.html#autotoc_md27',1,'']]],
+  ['audio_20through_20vibration_23',['Experience audio through vibration',['../index.html#autotoc_md1',1,'']]]
 ];

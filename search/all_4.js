@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['5_20troubleshooting_0',['5. Troubleshooting',['../md_docs_2_s_e_t_u_p.html#autotoc_md18',1,'']]]
+  ['5_20troubleshooting_0',['5. Troubleshooting',['../index.html#autotoc_md15',1,'']]]
 ];

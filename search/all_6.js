@@ -1,28 +1,7 @@
 var searchData=
 [
-  ['a_20sketch_0',['4. Upload a Sketch',['../md_docs_2_s_e_t_u_p.html#autotoc_md12',1,'']]],
-  ['add_20architecture_20update_20for_20the_20web_20app_1',['TODO: add architecture update for the web app',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md3',1,'']]],
-  ['add_20libraries_2',['3. Add Libraries',['../md_docs_2_s_e_t_u_p.html#autotoc_md11',1,'']]],
-  ['additional_20commands_3',['4. Additional Commands',['../md_docs_2_s_e_t_u_p.html#autotoc_md17',1,'']]],
-  ['additional_20information_4',['Additional Information',['../index.html#autotoc_md27',1,'']]],
-  ['ampenv_5',['AmpEnv',['../struct_amp_env.html',1,'']]],
-  ['and_20esp32_20board_20support_6',['1. Install Arduino IDE and ESP32 Board Support',['../md_docs_2_s_e_t_u_p.html#autotoc_md9',1,'']]],
-  ['and_20npm_7',['1. Install Node.js and npm',['../md_docs_2_s_e_t_u_p.html#autotoc_md14',1,'']]],
-  ['and_20ports_8',['2. Set Board and Ports',['../md_docs_2_s_e_t_u_p.html#autotoc_md10',1,'']]],
-  ['api_20classes_9',['API Classes',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md4',1,'']]],
-  ['app_10',['2. Connect to the Web App',['../md_docs_2_s_e_t_u_p.html#autotoc_md22',1,'']]],
-  ['app_11',['TODO: add architecture update for the web app',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md3',1,'']]],
-  ['app_20is_20not_20on_20the_20esp32_20otherwise_20skip_12',['1. Setup Upload Mode (Necessary if web app is not on the ESP32, otherwise skip)',['../md_docs_2_s_e_t_u_p.html#autotoc_md21',1,'']]],
-  ['architecture_13',['Library Architecture',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md2',1,'']]],
-  ['architecture_20update_20for_20the_20web_20app_14',['TODO: add architecture update for the web app',['../md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md3',1,'']]],
-  ['arduino_20ide_15',['Installation (Arduino IDE)',['../md_docs_2_s_e_t_u_p.html#autotoc_md8',1,'']]],
-  ['arduino_20ide_20and_20esp32_20board_20support_16',['1. Install Arduino IDE and ESP32 Board Support',['../md_docs_2_s_e_t_u_p.html#autotoc_md9',1,'']]],
-  ['arduinoide_17',['6. Install Web Server Libraries for the ArduinoIDE',['../md_docs_2_s_e_t_u_p.html#autotoc_md19',1,'']]],
-  ['assignwave_18',['assignWave',['../class_vibrosonics_a_p_i.html#ac39fb95046d254d3da5b26a7104b4d8c',1,'VibrosonicsAPI']]],
-  ['assignwaves_19',['assignWaves',['../class_vibrosonics_a_p_i.html#a9d0dbc73ba0905fbf5e69c4654ccfac2',1,'VibrosonicsAPI']]],
-  ['attack_20',['ATTACK',['../_grain_8h.html#a05122a67715192f0564d8ea597d4d68ca831c130f9c83adc963152d232a9d61c7',1,'Grain.h']]],
-  ['attackamplitude_21',['attackAmplitude',['../struct_amp_env.html#a8efa51ebec80432bfcf5bc6c4c3b4194',1,'AmpEnv']]],
-  ['attackduration_22',['attackDuration',['../struct_amp_env.html#a5030ebdd7c493e789963bf2de653af71',1,'AmpEnv::attackDuration'],['../struct_dur_env.html#ac1476d0010fde48f4d724872b286d58c',1,'DurEnv::attackDuration']]],
-  ['attackfrequency_23',['attackFrequency',['../struct_freq_env.html#abc9cf0d7a0ef13622a85ea052cad3502',1,'FreqEnv']]],
-  ['audio_20through_20vibration_24',['Experience audio through vibration',['../index.html#autotoc_md24',1,'']]]
+  ['backend_20esp32_20web_20server_0',['Backend (ESP32 Web Server)',['../index.html#autotoc_md25',1,'']]],
+  ['board_20and_20ports_1',['2. Set Board and Ports',['../index.html#autotoc_md7',1,'']]],
+  ['board_20support_2',['1. Install Arduino IDE and ESP32 Board Support',['../index.html#autotoc_md6',1,'']]],
+  ['branching_20workflow_3',['Branching &amp; Workflow',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md40',1,'']]]
 ];

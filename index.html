@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-613-g6cffbf4</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-721-g70ecc55</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -119,42 +119,261 @@ $(function(){initNavTree('index.html',''); initResizable(true); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md__r_e_a_d_m_e"></a></p>
-<h1><a class="anchor" id="autotoc_md24"></a>
+<h1><a class="anchor" id="autotoc_md1"></a>
 Experience audio through vibration</h1>
-<p><b>Vibrosonics</b> is an Arduino library that enables you to translate audio into tactile vibrations in real-time.</p>
+<p><b>Vibrosonics</b> is a real-time audio-to-haptics system with an interactive web interface that allows deaf, hard-of-hearing, and sensory-focused users feel sound through vibrarions.</p>
+<p><img src="docs/assets/images/Webapp_homepage.png" alt="" width="60%" height="60%" class="inline"/></p>
 <p><a href="https://udellc.github.io/Vibrosonics/"><b>Documentation (Doxygen)</b></a> \ <b>Hardware:</b> Adafruit ESP32 Feather, MAX9744 Amplifier board, TT25-8 puck transducer, 3.5mm audio jack cable \ <b>Dependencies:</b> <a href="https://github.com/synytsim/AudioLab">AudioLab</a> · <a href="https://github.com/udellc/AudioPrism">AudioPrism</a> · <a href="https://github.com/jmerc77/Fast4ier">Fast4ier</a></p>
-<h1><a class="anchor" id="autotoc_md25"></a>
+<h1><a class="anchor" id="autotoc_md2"></a>
 Table of Contents</h1>
 <ul>
-<li>Overview</li>
-<li>Additional Information</li>
+<li>Why Vibrosonics Matters</li>
+<li>Key Features</li>
+<li>Arduino Setup</li>
+<li>Web Development Setup</li>
+<li>ESP32 Web Server Setup</li>
+<li>Developer Notes</li>
 <li>Contributors</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md26"></a>
-Overview</h1>
-<p>The goal of the Vibrosonics project is to enable those who struggle with or cannot hear to enjoy audio-based entertainment in a different way as well as potentially enhance audio-related experiences for enthusiasts by adding the sensation of touch.</p>
-<p>The aim is to create an easily wearable, portable device that can take in audio signals and convert them to vibrations in the haptic range. These vibrations should accurately portray different pitches and intensities of sound.</p>
-<p>We have partnered with <a href="https://www.cymaspace.org/">Cymaspace</a>, an organization whose goal is to make culture and arts accessible for the deaf and hard of hearing community. This group of people makes up our primary audience, as haptic feedback can be used to replace or enhance audio. Some secondary users would be employers whose work environments make pure audio based communication difficult. They could instead receive important audio cues through haptics. Lastly, events such as silent raves, or games that use alternate reality could be interested in using this product to add a new sense. In all these scenarios, the use of haptic vibrations can be used to enhance user experiences in an accessible and interactive way.</p>
-<p>Currently, Apple has a feature called “music haptics”. Similarly to Vibrosonics, this provides a way for users to experience music through tactile vibrations. You can only use this feature with an Apple iPhone with iOS 18 or higher, and it only works for music. While our product is currently also focused on music, we hope that this will someday be used in everyday life as well. Our product is also compatible for use on Windows, Linux, and Mac.</p>
-<h1><a class="anchor" id="autotoc_md27"></a>
-Additional Information</h1>
-<p>For more detailed information about setting up a development environment, library architecture, and example programs, refer to the following documents:</p>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Why Vibrosonics Matters</h1>
+<p>Millions of people experience barriers when it comes to audio-based media such as music, games, alerts, or live events. Vibrosoncis transforms those experiences by converting sound into meaningful tactile feedback.</p>
+<p>Instead of hearing a beat, you <b>feel it</b>.</p>
+<p><img src="docs/assets/images/spectrogram.png" alt="" width="35%" height="35%" class="inline"/></p>
+<p>Built in collaboration with <b><a href="https://www.cymaspace.org/">Cymaspace</a></b>, an organization whose goal is to make culture and arts accessible for the deaf and hard-of-hearing community, Vibrosonics is designed to make music, entertainment, and environments more inclusive while also opening up new immersive experiences for everyone. This group makes up our primary audience, as haptic feedback can be used to replace or enhance audio. Some secondary users would be employers whose work environments make pure audio based communication difficult. They could instead receive important audio cues through haptics.</p>
+<h1><a class="anchor" id="autotoc_md4"></a>
+Key Features</h1>
+<p><b>Real-Time Audio Conversion</b> Transforms live audio input directly into haptic vibration with minimal latency.</p>
+<p><b>Configurable Settings Through Web Application</b> A browser-based app allows users to adjust haptic feedback in real-time with no recompiling or device flashing required.</p>
+<p><img src="docs/assets/images/Webapp_configurable.png" alt="" width="60%" height="60%" class="inline"/></p>
+<p><b>Frequency-Aware Feedback</b> Different pitches and intensities map to distinct vibration patterns, preserving musical structure and adding depth.</p>
+<p><b>Accessible by Design</b> Built specifically for deaf and hard-of-hearing users, while also enhancing experiences for others.</p>
+<p><em><a href="https://github.com/udellc/Vibrosonics/tree/main">View the most stable version on GitHub</a></em></p>
+<h1><a class="anchor" id="autotoc_md5"></a>
+Arduino Setup</h1>
+<h2><a class="anchor" id="autotoc_md6"></a>
+1. Install Arduino IDE and ESP32 Board Support</h2>
 <ul>
-<li><a href="https://udellc.github.io/Vibrosonics/md_docs_2_s_e_t_u_p.html">Developer Setup</a></li>
-<li><a href="https://udellc.github.io/Vibrosonics/md_docs_2_d_e_v_n_o_t_e_s.html">Developer Notes</a></li>
-<li><a href="https://udellc.github.io/Vibrosonics/md__c_o_n_t_r_i_b_u_t_i_n_g.html">Contributing Guidelines</a></li>
+<li>Download <a href="https://www.arduino.cc/en/software/">Arduino IDE</a></li>
+<li>Go to <b>Tools &gt; Boards &gt; Boards Manager</b></li>
+<li>Search and install <code>esp32</code> by <b>Espressif Systems</b></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md28"></a>
+<p><img src="/docs/assets/images/Board_library.png" alt="Installing the board manager" class="inline"/></p>
+<h2><a class="anchor" id="autotoc_md7"></a>
+2. Set Board and Ports</h2>
+<ul>
+<li>Plug in the board (you may need to install USB drivers)</li>
+<li>Go to the top drop down menu and click <code>Select other board and port...</code></li>
+<li>In the pop up window, search for <code>Adafruit ESP32 Feather</code> and select it along with <code>COMX</code> for port where <code>X</code> is a number 0-6<ul>
+<li>You may need to download a driver to see the port (<a href="https://randomnerdtutorials.com/install-esp32-esp8266-usb-drivers-cp210x-windows/">Windows Tutorial</a>)</li>
+<li>On Linux, this is the <code>ch341</code> driver</li>
+</ul>
+</li>
+</ul>
+<p><img src="/docs/assets/images/Confirm_board.png" alt="The other board and port drop down" class="inline"/></p>
+<h2><a class="anchor" id="autotoc_md8"></a>
+3. Add Libraries</h2>
+<p>Navigate to the Arduino libraries folder. This is usually located in <code>Documents/Arduino/libraries/</code> for Windows and <code>~/Arduino/libraries/</code> for Mac and Linux.</p>
+<p>Clone the repositories into the libraries folder:</p>
+<div class="fragment"><div class="line">cd &quot;/path/to/Arduino/libraries/&quot;</div>
+<div class="line">git clone https://github.com/synytsim/AudioLab.git</div>
+<div class="line">git clone https://github.com/udellc/AudioPrism.git</div>
+<div class="line">git clone https://github.com/jmerc77/Fast4ier.git</div>
+</div><!-- fragment --><p>Verify that the libraries are installed by opening Arduino IDE and going to <b>Sketch &gt; Include Library &gt; Manage Libraries...</b>. You should see <code>AudioLab</code>, <code>AudioPrism</code>, and <code>Fast4ier</code> in the list.</p>
+<h2><a class="anchor" id="autotoc_md9"></a>
+4. Upload a Sketch</h2>
+<p>You should be ready to use the example sketches or create your own! To upload a sketch to the Vibrosonics hardware:</p>
+<ul>
+<li>Plug in the ESP32 via USB</li>
+<li>Open your own sketch or one of our examples from <b>File &gt; Examples &gt; Vibrosonics &gt; [Example Name]</b></li>
+<li>Press the upload (➜) in the top left to compile and upload your sketch</li>
+</ul>
+<p><img src="/docs/assets/images/Upload_sketch.png" alt="Uploading a sketch to the arduino" class="inline"/></p>
+<h1><a class="anchor" id="autotoc_md10"></a>
+Web Development Setup</h1>
+<h2><a class="anchor" id="autotoc_md11"></a>
+1. Install Node.js and npm</h2>
+<ul>
+<li>Download and install Node.js through your prefered web browser. This will also install npm.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md12"></a>
+2. Install Dependencies</h2>
+<ul>
+<li>Open a terminal and navigate to the <code>WebApp/</code> directory of the repository.</li>
+<li>Run the following command to install the required dependencies:</li>
+</ul>
+<div class="fragment"><div class="line">npm install</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md13"></a>
+3. Start the Development Server</h2>
+<ul>
+<li>Run the following command to start the development server:</li>
+</ul>
+<div class="fragment"><div class="line"># This will start the server and provide a local URL at localhost. Once the server is running,</div>
+<div class="line">npm run dev</div>
+<div class="line"> </div>
+<div class="line"># Opens the application in your default web browser.</div>
+<div class="line">o</div>
+<div class="line"> </div>
+<div class="line"># Manually restarts the server</div>
+<div class="line">r</div>
+<div class="line"> </div>
+<div class="line"># Stops the server</div>
+<div class="line">q</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md14"></a>
+4. Additional Commands</h2>
+<p><b>Production Build:</b> To build the application for production, run:</p>
+<div class="fragment"><div class="line"># This will produce optimized files in the `dist/` directory</div>
+<div class="line">npm run build</div>
+<div class="line"> </div>
+<div class="line"># This will preview the production build locally</div>
+<div class="line">npm run preview</div>
+</div><!-- fragment --><p><b>Run Linter Tool:</b> To run ESLint for .js and .jsx files, run:</p>
+<div class="fragment"><div class="line"># This will scan the target files for any syntax issues or potential bugs</div>
+<div class="line">npm run lint</div>
+<div class="line"> </div>
+<div class="line"># This will automatically fix any fixable issues found by ESLint</div>
+<div class="line">npm run lint.fix</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md15"></a>
+5. Troubleshooting</h2>
+<p>If you encounter any issues during setup or development, consider the following steps:</p>
+<ul>
+<li>Ensure that Node.js and npm are correctly installed by running <code>node -v</code> and <code>npm -v</code> in your terminal.</li>
+<li>Check for any error messages in the terminal and refer to the documentation of the specific tools or libraries being used.</li>
+<li>Make sure all dependencies are installed correctly by running <code>npm ci</code> for a clean install. If issues still persist, try deleting the <code>node_modules/</code> directory and running <code>npm install</code> again.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md16"></a>
+ESP32 Web Server Setup</h1>
+<p><b>SD File System Setup:</b> To deploy the WiFi web app onto the ESP32, we'll need to store the web app onto a micro SD card connected to the ESP32. View <code>WebApp/main/fileSys.h</code> for the pin connections, these directions assume that the pins are connected properly.</p>
+<p><b>Note:</b> Uploading the web app onto the SD card only needs to be done everytime a new build of the web app is needed.</p>
+<h2><a class="anchor" id="autotoc_md17"></a>
+1. Setup Upload Mode (Necessary if web app is not on the ESP32, otherwise skip)</h2>
+<ul>
+<li>Navigate to the <code>WebApp/main/config.h</code> file and uncomment the following line to setup the ESP32 in upload mode</li>
+</ul>
+<div class="fragment"><div class="line"><span class="preprocessor">#define DEV_MODE_EN</span></div>
+</div><!-- fragment --><ul>
+<li>Build and upload <code>main.ino</code> in the ArduinoIDE once connected to a COM port.</li>
+<li>Connect to the Wi-Fi access point on your device, name of the network is <b>Vibrosonics-Dev</b>.</li>
+<li>Open a web browser and open <code><a href="http://vibrosonics/dev">http://vibrosonics/dev</a></code>.</li>
+<li>Enter the directory you want to write to and select the file to upload.</li>
+<li>Click the upload button to write the file. <b>Note:</b> Open the Serial monitor in ArduinoIDE to view the files on the SD card.</li>
+<li>Once successful, exit the web app, comment out the <code>DEV_MODE_EN</code> macro and rebuild and upload <code>main.ino</code>.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md18"></a>
+2. Connect to the Web App</h2>
+<ul>
+<li>Connect to the Wi-Fi access point on your device, name of the network is <b>Vibrosonics-Unsecure</b>.</li>
+<li>Open a web browser and navigate to <code><a href="http://vibrosonics">http://vibrosonics</a></code>.</li>
+<li>Follow the directions provided by the web app</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md19"></a>
+Developer Notes</h1>
+<h2><a class="anchor" id="autotoc_md20"></a>
+Library Architecture</h2>
+<p>The Vibrosonics library aims to streamline three processes to enable translating audio into the haptic range: audio signal processing, audio analysis and finally audio synthesis. We utilize a few libraries to achieve this.</p>
+<p>The first is AudioLab, which handles the audio signals between the external hardware and the processor. It reads audio from the analog-to-digital converters (ADC) and writes signals to the digital-to-analog converters (DAC) for synthesis. The captured audio signals from the ADC are analyzed using the other two library dependencies.</p>
+<p>Fast4ier is used to perform the Fast Fourier Transform (FFT) on the signal data, which converts it from a representation of the signal over time (time domain) to a representation of how the signal is distributed over a range of frequency bands (frequency domain). The bandwidth of the frequency domain, or the max frequency, is equal to half of the sample rate of the ADC. Similarly, the number of different frequency bands is equal to half of the window size of the ADC.</p>
+<p>AudioPrism is a library which analyzes the frequency domain data using various algorithms. By filtering this data for different AudioPrism analysis modules, we can detect certain elements of the audio signal. With music, this allows us to detect percussion, isolate prominent vocals and melodies, and more. With this analysis, distinct vibrations can be made to model elements of music by re-synthesizing these findings through AudioLab translated down into the haptic frequency range (0-230Hz).</p>
+<h2><a class="anchor" id="autotoc_md21"></a>
+Web App Architecture</h2>
+<p>The VibroSonics application utilizes both cores on the ESP32 for efficient real-time audio processing and web-based configuration.</p>
+<h3><a class="anchor" id="autotoc_md22"></a>
+System Overview</h3>
+<ul>
+<li><b>Core 0</b>: Handles the web server and HTTP request processing</li>
+<li><b>Core 1</b>: Runs the real-time audio analysis and haptic synthesis loop</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md23"></a>
+Architecture Components</h3>
+<h4><a class="anchor" id="autotoc_md24"></a>
+Frontend (Web App)</h4>
+<ul>
+<li><b>Framework</b>: React/Preact application built with Vite</li>
+<li><b>Location</b>: Served from SD card on ESP32</li>
+<li><b>Access</b>: Available at <code><a href="http://vibrosonics">http://vibrosonics</a></code> when connected to the device's WiFi AP</li>
+<li><b>Pages</b>:<ul>
+<li>Landing page for global settings</li>
+<li>Network configuration page</li>
+<li>Analysis modules configuration page</li>
+</ul>
+</li>
+<li><b>Communication</b>: Makes HTTP API calls to the ESP32 web server</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md25"></a>
+Backend (ESP32 Web Server)</h4>
+<ul>
+<li><b>Server</b>: WebServer library running on Core 0</li>
+<li><b>Endpoints</b>: RESTful API for configuration and real-time updates</li>
+<li><b>Key Functions</b>:<ul>
+<li><code>/network/*</code>: WiFi network scanning and connection</li>
+<li><code>/analysis/*</code>: Audio analysis configuration management</li>
+<li>File serving for static web assets</li>
+</ul>
+</li>
+<li><b>Rate Limiting</b>: 500ms minimum interval for real-time setting updates</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md26"></a>
+Inter-Core Communication</h4>
+<ul>
+<li><b>Mechanism</b>: Thread-safe message queue via <code>HapticSettings</code> singleton</li>
+<li><b>Flow</b>:<ol type="1">
+<li>Web app sends HTTP request to ESP32 server</li>
+<li>Server parses request and creates <code>QueueMessage</code></li>
+<li>Message added to queue in <code>HapticSettings</code></li>
+<li>Audio loop (Core 1) checks for pending messages</li>
+<li>Messages processed to update <code>AnalysisConfig</code></li>
+<li>Configuration changes applied to audio processing pipeline</li>
+</ol>
+</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md27"></a>
+Audio Analysis Loop (Core 1)</h4>
+<ul>
+<li><b>Real-time Processing</b>: Continuous audio input → analysis → haptic output</li>
+<li><b>Configuration</b>: Uses shared <code>AnalysisConfig</code> updated via message queue</li>
+<li><b>Modules</b>: Dynamic analysis modules (percussion detection, frequency analysis, etc.)</li>
+<li><b>Synthesis</b>: Generates haptic feedback through AudioLab library</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md28"></a>
+Data Flow</h3>
+<div class="fragment"><div class="line">Web App (Browser) → HTTP Request → Web Server (Core 0) → Message Queue → Audio Loop (Core 1) → Haptic Output</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md29"></a>
+Key Design Decisions</h3>
+<ul>
+<li><b>Dual-Core Utilization</b>: Separates web serving from real-time audio processing for reliability</li>
+<li><b>Message Queue</b>: Thread-safe communication between cores without blocking</li>
+<li><b>SD Card Storage</b>: Web app files stored on SD card for easy updates</li>
+<li><b>Rate Limiting</b>: Prevents web interface from overwhelming the audio processing</li>
+<li><b>Atomic Configuration Updates</b>: Ensures consistent state during real-time processing</li>
+</ul>
+<p><img src="/docs/assets/images/Webapp_Architecture.png" alt="Web App Architecture Diagram" class="inline"/></p>
+<h2><a class="anchor" id="autotoc_md30"></a>
+API Classes</h2>
+<ul>
+<li><code><a class="el" href="class_vibrosonics_a_p_i.html">VibrosonicsAPI</a></code>: This is the core class; it is a unified interface for audio processing, analysis and synthesis</li>
+<li><code><a class="el" href="class_grain.html">Grain</a></code>, <code><a class="el" href="class_grain_list.html">GrainList</a></code>, and <code><a class="el" href="struct_grain_node.html">GrainNode</a></code>: These are the components for granular synthesis. <code><a class="el" href="class_grain.html">Grain</a></code> is the main grain class, and the list and node classes provide a way to manage a linked list of grains.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md31"></a>
+Examples</h1>
+<p>We have an <code>examples</code> folder which contains individual programs that each showcase a different feature or technique possible using Vibrosonics and AudioPrism.</p>
+<ul>
+<li>Start with the <code>Template</code> example to see basic use of the API and for a starting point for your own program.</li>
+<li>The <code>Grains</code> example demonstrates using the provided classes for granular synthesis with a frequency and amplitude sweep, duration changes and wave shape variations.</li>
+<li><code>Percussion</code> showcases our current percussion detection method, which uses a specially filtered frequency domain representation as input for an AudioPrism percussion module. It utilizes grains to create haptic feedback corresponding to the detected percussive hits.</li>
+<li><code>Melody</code> is a similar example of strategic frequency domain processing, but to bring out melodic elements of music. These elements are resynthesized by translating the most prominent frequency peaks into the haptic range.</li>
+<li><code>Vibrosonics</code> is our example demonstrating a combination of multiple techniques (<code>Percussion</code> and <code>Melody</code>) to provide a real-time translation of music to tactile feedback. Look here for an in-depth example utilizing the full capabilities of our library.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md32"></a>
 Contributors</h1>
-<h2><a class="anchor" id="autotoc_md29"></a>
+<h2><a class="anchor" id="autotoc_md33"></a>
 2025-26 Software Team</h2>
 <ul>
-<li>Ivan Wong</li>
-<li>Danielle Chang</li>
-<li>Bella Mann</li>
-<li>Allyson Aoki</li>
+<li><a href="https://github.com/IvanW5X">Ivan Wong</a></li>
+<li><a href="https://github.com/danichang1">Danielle Chang</a></li>
+<li><a href="https://github.com/mannbella">Bella Mann</a></li>
+<li><a href="https://github.com/aokiam">Ally Aoki</a></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md30"></a>
+<h2><a class="anchor" id="autotoc_md34"></a>
 2024-25 Software Team</h2>
 <ul>
 <li><a href="https://github.com/wwaltb">Walt Bringenberg</a></li>
@@ -164,13 +383,14 @@ Contributors</h1>
 <li><a href="https://github.com/jjuliayang">Julia Yang</a></li>
 </ul>
 <p><a href="https://dot.cards/vibrosonicscs">LinkedIn Pages</a></p>
-<h2><a class="anchor" id="autotoc_md31"></a>
+<h2><a class="anchor" id="autotoc_md35"></a>
 Special Thanks</h2>
 <ul>
 <li>Dr. Chet Udell (Project leader and manager)</li>
 <li>Nick Synytsia (Developed AudioLab and advised software development for 2024-25)</li>
 <li>Alex Synytsia (Participated in hardware development during 2022-23)</li>
-<li>Vincent Vaughn (Advised software and hardware development) </li>
+<li>Vincent Vaughn (Advised software and hardware development)</li>
+<li>Hans Bestel (Project manager for software and hardware development during 2025-26) </li>
 </ul>
 </div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"></a>

@@ -45,7 +45,7 @@
             <tr style="height: 56px;">
                 <td id="projectalign" style="padding-left: 0.5em;">
                     <div id="projectname">VibroSonics
-                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-613-g6cffbf4</span>
+                        &#160;<span id="projectnumber">v1.0.2-mozzi-implementation-721-g70ecc55</span>
                     </div>
                     <div id="projectbrief">Arduino Library for Translating Audio into Vibrations</div>
                 </td>
@@ -138,7 +138,7 @@ $(function(){initNavTree('_vibrosonics_a_p_i_8h_source.html',''); initResizable(
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &quot;<a class="code" href="_grain_8h.html">Grain.h</a>&quot;</span></div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &quot;Wave.h&quot;</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="_vibrosonics_a_p_i_8h.html#ab19910256c036cb3592658dcde15fcdc">   21</a></span><span class="keyword">constexpr</span> uint16_t <a class="code hl_variable" href="_vibrosonics_a_p_i_8h.html#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a> = WINDOW_SIZE &lt;&lt; WINDOW_OVERLAP;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="_vibrosonics_a_p_i_8h.html#ab19910256c036cb3592658dcde15fcdc">   21</a></span><span class="keyword">constexpr</span> uint16_t <a class="code hl_variable" href="_vibrosonics_a_p_i_8h.html#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a> = WINDOW_SIZE &lt;&lt; 2;</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="_vibrosonics_a_p_i_8h.html#ac03078e75fb605280c11d7502c86ee1b">   22</a></span><span class="keyword">constexpr</span> <span class="keywordtype">int</span> <a class="code hl_variable" href="_vibrosonics_a_p_i_8h.html#ac03078e75fb605280c11d7502c86ee1b">WINDOW_SIZE_BY_2</a> = <a class="code hl_variable" href="_vibrosonics_a_p_i_8h.html#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a> &gt;&gt; 1;</div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df">   30</a></span><span class="keyword">constexpr</span> <span class="keywordtype">float</span> <a class="code hl_variable" href="_vibrosonics_a_p_i_8h.html#a0eb560ea8df07dae9c2676e230cc89df">FREQ_RES</a> = (float)SAMPLE_RATE / (<span class="keywordtype">float</span>)<a class="code hl_variable" href="_vibrosonics_a_p_i_8h.html#ab19910256c036cb3592658dcde15fcdc">WINDOW_SIZE_OVERLAP</a>;</div>

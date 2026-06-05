@@ -1,6 +1,30 @@
 var searchData=
 [
-  ['board_20and_20ports_0',['2. Set Board and Ports',['../md_docs_2_s_e_t_u_p.html#autotoc_md10',1,'']]],
-  ['board_20support_1',['1. Install Arduino IDE and ESP32 Board Support',['../md_docs_2_s_e_t_u_p.html#autotoc_md9',1,'']]],
-  ['branching_20workflow_2',['Branching &amp; Workflow',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md36',1,'']]]
+  ['cd_0',['CI/CD',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md46',1,'']]],
+  ['ci_20cd_1',['CI/CD',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md46',1,'']]],
+  ['classes_2',['API Classes',['../index.html#autotoc_md30',1,'']]],
+  ['clearlist_3',['clearList',['../class_grain_list.html#a89b0a083c70f526d152f584cfac49ffb',1,'GrainList']]],
+  ['code_20of_20conduct_4',['Code of Conduct',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md38',1,'']]],
+  ['code_20style_20linting_20formatting_5',['Code Style, Linting &amp; Formatting',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md43',1,'']]],
+  ['commands_6',['4. Additional Commands',['../index.html#autotoc_md14',1,'']]],
+  ['commit_20messages_7',['Commit Messages',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md42',1,'']]],
+  ['communication_8',['Inter-Core Communication',['../index.html#autotoc_md26',1,'']]],
+  ['complextomagnitude_9',['complexToMagnitude',['../class_vibrosonics_a_p_i.html#a5398e8e78814c2472b595d5b53fc549c',1,'VibrosonicsAPI']]],
+  ['components_10',['Architecture Components',['../index.html#autotoc_md23',1,'']]],
+  ['computehammingwindow_11',['computeHammingWindow',['../class_vibrosonics_a_p_i.html#ae68dc34037c3f3f50ad1e815c1434ab7',1,'VibrosonicsAPI']]],
+  ['conduct_12',['Code of Conduct',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md38',1,'']]],
+  ['connect_20to_20the_20web_20app_13',['2. Connect to the Web App',['../index.html#autotoc_md18',1,'']]],
+  ['contact_14',['Support &amp; Contact',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md50',1,'']]],
+  ['contents_15',['Contents',['../index.html#autotoc_md2',1,'Table of Contents'],['../md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md37',1,'Table of Contents']]],
+  ['contributing_20guide_16',['Contributing Guide',['../md__c_o_n_t_r_i_b_u_t_i_n_g.html',1,'']]],
+  ['contributing_2emd_17',['CONTRIBUTING.md',['../_c_o_n_t_r_i_b_u_t_i_n_g_8md.html',1,'']]],
+  ['contributors_18',['Contributors',['../index.html#autotoc_md32',1,'']]],
+  ['core_201_19',['Audio Analysis Loop (Core 1)',['../index.html#autotoc_md27',1,'']]],
+  ['core_20communication_20',['Inter-Core Communication',['../index.html#autotoc_md26',1,'']]],
+  ['createampenv_21',['createAmpEnv',['../class_vibrosonics_a_p_i.html#ad175cc891ff8fc63b991dae4bf0140e0',1,'VibrosonicsAPI']]],
+  ['createdurenv_22',['createDurEnv',['../class_vibrosonics_a_p_i.html#a5cf0352839581b9e1798e24de43d30e0',1,'VibrosonicsAPI']]],
+  ['createdynamicgrain_23',['createDynamicGrain',['../class_vibrosonics_a_p_i.html#a4d702e892e39a097252b77de5433ac3c',1,'VibrosonicsAPI']]],
+  ['createfreqenv_24',['createFreqEnv',['../class_vibrosonics_a_p_i.html#ac4cfd8b313c6f148e8bf8323a1da5965',1,'VibrosonicsAPI']]],
+  ['creategrainarray_25',['createGrainArray',['../class_vibrosonics_a_p_i.html#a2ba81ed2f29af76698fa3626570b251f',1,'VibrosonicsAPI']]],
+  ['curve_26',['curve',['../struct_amp_env.html#a79c4a16c4928229c3982447ebac83c21',1,'AmpEnv::curve'],['../struct_dur_env.html#aaa0cd5b523e7c2b391f85132096450cb',1,'DurEnv::curve']]]
 ];

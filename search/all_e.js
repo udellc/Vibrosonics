@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['js_20and_20npm_0',['1. Install Node.js and npm',['../md_docs_2_s_e_t_u_p.html#autotoc_md14',1,'']]]
+  ['key_20design_20decisions_0',['Key Design Decisions',['../index.html#autotoc_md29',1,'']]],
+  ['key_20features_1',['Key Features',['../index.html#autotoc_md4',1,'']]]
 ];

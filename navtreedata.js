@@ -25,59 +25,63 @@
 var NAVTREE =
 [
   [ "VibroSonics", "index.html", [
-    [ "Experience audio through vibration", "index.html#autotoc_md24", null ],
-    [ "Table of Contents", "index.html#autotoc_md25", null ],
-    [ "Overview", "index.html#autotoc_md26", null ],
-    [ "Additional Information", "index.html#autotoc_md27", null ],
-    [ "Contributors", "index.html#autotoc_md28", [
-      [ "2025-26 Software Team", "index.html#autotoc_md29", null ],
-      [ "2024-25 Software Team", "index.html#autotoc_md30", null ],
-      [ "Special Thanks", "index.html#autotoc_md31", null ]
+    [ "Experience audio through vibration", "index.html#autotoc_md1", null ],
+    [ "Table of Contents", "index.html#autotoc_md2", null ],
+    [ "Why Vibrosonics Matters", "index.html#autotoc_md3", null ],
+    [ "Key Features", "index.html#autotoc_md4", null ],
+    [ "Arduino Setup", "index.html#autotoc_md5", [
+      [ "Install Arduino IDE and ESP32 Board Support", "index.html#autotoc_md6", null ],
+      [ "Set Board and Ports", "index.html#autotoc_md7", null ],
+      [ "Add Libraries", "index.html#autotoc_md8", null ],
+      [ "Upload a Sketch", "index.html#autotoc_md9", null ]
     ] ],
-    [ "Developer Notes", "md_docs_2_d_e_v_n_o_t_e_s.html", [
-      [ "Table of Contents", "md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md1", null ],
-      [ "Library Architecture", "md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md2", [
-        [ "TODO: add architecture update for the web app", "md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md3", null ],
-        [ "API Classes", "md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md4", null ]
-      ] ],
-      [ "Examples", "md_docs_2_d_e_v_n_o_t_e_s.html#autotoc_md5", null ]
+    [ "Web Development Setup", "index.html#autotoc_md10", [
+      [ "Install Node.js and npm", "index.html#autotoc_md11", null ],
+      [ "Install Dependencies", "index.html#autotoc_md12", null ],
+      [ "Start the Development Server", "index.html#autotoc_md13", null ],
+      [ "Additional Commands", "index.html#autotoc_md14", null ],
+      [ "Troubleshooting", "index.html#autotoc_md15", null ]
     ] ],
-    [ "Developer Setup", "md_docs_2_s_e_t_u_p.html", [
-      [ "Table of Contents", "md_docs_2_s_e_t_u_p.html#autotoc_md7", null ],
-      [ "Installation (Arduino IDE)", "md_docs_2_s_e_t_u_p.html#autotoc_md8", [
-        [ "Install Arduino IDE and ESP32 Board Support", "md_docs_2_s_e_t_u_p.html#autotoc_md9", null ],
-        [ "Set Board and Ports", "md_docs_2_s_e_t_u_p.html#autotoc_md10", null ],
-        [ "Add Libraries", "md_docs_2_s_e_t_u_p.html#autotoc_md11", null ],
-        [ "Upload a Sketch", "md_docs_2_s_e_t_u_p.html#autotoc_md12", null ]
+    [ "ESP32 Web Server Setup", "index.html#autotoc_md16", [
+      [ "Setup Upload Mode (Necessary if web app is not on the ESP32, otherwise skip)", "index.html#autotoc_md17", null ],
+      [ "Connect to the Web App", "index.html#autotoc_md18", null ]
+    ] ],
+    [ "Developer Notes", "index.html#autotoc_md19", [
+      [ "Library Architecture", "index.html#autotoc_md20", null ],
+      [ "Web App Architecture", "index.html#autotoc_md21", [
+        [ "System Overview", "index.html#autotoc_md22", null ],
+        [ "Architecture Components", "index.html#autotoc_md23", [
+          [ "Frontend (Web App)", "index.html#autotoc_md24", null ],
+          [ "Backend (ESP32 Web Server)", "index.html#autotoc_md25", null ],
+          [ "Inter-Core Communication", "index.html#autotoc_md26", null ],
+          [ "Audio Analysis Loop (Core 1)", "index.html#autotoc_md27", null ]
+        ] ],
+        [ "Data Flow", "index.html#autotoc_md28", null ],
+        [ "Key Design Decisions", "index.html#autotoc_md29", null ]
       ] ],
-      [ "Web Development Setup", "md_docs_2_s_e_t_u_p.html#autotoc_md13", [
-        [ "Install Node.js and npm", "md_docs_2_s_e_t_u_p.html#autotoc_md14", null ],
-        [ "Install Dependencies", "md_docs_2_s_e_t_u_p.html#autotoc_md15", null ],
-        [ "Start the Development Server", "md_docs_2_s_e_t_u_p.html#autotoc_md16", null ],
-        [ "Additional Commands", "md_docs_2_s_e_t_u_p.html#autotoc_md17", null ],
-        [ "Troubleshooting", "md_docs_2_s_e_t_u_p.html#autotoc_md18", null ],
-        [ "Install Web Server Libraries for the ArduinoIDE", "md_docs_2_s_e_t_u_p.html#autotoc_md19", null ]
-      ] ],
-      [ "ESP32 Web Server Setup", "md_docs_2_s_e_t_u_p.html#autotoc_md20", [
-        [ "Setup Upload Mode (Necessary if web app is not on the ESP32, otherwise skip)", "md_docs_2_s_e_t_u_p.html#autotoc_md21", null ],
-        [ "Connect to the Web App", "md_docs_2_s_e_t_u_p.html#autotoc_md22", null ]
-      ] ]
+      [ "API Classes", "index.html#autotoc_md30", null ]
+    ] ],
+    [ "Examples", "index.html#autotoc_md31", null ],
+    [ "Contributors", "index.html#autotoc_md32", [
+      [ "2025-26 Software Team", "index.html#autotoc_md33", null ],
+      [ "2024-25 Software Team", "index.html#autotoc_md34", null ],
+      [ "Special Thanks", "index.html#autotoc_md35", null ]
     ] ],
     [ "Contributing Guide", "md__c_o_n_t_r_i_b_u_t_i_n_g.html", [
-      [ "Table of Contents", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md33", null ],
-      [ "Code of Conduct", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md34", null ],
-      [ "Getting Started", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md35", null ],
-      [ "Branching & Workflow", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md36", null ],
-      [ "Issues & Planning", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md37", null ],
-      [ "Commit Messages", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md38", null ],
-      [ "Code Style, Linting & Formatting", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md39", null ],
-      [ "Testing", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md40", null ],
-      [ "Pull Requests & Reviews", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md41", null ],
-      [ "CI/CD", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md42", null ],
-      [ "Security & Secrets", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md43", null ],
-      [ "Documentation Expectations", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md44", null ],
-      [ "Release Process", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md45", null ],
-      [ "Support & Contact", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md46", null ]
+      [ "Table of Contents", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md37", null ],
+      [ "Code of Conduct", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md38", null ],
+      [ "Getting Started", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md39", null ],
+      [ "Branching & Workflow", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md40", null ],
+      [ "Issues & Planning", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md41", null ],
+      [ "Commit Messages", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md42", null ],
+      [ "Code Style, Linting & Formatting", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md43", null ],
+      [ "Testing", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md44", null ],
+      [ "Pull Requests & Reviews", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md45", null ],
+      [ "CI/CD", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md46", null ],
+      [ "Security & Secrets", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md47", null ],
+      [ "Documentation Expectations", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md48", null ],
+      [ "Release Process", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md49", null ],
+      [ "Support & Contact", "md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md50", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

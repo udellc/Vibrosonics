@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['3_20add_20libraries_0',['3. Add Libraries',['../md_docs_2_s_e_t_u_p.html#autotoc_md11',1,'']]],
-  ['3_20start_20the_20development_20server_1',['3. Start the Development Server',['../md_docs_2_s_e_t_u_p.html#autotoc_md16',1,'']]]
+  ['3_20add_20libraries_0',['3. Add Libraries',['../index.html#autotoc_md8',1,'']]],
+  ['3_20start_20the_20development_20server_1',['3. Start the Development Server',['../index.html#autotoc_md13',1,'']]]
 ];
